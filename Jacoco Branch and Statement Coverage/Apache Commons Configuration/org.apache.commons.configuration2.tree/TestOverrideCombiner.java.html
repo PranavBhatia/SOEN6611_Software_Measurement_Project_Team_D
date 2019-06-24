@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestOverrideCombiner.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestOverrideCombiner.java</span></div><h1>TestOverrideCombiner.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.CombinedConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.junit.Test;
+
+/**
+ * Test class for OverrideCombiner.
+ *
+ */
+<span class="fc" id="L36">public class TestOverrideCombiner extends AbstractCombinerTest</span>
+{
+    /**
+     * Creates the combiner.
+     *
+     * @return the combiner
+     */
+    @Override
+    protected NodeCombiner createCombiner()
+    {
+<span class="fc" id="L46">        return new OverrideCombiner();</span>
+    }
+
+    /**
+     * Tests combination of simple elements.
+     */
+    @Test
+    public void testSimpleValues() throws ConfigurationException
+    {
+<span class="fc" id="L55">        final BaseHierarchicalConfiguration config = createCombinedConfiguration();</span>
+<span class="fc" id="L56">        assertEquals(&quot;Wrong number of bgcolors&quot;, 0, config</span>
+<span class="fc" id="L57">                .getMaxIndex(&quot;gui.bgcolor&quot;));</span>
+<span class="fc" id="L58">        assertEquals(&quot;Wrong bgcolor&quot;, &quot;green&quot;, config.getString(&quot;gui.bgcolor&quot;));</span>
+<span class="fc" id="L59">        assertEquals(&quot;Wrong selcolor&quot;, &quot;yellow&quot;, config</span>
+<span class="fc" id="L60">                .getString(&quot;gui.selcolor&quot;));</span>
+<span class="fc" id="L61">        assertEquals(&quot;Wrong fgcolor&quot;, &quot;blue&quot;, config.getString(&quot;gui.fgcolor&quot;));</span>
+<span class="fc" id="L62">        assertEquals(&quot;Wrong level&quot;, 1, config.getInt(&quot;gui.level&quot;));</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Tests combination of attributes.
+     */
+    @Test
+    public void testAttributes() throws ConfigurationException
+    {
+<span class="fc" id="L71">        final BaseHierarchicalConfiguration config = createCombinedConfiguration();</span>
+<span class="fc" id="L72">        assertEquals(&quot;Wrong value of min attribute&quot;, 1, config</span>
+<span class="fc" id="L73">                .getInt(&quot;gui.level[@min]&quot;));</span>
+<span class="fc" id="L74">        assertEquals(&quot;Wrong value of default attribute&quot;, 2, config</span>
+<span class="fc" id="L75">                .getInt(&quot;gui.level[@default]&quot;));</span>
+<span class="fc" id="L76">        assertEquals(&quot;Wrong number of id attributes&quot;, 0, config</span>
+<span class="fc" id="L77">                .getMaxIndex(&quot;database.tables.table(0)[@id]&quot;));</span>
+<span class="fc" id="L78">        assertEquals(&quot;Wrong value of table id&quot;, 1, config</span>
+<span class="fc" id="L79">                .getInt(&quot;database.tables.table(0)[@id]&quot;));</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Tests whether property values are correctly overridden.
+     */
+    @Test
+    public void testOverrideValues() throws ConfigurationException
+    {
+<span class="fc" id="L88">        final BaseHierarchicalConfiguration config = createCombinedConfiguration();</span>
+<span class="fc" id="L89">        assertEquals(&quot;Wrong user&quot;, &quot;Admin&quot;, config</span>
+<span class="fc" id="L90">                .getString(&quot;base.services.security.login.user&quot;));</span>
+<span class="fc" id="L91">        assertEquals(&quot;Wrong user type&quot;, &quot;default&quot;, config</span>
+<span class="fc" id="L92">                .getString(&quot;base.services.security.login.user[@type]&quot;));</span>
+<span class="fc" id="L93">        assertEquals(&quot;Wrong password&quot;, &quot;BeamMeUp&quot;, config</span>
+<span class="fc" id="L94">                .getString(&quot;base.services.security.login.passwd&quot;));</span>
+<span class="fc" id="L95">        assertEquals(&quot;Wrong password type&quot;, &quot;secret&quot;, config</span>
+<span class="fc" id="L96">                .getString(&quot;base.services.security.login.passwd[@type]&quot;));</span>
+<span class="fc" id="L97">    }</span>
+
+    /**
+     * Tests if a list from the first node structure overrides a list in the
+     * second structure.
+     */
+    @Test
+    public void testListFromFirstStructure() throws ConfigurationException
+    {
+<span class="fc" id="L106">        final BaseHierarchicalConfiguration config = createCombinedConfiguration();</span>
+<span class="fc" id="L107">        assertEquals(&quot;Wrong number of services&quot;, 0, config</span>
+<span class="fc" id="L108">                .getMaxIndex(&quot;net.service.url&quot;));</span>
+<span class="fc" id="L109">        assertEquals(&quot;Wrong service&quot;, &quot;http://service1.org&quot;, config</span>
+<span class="fc" id="L110">                .getString(&quot;net.service.url&quot;));</span>
+<span class="fc" id="L111">        assertFalse(&quot;Type attribute available&quot;, config</span>
+<span class="fc" id="L112">                .containsKey(&quot;net.service.url[@type]&quot;));</span>
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Tests if a list from the second structure is added if it is not defined
+     * in the first structure.
+     */
+    @Test
+    public void testListFromSecondStructure() throws ConfigurationException
+    {
+<span class="fc" id="L122">        final BaseHierarchicalConfiguration config = createCombinedConfiguration();</span>
+<span class="fc" id="L123">        assertEquals(&quot;Wrong number of servers&quot;, 3, config</span>
+<span class="fc" id="L124">                .getMaxIndex(&quot;net.server.url&quot;));</span>
+<span class="fc" id="L125">        assertEquals(&quot;Wrong server&quot;, &quot;http://testsvr.com&quot;, config</span>
+<span class="fc" id="L126">                .getString(&quot;net.server.url(2)&quot;));</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests the combination of the table structure. Because the table node is
+     * not declared as a list node the structures will be combined. But this
+     * won't make any difference because the values in the first table override
+     * the values in the second table.
+     */
+    @Test
+    public void testCombinedTableNoList() throws ConfigurationException
+    {
+<span class="fc" id="L138">        checkTable(createCombinedConfiguration());</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Tests the combination of the table structure if the table node is
+     * declared as a list node. In this case the first table structure
+     * completely overrides the second and will be directly added to the
+     * resulting structure.
+     */
+    @Test
+    public void testCombinedTableList() throws ConfigurationException
+    {
+<span class="fc" id="L150">        combiner.addListNode(&quot;table&quot;);</span>
+<span class="fc" id="L151">        checkTable(createCombinedConfiguration());</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Helper method for checking the combined table structure.
+     *
+     * @param config the config
+     * @return the node for the table element
+     */
+    private ImmutableNode checkTable(final BaseHierarchicalConfiguration config)
+    {
+<span class="fc" id="L162">        assertEquals(&quot;Wrong number of tables&quot;, 0, config</span>
+<span class="fc" id="L163">                .getMaxIndex(&quot;database.tables.table&quot;));</span>
+<span class="fc" id="L164">        final HierarchicalConfiguration&lt;ImmutableNode&gt; c = config</span>
+<span class="fc" id="L165">                .configurationAt(&quot;database.tables.table&quot;);</span>
+<span class="fc" id="L166">        assertEquals(&quot;Wrong table name&quot;, &quot;documents&quot;, c.getString(&quot;name&quot;));</span>
+<span class="fc" id="L167">        assertEquals(&quot;Wrong number of fields&quot;, 2, c</span>
+<span class="fc" id="L168">                .getMaxIndex(&quot;fields.field.name&quot;));</span>
+<span class="fc" id="L169">        assertEquals(&quot;Wrong field&quot;, &quot;docname&quot;, c</span>
+<span class="fc" id="L170">                .getString(&quot;fields.field(1).name&quot;));</span>
+
+<span class="fc" id="L172">        final NodeHandler&lt;ImmutableNode&gt; nodeHandler = config.getNodeModel().getNodeHandler();</span>
+<span class="fc" id="L173">        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; nds =</span>
+<span class="fc" id="L174">                config.getExpressionEngine().query(nodeHandler.getRootNode(),</span>
+                        &quot;database.tables.table&quot;,
+                        nodeHandler);
+<span class="fc" id="L177">        assertFalse(&quot;No node found&quot;, nds.isEmpty());</span>
+<span class="fc" id="L178">        assertFalse(&quot;An attribute result&quot;, nds.get(0).isAttributeResult());</span>
+<span class="fc" id="L179">        return nds.get(0).getNode();</span>
+    }
+
+    /**
+     * Tests a combine operation of non-hierarchical properties. This test is
+     * related to CONFIGURATION-604.
+     */
+    @Test
+    public void testCombineProperties()
+    {
+<span class="fc" id="L189">        final PropertiesConfiguration c1 = new PropertiesConfiguration();</span>
+<span class="fc" id="L190">        c1.addProperty(&quot;x.y.simpleCase&quot;, false);</span>
+<span class="fc" id="L191">        c1.addProperty(&quot;x.y.between&quot;, false);</span>
+<span class="fc" id="L192">        c1.addProperty(&quot;x.y.isDistinctFrom&quot;,false);</span>
+<span class="fc" id="L193">        c1.addProperty(&quot;x.y&quot;,false);</span>
+<span class="fc" id="L194">        final PropertiesConfiguration c2 = new PropertiesConfiguration();</span>
+<span class="fc" id="L195">        c2.addProperty(&quot;x.y&quot;, true);</span>
+<span class="fc" id="L196">        c2.addProperty(&quot;x.y.between&quot;,true);</span>
+<span class="fc" id="L197">        c2.addProperty(&quot;x.y.comparison&quot;,true);</span>
+<span class="fc" id="L198">        c2.addProperty(&quot;x.y.in&quot;,true);</span>
+<span class="fc" id="L199">        c2.addProperty(&quot;x.y.isDistinctFrom&quot;,true);</span>
+<span class="fc" id="L200">        c2.addProperty(&quot;x.y.simpleCase&quot;, true);</span>
+
+<span class="fc" id="L202">        final CombinedConfiguration config = new CombinedConfiguration(new OverrideCombiner());</span>
+<span class="fc" id="L203">        config.addConfiguration(c1);</span>
+<span class="fc" id="L204">        config.addConfiguration(c2);</span>
+<span class="fc" id="L205">        assertFalse(&quot;Wrong value for x.y&quot;, config.getBoolean(&quot;x.y&quot;));</span>
+<span class="fc" id="L206">        assertFalse(&quot;Wrong value for x.y.between&quot;, config.getBoolean(&quot;x.y.between&quot;));</span>
+<span class="fc" id="L207">        assertFalse(&quot;Wrong value for x.y.isDistinctFrom&quot;, config.getBoolean(&quot;x.y.isDistinctFrom&quot;));</span>
+<span class="fc" id="L208">        assertFalse(&quot;Wrong value for x.y.simpleCase&quot;, config.getBoolean(&quot;x.y.simpleCase&quot;));</span>
+<span class="fc" id="L209">        assertTrue(&quot;Wrong value for x.y.in&quot;, config.getBoolean(&quot;x.y.in&quot;));</span>
+<span class="fc" id="L210">        assertTrue(&quot;Wrong value for x.y.comparison&quot;, config.getBoolean(&quot;x.y.comparison&quot;));</span>
+<span class="fc" id="L211">        assertEquals(&quot;Wrong size&quot;, 6, config.size());</span>
+<span class="fc" id="L212">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,1715 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestFileHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.io</a> &gt; <span class="el_source">TestFileHandler.java</span></div><h1>TestFileHandler.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.io;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.SynchronizerTestImpl;
+import org.apache.commons.configuration2.SynchronizerTestImpl.Methods;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.easymock.EasyMock;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/**
+ * Test class for {@code FileHandler}.
+ *
+ */
+<span class="fc" id="L61">public class TestFileHandler</span>
+{
+    /** Constant for the name of a test file. */
+    private static final String TEST_FILENAME = &quot;test.properties&quot;;
+
+    /** Constant for content of the test file. */
+    private static final String CONTENT =
+            &quot;TestFileHandler: This is test content.&quot;;
+
+    /** Helper object for managing temporary files. */
+<span class="fc" id="L71">    @Rule</span>
+    public TemporaryFolder folder = new TemporaryFolder();
+
+    /**
+     * Creates a test file with test content and allows specifying a file name.
+     *
+     * @param f the file to be created (may be &lt;b&gt;null&lt;/b&gt;)
+     * @return the File object pointing to the test file
+     */
+    private File createTestFile(final File f)
+    {
+<span class="fc" id="L82">        Writer out = null;</span>
+<span class="fc" id="L83">        File file = f;</span>
+        try
+        {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            if (file == null)</span>
+            {
+<span class="fc" id="L88">                file = folder.newFile();</span>
+            }
+<span class="fc" id="L90">            out = new FileWriter(file);</span>
+<span class="fc" id="L91">            out.write(CONTENT);</span>
+        }
+<span class="nc" id="L93">        catch (final IOException ioex)</span>
+        {
+<span class="nc" id="L95">            fail(&quot;Could not create test file: &quot; + ioex);</span>
+<span class="nc" id="L96">            return null; // cannot happen</span>
+        }
+        finally
+        {
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">            if (out != null)</span>
+            {
+                try
+                {
+<span class="fc" id="L104">                    out.close();</span>
+                }
+<span class="nc" id="L106">                catch (final IOException ioex)</span>
+                {
+                    // ignore
+<span class="fc" id="L109">                }</span>
+            }
+        }
+<span class="fc" id="L112">        return file;</span>
+    }
+
+    /**
+     * Creates a test file with the test content.
+     *
+     * @return the File object pointing to the test file
+     */
+    private File createTestFile()
+    {
+<span class="fc" id="L122">        return createTestFile(null);</span>
+    }
+
+    /**
+     * Reads the content of the specified reader into a string.
+     *
+     * @param in the reader
+     * @return the read content
+     * @throws IOException if an error occurs
+     */
+    private static String readReader(final Reader in) throws IOException
+    {
+<span class="fc" id="L134">        final StringBuilder buf = new StringBuilder();</span>
+        int c;
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        while ((c = in.read()) != -1)</span>
+        {
+<span class="fc" id="L138">            buf.append((char) c);</span>
+        }
+<span class="fc" id="L140">        return buf.toString();</span>
+    }
+
+    /**
+     * Reads the content of the specified file into a string
+     *
+     * @param f the file to be read
+     * @return the content of this file
+     */
+    private static String readFile(final File f)
+    {
+<span class="fc" id="L151">        Reader in = null;</span>
+        try
+        {
+<span class="fc" id="L154">            in = new FileReader(f);</span>
+<span class="fc" id="L155">            return readReader(in);</span>
+        }
+<span class="nc" id="L157">        catch (final IOException ioex)</span>
+        {
+<span class="nc" id="L159">            fail(&quot;Could not read file: &quot; + ioex);</span>
+<span class="nc" id="L160">            return null; // cannot happen</span>
+        }
+        finally
+        {
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">            if (in != null)</span>
+            {
+                try
+                {
+<span class="fc" id="L168">                    in.close();</span>
+                }
+<span class="nc" id="L170">                catch (final IOException ioex)</span>
+                {
+                    // ignore
+<span class="fc" id="L173">                }</span>
+            }
+        }
+    }
+
+    /**
+     * Tests whether a newly created instance has a default file system.
+     */
+    @Test
+    public void testGetFileSystemDefault()
+    {
+<span class="fc" id="L184">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L185">        assertEquals(&quot;Wrong default file system&quot;,</span>
+<span class="fc" id="L186">                FileLocatorUtils.DEFAULT_FILE_SYSTEM, handler.getFileSystem());</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Tests whether a null file system can be set to reset this property.
+     */
+    @Test
+    public void testSetFileSystemNull()
+    {
+<span class="fc" id="L195">        final FileSystem sys = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L196">        EasyMock.replay(sys);</span>
+<span class="fc" id="L197">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L198">        handler.setFileSystem(sys);</span>
+<span class="fc" id="L199">        assertSame(&quot;File system not set&quot;, sys, handler.getFileSystem());</span>
+<span class="fc" id="L200">        handler.setFileSystem(null);</span>
+<span class="fc" id="L201">        assertEquals(&quot;Not default file system&quot;,</span>
+<span class="fc" id="L202">                FileLocatorUtils.DEFAULT_FILE_SYSTEM, handler.getFileSystem());</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * Tests whether the file system can be reset.
+     */
+    @Test
+    public void testResetFileSystem()
+    {
+<span class="fc" id="L211">        final FileSystem sys = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L212">        EasyMock.replay(sys);</span>
+<span class="fc" id="L213">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L214">        handler.setFileSystem(sys);</span>
+<span class="fc" id="L215">        handler.resetFileSystem();</span>
+<span class="fc" id="L216">        assertEquals(&quot;Not default file system&quot;,</span>
+<span class="fc" id="L217">                FileLocatorUtils.DEFAULT_FILE_SYSTEM, handler.getFileSystem());</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Tests whether a newly created instance uses the default location
+     * strategy.
+     */
+    @Test
+    public void testGetLocationStrategyDefault()
+    {
+<span class="fc" id="L227">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L228">        assertNull(&quot;Strategy in locator&quot;, handler.getFileLocator()</span>
+<span class="fc" id="L229">                .getLocationStrategy());</span>
+<span class="fc" id="L230">        assertSame(&quot;Wrong default strategy&quot;,</span>
+                FileLocatorUtils.DEFAULT_LOCATION_STRATEGY,
+<span class="fc" id="L232">                handler.getLocationStrategy());</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Tests whether the location strategy can be changed.
+     */
+    @Test
+    public void testSetLocationStrategy()
+    {
+<span class="fc" id="L241">        final FileLocationStrategy strategy =</span>
+<span class="fc" id="L242">                EasyMock.createMock(FileLocationStrategy.class);</span>
+<span class="fc" id="L243">        EasyMock.replay(strategy);</span>
+<span class="fc" id="L244">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L245">        handler.setLocationStrategy(strategy);</span>
+<span class="fc" id="L246">        assertSame(&quot;Wrong strategy in locator&quot;, strategy, handler</span>
+<span class="fc" id="L247">                .getFileLocator().getLocationStrategy());</span>
+<span class="fc" id="L248">        assertSame(&quot;Wrong strategy&quot;, strategy, handler.getLocationStrategy());</span>
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * Tests whether a URL can be set.
+     */
+    @Test
+    public void testSetURL() throws Exception
+    {
+<span class="fc" id="L257">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L258">        handler.setURL(new URL(</span>
+                &quot;http://commons.apache.org/configuration/index.html&quot;));
+
+<span class="fc" id="L261">        assertEquals(&quot;base path&quot;, &quot;http://commons.apache.org/configuration/&quot;,</span>
+<span class="fc" id="L262">                handler.getBasePath());</span>
+<span class="fc" id="L263">        assertEquals(&quot;file name&quot;, &quot;index.html&quot;, handler.getFileName());</span>
+<span class="fc" id="L264">        assertNull(&quot;Got a file name in locator&quot;, handler.getFileLocator()</span>
+<span class="fc" id="L265">                .getFileName());</span>
+<span class="fc" id="L266">    }</span>
+
+    /**
+     * Tests whether the correct file scheme is applied.
+     */
+    @Test
+    public void testSetURLFileScheme() throws MalformedURLException
+    {
+<span class="fc" id="L274">        final FileHandler handler = new FileHandler();</span>
+        // file URL - This url is invalid, a valid url would be
+        // file:///temp/test.properties.
+<span class="fc" id="L277">        handler.setURL(new URL(&quot;file:/temp/test.properties&quot;));</span>
+<span class="fc" id="L278">        assertEquals(&quot;base path&quot;, &quot;file:///temp/&quot;, handler.getBasePath());</span>
+<span class="fc" id="L279">        assertEquals(&quot;file name&quot;, TEST_FILENAME, handler.getFileName());</span>
+<span class="fc" id="L280">    }</span>
+
+    /**
+     * Tests whether a URL with parameters can be set.
+     */
+    @Test
+    public void testSetURLWithParams() throws Exception
+    {
+<span class="fc" id="L288">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L289">        final URL url =</span>
+                new URL(
+                        &quot;http://issues.apache.org/bugzilla/show_bug.cgi?id=37886&quot;);
+<span class="fc" id="L292">        handler.setURL(url);</span>
+<span class="fc" id="L293">        assertEquals(&quot;Base path incorrect&quot;,</span>
+<span class="fc" id="L294">                &quot;http://issues.apache.org/bugzilla/&quot;, handler.getBasePath());</span>
+<span class="fc" id="L295">        assertEquals(&quot;File name incorrect&quot;, &quot;show_bug.cgi&quot;,</span>
+<span class="fc" id="L296">                handler.getFileName());</span>
+<span class="fc" id="L297">        assertEquals(&quot;URL was not correctly stored&quot;, url, handler.getURL());</span>
+<span class="fc" id="L298">    }</span>
+
+    /**
+     * Tests whether a null URL can be set.
+     */
+    @Test
+    public void testSetURLNull()
+    {
+<span class="fc" id="L306">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L307">        handler.setURL(ConfigurationAssert.getTestURL(TEST_FILENAME));</span>
+<span class="fc" id="L308">        handler.setURL(null);</span>
+<span class="fc" id="L309">        final FileLocator locator = handler.getFileLocator();</span>
+<span class="fc" id="L310">        assertNull(&quot;Got a base path&quot;, locator.getBasePath());</span>
+<span class="fc" id="L311">        assertNull(&quot;Got a file name&quot;, locator.getFileName());</span>
+<span class="fc" id="L312">        assertNull(&quot;Got a URL&quot;, locator.getSourceURL());</span>
+<span class="fc" id="L313">    }</span>
+
+    /**
+     * Tests whether the location can be set as a file.
+     */
+    @Test
+    public void testSetFile()
+    {
+<span class="fc" id="L321">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L322">        final File directory = ConfigurationAssert.TEST_DIR;</span>
+<span class="fc" id="L323">        final File file = ConfigurationAssert.getTestFile(TEST_FILENAME);</span>
+<span class="fc" id="L324">        handler.setFile(file);</span>
+<span class="fc" id="L325">        assertEquals(&quot;Wrong base path&quot;, directory.getAbsolutePath(),</span>
+<span class="fc" id="L326">                handler.getBasePath());</span>
+<span class="fc" id="L327">        assertEquals(&quot;Wrong file name&quot;, TEST_FILENAME, handler.getFileName());</span>
+<span class="fc" id="L328">        assertEquals(&quot;Wrong path&quot;, file.getAbsolutePath(), handler.getPath());</span>
+<span class="fc" id="L329">    }</span>
+
+    /**
+     * Tests whether the location can be set as a file.
+     */
+    @Test
+    public void testSetPath() throws MalformedURLException
+    {
+<span class="fc" id="L337">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L338">        handler.setPath(ConfigurationAssert.TEST_DIR_NAME + File.separator</span>
+                + TEST_FILENAME);
+<span class="fc" id="L340">        assertEquals(&quot;Wrong file name&quot;, TEST_FILENAME, handler.getFileName());</span>
+<span class="fc" id="L341">        assertEquals(&quot;Wrong base path&quot;,</span>
+<span class="fc" id="L342">                ConfigurationAssert.TEST_DIR.getAbsolutePath(),</span>
+<span class="fc" id="L343">                handler.getBasePath());</span>
+<span class="fc" id="L344">        final File file = ConfigurationAssert.getTestFile(TEST_FILENAME);</span>
+<span class="fc" id="L345">        assertEquals(&quot;Wrong path&quot;, file.getAbsolutePath(), handler.getPath());</span>
+<span class="fc" id="L346">        assertEquals(&quot;Wrong URL&quot;, file.toURI().toURL(), handler.getURL());</span>
+<span class="fc" id="L347">        assertNull(&quot;Got a URL&quot;, handler.getFileLocator().getSourceURL());</span>
+<span class="fc" id="L348">    }</span>
+
+    /**
+     * Tests whether the location can be set using file name and base path.
+     */
+    @Test
+    public void testSetFileName()
+    {
+<span class="fc" id="L356">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L357">        handler.setURL(ConfigurationAssert.getTestURL(TEST_FILENAME));</span>
+<span class="fc" id="L358">        handler.setFileName(TEST_FILENAME);</span>
+<span class="fc" id="L359">        assertNull(&quot;Got a base path&quot;, handler.getBasePath());</span>
+<span class="fc" id="L360">        assertEquals(&quot;Wrong file name&quot;, TEST_FILENAME, handler.getFileName());</span>
+<span class="fc" id="L361">        assertEquals(&quot;Wrong file name in locator&quot;, TEST_FILENAME, handler</span>
+<span class="fc" id="L362">                .getFileLocator().getFileName());</span>
+<span class="fc" id="L363">        assertNull(&quot;Got a URL&quot;, handler.getFileLocator().getSourceURL());</span>
+<span class="fc" id="L364">    }</span>
+
+    /**
+     * Tests whether the file scheme is corrected when setting the file name.
+     */
+    @Test
+    public void testSetFileNameFileScheme()
+    {
+<span class="fc" id="L372">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L373">        handler.setFileName(&quot;file:/test/path/test.txt&quot;);</span>
+<span class="fc" id="L374">        assertEquals(&quot;Wrong file name&quot;, &quot;file:///test/path/test.txt&quot;, handler</span>
+<span class="fc" id="L375">                .getFileLocator().getFileName());</span>
+<span class="fc" id="L376">    }</span>
+
+    /**
+     * Tests getFileName() if no information is set.
+     */
+    @Test
+    public void testGetFileNameUndefined()
+    {
+<span class="fc" id="L384">        assertNull(&quot;Got a file name&quot;, new FileHandler().getFileName());</span>
+<span class="fc" id="L385">    }</span>
+
+    /**
+     * Tests whether a base path can be set and whether this removes an already
+     * set URL.
+     */
+    @Test
+    public void testSetBasePath()
+    {
+<span class="fc" id="L394">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L395">        handler.setURL(ConfigurationAssert.getTestURL(TEST_FILENAME));</span>
+<span class="fc" id="L396">        final String basePath = ConfigurationAssert.TEST_DIR_NAME;</span>
+<span class="fc" id="L397">        handler.setBasePath(basePath);</span>
+<span class="fc" id="L398">        final FileLocator locator = handler.getFileLocator();</span>
+<span class="fc" id="L399">        assertEquals(&quot;Wrong base path&quot;, basePath, locator.getBasePath());</span>
+<span class="fc" id="L400">        assertNull(&quot;Got a URL&quot;, locator.getSourceURL());</span>
+<span class="fc" id="L401">        assertNull(&quot;Got a file name&quot;, locator.getFileName());</span>
+<span class="fc" id="L402">    }</span>
+
+    /**
+     * Tests whether the file scheme is corrected when setting the base path.
+     */
+    @Test
+    public void testSetBasePathFileScheme()
+    {
+<span class="fc" id="L410">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L411">        handler.setBasePath(&quot;file:/test/path/&quot;);</span>
+<span class="fc" id="L412">        assertEquals(&quot;Wrong base path&quot;, &quot;file:///test/path/&quot;, handler</span>
+<span class="fc" id="L413">                .getFileLocator().getBasePath());</span>
+<span class="fc" id="L414">    }</span>
+
+    /**
+     * Tests getBasePath() if no information is available.
+     */
+    @Test
+    public void testGetBasePathUndefined()
+    {
+<span class="fc" id="L422">        assertNull(&quot;Got a base path&quot;, new FileHandler().getBasePath());</span>
+<span class="fc" id="L423">    }</span>
+
+    /**
+     * Additional tests for setting file names in various ways. (Copied from the
+     * test for XMLConfiguration)
+     */
+    @Test
+    public void testSettingFileNames()
+    {
+<span class="fc" id="L432">        final String testProperties =</span>
+<span class="fc" id="L433">                ConfigurationAssert.getTestFile(&quot;test.xml&quot;).getAbsolutePath();</span>
+<span class="fc" id="L434">        final String testBasePath = ConfigurationAssert.TEST_DIR.getAbsolutePath();</span>
+
+<span class="fc" id="L436">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L437">        handler.setFileName(testProperties);</span>
+<span class="fc" id="L438">        assertEquals(testProperties.toString(), handler.getFileName());</span>
+
+<span class="fc" id="L440">        handler.setBasePath(testBasePath);</span>
+<span class="fc" id="L441">        handler.setFileName(&quot;hello.xml&quot;);</span>
+<span class="fc" id="L442">        assertEquals(&quot;hello.xml&quot;, handler.getFileName());</span>
+<span class="fc" id="L443">        assertEquals(testBasePath.toString(), handler.getBasePath());</span>
+<span class="fc" id="L444">        assertEquals(new File(testBasePath, &quot;hello.xml&quot;), handler.getFile());</span>
+
+<span class="fc" id="L446">        handler.setBasePath(testBasePath);</span>
+<span class="fc" id="L447">        handler.setFileName(&quot;subdir/hello.xml&quot;);</span>
+<span class="fc" id="L448">        assertEquals(&quot;subdir/hello.xml&quot;, handler.getFileName());</span>
+<span class="fc" id="L449">        assertEquals(testBasePath.toString(), handler.getBasePath());</span>
+<span class="fc" id="L450">        assertEquals(new File(testBasePath, &quot;subdir/hello.xml&quot;),</span>
+<span class="fc" id="L451">                handler.getFile());</span>
+<span class="fc" id="L452">    }</span>
+
+    /**
+     * Tries to call a load() method if no content object is available.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testLoadNoContent() throws ConfigurationException
+    {
+<span class="fc" id="L460">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L461">        final StringReader reader = new StringReader(CONTENT);</span>
+<span class="nc" id="L462">        handler.load(reader);</span>
+<span class="nc" id="L463">    }</span>
+
+    /**
+     * Tests whether an IOException is handled when loading data from a reader.
+     */
+    @Test
+    public void testLoadFromReaderIOException() throws IOException,
+            ConfigurationException
+    {
+<span class="fc" id="L472">        final FileBased content = EasyMock.createMock(FileBased.class);</span>
+<span class="fc" id="L473">        final Reader in = new StringReader(CONTENT);</span>
+<span class="fc" id="L474">        final IOException ioex = new IOException(&quot;Test exception&quot;);</span>
+<span class="fc" id="L475">        content.read(in);</span>
+<span class="fc" id="L476">        EasyMock.expectLastCall().andThrow(ioex);</span>
+<span class="fc" id="L477">        EasyMock.replay(content);</span>
+<span class="fc" id="L478">        final FileHandler handler = new FileHandler(content);</span>
+        try
+        {
+<span class="nc" id="L481">            handler.load(in);</span>
+<span class="nc" id="L482">            fail(&quot;IOException not detected!&quot;);</span>
+        }
+<span class="fc" id="L484">        catch (final ConfigurationException cex)</span>
+        {
+<span class="fc" id="L486">            assertEquals(&quot;Wrong root cause&quot;, ioex, cex.getCause());</span>
+<span class="nc" id="L487">        }</span>
+<span class="fc" id="L488">        EasyMock.verify(content);</span>
+<span class="fc" id="L489">    }</span>
+
+    /**
+     * Tests whether data from a File can be loaded.
+     */
+    @Test
+    public void testLoadFromFile() throws ConfigurationException
+    {
+<span class="fc" id="L497">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L498">        final File file = createTestFile();</span>
+<span class="fc" id="L499">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L500">        handler.load(file);</span>
+<span class="fc" id="L501">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L502">    }</span>
+
+    /**
+     * Tries to load data from a File if no content object was set.
+     */
+    @Test
+    public void testLoadFromFileNoContent()
+    {
+<span class="fc" id="L510">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L511">        final File file = createTestFile();</span>
+        try
+        {
+<span class="nc" id="L514">            handler.load(file);</span>
+<span class="nc" id="L515">            fail(&quot;Missing content not detected!&quot;);</span>
+        }
+<span class="fc" id="L517">        catch (final ConfigurationException cex)</span>
+        {
+<span class="fc" id="L519">            assertEquals(&quot;Wrong message&quot;, &quot;No content available!&quot;,</span>
+<span class="fc" id="L520">                    cex.getMessage());</span>
+<span class="nc" id="L521">        }</span>
+<span class="fc" id="L522">    }</span>
+
+    /**
+     * Checks that loading a directory instead of a file throws an exception.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testLoadDirectoryString() throws ConfigurationException
+    {
+<span class="fc" id="L530">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="nc" id="L531">        handler.load(ConfigurationAssert.TEST_DIR.getAbsolutePath());</span>
+<span class="nc" id="L532">    }</span>
+
+    /**
+     * Tests that it is not possible to load a directory using the load() method
+     * which expects a File.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testLoadDirectoryFile() throws ConfigurationException
+    {
+<span class="fc" id="L541">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="nc" id="L542">        handler.load(ConfigurationAssert.TEST_DIR);</span>
+<span class="nc" id="L543">    }</span>
+
+    /**
+     * Tests whether whether data can be loaded from class path.
+     */
+    @Test
+    public void testLoadFromClassPath() throws ConfigurationException
+    {
+<span class="fc" id="L551">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L552">        final FileHandler config1 = new FileHandler(content);</span>
+<span class="fc" id="L553">        config1.setFileName(&quot;config/deep/deeptest.properties&quot;);</span>
+<span class="fc" id="L554">        config1.load();</span>
+<span class="pc bpc" id="L555" title="1 of 2 branches missed.">        assertTrue(&quot;No data loaded&quot;, content.getContent().length() &gt; 0);</span>
+<span class="fc" id="L556">    }</span>
+
+    /**
+     * Tests whether data from a URL can be loaded.
+     */
+    @Test
+    public void testLoadFromURL() throws Exception
+    {
+<span class="fc" id="L564">        final File file = createTestFile();</span>
+<span class="fc" id="L565">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L566">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L567">        handler.load(file.toURI().toURL());</span>
+<span class="fc" id="L568">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L569">    }</span>
+
+    /**
+     * Tests whether data from an absolute path can be loaded.
+     */
+    @Test
+    public void testLoadFromFilePath() throws ConfigurationException
+    {
+<span class="fc" id="L577">        final File file = createTestFile();</span>
+<span class="fc" id="L578">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L579">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L580">        handler.load(file.getAbsolutePath());</span>
+<span class="fc" id="L581">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L582">    }</span>
+
+    /**
+     * Tests that a load() operation with a file path overrides a URL which
+     * might have been set.
+     */
+    @Test
+    public void testLoadFromFilePathWithURLDefined()
+            throws ConfigurationException
+    {
+<span class="fc" id="L592">        final File file = createTestFile();</span>
+<span class="fc" id="L593">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L594">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L595">        handler.setURL(ConfigurationAssert.getTestURL(&quot;test.xml&quot;));</span>
+<span class="fc" id="L596">        handler.load(file.getAbsolutePath());</span>
+<span class="fc" id="L597">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L598">    }</span>
+
+    /**
+     * Tests whether data from an input stream can be read.
+     */
+    @Test
+    public void testLoadFromStream() throws Exception
+    {
+<span class="fc" id="L606">        final File file = createTestFile();</span>
+<span class="fc" id="L607">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L608">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L609">        final FileInputStream in = new FileInputStream(file);</span>
+        try
+        {
+<span class="fc" id="L612">            handler.load(in);</span>
+        }
+        finally
+        {
+<span class="fc" id="L616">            in.close();</span>
+        }
+<span class="fc" id="L618">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L619">    }</span>
+
+    /**
+     * Tests whether data from a reader can be read.
+     */
+    @Test
+    public void testLoadFromReader() throws Exception
+    {
+<span class="fc" id="L627">        final File file = createTestFile();</span>
+<span class="fc" id="L628">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L629">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L630">        final Reader in = new FileReader(file);</span>
+        try
+        {
+<span class="fc" id="L633">            handler.load(in);</span>
+        }
+        finally
+        {
+<span class="fc" id="L637">            in.close();</span>
+        }
+<span class="fc" id="L639">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L640">    }</span>
+
+    /**
+     * Tests a load operation using the current location which is a URL.
+     */
+    @Test
+    public void testLoadFromURLLocation() throws Exception
+    {
+<span class="fc" id="L648">        final File file = createTestFile();</span>
+<span class="fc" id="L649">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L650">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L651">        handler.setURL(file.toURI().toURL());</span>
+<span class="fc" id="L652">        handler.load();</span>
+<span class="fc" id="L653">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L654">    }</span>
+
+    /**
+     * Tests a load operation using the current location which is a file name.
+     */
+    @Test
+    public void testLoadFromFileNameLocation() throws ConfigurationException
+    {
+<span class="fc" id="L662">        final File file = createTestFile();</span>
+<span class="fc" id="L663">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L664">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L665">        handler.setBasePath(file.getParentFile().getAbsolutePath());</span>
+<span class="fc" id="L666">        handler.setFileName(file.getName());</span>
+<span class="fc" id="L667">        handler.load();</span>
+<span class="fc" id="L668">        assertEquals(&quot;Wrong content&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L669">    }</span>
+
+    /**
+     * Tries to load data if no location has been set.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testLoadNoLocation() throws ConfigurationException
+    {
+<span class="fc" id="L677">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L678">        final FileHandler handler = new FileHandler(content);</span>
+<span class="nc" id="L679">        handler.load();</span>
+<span class="nc" id="L680">    }</span>
+
+    /**
+     * Tests whether data can be saved into a Writer.
+     */
+    @Test
+    public void testSaveToWriter() throws ConfigurationException
+    {
+<span class="fc" id="L688">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L689">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L690">        final StringWriter out = new StringWriter();</span>
+<span class="fc" id="L691">        handler.save(out);</span>
+<span class="fc" id="L692">        assertEquals(&quot;Wrong content&quot;, CONTENT, out.toString());</span>
+<span class="fc" id="L693">    }</span>
+
+    /**
+     * Tests whether an I/O exception during a save operation to a Writer is
+     * handled correctly.
+     */
+    @Test
+    public void testSaveToWriterIOException() throws ConfigurationException,
+            IOException
+    {
+<span class="fc" id="L703">        final FileBased content = EasyMock.createMock(FileBased.class);</span>
+<span class="fc" id="L704">        final StringWriter out = new StringWriter();</span>
+<span class="fc" id="L705">        final IOException ioex = new IOException(&quot;Test exception!&quot;);</span>
+<span class="fc" id="L706">        content.write(out);</span>
+<span class="fc" id="L707">        EasyMock.expectLastCall().andThrow(ioex);</span>
+<span class="fc" id="L708">        EasyMock.replay(content);</span>
+<span class="fc" id="L709">        final FileHandler handler = new FileHandler(content);</span>
+        try
+        {
+<span class="nc" id="L712">            handler.save(out);</span>
+<span class="nc" id="L713">            fail(&quot;IOException not detected!&quot;);</span>
+        }
+<span class="fc" id="L715">        catch (final ConfigurationException cex)</span>
+        {
+<span class="fc" id="L717">            assertEquals(&quot;Wrong cause&quot;, ioex, cex.getCause());</span>
+<span class="nc" id="L718">        }</span>
+<span class="fc" id="L719">        EasyMock.verify(content);</span>
+<span class="fc" id="L720">    }</span>
+
+    /**
+     * Tries to save something to a Writer if no content is set.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testSaveToWriterNoContent() throws ConfigurationException
+    {
+<span class="fc" id="L728">        final FileHandler handler = new FileHandler();</span>
+<span class="nc" id="L729">        handler.save(new StringWriter());</span>
+<span class="nc" id="L730">    }</span>
+
+    /**
+     * Tests whether data can be saved to a stream.
+     */
+    @Test
+    public void testSaveToStream() throws ConfigurationException, IOException
+    {
+<span class="fc" id="L738">        final File file = folder.newFile();</span>
+<span class="fc" id="L739">        final FileOutputStream out = new FileOutputStream(file);</span>
+<span class="fc" id="L740">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+        try
+        {
+<span class="fc" id="L743">            handler.save(out);</span>
+        }
+        finally
+        {
+<span class="fc" id="L747">            out.close();</span>
+        }
+<span class="fc" id="L749">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(file));</span>
+<span class="fc" id="L750">    }</span>
+
+    /**
+     * Tests whether data can be saved to a file.
+     */
+    @Test
+    public void testSaveToFile() throws ConfigurationException, IOException
+    {
+<span class="fc" id="L758">        final File file = folder.newFile();</span>
+<span class="fc" id="L759">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L760">        handler.save(file);</span>
+<span class="fc" id="L761">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(file));</span>
+<span class="fc" id="L762">    }</span>
+
+    /**
+     * Tests whether data can be saved to a URL.
+     */
+    @Test
+    public void testSaveToURL() throws Exception
+    {
+<span class="fc" id="L770">        final File file = folder.newFile();</span>
+<span class="fc" id="L771">        final URL url = file.toURI().toURL();</span>
+<span class="fc" id="L772">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L773">        handler.save(url);</span>
+<span class="fc" id="L774">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(file));</span>
+<span class="fc" id="L775">    }</span>
+
+    /**
+     * Tests whether data can be saved to a file name.
+     */
+    @Test
+    public void testSaveToFileName() throws ConfigurationException, IOException
+    {
+<span class="fc" id="L783">        final File file = folder.newFile();</span>
+<span class="fc" id="L784">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L785">        handler.save(file.getAbsolutePath());</span>
+<span class="fc" id="L786">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(file));</span>
+<span class="fc" id="L787">    }</span>
+
+    /**
+     * Tests whether a URL exception is handled when saving a file to a file
+     * name.
+     */
+    @Test
+    public void testSaveToFileNameURLException() throws IOException
+    {
+<span class="fc" id="L796">        final FileSystem fs = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L797">        final File file = folder.newFile();</span>
+<span class="fc" id="L798">        final String basePath = &quot;some base path&quot;;</span>
+<span class="fc" id="L799">        final MalformedURLException urlex =</span>
+                new MalformedURLException(&quot;Test exception&quot;);
+<span class="fc" id="L801">        EasyMock.expect(fs.getURL(basePath, file.getName())).andThrow(urlex);</span>
+<span class="fc" id="L802">        EasyMock.replay(fs);</span>
+<span class="fc" id="L803">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L804">        handler.setBasePath(basePath);</span>
+<span class="fc" id="L805">        handler.setFileSystem(fs);</span>
+        try
+        {
+<span class="nc" id="L808">            handler.save(file.getName());</span>
+<span class="nc" id="L809">            fail(&quot;URL exception not detected!&quot;);</span>
+        }
+<span class="fc" id="L811">        catch (final ConfigurationException cex)</span>
+        {
+<span class="fc" id="L813">            assertEquals(&quot;Wrong cause&quot;, urlex, cex.getCause());</span>
+<span class="nc" id="L814">        }</span>
+<span class="fc" id="L815">        EasyMock.verify(fs);</span>
+<span class="fc" id="L816">    }</span>
+
+    /**
+     * Tries to save data to a file name if the name cannot be located.
+     */
+    @Test
+    public void testSaveToFileNameURLNotResolved()
+            throws IOException
+    {
+<span class="fc" id="L825">        final FileSystem fs = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L826">        final File file = folder.newFile();</span>
+<span class="fc" id="L827">        EasyMock.expect(fs.getURL(null, file.getName())).andReturn(null);</span>
+<span class="fc" id="L828">        EasyMock.replay(fs);</span>
+<span class="fc" id="L829">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L830">        handler.setFileSystem(fs);</span>
+        try
+        {
+<span class="nc" id="L833">            handler.save(file.getName());</span>
+<span class="nc" id="L834">            fail(&quot;Unresolved URL not detected!&quot;);</span>
+        }
+<span class="fc" id="L836">        catch (final ConfigurationException cex)</span>
+        {
+<span class="fc" id="L838">            EasyMock.verify(fs);</span>
+<span class="nc" id="L839">        }</span>
+<span class="fc" id="L840">    }</span>
+
+    /**
+     * Tests whether data can be saved to the internal location if it is a file
+     * name.
+     */
+    @Test
+    public void testSaveToFileNameLocation() throws ConfigurationException,
+            IOException
+    {
+<span class="fc" id="L850">        final File file = folder.newFile();</span>
+<span class="fc" id="L851">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L852">        handler.setFileName(file.getAbsolutePath());</span>
+<span class="fc" id="L853">        handler.save();</span>
+<span class="fc" id="L854">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(file));</span>
+<span class="fc" id="L855">    }</span>
+
+    /**
+     * Tests whether data can be saved to the internal location if it is a URL.
+     */
+    @Test
+    public void testSaveToURLLocation() throws ConfigurationException,
+            IOException
+    {
+<span class="fc" id="L864">        final File file = folder.newFile();</span>
+<span class="fc" id="L865">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L866">        handler.setURL(file.toURI().toURL());</span>
+<span class="fc" id="L867">        handler.save();</span>
+<span class="fc" id="L868">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(file));</span>
+<span class="fc" id="L869">    }</span>
+
+    /**
+     * Tries to save the locator if no location has been set.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testSaveNoLocation() throws ConfigurationException
+    {
+<span class="fc" id="L877">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="nc" id="L878">        handler.save();</span>
+<span class="nc" id="L879">    }</span>
+
+    /**
+     * Tests loading and saving a configuration file with a complicated path
+     * name including spaces. (related to issue 35210)
+     */
+    @Test
+    public void testPathWithSpaces() throws ConfigurationException, IOException
+    {
+<span class="fc" id="L888">        final File path = folder.newFolder(&quot;path with spaces&quot;);</span>
+<span class="fc" id="L889">        final File confFile = new File(path, &quot;config-test.properties&quot;);</span>
+<span class="fc" id="L890">        final File testFile = createTestFile(confFile);</span>
+<span class="fc" id="L891">        final URL url = testFile.toURI().toURL();</span>
+<span class="fc" id="L892">        final FileBasedTestImpl content = new FileBasedTestImpl();</span>
+<span class="fc" id="L893">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L894">        handler.setURL(url);</span>
+<span class="fc" id="L895">        handler.load();</span>
+<span class="fc" id="L896">        assertEquals(&quot;Wrong data read&quot;, CONTENT, content.getContent());</span>
+<span class="fc" id="L897">        final File out = new File(path, &quot;out.txt&quot;);</span>
+<span class="fc" id="L898">        handler.save(out);</span>
+<span class="fc" id="L899">        assertEquals(&quot;Wrong data written&quot;, CONTENT, readFile(out));</span>
+<span class="fc" id="L900">    }</span>
+
+    /**
+     * Tests whether file names containing a &quot;+&quot; character are handled
+     * correctly. This test is related to CONFIGURATION-415.
+     */
+    @Test
+    public void testPathWithPlus() throws ConfigurationException, IOException
+    {
+<span class="fc" id="L909">        final File saveFile = folder.newFile(&quot;test+config.properties&quot;);</span>
+<span class="fc" id="L910">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L911">        handler.setFile(saveFile);</span>
+<span class="fc" id="L912">        handler.save();</span>
+<span class="fc" id="L913">        assertEquals(&quot;Wrong content&quot;, CONTENT, readFile(saveFile));</span>
+<span class="fc" id="L914">    }</span>
+
+    /**
+     * Tests whether a FileHandler object can be used to specify a location and
+     * later be assigned to a FileBased object.
+     */
+    @Test
+    public void testAssignWithFileBased()
+    {
+<span class="fc" id="L923">        final FileHandler h1 = new FileHandler();</span>
+<span class="fc" id="L924">        final File f = new File(&quot;testfile.txt&quot;);</span>
+<span class="fc" id="L925">        h1.setFile(f);</span>
+<span class="fc" id="L926">        final FileBased content = new FileBasedTestImpl();</span>
+<span class="fc" id="L927">        final FileHandler h2 = new FileHandler(content, h1);</span>
+<span class="fc" id="L928">        h1.setFileName(&quot;someOtherFile.txt&quot;);</span>
+<span class="fc" id="L929">        assertSame(&quot;Content not set&quot;, content, h2.getContent());</span>
+<span class="fc" id="L930">        assertEquals(&quot;Wrong location&quot;, f, h2.getFile());</span>
+<span class="fc" id="L931">    }</span>
+
+    /**
+     * Tries to invoke the assignment constructor with a null handler.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAssignNullHandler()
+    {
+<span class="nc" id="L939">        new FileHandler(new FileBasedTestImpl(), null);</span>
+<span class="nc" id="L940">    }</span>
+
+    /**
+     * Tests isLocationDefined() if a File has been set.
+     */
+    @Test
+    public void testIsLocationDefinedFile()
+    {
+<span class="fc" id="L948">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L949">        handler.setFile(createTestFile());</span>
+<span class="fc" id="L950">        assertTrue(&quot;Location not defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L951">    }</span>
+
+    /**
+     * Tests isLocationDefined() if a URL has been set.
+     */
+    @Test
+    public void testIsLocationDefinedURL() throws IOException
+    {
+<span class="fc" id="L959">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L960">        handler.setURL(createTestFile().toURI().toURL());</span>
+<span class="fc" id="L961">        assertTrue(&quot;Location not defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L962">    }</span>
+
+    /**
+     * Tests isLocationDefined() if a path has been set.
+     */
+    @Test
+    public void testIsLocationDefinedPath()
+    {
+<span class="fc" id="L970">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L971">        handler.setPath(createTestFile().getAbsolutePath());</span>
+<span class="fc" id="L972">        assertTrue(&quot;Location not defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L973">    }</span>
+
+    /**
+     * Tests isLocationDefined() if a file name has been set.
+     */
+    @Test
+    public void testIsLocationDefinedFileName()
+    {
+<span class="fc" id="L981">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L982">        handler.setFileName(createTestFile().getName());</span>
+<span class="fc" id="L983">        assertTrue(&quot;Location not defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L984">    }</span>
+
+    /**
+     * Tests whether an undefined location can be queried.
+     */
+    @Test
+    public void testIsLocationDefinedFalse()
+    {
+<span class="fc" id="L992">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L993">        assertFalse(&quot;Location defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L994">    }</span>
+
+    /**
+     * Tests isLocationDefined() if only a base path is set.
+     */
+    @Test
+    public void testIsLocationDefinedBasePathOnly()
+    {
+<span class="fc" id="L1002">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1003">        handler.setBasePath(createTestFile().getParent());</span>
+<span class="fc" id="L1004">        assertFalse(&quot;Location defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L1005">    }</span>
+
+    /**
+     * Tests whether the location can be cleared.
+     */
+    @Test
+    public void testClearLocation()
+    {
+<span class="fc" id="L1013">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1014">        handler.setFile(createTestFile());</span>
+<span class="fc" id="L1015">        handler.clearLocation();</span>
+<span class="fc" id="L1016">        assertFalse(&quot;Location defined&quot;, handler.isLocationDefined());</span>
+<span class="fc" id="L1017">        assertNull(&quot;Got a file&quot;, handler.getFile());</span>
+<span class="fc" id="L1018">        assertNull(&quot;Got a URL&quot;, handler.getURL());</span>
+<span class="fc" id="L1019">        assertNull(&quot;Got a base path&quot;, handler.getBasePath());</span>
+<span class="fc" id="L1020">        assertNull(&quot;Got a path&quot;, handler.getPath());</span>
+<span class="fc" id="L1021">    }</span>
+
+    /**
+     * Tests whether a FileLocatorAware object is initialized correctly when
+     * loading data.
+     */
+    @Test
+    public void testLoadFileLocatorAware() throws IOException,
+            ConfigurationException
+    {
+<span class="fc" id="L1031">        final File file = createTestFile();</span>
+<span class="fc" id="L1032">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1034">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1035">        handler.setFile(file);</span>
+<span class="fc" id="L1036">        handler.load();</span>
+<span class="fc" id="L1037">        assertEquals(&quot;Wrong result&quot;, file.toURI().toURL().toString() + &quot;: &quot;</span>
+<span class="fc" id="L1038">                + CONTENT, content.getContent());</span>
+<span class="fc" id="L1039">    }</span>
+
+    /**
+     * Checks a FileLocator which is expected to contain no data.
+     *
+     * @param content the data object which was passed the locator
+     */
+    private static void checkEmptyLocator(
+            final FileBasedFileLocatorAwareTestImpl content)
+    {
+<span class="fc" id="L1049">        assertNull(&quot;Got a URL&quot;, content.getLocator().getSourceURL());</span>
+<span class="fc" id="L1050">        assertNull(&quot;Got a base path&quot;, content.getLocator().getBasePath());</span>
+<span class="fc" id="L1051">        assertNull(&quot;Got a file name&quot;, content.getLocator().getFileName());</span>
+<span class="fc" id="L1052">    }</span>
+
+    /**
+     * Tests loading with a FileLocatorAware object if data is loaded from a
+     * stream.
+     */
+    @Test
+    public void testLoadFileLocatorAwareStream() throws ConfigurationException
+    {
+<span class="fc" id="L1061">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1063">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1064">        final ByteArrayInputStream bos = new ByteArrayInputStream(CONTENT.getBytes());</span>
+<span class="fc" id="L1065">        handler.load(bos);</span>
+<span class="fc" id="L1066">        checkEmptyLocator(content);</span>
+<span class="fc" id="L1067">    }</span>
+
+    /**
+     * Tests a load operation with a FileLocatorAware object if data is loaded
+     * from a reader.
+     */
+    @Test
+    public void testLoadFileLocatorAwareReader() throws ConfigurationException
+    {
+<span class="fc" id="L1076">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1078">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1079">        handler.load(new StringReader(CONTENT));</span>
+<span class="fc" id="L1080">        checkEmptyLocator(content);</span>
+<span class="fc" id="L1081">    }</span>
+
+    /**
+     * Tests whether a FileLocatorAware is correctly handled when saving data.
+     */
+    @Test
+    public void testSaveFileLocatorAware() throws ConfigurationException,
+            IOException
+    {
+<span class="fc" id="L1090">        final File file = folder.newFile();</span>
+<span class="fc" id="L1091">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1093">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1094">        handler.save(file);</span>
+<span class="fc" id="L1095">        assertEquals(&quot;Wrong file content&quot;, file.toURI().toURL() + &quot;: &quot;</span>
+<span class="fc" id="L1096">                + CONTENT, readFile(file));</span>
+<span class="fc" id="L1097">    }</span>
+
+    /**
+     * Tests a save operation with a FileLocatorAware object if the target is a
+     * stream.
+     */
+    @Test
+    public void testSaveFileLocatorAwareToStream()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1107">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1109">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1110">        handler.save(new ByteArrayOutputStream());</span>
+<span class="fc" id="L1111">        checkEmptyLocator(content);</span>
+<span class="fc" id="L1112">    }</span>
+
+    /**
+     * Tests a save operation with a FileLocatorAware object if the target is a
+     * writer.
+     */
+    @Test
+    public void testSaveFileLocatorAwareToWriter()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1122">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1124">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1125">        handler.save(new StringWriter());</span>
+<span class="fc" id="L1126">        checkEmptyLocator(content);</span>
+<span class="fc" id="L1127">    }</span>
+
+    /**
+     * Tests that the locator injected into the content object has an encoding
+     * set.
+     */
+    @Test
+    public void testLocatorAwareEncoding() throws ConfigurationException
+    {
+<span class="fc" id="L1136">        final FileBasedFileLocatorAwareTestImpl content =</span>
+                new FileBasedFileLocatorAwareTestImpl();
+<span class="fc" id="L1138">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1139">        final String encoding = &quot;testEncoding&quot;;</span>
+<span class="fc" id="L1140">        handler.setEncoding(encoding);</span>
+<span class="fc" id="L1141">        handler.save(new StringWriter());</span>
+<span class="fc" id="L1142">        assertEquals(&quot;Encoding not set&quot;, encoding, content.getLocator()</span>
+<span class="fc" id="L1143">                .getEncoding());</span>
+<span class="fc" id="L1144">    }</span>
+
+    /**
+     * Tries to add a null listener.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddFileHandlerListenerNull()
+    {
+<span class="nc" id="L1152">        new FileHandler().addFileHandlerListener(null);</span>
+<span class="nc" id="L1153">    }</span>
+
+    /**
+     * Tests notifications about load operations.
+     */
+    @Test
+    public void testLoadEvents() throws ConfigurationException
+    {
+<span class="fc" id="L1161">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L1162">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1164">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1165">        handler.load(createTestFile());</span>
+<span class="fc" id="L1166">        listener.checkMethods(&quot;loadingloaded&quot;);</span>
+<span class="fc" id="L1167">    }</span>
+
+    /**
+     * Tests notifications about save operations.
+     */
+    @Test
+    public void testSaveEvents() throws IOException, ConfigurationException
+    {
+<span class="fc" id="L1175">        final FileHandler handler = new FileHandler(new FileBasedTestImpl());</span>
+<span class="fc" id="L1176">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1178">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1179">        final File f = folder.newFile();</span>
+<span class="fc" id="L1180">        handler.save(f);</span>
+<span class="fc" id="L1181">        listener.checkMethods(&quot;savingsaved&quot;);</span>
+<span class="fc" id="L1182">    }</span>
+
+    /**
+     * Tests a notification about a changed file name.
+     */
+    @Test
+    public void testLocationChangedFileName()
+    {
+<span class="fc" id="L1190">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1191">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1193">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1194">        handler.setFileName(TEST_FILENAME);</span>
+<span class="fc" id="L1195">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1196">    }</span>
+
+    /**
+     * Tests a notification about a changed base path.
+     */
+    @Test
+    public void testLocationChangedBasePath()
+    {
+<span class="fc" id="L1204">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1205">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1207">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1208">        handler.setBasePath(TEST_FILENAME);</span>
+<span class="fc" id="L1209">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1210">    }</span>
+
+    /**
+     * Tests a notification about a changed file.
+     */
+    @Test
+    public void testLocationChangedFile() throws IOException
+    {
+<span class="fc" id="L1218">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1219">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1221">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1222">        handler.setFile(folder.newFile());</span>
+<span class="fc" id="L1223">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1224">    }</span>
+
+    /**
+     * Tests a notification about a changed path.
+     */
+    @Test
+    public void testLocationChangedPath()
+    {
+<span class="fc" id="L1232">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1233">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1235">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1236">        handler.setPath(TEST_FILENAME);</span>
+<span class="fc" id="L1237">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1238">    }</span>
+
+    /**
+     * Tests a notification about a changed file system.
+     */
+    @Test
+    public void testLocationChangedFileSystem()
+    {
+<span class="fc" id="L1246">        final FileSystem fs = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L1247">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1248">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1250">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1251">        handler.setFileSystem(fs);</span>
+<span class="fc" id="L1252">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1253">    }</span>
+
+    /**
+     * Tests a notification about a changed URL.
+     */
+    @Test
+    public void testLocationChangedURL() throws IOException
+    {
+<span class="fc" id="L1261">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1262">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1264">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1265">        final URL url = folder.newFile().toURI().toURL();</span>
+<span class="fc" id="L1266">        handler.setURL(url);</span>
+<span class="fc" id="L1267">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1268">    }</span>
+
+    /**
+     * Tests a notification about a changed encoding.
+     */
+    @Test
+    public void testLocationChangedEncoding()
+    {
+<span class="fc" id="L1276">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1277">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1279">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1280">        handler.setEncoding(&quot;UTF-8&quot;);</span>
+<span class="fc" id="L1281">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1282">    }</span>
+
+    /**
+     * Tests whether a notification is sent if the whole locator was changed.
+     */
+    @Test
+    public void testLocationChangedLocator()
+    {
+<span class="fc" id="L1290">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1291">        final FileHandlerListenerTestImpl listener =</span>
+                new FileHandlerListenerTestImpl(handler);
+<span class="fc" id="L1293">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L1294">        handler.setFileLocator(FileLocatorUtils.fileLocator()</span>
+<span class="fc" id="L1295">                .fileName(TEST_FILENAME).create());</span>
+<span class="fc" id="L1296">        listener.checkMethods(&quot;locationChanged&quot;);</span>
+<span class="fc" id="L1297">    }</span>
+
+    /**
+     * Tests whether data can be read from an input stream.
+     */
+    @Test
+    public void testLoadInputStreamSupport() throws ConfigurationException
+    {
+<span class="fc" id="L1305">        final FileBasedInputStreamSupportTestImpl content =</span>
+                new FileBasedInputStreamSupportTestImpl();
+<span class="fc" id="L1307">        final FileHandler handler = new FileHandler(content);</span>
+<span class="fc" id="L1308">        final ByteArrayInputStream bin = new ByteArrayInputStream(CONTENT.getBytes());</span>
+<span class="fc" id="L1309">        handler.load(bin);</span>
+<span class="fc" id="L1310">        assertEquals(&quot;Wrong content&quot;, &quot;InputStream = &quot; + CONTENT,</span>
+<span class="fc" id="L1311">                content.getContent());</span>
+<span class="fc" id="L1312">    }</span>
+
+    /**
+     * Tests whether an IOException is handled when reading from an input
+     * stream.
+     */
+    @Test
+    public void testLoadInputStreamSupportIOException()
+            throws ConfigurationException, IOException
+    {
+<span class="fc" id="L1322">        final FileBasedInputStreamSupportTestImpl content =</span>
+<span class="fc" id="L1323">                EasyMock.createMock(FileBasedInputStreamSupportTestImpl.class);</span>
+<span class="fc" id="L1324">        final ByteArrayInputStream bin = new ByteArrayInputStream(CONTENT.getBytes());</span>
+<span class="fc" id="L1325">        final IOException ioex = new IOException();</span>
+<span class="fc" id="L1326">        content.read(bin);</span>
+<span class="fc" id="L1327">        EasyMock.expectLastCall().andThrow(ioex);</span>
+<span class="fc" id="L1328">        EasyMock.replay(content);</span>
+<span class="fc" id="L1329">        final FileHandler handler = new FileHandler(content);</span>
+        try
+        {
+<span class="nc" id="L1332">            handler.load(bin);</span>
+<span class="nc" id="L1333">            fail(&quot;IOException not detected!&quot;);</span>
+        }
+<span class="fc" id="L1335">        catch (final ConfigurationException cex)</span>
+        {
+<span class="fc" id="L1337">            assertEquals(&quot;Wrong cause&quot;, ioex, cex.getCause());</span>
+<span class="nc" id="L1338">        }</span>
+<span class="fc" id="L1339">        EasyMock.verify(content);</span>
+<span class="fc" id="L1340">    }</span>
+
+    /**
+     * Tests whether a load() operation is correctly synchronized.
+     */
+    @Test
+    public void testLoadSynchronized() throws ConfigurationException
+    {
+<span class="fc" id="L1348">        final PropertiesConfiguration config = new PropertiesConfiguration();</span>
+<span class="fc" id="L1349">        final SynchronizerTestImpl sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L1350">        config.setSynchronizer(sync);</span>
+<span class="fc" id="L1351">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L1352">        handler.load(ConfigurationAssert.getTestFile(&quot;test.properties&quot;));</span>
+<span class="fc" id="L1353">        sync.verifyStart(Methods.BEGIN_WRITE);</span>
+<span class="fc" id="L1354">        sync.verifyEnd(Methods.END_WRITE);</span>
+<span class="fc" id="L1355">    }</span>
+
+    /**
+     * Tests whether a save() operation is correctly synchronized.
+     */
+    @Test
+    public void testSaveSynchronized() throws ConfigurationException, IOException
+    {
+<span class="fc" id="L1363">        final PropertiesConfiguration config = new PropertiesConfiguration();</span>
+<span class="fc" id="L1364">        config.addProperty(&quot;test.synchronized&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L1365">        final SynchronizerTestImpl sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L1366">        config.setSynchronizer(sync);</span>
+<span class="fc" id="L1367">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L1368">        final File f = folder.newFile();</span>
+<span class="fc" id="L1369">        handler.save(f);</span>
+<span class="fc" id="L1370">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L1371">    }</span>
+
+    /**
+     * Tests whether the initialization of properties is safe even if performed
+     * in multiple threads.
+     */
+    @Test
+    public void testInitPropertiesMultiThreaded() throws InterruptedException
+    {
+<span class="fc" id="L1380">        final String encoding = &quot;TestEncoding&quot;;</span>
+<span class="fc" id="L1381">        final FileSystem fileSystem = new DefaultFileSystem();</span>
+<span class="fc" id="L1382">        final FileLocationStrategy locationStrategy =</span>
+                new ProvidedURLLocationStrategy();
+<span class="fc" id="L1384">        final int loops = 8;</span>
+
+<span class="fc bfc" id="L1386" title="All 2 branches covered.">        for (int i = 0; i &lt; loops; i++)</span>
+        {
+<span class="fc" id="L1388">            final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1389">            final Thread t1 = new Thread()</span>
+<span class="fc" id="L1390">            {</span>
+                @Override
+                public void run()
+                {
+<span class="fc" id="L1394">                    handler.setFileSystem(fileSystem);</span>
+<span class="fc" id="L1395">                }</span>
+            };
+<span class="fc" id="L1397">            final Thread t2 = new Thread()</span>
+<span class="fc" id="L1398">            {</span>
+                @Override
+                public void run()
+                {
+<span class="fc" id="L1402">                    handler.setFileName(TEST_FILENAME);</span>
+<span class="fc" id="L1403">                }</span>
+            };
+<span class="fc" id="L1405">            final Thread t3 = new Thread()</span>
+<span class="fc" id="L1406">            {</span>
+                @Override
+                public void run()
+                {
+<span class="fc" id="L1410">                    handler.setEncoding(encoding);</span>
+<span class="fc" id="L1411">                }</span>
+            };
+<span class="fc" id="L1413">            final Thread t4 = new Thread()</span>
+<span class="fc" id="L1414">            {</span>
+                @Override
+                public void run()
+                {
+<span class="fc" id="L1418">                    handler.setLocationStrategy(locationStrategy);</span>
+<span class="fc" id="L1419">                }</span>
+            };
+<span class="fc" id="L1421">            final List&lt;Thread&gt; threads = Arrays.asList(t1, t2, t3, t4);</span>
+<span class="fc bfc" id="L1422" title="All 2 branches covered.">            for (final Thread t : threads)</span>
+            {
+<span class="fc" id="L1424">                t.start();</span>
+<span class="fc" id="L1425">            }</span>
+<span class="fc bfc" id="L1426" title="All 2 branches covered.">            for (final Thread t : threads)</span>
+            {
+<span class="fc" id="L1428">                t.join();</span>
+<span class="fc" id="L1429">            }</span>
+<span class="fc" id="L1430">            final FileLocator locator = handler.getFileLocator();</span>
+<span class="fc" id="L1431">            assertEquals(&quot;Wrong file name&quot;, TEST_FILENAME,</span>
+<span class="fc" id="L1432">                    locator.getFileName());</span>
+<span class="fc" id="L1433">            assertNull(&quot;Got a URL&quot;, locator.getSourceURL());</span>
+<span class="fc" id="L1434">            assertEquals(&quot;Wrong encoding&quot;, encoding, locator.getEncoding());</span>
+<span class="fc" id="L1435">            assertSame(&quot;Wrong file system&quot;, fileSystem, locator.getFileSystem());</span>
+<span class="fc" id="L1436">            assertSame(&quot;Wrong location strategy&quot;, locationStrategy,</span>
+<span class="fc" id="L1437">                    locator.getLocationStrategy());</span>
+        }
+<span class="fc" id="L1439">    }</span>
+
+    /**
+     * Tries to set the FileLocator to null.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetFileLocatorNull()
+    {
+<span class="fc" id="L1447">        final FileHandler handler = new FileHandler();</span>
+<span class="nc" id="L1448">        handler.setFileLocator(null);</span>
+<span class="nc" id="L1449">    }</span>
+
+    /**
+     * Tests whether the handler can be initialized using a FileLocator.
+     */
+    @Test
+    public void testSetFileLocator()
+    {
+        final FileLocator locator =
+<span class="fc" id="L1458">                FileLocatorUtils.fileLocator().fileName(TEST_FILENAME).create();</span>
+<span class="fc" id="L1459">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1460">        handler.setFileLocator(locator);</span>
+<span class="fc" id="L1461">        assertEquals(&quot;Handler not initialized&quot;, TEST_FILENAME,</span>
+<span class="fc" id="L1462">                handler.getFileName());</span>
+<span class="fc" id="L1463">    }</span>
+
+    /**
+     * Tests a successful locate() operation.
+     */
+    @Test
+    public void testLocateSuccess() throws ConfigurationException
+    {
+<span class="fc" id="L1471">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1472">        handler.setFileName(TEST_FILENAME);</span>
+<span class="fc" id="L1473">        assertTrue(&quot;Wrong result&quot;, handler.locate());</span>
+<span class="fc" id="L1474">        final FileLocator locator = handler.getFileLocator();</span>
+<span class="fc" id="L1475">        assertNotNull(&quot;URL not filled&quot;, locator.getSourceURL());</span>
+<span class="fc" id="L1476">        assertNotNull(&quot;Base path not filled&quot;, locator.getBasePath());</span>
+<span class="fc" id="L1477">        assertEquals(&quot;Wrong file name&quot;, TEST_FILENAME, locator.getFileName());</span>
+
+        // check whether the correct URL was obtained
+<span class="fc" id="L1480">        final PropertiesConfiguration config = new PropertiesConfiguration();</span>
+<span class="fc" id="L1481">        final FileHandler h2 = new FileHandler(config);</span>
+<span class="fc" id="L1482">        h2.setURL(locator.getSourceURL());</span>
+<span class="fc" id="L1483">        h2.load();</span>
+<span class="fc" id="L1484">        assertTrue(&quot;Configuration not loaded&quot;,</span>
+<span class="fc" id="L1485">                config.getBoolean(&quot;configuration.loaded&quot;));</span>
+<span class="fc" id="L1486">    }</span>
+
+    /**
+     * Tests a locate() operation if the specified file cannot be resolved.
+     */
+    @Test
+    public void testLocateUnknownFile()
+    {
+<span class="fc" id="L1494">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1495">        handler.setFileName(&quot;unknown file&quot;);</span>
+<span class="fc" id="L1496">        final FileLocator locator = handler.getFileLocator();</span>
+<span class="fc" id="L1497">        assertFalse(&quot;Wrong result&quot;, handler.locate());</span>
+<span class="fc" id="L1498">        assertSame(&quot;Locator was changed&quot;, locator, handler.getFileLocator());</span>
+<span class="fc" id="L1499">    }</span>
+
+    /**
+     * Tests a locate() operation if there is not enough information.
+     */
+    @Test
+    public void testLocateUndefinedLocator()
+    {
+<span class="fc" id="L1507">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L1508">        handler.setBasePath(&quot;only/a/base/path&quot;);</span>
+<span class="fc" id="L1509">        final FileLocator locator = handler.getFileLocator();</span>
+<span class="fc" id="L1510">        assertFalse(&quot;Wrong result&quot;, handler.locate());</span>
+<span class="fc" id="L1511">        assertSame(&quot;Locator was changed&quot;, locator, handler.getFileLocator());</span>
+<span class="fc" id="L1512">    }</span>
+
+    /**
+     * Tests whether an instance can be created from a map with the properties
+     * of a FileLocator.
+     */
+    @Test
+    public void testInitFromMap()
+    {
+        final FileLocator locator =
+<span class="fc" id="L1522">                FileLocatorUtils.fileLocator().fileName(TEST_FILENAME)</span>
+<span class="fc" id="L1523">                        .basePath(&quot;someBasePath&quot;).encoding(&quot;someEncoding&quot;)</span>
+<span class="fc" id="L1524">                        .create();</span>
+<span class="fc" id="L1525">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L1526">        FileLocatorUtils.put(locator, map);</span>
+<span class="fc" id="L1527">        final FileHandler handler = FileHandler.fromMap(map);</span>
+<span class="fc" id="L1528">        assertEquals(&quot;Wrong locator&quot;, locator, handler.getFileLocator());</span>
+<span class="fc" id="L1529">    }</span>
+
+    /**
+     * An implementation of the FileBased interface used for test purposes.
+     */
+<span class="fc" id="L1534">    private static class FileBasedTestImpl implements FileBased</span>
+    {
+        /** The content read from a reader. */
+<span class="fc" id="L1537">        private String content = CONTENT;</span>
+
+        /**
+         * Returns the content read from a reader.
+         *
+         * @return the read content
+         */
+        public String getContent()
+        {
+<span class="fc" id="L1546">            return content;</span>
+        }
+
+        /**
+         * Allows setting the content.
+         *
+         * @param content the content
+         */
+        public void setContent(final String content)
+        {
+<span class="fc" id="L1556">            this.content = content;</span>
+<span class="fc" id="L1557">        }</span>
+
+        @Override
+        public void read(final Reader in) throws ConfigurationException, IOException
+        {
+<span class="fc" id="L1562">            content = readReader(in);</span>
+<span class="fc" id="L1563">        }</span>
+
+        @Override
+        public void write(final Writer out) throws ConfigurationException,
+                IOException
+        {
+<span class="fc" id="L1569">            out.write(getContent());</span>
+<span class="fc" id="L1570">            out.flush();</span>
+<span class="fc" id="L1571">        }</span>
+    }
+
+    /**
+     * A test implementation of FileBased which can also read from input
+     * streams.
+     */
+<span class="fc" id="L1578">    private static class FileBasedInputStreamSupportTestImpl extends</span>
+            FileBasedTestImpl implements InputStreamSupport
+    {
+        @Override
+        public void read(final InputStream in) throws ConfigurationException,
+                IOException
+        {
+<span class="fc" id="L1585">            final ByteArrayOutputStream bos = new ByteArrayOutputStream();</span>
+            int c;
+<span class="fc bfc" id="L1587" title="All 2 branches covered.">            while ((c = in.read()) != -1)</span>
+            {
+<span class="fc" id="L1589">                bos.write(c);</span>
+            }
+<span class="fc" id="L1591">            setContent(&quot;InputStream = &quot; + bos.toString());</span>
+<span class="fc" id="L1592">        }</span>
+    }
+
+    /**
+     * A FileBased implementation which also implements FileLocatorAware. This
+     * class adds information about the current file locator to the content read
+     * and written.
+     */
+<span class="fc" id="L1600">    private static final class FileBasedFileLocatorAwareTestImpl extends</span>
+            FileBasedTestImpl implements FileLocatorAware
+    {
+        /** Stores the passed in file locator. */
+        private FileLocator locator;
+
+        /**
+         * Returns the locator.
+         *
+         * @return the file locator
+         */
+        public FileLocator getLocator()
+        {
+<span class="fc" id="L1613">            return locator;</span>
+        }
+
+        @Override
+        public void initFileLocator(final FileLocator loc)
+        {
+<span class="fc" id="L1619">            this.locator = loc;</span>
+<span class="fc" id="L1620">        }</span>
+
+        @Override
+        public void read(final Reader in) throws ConfigurationException, IOException
+        {
+<span class="fc" id="L1625">            super.read(in);</span>
+<span class="fc" id="L1626">            setContent(String.valueOf(locator.getSourceURL()) + &quot;: &quot; + getContent());</span>
+<span class="fc" id="L1627">        }</span>
+
+        @Override
+        public void write(final Writer out) throws ConfigurationException,
+                IOException
+        {
+<span class="fc" id="L1633">            out.write(String.valueOf(locator.getSourceURL()) + &quot;: &quot;);</span>
+<span class="fc" id="L1634">            super.write(out);</span>
+<span class="fc" id="L1635">        }</span>
+    }
+
+    /**
+     * A test listener implementation.
+     */
+    private static class FileHandlerListenerTestImpl extends
+            FileHandlerListenerAdapter
+    {
+        /** The expected file handler. */
+        private final FileHandler expHandler;
+
+        /** A buffer for recording method invocations. */
+        private final StringBuilder methods;
+
+        public FileHandlerListenerTestImpl(final FileHandler fh)
+<span class="fc" id="L1651">        {</span>
+<span class="fc" id="L1652">            expHandler = fh;</span>
+<span class="fc" id="L1653">            methods = new StringBuilder();</span>
+<span class="fc" id="L1654">        }</span>
+
+        /**
+         * Tests whether the expected listener methods have been called.
+         *
+         * @param expMethods the expected methods as plain string
+         */
+        public void checkMethods(final String expMethods)
+        {
+<span class="fc" id="L1663">            assertEquals(&quot;Wrong listener methods&quot;, expMethods,</span>
+<span class="fc" id="L1664">                    methods.toString());</span>
+<span class="fc" id="L1665">        }</span>
+
+        @Override
+        public void loading(final FileHandler handler)
+        {
+<span class="fc" id="L1670">            super.loading(handler);</span>
+<span class="fc" id="L1671">            methodCalled(handler, &quot;loading&quot;);</span>
+<span class="fc" id="L1672">        }</span>
+
+        @Override
+        public void loaded(final FileHandler handler)
+        {
+<span class="fc" id="L1677">            super.loaded(handler);</span>
+<span class="fc" id="L1678">            methodCalled(handler, &quot;loaded&quot;);</span>
+<span class="fc" id="L1679">        }</span>
+
+        @Override
+        public void saving(final FileHandler handler)
+        {
+<span class="fc" id="L1684">            super.saving(handler);</span>
+<span class="fc" id="L1685">            methodCalled(handler, &quot;saving&quot;);</span>
+<span class="fc" id="L1686">        }</span>
+
+        @Override
+        public void saved(final FileHandler handler)
+        {
+<span class="fc" id="L1691">            super.saved(handler);</span>
+<span class="fc" id="L1692">            methodCalled(handler, &quot;saved&quot;);</span>
+<span class="fc" id="L1693">        }</span>
+
+        @Override
+        public void locationChanged(final FileHandler handler)
+        {
+<span class="fc" id="L1698">            super.locationChanged(handler);</span>
+<span class="fc" id="L1699">            methodCalled(handler, &quot;locationChanged&quot;);</span>
+<span class="fc" id="L1700">        }</span>
+
+        /**
+         * One of the listener methods was called. Records this invocation.
+         *
+         * @param handler the file handler
+         * @param method the called method
+         */
+        private void methodCalled(final FileHandler handler, final String method)
+        {
+<span class="fc" id="L1710">            assertEquals(&quot;Wrong file handler&quot;, expHandler, handler);</span>
+<span class="fc" id="L1711">            methods.append(method);</span>
+<span class="fc" id="L1712">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

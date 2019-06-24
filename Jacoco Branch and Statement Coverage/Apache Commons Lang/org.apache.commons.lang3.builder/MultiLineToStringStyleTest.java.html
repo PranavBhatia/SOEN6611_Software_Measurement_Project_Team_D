@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultiLineToStringStyleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">MultiLineToStringStyleTest.java</span></div><h1>MultiLineToStringStyleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.apache.commons.lang3.builder.ToStringStyleTest.Person;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.builder.MultiLineToStringStyleTest}.
+ */
+<span class="fc" id="L32">public class MultiLineToStringStyleTest {</span>
+
+<span class="fc" id="L34">    private final Integer base = Integer.valueOf(5);</span>
+<span class="fc" id="L35">    private final String baseStr = base.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(base));</span>
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L39">        ToStringBuilder.setDefaultStyle(ToStringStyle.MULTI_LINE_STYLE);</span>
+<span class="fc" id="L40">    }</span>
+
+    @AfterEach
+    public void tearDown() {
+<span class="fc" id="L44">        ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);</span>
+<span class="fc" id="L45">    }</span>
+
+    //----------------------------------------------------------------
+
+    @Test
+    public void testBlank() {
+<span class="fc" id="L51">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).toString());</span>
+<span class="fc" id="L52">    }</span>
+
+    @Test
+    public void testAppendSuper() {
+<span class="fc" id="L56">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&quot; + System.lineSeparator() + &quot;]&quot;).toString());</span>
+<span class="fc" id="L57">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;).toString());</span>
+
+<span class="fc" id="L59">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=hello&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&quot; + System.lineSeparator() + &quot;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L60">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;  a=hello&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L61">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=hello&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).appendSuper(null).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L62">    }</span>
+
+    @Test
+    public void testObject() {
+<span class="fc" id="L66">        final Integer i3 = Integer.valueOf(3);</span>
+<span class="fc" id="L67">        final Integer i4 = Integer.valueOf(4);</span>
+<span class="fc" id="L68">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) null).toString());</span>
+<span class="fc" id="L69">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  3&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(i3).toString());</span>
+<span class="fc" id="L70">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=&lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) null).toString());</span>
+<span class="fc" id="L71">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=3&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).toString());</span>
+<span class="fc" id="L72">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=3&quot; + System.lineSeparator() + &quot;  b=4&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).append(&quot;b&quot;, i4).toString());</span>
+<span class="fc" id="L73">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=&lt;Integer&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3, false).toString());</span>
+<span class="fc" id="L74">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=&lt;size=0&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), false).toString());</span>
+<span class="fc" id="L75">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=[]&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), true).toString());</span>
+<span class="fc" id="L76">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=&lt;size=0&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), false).toString());</span>
+<span class="fc" id="L77">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a={}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), true).toString());</span>
+<span class="fc" id="L78">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=&lt;size=0&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], false).toString());</span>
+<span class="fc" id="L79">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a={}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], true).toString());</span>
+<span class="fc" id="L80">    }</span>
+
+    @Test
+    public void testPerson() {
+<span class="fc" id="L84">        final Person p = new Person();</span>
+<span class="fc" id="L85">        p.name = &quot;Jane Doe&quot;;</span>
+<span class="fc" id="L86">        p.age = 25;</span>
+<span class="fc" id="L87">        p.smoker = true;</span>
+<span class="fc" id="L88">        final String pBaseStr = p.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(p));</span>
+<span class="fc" id="L89">        assertEquals(pBaseStr + &quot;[&quot; + System.lineSeparator() + &quot;  name=Jane Doe&quot; + System.lineSeparator() + &quot;  age=25&quot; + System.lineSeparator() + &quot;  smoker=true&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(p).append(&quot;name&quot;, p.name).append(&quot;age&quot;, p.age).append(&quot;smoker&quot;, p.smoker).toString());</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testLong() {
+<span class="fc" id="L94">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  3&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(3L).toString());</span>
+<span class="fc" id="L95">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=3&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L).toString());</span>
+<span class="fc" id="L96">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  a=3&quot; + System.lineSeparator() + &quot;  b=4&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L).append(&quot;b&quot;, 4L).toString());</span>
+<span class="fc" id="L97">    }</span>
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L101">        Object[] array = new Object[] {null, base, new int[] {3, 6}};</span>
+<span class="fc" id="L102">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  {&lt;null&gt;,5,{3,6}}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L103">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  {&lt;null&gt;,5,{3,6}}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L104">        array = null;</span>
+<span class="fc" id="L105">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L106">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L107">    }</span>
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L111">        long[] array = new long[] {1, 2, -3, 4};</span>
+<span class="fc" id="L112">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  {1,2,-3,4}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L113">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  {1,2,-3,4}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L114">        array = null;</span>
+<span class="fc" id="L115">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L116">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L117">    }</span>
+
+    @Test
+    public void testLongArrayArray() {
+<span class="fc" id="L121">        long[][] array = new long[][] {{1, 2}, null, {5}};</span>
+<span class="fc" id="L122">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  {{1,2},&lt;null&gt;,{5}}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L123">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  {{1,2},&lt;null&gt;,{5}}&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L124">        array = null;</span>
+<span class="fc" id="L125">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L126">        assertEquals(baseStr + &quot;[&quot; + System.lineSeparator() + &quot;  &lt;null&gt;&quot; + System.lineSeparator() + &quot;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L127">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

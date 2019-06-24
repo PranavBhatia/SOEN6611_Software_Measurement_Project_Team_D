@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationDeclaration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestConfigurationDeclaration.java</span></div><h1>TestConfigurationDeclaration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ConfigurationDeclaration}.
+ *
+ */
+<span class="fc" id="L33">public class TestConfigurationDeclaration</span>
+{
+    /**
+     * Creates a default test instance.
+     *
+     * @param conf the configuration to be used (may be &lt;b&gt;null&lt;/b&gt; for a
+     *        default one)
+     * @return the test object
+     */
+    private static ConfigurationDeclaration createDeclaration(
+            final HierarchicalConfiguration&lt;?&gt; conf)
+    {
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        final HierarchicalConfiguration&lt;?&gt; config =</span>
+                (conf != null) ? conf : new BaseHierarchicalConfiguration();
+<span class="fc" id="L47">        return new ConfigurationDeclaration(null, config);</span>
+    }
+
+    /**
+     * Tests the isReservedNode() method of ConfigurationDeclaration.
+     */
+    @Test
+    public void testConfigurationDeclarationIsReserved()
+    {
+<span class="fc" id="L56">        final ConfigurationDeclaration decl = createDeclaration(null);</span>
+<span class="fc" id="L57">        assertTrue(&quot;Attribute at not recognized&quot;, decl.isReservedAttributeName(&quot;at&quot;));</span>
+<span class="fc" id="L58">        assertTrue(&quot;Attribute optional not recognized&quot;, decl.isReservedAttributeName(&quot;optional&quot;));</span>
+<span class="fc" id="L59">        assertTrue(&quot;Inherited attribute not recognized&quot;,</span>
+<span class="fc" id="L60">                decl.isReservedAttributeName(&quot;config-class&quot;));</span>
+<span class="fc" id="L61">        assertFalse(&quot;Wrong reserved attribute&quot;, decl.isReservedAttributeName(&quot;different&quot;));</span>
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Tests if the at attribute is correctly detected as reserved attribute.
+     */
+    @Test
+    public void testConfigurationDeclarationIsReservedAt()
+    {
+<span class="fc" id="L70">        checkOldReservedAttribute(&quot;at&quot;);</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Tests if the optional attribute is correctly detected as reserved
+     * attribute.
+     */
+    @Test
+    public void testConfigurationDeclarationIsReservedOptional()
+    {
+<span class="fc" id="L80">        checkOldReservedAttribute(&quot;optional&quot;);</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Tests if special reserved attributes are recognized by the
+     * isReservedNode() method. For compatibility reasons the attributes &quot;at&quot;
+     * and &quot;optional&quot; are also treated as reserved attributes, but only if there
+     * are no corresponding attributes with the &quot;config-&quot; prefix.
+     *
+     * @param name the attribute name
+     */
+    private void checkOldReservedAttribute(final String name)
+    {
+<span class="fc" id="L93">        final String prefixName = &quot;config-&quot; + name;</span>
+<span class="fc" id="L94">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L95">        config.addProperty(String.format(&quot;[@%s]&quot;, prefixName), Boolean.TRUE);</span>
+<span class="fc" id="L96">        final ConfigurationDeclaration decl = createDeclaration(config);</span>
+<span class="fc" id="L97">        assertTrue(prefixName + &quot; attribute not recognized&quot;,</span>
+<span class="fc" id="L98">                decl.isReservedAttributeName(prefixName));</span>
+<span class="fc" id="L99">        config.addProperty(String.format(&quot;[@%s]&quot;, name), Boolean.TRUE);</span>
+<span class="fc" id="L100">        assertFalse(name + &quot; is reserved though config- exists&quot;,</span>
+<span class="fc" id="L101">                decl.isReservedAttributeName(name));</span>
+<span class="fc" id="L102">        assertTrue(&quot;config- attribute not recognized when &quot; + name + &quot; exists&quot;,</span>
+<span class="fc" id="L103">                decl.isReservedAttributeName(prefixName));</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Tests access to certain reserved attributes of a
+     * ConfigurationDeclaration.
+     */
+    @Test
+    public void testConfigurationDeclarationGetAttributes()
+    {
+<span class="fc" id="L113">        final HierarchicalConfiguration&lt;?&gt; config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L114">        config.addProperty(&quot;xml.fileName&quot;, &quot;test.xml&quot;);</span>
+<span class="fc" id="L115">        ConfigurationDeclaration decl =</span>
+<span class="fc" id="L116">                createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L117">        assertNull(&quot;Found an at attribute&quot;, decl.getAt());</span>
+<span class="fc" id="L118">        assertFalse(&quot;Found an optional attribute&quot;, decl.isOptional());</span>
+<span class="fc" id="L119">        config.addProperty(&quot;xml[@config-at]&quot;, &quot;test1&quot;);</span>
+<span class="fc" id="L120">        decl = createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L121">        assertEquals(&quot;Wrong value of at attribute&quot;, &quot;test1&quot;, decl.getAt());</span>
+<span class="fc" id="L122">        config.addProperty(&quot;xml[@at]&quot;, &quot;test2&quot;);</span>
+<span class="fc" id="L123">        decl = createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L124">        assertEquals(&quot;Wrong value of config-at attribute&quot;, &quot;test1&quot;,</span>
+<span class="fc" id="L125">                decl.getAt());</span>
+<span class="fc" id="L126">        config.clearProperty(&quot;xml[@config-at]&quot;);</span>
+<span class="fc" id="L127">        decl = createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L128">        assertEquals(&quot;Old at attribute not detected&quot;, &quot;test2&quot;, decl.getAt());</span>
+<span class="fc" id="L129">        config.addProperty(&quot;xml[@config-optional]&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L130">        decl = createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L131">        assertTrue(&quot;Wrong value of optional attribute&quot;, decl.isOptional());</span>
+<span class="fc" id="L132">        config.addProperty(&quot;xml[@optional]&quot;, &quot;false&quot;);</span>
+<span class="fc" id="L133">        decl = createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L134">        assertTrue(&quot;Wrong value of config-optional attribute&quot;,</span>
+<span class="fc" id="L135">                decl.isOptional());</span>
+<span class="fc" id="L136">        config.clearProperty(&quot;xml[@config-optional]&quot;);</span>
+<span class="fc" id="L137">        config.setProperty(&quot;xml[@optional]&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L138">        decl = createDeclaration(config.configurationAt(&quot;xml&quot;));</span>
+<span class="fc" id="L139">        assertTrue(&quot;Old optional attribute not detected&quot;, decl.isOptional());</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests whether an invalid value of an optional attribute is detected.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testConfigurationDeclarationOptionalAttributeInvalid()
+    {
+<span class="fc" id="L148">        final HierarchicalConfiguration&lt;?&gt; factory = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L149">        factory.addProperty(&quot;xml.fileName&quot;, &quot;test.xml&quot;);</span>
+<span class="fc" id="L150">        factory.setProperty(&quot;xml[@optional]&quot;, &quot;invalid value&quot;);</span>
+<span class="fc" id="L151">        final ConfigurationDeclaration decl =</span>
+<span class="fc" id="L152">                createDeclaration(factory.configurationAt(&quot;xml&quot;));</span>
+<span class="nc" id="L153">        decl.isOptional();</span>
+<span class="nc" id="L154">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

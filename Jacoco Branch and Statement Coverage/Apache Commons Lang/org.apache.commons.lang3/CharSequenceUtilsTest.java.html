@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CharSequenceUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">CharSequenceUtilsTest.java</span></div><h1>CharSequenceUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests CharSequenceUtils
+ */
+<span class="fc" id="L35">public class CharSequenceUtilsTest {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L40">        assertNotNull(new CharSequenceUtils());</span>
+<span class="fc" id="L41">        final Constructor&lt;?&gt;[] cons = CharSequenceUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L42">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L43">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L44">        assertTrue(Modifier.isPublic(CharSequenceUtils.class.getModifiers()));</span>
+<span class="fc" id="L45">        assertFalse(Modifier.isFinal(CharSequenceUtils.class.getModifiers()));</span>
+<span class="fc" id="L46">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSubSequence() {
+        //
+        // null input
+        //
+<span class="fc" id="L54">        assertNull(CharSequenceUtils.subSequence(null, -1));</span>
+<span class="fc" id="L55">        assertNull(CharSequenceUtils.subSequence(null, 0));</span>
+<span class="fc" id="L56">        assertNull(CharSequenceUtils.subSequence(null, 1));</span>
+        //
+        // non-null input
+        //
+<span class="fc" id="L60">        assertEquals(StringUtils.EMPTY, CharSequenceUtils.subSequence(StringUtils.EMPTY, 0));</span>
+<span class="fc" id="L61">        assertEquals(&quot;012&quot;, CharSequenceUtils.subSequence(&quot;012&quot;, 0));</span>
+<span class="fc" id="L62">        assertEquals(&quot;12&quot;, CharSequenceUtils.subSequence(&quot;012&quot;, 1));</span>
+<span class="fc" id="L63">        assertEquals(&quot;2&quot;, CharSequenceUtils.subSequence(&quot;012&quot;, 2));</span>
+<span class="fc" id="L64">        assertEquals(StringUtils.EMPTY, CharSequenceUtils.subSequence(&quot;012&quot;, 3));</span>
+<span class="fc" id="L65">    }</span>
+
+    @Test
+    public void testSubSequenceNegativeStart() {
+<span class="pc" id="L69">        assertThrows(IndexOutOfBoundsException.class, () -&gt; CharSequenceUtils.subSequence(StringUtils.EMPTY, -1));</span>
+<span class="fc" id="L70">    }</span>
+
+    @Test
+    public void testSubSequenceTooLong() {
+<span class="pc" id="L74">        assertThrows(IndexOutOfBoundsException.class, () -&gt; CharSequenceUtils.subSequence(StringUtils.EMPTY, 1));</span>
+<span class="fc" id="L75">    }</span>
+
+    static class TestData{
+        final String source;
+        final boolean ignoreCase;
+        final int toffset;
+        final String other;
+        final int ooffset;
+        final int len;
+        final boolean expected;
+        final Class&lt;? extends Throwable&gt; throwable;
+        TestData(final String source, final boolean ignoreCase, final int toffset,
+<span class="fc" id="L87">                final String other, final int ooffset, final int len, final boolean expected) {</span>
+<span class="fc" id="L88">            this.source = source;</span>
+<span class="fc" id="L89">            this.ignoreCase = ignoreCase;</span>
+<span class="fc" id="L90">            this.toffset = toffset;</span>
+<span class="fc" id="L91">            this.other = other;</span>
+<span class="fc" id="L92">            this.ooffset = ooffset;</span>
+<span class="fc" id="L93">            this.len = len;</span>
+<span class="fc" id="L94">            this.expected = expected;</span>
+<span class="fc" id="L95">            this.throwable = null;</span>
+<span class="fc" id="L96">        }</span>
+        TestData(final String source, final boolean ignoreCase, final int toffset,
+<span class="fc" id="L98">                final String other, final int ooffset, final int len, final Class&lt;? extends Throwable&gt; throwable) {</span>
+<span class="fc" id="L99">            this.source = source;</span>
+<span class="fc" id="L100">            this.ignoreCase = ignoreCase;</span>
+<span class="fc" id="L101">            this.toffset = toffset;</span>
+<span class="fc" id="L102">            this.other = other;</span>
+<span class="fc" id="L103">            this.ooffset = ooffset;</span>
+<span class="fc" id="L104">            this.len = len;</span>
+<span class="fc" id="L105">            this.expected = false;</span>
+<span class="fc" id="L106">            this.throwable = throwable;</span>
+<span class="fc" id="L107">        }</span>
+        @Override
+        public String toString() {
+<span class="fc" id="L110">            final StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L111">            sb.append(source).append(&quot;[&quot;).append(toffset).append(&quot;]&quot;);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            sb.append(ignoreCase? &quot; caseblind &quot;:&quot; samecase &quot;);</span>
+<span class="fc" id="L113">            sb.append(other).append(&quot;[&quot;).append(ooffset).append(&quot;]&quot;);</span>
+<span class="fc" id="L114">            sb.append(&quot; &quot;).append(len).append(&quot; =&gt; &quot;);</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if (throwable != null) {</span>
+<span class="nc" id="L116">                sb.append(throwable);</span>
+            } else {
+<span class="fc" id="L118">                sb.append(expected);</span>
+            }
+<span class="fc" id="L120">            return sb.toString();</span>
+        }
+    }
+
+<span class="fc" id="L124">    private static final TestData[] TEST_DATA = {</span>
+            //          Source  IgnoreCase Offset Other  Offset Length Result
+            new TestData(&quot;&quot;,    true,      -1,    &quot;&quot;,    -1,    -1,    false),
+            new TestData(&quot;&quot;,    true,      0,     &quot;&quot;,    0,     1,     false),
+            new TestData(&quot;a&quot;,   true,      0,     &quot;abc&quot;, 0,     0,     true),
+            new TestData(&quot;a&quot;,   true,      0,     &quot;abc&quot;, 0,     1,     true),
+            new TestData(&quot;a&quot;,   true,      0,     null,  0,     0,     NullPointerException.class),
+            new TestData(null,  true,      0,     null,  0,     0,     NullPointerException.class),
+            new TestData(null,  true,      0,     &quot;&quot;,    0,     0,     NullPointerException.class),
+            new TestData(&quot;Abc&quot;, true,      0,     &quot;abc&quot;, 0,     3,     true),
+            new TestData(&quot;Abc&quot;, false,     0,     &quot;abc&quot;, 0,     3,     false),
+            new TestData(&quot;Abc&quot;, true,      1,     &quot;abc&quot;, 1,     2,     true),
+            new TestData(&quot;Abc&quot;, false,     1,     &quot;abc&quot;, 1,     2,     true),
+            new TestData(&quot;Abcd&quot;, true,      1,     &quot;abcD&quot;, 1,     2,     true),
+            new TestData(&quot;Abcd&quot;, false,     1,     &quot;abcD&quot;, 1,     2,     true),
+    };
+
+    private abstract static class RunTest {
+
+        abstract boolean invoke();
+
+        void run(final TestData data, final String id) {
+<span class="fc bfc" id="L146" title="All 2 branches covered.">            if (data.throwable != null) {</span>
+<span class="fc" id="L147">                assertThrows(data.throwable, this::invoke, id + &quot; Expected &quot; + data.throwable);</span>
+            } else {
+<span class="fc" id="L149">                final boolean stringCheck = invoke();</span>
+<span class="fc" id="L150">                assertEquals(data.expected, stringCheck, id + &quot; Failed test &quot; + data);</span>
+            }
+<span class="fc" id="L152">        }</span>
+
+    }
+
+    @Test
+    public void testRegionMatches() {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        for (final TestData data : TEST_DATA) {</span>
+<span class="fc" id="L159">            new RunTest() {</span>
+                @Override
+                boolean invoke() {
+<span class="fc" id="L162">                    return data.source.regionMatches(data.ignoreCase, data.toffset, data.other, data.ooffset, data.len);</span>
+                }
+<span class="fc" id="L164">            }.run(data, &quot;String&quot;);</span>
+<span class="fc" id="L165">            new RunTest() {</span>
+                @Override
+                boolean invoke() {
+<span class="fc" id="L168">                    return CharSequenceUtils.regionMatches(data.source, data.ignoreCase, data.toffset, data.other, data.ooffset, data.len);</span>
+                }
+<span class="fc" id="L170">            }.run(data, &quot;CSString&quot;);</span>
+<span class="fc" id="L171">            new RunTest() {</span>
+                @Override
+                boolean invoke() {
+<span class="fc" id="L174">                    return CharSequenceUtils.regionMatches(new StringBuilder(data.source), data.ignoreCase, data.toffset, data.other, data.ooffset, data.len);</span>
+                }
+<span class="fc" id="L176">            }.run(data, &quot;CSNonString&quot;);</span>
+        }
+<span class="fc" id="L178">    }</span>
+
+
+    @Test
+    public void testToCharArray() {
+<span class="fc" id="L183">        final StringBuilder builder = new StringBuilder(&quot;abcdefg&quot;);</span>
+<span class="fc" id="L184">        final char[] expected = builder.toString().toCharArray();</span>
+<span class="fc" id="L185">        assertArrayEquals(expected, CharSequenceUtils.toCharArray(builder));</span>
+<span class="fc" id="L186">        assertArrayEquals(expected, CharSequenceUtils.toCharArray(builder.toString()));</span>
+<span class="fc" id="L187">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

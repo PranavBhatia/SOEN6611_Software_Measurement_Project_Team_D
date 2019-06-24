@@ -1,0 +1,1443 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">ClassUtilsTest.java</span></div><h1>ClassUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.ClassUtils.Interfaces;
+import org.apache.commons.lang3.reflect.testbed.GenericConsumer;
+import org.apache.commons.lang3.reflect.testbed.GenericParent;
+import org.apache.commons.lang3.reflect.testbed.StringParameterizedChild;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.ClassUtils}.
+ */
+@SuppressWarnings(&quot;boxing&quot;) // JUnit4 does not support primitive equality testing apart from long
+<span class="fc" id="L50">public class ClassUtilsTest  {</span>
+
+    private static class CX implements IB, IA, IE {
+        // empty
+    }
+
+<span class="nc" id="L56">    private static class CY extends CX implements IB, IC {</span>
+        // empty
+    }
+
+    private interface IA {
+        // empty
+    }
+
+    private interface IB {
+        // empty
+    }
+
+    private interface IC extends ID, IE {
+        // empty
+    }
+
+    private interface ID {
+        // empty
+    }
+
+    private interface IE extends IF {
+        // empty
+    }
+
+    private interface IF {
+        // empty
+    }
+
+    private static class Inner {
+<span class="nc" id="L85">        private class DeeplyNested {</span>
+            // empty
+        }
+    }
+
+    private void assertGetClassReturnsClass( final Class&lt;?&gt; c ) throws Exception {
+<span class="fc" id="L91">        assertEquals( c, ClassUtils.getClass( c.getName() ) );</span>
+<span class="fc" id="L92">    }</span>
+
+    private void assertGetClassThrowsClassNotFound( final String className ) {
+<span class="fc" id="L95">        assertGetClassThrowsException( className, ClassNotFoundException.class );</span>
+<span class="fc" id="L96">    }</span>
+
+    private void assertGetClassThrowsException(final String className, final Class&lt;? extends Exception&gt; exceptionType) {
+<span class="fc" id="L99">        assertThrows(exceptionType,</span>
+<span class="nc" id="L100">                () -&gt; ClassUtils.getClass(className),</span>
+<span class="fc" id="L101">                &quot;ClassUtils.getClass() should fail with an exception of type &quot; + exceptionType.getName() + &quot; when given class name \&quot;&quot; + className + &quot;\&quot;.&quot; );</span>
+<span class="fc" id="L102">    }</span>
+
+    private void assertGetClassThrowsNullPointerException( final String className ) {
+<span class="fc" id="L105">        assertGetClassThrowsException( className, NullPointerException.class );</span>
+<span class="fc" id="L106">    }</span>
+
+    @Test
+    public void test_convertClassesToClassNames_List() {
+<span class="fc" id="L110">        final List&lt;Class&lt;?&gt;&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L111">        List&lt;String&gt; result = ClassUtils.convertClassesToClassNames(list);</span>
+<span class="fc" id="L112">        assertEquals(0, result.size());</span>
+
+<span class="fc" id="L114">        list.add(String.class);</span>
+<span class="fc" id="L115">        list.add(null);</span>
+<span class="fc" id="L116">        list.add(Object.class);</span>
+<span class="fc" id="L117">        result = ClassUtils.convertClassesToClassNames(list);</span>
+<span class="fc" id="L118">        assertEquals(3, result.size());</span>
+<span class="fc" id="L119">        assertEquals(&quot;java.lang.String&quot;, result.get(0));</span>
+<span class="fc" id="L120">        assertNull(result.get(1));</span>
+<span class="fc" id="L121">        assertEquals(&quot;java.lang.Object&quot;, result.get(2));</span>
+
+        @SuppressWarnings(&quot;unchecked&quot;) // test what happens when non-generic code adds wrong type of element
+<span class="fc" id="L124">        final List&lt;Object&gt; olist = (List&lt;Object&gt;) (List&lt;?&gt;) list;</span>
+<span class="fc" id="L125">        olist.add(new Object());</span>
+<span class="fc" id="L126">        assertThrows(ClassCastException.class,</span>
+<span class="nc" id="L127">                () -&gt; ClassUtils.convertClassesToClassNames(list),</span>
+                &quot;Should not have been able to convert list&quot;);
+<span class="fc" id="L129">        assertNull(ClassUtils.convertClassesToClassNames(null));</span>
+<span class="fc" id="L130">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_convertClassNamesToClasses_List() {
+<span class="fc" id="L135">        final List&lt;String&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L136">        List&lt;Class&lt;?&gt;&gt; result = ClassUtils.convertClassNamesToClasses(list);</span>
+<span class="fc" id="L137">        assertEquals(0, result.size());</span>
+
+<span class="fc" id="L139">        list.add(&quot;java.lang.String&quot;);</span>
+<span class="fc" id="L140">        list.add(&quot;java.lang.xxx&quot;);</span>
+<span class="fc" id="L141">        list.add(&quot;java.lang.Object&quot;);</span>
+<span class="fc" id="L142">        result = ClassUtils.convertClassNamesToClasses(list);</span>
+<span class="fc" id="L143">        assertEquals(3, result.size());</span>
+<span class="fc" id="L144">        assertEquals(String.class, result.get(0));</span>
+<span class="fc" id="L145">        assertNull(result.get(1));</span>
+<span class="fc" id="L146">        assertEquals(Object.class, result.get(2));</span>
+
+        @SuppressWarnings(&quot;unchecked&quot;) // test what happens when non-generic code adds wrong type of element
+<span class="fc" id="L149">        final List&lt;Object&gt; olist = (List&lt;Object&gt;) (List&lt;?&gt;) list;</span>
+<span class="fc" id="L150">        olist.add(new Object());</span>
+<span class="fc" id="L151">        assertThrows(ClassCastException.class,</span>
+<span class="nc" id="L152">                () -&gt; ClassUtils.convertClassNamesToClasses(list),</span>
+                &quot;Should not have been able to convert list&quot;);
+<span class="fc" id="L154">        assertNull(ClassUtils.convertClassNamesToClasses(null));</span>
+<span class="fc" id="L155">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_getAbbreviatedName_Class() {
+<span class="fc" id="L160">        assertEquals(&quot;&quot;, ClassUtils.getAbbreviatedName((Class&lt;?&gt;) null, 1));</span>
+<span class="fc" id="L161">        assertEquals(&quot;j.l.String&quot;, ClassUtils.getAbbreviatedName(String.class, 1));</span>
+<span class="fc" id="L162">        assertEquals(&quot;j.l.String&quot;, ClassUtils.getAbbreviatedName(String.class, 5));</span>
+<span class="fc" id="L163">        assertEquals(&quot;j.lang.String&quot;, ClassUtils.getAbbreviatedName(String.class, 13));</span>
+<span class="fc" id="L164">        assertEquals(&quot;j.lang.String&quot;, ClassUtils.getAbbreviatedName(String.class, 15));</span>
+<span class="fc" id="L165">        assertEquals(&quot;java.lang.String&quot;, ClassUtils.getAbbreviatedName(String.class, 20));</span>
+<span class="fc" id="L166">    }</span>
+
+    @Test
+    public void test_getAbbreviatedName_Class_NegativeLen() {
+<span class="pc" id="L170">        assertThrows(IllegalArgumentException.class, () -&gt; ClassUtils.getAbbreviatedName(String.class, -10));</span>
+<span class="fc" id="L171">    }</span>
+
+    @Test
+    public void test_getAbbreviatedName_Class_ZeroLen() {
+<span class="pc" id="L175">        assertThrows(IllegalArgumentException.class, () -&gt; ClassUtils.getAbbreviatedName(String.class, 0));</span>
+<span class="fc" id="L176">    }</span>
+
+    @Test
+    public void test_getAbbreviatedName_String() {
+<span class="fc" id="L180">        assertEquals(&quot;&quot;, ClassUtils.getAbbreviatedName((String) null, 1));</span>
+<span class="fc" id="L181">        assertEquals(&quot;WithoutPackage&quot;, ClassUtils.getAbbreviatedName(&quot;WithoutPackage&quot;, 1));</span>
+<span class="fc" id="L182">        assertEquals(&quot;j.l.String&quot;, ClassUtils.getAbbreviatedName(&quot;java.lang.String&quot;, 1));</span>
+<span class="fc" id="L183">    }</span>
+
+    @Test
+    public void test_getAllInterfaces_Class() {
+<span class="fc" id="L187">        final List&lt;?&gt; list = ClassUtils.getAllInterfaces(CY.class);</span>
+<span class="fc" id="L188">        assertEquals(6, list.size());</span>
+<span class="fc" id="L189">        assertEquals(IB.class, list.get(0));</span>
+<span class="fc" id="L190">        assertEquals(IC.class, list.get(1));</span>
+<span class="fc" id="L191">        assertEquals(ID.class, list.get(2));</span>
+<span class="fc" id="L192">        assertEquals(IE.class, list.get(3));</span>
+<span class="fc" id="L193">        assertEquals(IF.class, list.get(4));</span>
+<span class="fc" id="L194">        assertEquals(IA.class, list.get(5));</span>
+
+<span class="fc" id="L196">        assertNull(ClassUtils.getAllInterfaces(null));</span>
+<span class="fc" id="L197">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_getAllSuperclasses_Class() {
+<span class="fc" id="L202">        final List&lt;?&gt; list = ClassUtils.getAllSuperclasses(CY.class);</span>
+<span class="fc" id="L203">        assertEquals(2, list.size());</span>
+<span class="fc" id="L204">        assertEquals(CX.class, list.get(0));</span>
+<span class="fc" id="L205">        assertEquals(Object.class, list.get(1));</span>
+
+<span class="fc" id="L207">        assertNull(ClassUtils.getAllSuperclasses(null));</span>
+<span class="fc" id="L208">    }</span>
+
+    @Test
+    public void test_getCanonicalName_Class() {
+<span class="fc" id="L212">        assertEquals(&quot;org.apache.commons.lang3.ClassUtils&quot;, ClassUtils.getCanonicalName(ClassUtils.class));</span>
+<span class="fc" id="L213">        assertEquals(&quot;java.util.Map.Entry&quot;, ClassUtils.getCanonicalName(Map.Entry.class));</span>
+<span class="fc" id="L214">        assertEquals(&quot;&quot;, ClassUtils.getCanonicalName((Class&lt;?&gt;) null));</span>
+
+<span class="fc" id="L216">        assertEquals(&quot;java.lang.String[]&quot;, ClassUtils.getCanonicalName(String[].class));</span>
+<span class="fc" id="L217">        assertEquals(&quot;java.util.Map.Entry[]&quot;, ClassUtils.getCanonicalName(Map.Entry[].class));</span>
+
+        // Primitives
+<span class="fc" id="L220">        assertEquals(&quot;boolean&quot;, ClassUtils.getCanonicalName(boolean.class));</span>
+<span class="fc" id="L221">        assertEquals(&quot;byte&quot;, ClassUtils.getCanonicalName(byte.class));</span>
+<span class="fc" id="L222">        assertEquals(&quot;char&quot;, ClassUtils.getCanonicalName(char.class));</span>
+<span class="fc" id="L223">        assertEquals(&quot;short&quot;, ClassUtils.getCanonicalName(short.class));</span>
+<span class="fc" id="L224">        assertEquals(&quot;int&quot;, ClassUtils.getCanonicalName(int.class));</span>
+<span class="fc" id="L225">        assertEquals(&quot;long&quot;, ClassUtils.getCanonicalName(long.class));</span>
+<span class="fc" id="L226">        assertEquals(&quot;float&quot;, ClassUtils.getCanonicalName(float.class));</span>
+<span class="fc" id="L227">        assertEquals(&quot;double&quot;, ClassUtils.getCanonicalName(double.class));</span>
+
+        // Primitive Arrays
+<span class="fc" id="L230">        assertEquals(&quot;boolean[]&quot;, ClassUtils.getCanonicalName(boolean[].class));</span>
+<span class="fc" id="L231">        assertEquals(&quot;byte[]&quot;, ClassUtils.getCanonicalName(byte[].class));</span>
+<span class="fc" id="L232">        assertEquals(&quot;char[]&quot;, ClassUtils.getCanonicalName(char[].class));</span>
+<span class="fc" id="L233">        assertEquals(&quot;short[]&quot;, ClassUtils.getCanonicalName(short[].class));</span>
+<span class="fc" id="L234">        assertEquals(&quot;int[]&quot;, ClassUtils.getCanonicalName(int[].class));</span>
+<span class="fc" id="L235">        assertEquals(&quot;long[]&quot;, ClassUtils.getCanonicalName(long[].class));</span>
+<span class="fc" id="L236">        assertEquals(&quot;float[]&quot;, ClassUtils.getCanonicalName(float[].class));</span>
+<span class="fc" id="L237">        assertEquals(&quot;double[]&quot;, ClassUtils.getCanonicalName(double[].class));</span>
+
+        // Arrays of arrays of ...
+<span class="fc" id="L240">        assertEquals(&quot;java.lang.String[][]&quot;, ClassUtils.getCanonicalName(String[][].class));</span>
+<span class="fc" id="L241">        assertEquals(&quot;java.lang.String[][][]&quot;, ClassUtils.getCanonicalName(String[][][].class));</span>
+<span class="fc" id="L242">        assertEquals(&quot;java.lang.String[][][][]&quot;, ClassUtils.getCanonicalName(String[][][][].class));</span>
+
+        // Inner types
+<span class="nc" id="L245">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L248">        assertEquals(StringUtils.EMPTY, ClassUtils.getCanonicalName(new Object() {</span>
+            // empty
+<span class="fc" id="L250">        }.getClass()));</span>
+<span class="fc" id="L251">        assertEquals(StringUtils.EMPTY, ClassUtils.getCanonicalName(Named.class));</span>
+<span class="fc" id="L252">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest.Inner&quot;, ClassUtils.getCanonicalName(Inner.class));</span>
+<span class="fc" id="L253">    }</span>
+
+    @Test
+    public void test_getCanonicalName_Class_String() {
+<span class="fc" id="L257">        assertEquals(&quot;org.apache.commons.lang3.ClassUtils&quot;, ClassUtils.getCanonicalName(ClassUtils.class, &quot;X&quot;));</span>
+<span class="fc" id="L258">        assertEquals(&quot;java.util.Map.Entry&quot;, ClassUtils.getCanonicalName(Map.Entry.class, &quot;X&quot;));</span>
+<span class="fc" id="L259">        assertEquals(&quot;X&quot;, ClassUtils.getCanonicalName((Class&lt;?&gt;) null, &quot;X&quot;));</span>
+
+<span class="fc" id="L261">        assertEquals(&quot;java.lang.String[]&quot;, ClassUtils.getCanonicalName(String[].class, &quot;X&quot;));</span>
+<span class="fc" id="L262">        assertEquals(&quot;java.util.Map.Entry[]&quot;, ClassUtils.getCanonicalName(Map.Entry[].class, &quot;X&quot;));</span>
+
+        // Primitives
+<span class="fc" id="L265">        assertEquals(&quot;boolean&quot;, ClassUtils.getCanonicalName(boolean.class, &quot;X&quot;));</span>
+<span class="fc" id="L266">        assertEquals(&quot;byte&quot;, ClassUtils.getCanonicalName(byte.class, &quot;X&quot;));</span>
+<span class="fc" id="L267">        assertEquals(&quot;char&quot;, ClassUtils.getCanonicalName(char.class, &quot;X&quot;));</span>
+<span class="fc" id="L268">        assertEquals(&quot;short&quot;, ClassUtils.getCanonicalName(short.class, &quot;X&quot;));</span>
+<span class="fc" id="L269">        assertEquals(&quot;int&quot;, ClassUtils.getCanonicalName(int.class, &quot;X&quot;));</span>
+<span class="fc" id="L270">        assertEquals(&quot;long&quot;, ClassUtils.getCanonicalName(long.class, &quot;X&quot;));</span>
+<span class="fc" id="L271">        assertEquals(&quot;float&quot;, ClassUtils.getCanonicalName(float.class, &quot;X&quot;));</span>
+<span class="fc" id="L272">        assertEquals(&quot;double&quot;, ClassUtils.getCanonicalName(double.class, &quot;X&quot;));</span>
+
+        // Primitive Arrays
+<span class="fc" id="L275">        assertEquals(&quot;boolean[]&quot;, ClassUtils.getCanonicalName(boolean[].class, &quot;X&quot;));</span>
+<span class="fc" id="L276">        assertEquals(&quot;byte[]&quot;, ClassUtils.getCanonicalName(byte[].class, &quot;X&quot;));</span>
+<span class="fc" id="L277">        assertEquals(&quot;char[]&quot;, ClassUtils.getCanonicalName(char[].class, &quot;X&quot;));</span>
+<span class="fc" id="L278">        assertEquals(&quot;short[]&quot;, ClassUtils.getCanonicalName(short[].class, &quot;X&quot;));</span>
+<span class="fc" id="L279">        assertEquals(&quot;int[]&quot;, ClassUtils.getCanonicalName(int[].class, &quot;X&quot;));</span>
+<span class="fc" id="L280">        assertEquals(&quot;long[]&quot;, ClassUtils.getCanonicalName(long[].class, &quot;X&quot;));</span>
+<span class="fc" id="L281">        assertEquals(&quot;float[]&quot;, ClassUtils.getCanonicalName(float[].class, &quot;X&quot;));</span>
+<span class="fc" id="L282">        assertEquals(&quot;double[]&quot;, ClassUtils.getCanonicalName(double[].class, &quot;X&quot;));</span>
+
+        // Arrays of arrays of ...
+<span class="fc" id="L285">        assertEquals(&quot;java.lang.String[][]&quot;, ClassUtils.getCanonicalName(String[][].class, &quot;X&quot;));</span>
+<span class="fc" id="L286">        assertEquals(&quot;java.lang.String[][][]&quot;, ClassUtils.getCanonicalName(String[][][].class, &quot;X&quot;));</span>
+<span class="fc" id="L287">        assertEquals(&quot;java.lang.String[][][][]&quot;, ClassUtils.getCanonicalName(String[][][][].class, &quot;X&quot;));</span>
+
+        // Inner types
+<span class="nc" id="L290">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L293">        assertEquals(&quot;X&quot;, ClassUtils.getCanonicalName(new Object() {</span>
+            // empty
+<span class="fc" id="L295">        }.getClass(), &quot;X&quot;));</span>
+<span class="fc" id="L296">        assertEquals(&quot;X&quot;, ClassUtils.getCanonicalName(Named.class, &quot;X&quot;));</span>
+<span class="fc" id="L297">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest.Inner&quot;, ClassUtils.getCanonicalName(Inner.class, &quot;X&quot;));</span>
+<span class="fc" id="L298">    }</span>
+
+    @Test
+    public void test_getName_Class() {
+<span class="fc" id="L302">        assertEquals(&quot;org.apache.commons.lang3.ClassUtils&quot;, ClassUtils.getName(ClassUtils.class));</span>
+<span class="fc" id="L303">        assertEquals(&quot;java.util.Map$Entry&quot;, ClassUtils.getName(Map.Entry.class));</span>
+<span class="fc" id="L304">        assertEquals(&quot;&quot;, ClassUtils.getName((Class&lt;?&gt;) null));</span>
+
+<span class="fc" id="L306">        assertEquals(&quot;[Ljava.lang.String;&quot;, ClassUtils.getName(String[].class));</span>
+<span class="fc" id="L307">        assertEquals(&quot;[Ljava.util.Map$Entry;&quot;, ClassUtils.getName(Map.Entry[].class));</span>
+
+        // Primitives
+<span class="fc" id="L310">        assertEquals(&quot;boolean&quot;, ClassUtils.getName(boolean.class));</span>
+<span class="fc" id="L311">        assertEquals(&quot;byte&quot;, ClassUtils.getName(byte.class));</span>
+<span class="fc" id="L312">        assertEquals(&quot;char&quot;, ClassUtils.getName(char.class));</span>
+<span class="fc" id="L313">        assertEquals(&quot;short&quot;, ClassUtils.getName(short.class));</span>
+<span class="fc" id="L314">        assertEquals(&quot;int&quot;, ClassUtils.getName(int.class));</span>
+<span class="fc" id="L315">        assertEquals(&quot;long&quot;, ClassUtils.getName(long.class));</span>
+<span class="fc" id="L316">        assertEquals(&quot;float&quot;, ClassUtils.getName(float.class));</span>
+<span class="fc" id="L317">        assertEquals(&quot;double&quot;, ClassUtils.getName(double.class));</span>
+
+        // Primitive Arrays
+<span class="fc" id="L320">        assertEquals(&quot;[Z&quot;, ClassUtils.getName(boolean[].class));</span>
+<span class="fc" id="L321">        assertEquals(&quot;[B&quot;, ClassUtils.getName(byte[].class));</span>
+<span class="fc" id="L322">        assertEquals(&quot;[C&quot;, ClassUtils.getName(char[].class));</span>
+<span class="fc" id="L323">        assertEquals(&quot;[S&quot;, ClassUtils.getName(short[].class));</span>
+<span class="fc" id="L324">        assertEquals(&quot;[I&quot;, ClassUtils.getName(int[].class));</span>
+<span class="fc" id="L325">        assertEquals(&quot;[J&quot;, ClassUtils.getName(long[].class));</span>
+<span class="fc" id="L326">        assertEquals(&quot;[F&quot;, ClassUtils.getName(float[].class));</span>
+<span class="fc" id="L327">        assertEquals(&quot;[D&quot;, ClassUtils.getName(double[].class));</span>
+
+        // Arrays of arrays of ...
+<span class="fc" id="L330">        assertEquals(&quot;[[Ljava.lang.String;&quot;, ClassUtils.getName(String[][].class));</span>
+<span class="fc" id="L331">        assertEquals(&quot;[[[Ljava.lang.String;&quot;, ClassUtils.getName(String[][][].class));</span>
+<span class="fc" id="L332">        assertEquals(&quot;[[[[Ljava.lang.String;&quot;, ClassUtils.getName(String[][][][].class));</span>
+
+        // Inner types
+<span class="nc" id="L335">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L338">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$3&quot;, ClassUtils.getName(new Object() {</span>
+            // empty
+<span class="fc" id="L340">        }.getClass()));</span>
+<span class="fc" id="L341">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$3Named&quot;, ClassUtils.getName(Named.class));</span>
+<span class="fc" id="L342">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$Inner&quot;, ClassUtils.getName(Inner.class));</span>
+<span class="fc" id="L343">    }</span>
+
+    @Test
+    public void test_getName_Object() {
+<span class="fc" id="L347">        assertEquals(&quot;org.apache.commons.lang3.ClassUtils&quot;, ClassUtils.getName(new ClassUtils(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L348">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$Inner&quot;, ClassUtils.getName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L349">        assertEquals(&quot;java.lang.String&quot;, ClassUtils.getName(&quot;hello&quot;, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L350">        assertEquals(&quot;&lt;null&gt;&quot;, ClassUtils.getName(null, &quot;&lt;null&gt;&quot;));</span>
+
+        // Inner types
+<span class="fc" id="L353">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L356">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$4&quot;, ClassUtils.getName(new Object() {</span>
+            // empty
+        }, &quot;&lt;null&gt;&quot;));
+<span class="fc" id="L359">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$4Named&quot;, ClassUtils.getName(new Named(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L360">        assertEquals(&quot;org.apache.commons.lang3.ClassUtilsTest$Inner&quot;, ClassUtils.getName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L361">    }</span>
+
+    @Test
+    public void test_getPackageCanonicalName_Class() {
+<span class="fc" id="L365">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(ClassUtils.class));</span>
+<span class="fc" id="L366">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(ClassUtils[].class));</span>
+<span class="fc" id="L367">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(ClassUtils[][].class));</span>
+<span class="fc" id="L368">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(int[].class));</span>
+<span class="fc" id="L369">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(int[][].class));</span>
+
+        // Inner types
+<span class="nc" id="L372">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L375">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new Object() {</span>
+            // empty
+<span class="fc" id="L377">        }.getClass()));</span>
+<span class="fc" id="L378">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(Named.class));</span>
+<span class="fc" id="L379">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(Inner.class));</span>
+<span class="fc" id="L380">    }</span>
+
+    @Test
+    public void test_getPackageCanonicalName_Object() {
+<span class="fc" id="L384">        assertEquals(&quot;&lt;null&gt;&quot;, ClassUtils.getPackageCanonicalName(null, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L385">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new ClassUtils(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L386">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new ClassUtils[0], &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L387">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new ClassUtils[0][0], &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L388">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(new int[0], &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L389">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(new int[0][0], &quot;&lt;null&gt;&quot;));</span>
+
+        // Inner types
+<span class="fc" id="L392">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L395">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new Object() {</span>
+            // empty
+        }, &quot;&lt;null&gt;&quot;));
+<span class="fc" id="L398">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new Named(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L399">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L400">    }</span>
+
+    @Test
+    public void test_getPackageCanonicalName_String() {
+<span class="fc" id="L404">        assertEquals(&quot;org.apache.commons.lang3&quot;,</span>
+<span class="fc" id="L405">            ClassUtils.getPackageCanonicalName(&quot;org.apache.commons.lang3.ClassUtils&quot;));</span>
+<span class="fc" id="L406">        assertEquals(&quot;org.apache.commons.lang3&quot;,</span>
+<span class="fc" id="L407">            ClassUtils.getPackageCanonicalName(&quot;[Lorg.apache.commons.lang3.ClassUtils;&quot;));</span>
+<span class="fc" id="L408">        assertEquals(&quot;org.apache.commons.lang3&quot;,</span>
+<span class="fc" id="L409">            ClassUtils.getPackageCanonicalName(&quot;[[Lorg.apache.commons.lang3.ClassUtils;&quot;));</span>
+<span class="fc" id="L410">        assertEquals(&quot;org.apache.commons.lang3&quot;,</span>
+<span class="fc" id="L411">            ClassUtils.getPackageCanonicalName(&quot;org.apache.commons.lang3.ClassUtils[]&quot;));</span>
+<span class="fc" id="L412">        assertEquals(&quot;org.apache.commons.lang3&quot;,</span>
+<span class="fc" id="L413">            ClassUtils.getPackageCanonicalName(&quot;org.apache.commons.lang3.ClassUtils[][]&quot;));</span>
+<span class="fc" id="L414">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(&quot;[I&quot;));</span>
+<span class="fc" id="L415">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(&quot;[[I&quot;));</span>
+<span class="fc" id="L416">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(&quot;int[]&quot;));</span>
+<span class="fc" id="L417">        assertEquals(&quot;&quot;, ClassUtils.getPackageCanonicalName(&quot;int[][]&quot;));</span>
+
+        // Inner types
+<span class="fc" id="L420">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(&quot;org.apache.commons.lang3.ClassUtilsTest$6&quot;));</span>
+<span class="fc" id="L421">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(&quot;org.apache.commons.lang3.ClassUtilsTest$5Named&quot;));</span>
+<span class="fc" id="L422">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageCanonicalName(&quot;org.apache.commons.lang3.ClassUtilsTest$Inner&quot;));</span>
+<span class="fc" id="L423">    }</span>
+
+    @Test
+    public void test_getPackageName_Class() {
+<span class="fc" id="L427">        assertEquals(&quot;java.lang&quot;, ClassUtils.getPackageName(String.class));</span>
+<span class="fc" id="L428">        assertEquals(&quot;java.util&quot;, ClassUtils.getPackageName(Map.Entry.class));</span>
+<span class="fc" id="L429">        assertEquals(&quot;&quot;, ClassUtils.getPackageName((Class&lt;?&gt;) null));</span>
+
+        // LANG-535
+<span class="fc" id="L432">        assertEquals(&quot;java.lang&quot;, ClassUtils.getPackageName(String[].class));</span>
+
+        // Primitive Arrays
+<span class="fc" id="L435">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(boolean[].class));</span>
+<span class="fc" id="L436">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(byte[].class));</span>
+<span class="fc" id="L437">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(char[].class));</span>
+<span class="fc" id="L438">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(short[].class));</span>
+<span class="fc" id="L439">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(int[].class));</span>
+<span class="fc" id="L440">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(long[].class));</span>
+<span class="fc" id="L441">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(float[].class));</span>
+<span class="fc" id="L442">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(double[].class));</span>
+
+        // Arrays of arrays of ...
+<span class="fc" id="L445">        assertEquals(&quot;java.lang&quot;, ClassUtils.getPackageName(String[][].class));</span>
+<span class="fc" id="L446">        assertEquals(&quot;java.lang&quot;, ClassUtils.getPackageName(String[][][].class));</span>
+<span class="fc" id="L447">        assertEquals(&quot;java.lang&quot;, ClassUtils.getPackageName(String[][][][].class));</span>
+
+        // On-the-fly types
+<span class="nc" id="L450">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L453">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageName(new Object() {</span>
+            // empty
+<span class="fc" id="L455">        }.getClass()));</span>
+<span class="fc" id="L456">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageName(Named.class));</span>
+<span class="fc" id="L457">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_getPackageName_Object() {
+<span class="fc" id="L462">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageName(new ClassUtils(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L463">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L464">        assertEquals(&quot;&lt;null&gt;&quot;, ClassUtils.getPackageName(null, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L465">    }</span>
+
+    @Test
+    public void test_getPackageName_String() {
+<span class="fc" id="L469">        assertEquals(&quot;org.apache.commons.lang3&quot;, ClassUtils.getPackageName(ClassUtils.class.getName()));</span>
+<span class="fc" id="L470">        assertEquals(&quot;java.util&quot;, ClassUtils.getPackageName(Map.Entry.class.getName()));</span>
+<span class="fc" id="L471">        assertEquals(&quot;&quot;, ClassUtils.getPackageName((String) null));</span>
+<span class="fc" id="L472">        assertEquals(&quot;&quot;, ClassUtils.getPackageName(&quot;&quot;));</span>
+<span class="fc" id="L473">    }</span>
+
+    @Test
+    public void test_getShortCanonicalName_Class() {
+<span class="fc" id="L477">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getShortCanonicalName(ClassUtils.class));</span>
+<span class="fc" id="L478">        assertEquals(&quot;ClassUtils[]&quot;, ClassUtils.getShortCanonicalName(ClassUtils[].class));</span>
+<span class="fc" id="L479">        assertEquals(&quot;ClassUtils[][]&quot;, ClassUtils.getShortCanonicalName(ClassUtils[][].class));</span>
+<span class="fc" id="L480">        assertEquals(&quot;int[]&quot;, ClassUtils.getShortCanonicalName(int[].class));</span>
+<span class="fc" id="L481">        assertEquals(&quot;int[][]&quot;, ClassUtils.getShortCanonicalName(int[][].class));</span>
+
+        // Inner types
+<span class="nc" id="L484">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L487">        assertEquals(&quot;ClassUtilsTest.8&quot;, ClassUtils.getShortCanonicalName(new Object() {</span>
+            // empty
+<span class="fc" id="L489">        }.getClass()));</span>
+<span class="fc" id="L490">        assertEquals(&quot;ClassUtilsTest.8Named&quot;, ClassUtils.getShortCanonicalName(Named.class));</span>
+<span class="fc" id="L491">        assertEquals(&quot;ClassUtilsTest.Inner&quot;, ClassUtils.getShortCanonicalName(Inner.class));</span>
+<span class="fc" id="L492">    }</span>
+
+    @Test
+    public void test_getShortCanonicalName_Object() {
+<span class="fc" id="L496">        assertEquals(&quot;&lt;null&gt;&quot;, ClassUtils.getShortCanonicalName(null, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L497">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getShortCanonicalName(new ClassUtils(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L498">        assertEquals(&quot;ClassUtils[]&quot;, ClassUtils.getShortCanonicalName(new ClassUtils[0], &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L499">        assertEquals(&quot;ClassUtils[][]&quot;, ClassUtils.getShortCanonicalName(new ClassUtils[0][0], &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L500">        assertEquals(&quot;int[]&quot;, ClassUtils.getShortCanonicalName(new int[0], &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L501">        assertEquals(&quot;int[][]&quot;, ClassUtils.getShortCanonicalName(new int[0][0], &quot;&lt;null&gt;&quot;));</span>
+
+        // Inner types
+<span class="fc" id="L504">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L507">        assertEquals(&quot;ClassUtilsTest.9&quot;, ClassUtils.getShortCanonicalName(new Object() {</span>
+            // empty
+        }, &quot;&lt;null&gt;&quot;));
+<span class="fc" id="L510">        assertEquals(&quot;ClassUtilsTest.9Named&quot;, ClassUtils.getShortCanonicalName(new Named(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L511">        assertEquals(&quot;ClassUtilsTest.Inner&quot;, ClassUtils.getShortCanonicalName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L512">    }</span>
+
+    @Test
+    public void test_getShortCanonicalName_String() {
+<span class="fc" id="L516">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getShortCanonicalName(&quot;org.apache.commons.lang3.ClassUtils&quot;));</span>
+<span class="fc" id="L517">        assertEquals(&quot;ClassUtils[]&quot;, ClassUtils.getShortCanonicalName(&quot;[Lorg.apache.commons.lang3.ClassUtils;&quot;));</span>
+<span class="fc" id="L518">        assertEquals(&quot;ClassUtils[][]&quot;, ClassUtils.getShortCanonicalName(&quot;[[Lorg.apache.commons.lang3.ClassUtils;&quot;));</span>
+<span class="fc" id="L519">        assertEquals(&quot;ClassUtils[]&quot;, ClassUtils.getShortCanonicalName(&quot;org.apache.commons.lang3.ClassUtils[]&quot;));</span>
+<span class="fc" id="L520">        assertEquals(&quot;ClassUtils[][]&quot;, ClassUtils.getShortCanonicalName(&quot;org.apache.commons.lang3.ClassUtils[][]&quot;));</span>
+<span class="fc" id="L521">        assertEquals(&quot;int[]&quot;, ClassUtils.getShortCanonicalName(&quot;[I&quot;));</span>
+<span class="fc" id="L522">        assertEquals(&quot;int[][]&quot;, ClassUtils.getShortCanonicalName(&quot;[[I&quot;));</span>
+<span class="fc" id="L523">        assertEquals(&quot;int[]&quot;, ClassUtils.getShortCanonicalName(&quot;int[]&quot;));</span>
+<span class="fc" id="L524">        assertEquals(&quot;int[][]&quot;, ClassUtils.getShortCanonicalName(&quot;int[][]&quot;));</span>
+
+        // Inner types
+<span class="fc" id="L527">        assertEquals(&quot;ClassUtilsTest.6&quot;, ClassUtils.getShortCanonicalName(&quot;org.apache.commons.lang3.ClassUtilsTest$6&quot;));</span>
+<span class="fc" id="L528">        assertEquals(&quot;ClassUtilsTest.5Named&quot;, ClassUtils.getShortCanonicalName(&quot;org.apache.commons.lang3.ClassUtilsTest$5Named&quot;));</span>
+<span class="fc" id="L529">        assertEquals(&quot;ClassUtilsTest.Inner&quot;, ClassUtils.getShortCanonicalName(&quot;org.apache.commons.lang3.ClassUtilsTest$Inner&quot;));</span>
+<span class="fc" id="L530">    }</span>
+
+    @Test
+    public void test_getShortClassName_Class() {
+<span class="fc" id="L534">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getShortClassName(ClassUtils.class));</span>
+<span class="fc" id="L535">        assertEquals(&quot;Map.Entry&quot;, ClassUtils.getShortClassName(Map.Entry.class));</span>
+<span class="fc" id="L536">        assertEquals(&quot;&quot;, ClassUtils.getShortClassName((Class&lt;?&gt;) null));</span>
+
+        // LANG-535
+<span class="fc" id="L539">        assertEquals(&quot;String[]&quot;, ClassUtils.getShortClassName(String[].class));</span>
+<span class="fc" id="L540">        assertEquals(&quot;Map.Entry[]&quot;, ClassUtils.getShortClassName(Map.Entry[].class));</span>
+
+        // Primitives
+<span class="fc" id="L543">        assertEquals(&quot;boolean&quot;, ClassUtils.getShortClassName(boolean.class));</span>
+<span class="fc" id="L544">        assertEquals(&quot;byte&quot;, ClassUtils.getShortClassName(byte.class));</span>
+<span class="fc" id="L545">        assertEquals(&quot;char&quot;, ClassUtils.getShortClassName(char.class));</span>
+<span class="fc" id="L546">        assertEquals(&quot;short&quot;, ClassUtils.getShortClassName(short.class));</span>
+<span class="fc" id="L547">        assertEquals(&quot;int&quot;, ClassUtils.getShortClassName(int.class));</span>
+<span class="fc" id="L548">        assertEquals(&quot;long&quot;, ClassUtils.getShortClassName(long.class));</span>
+<span class="fc" id="L549">        assertEquals(&quot;float&quot;, ClassUtils.getShortClassName(float.class));</span>
+<span class="fc" id="L550">        assertEquals(&quot;double&quot;, ClassUtils.getShortClassName(double.class));</span>
+
+        // Primitive Arrays
+<span class="fc" id="L553">        assertEquals(&quot;boolean[]&quot;, ClassUtils.getShortClassName(boolean[].class));</span>
+<span class="fc" id="L554">        assertEquals(&quot;byte[]&quot;, ClassUtils.getShortClassName(byte[].class));</span>
+<span class="fc" id="L555">        assertEquals(&quot;char[]&quot;, ClassUtils.getShortClassName(char[].class));</span>
+<span class="fc" id="L556">        assertEquals(&quot;short[]&quot;, ClassUtils.getShortClassName(short[].class));</span>
+<span class="fc" id="L557">        assertEquals(&quot;int[]&quot;, ClassUtils.getShortClassName(int[].class));</span>
+<span class="fc" id="L558">        assertEquals(&quot;long[]&quot;, ClassUtils.getShortClassName(long[].class));</span>
+<span class="fc" id="L559">        assertEquals(&quot;float[]&quot;, ClassUtils.getShortClassName(float[].class));</span>
+<span class="fc" id="L560">        assertEquals(&quot;double[]&quot;, ClassUtils.getShortClassName(double[].class));</span>
+
+        // Arrays of arrays of ...
+<span class="fc" id="L563">        assertEquals(&quot;String[][]&quot;, ClassUtils.getShortClassName(String[][].class));</span>
+<span class="fc" id="L564">        assertEquals(&quot;String[][][]&quot;, ClassUtils.getShortClassName(String[][][].class));</span>
+<span class="fc" id="L565">        assertEquals(&quot;String[][][][]&quot;, ClassUtils.getShortClassName(String[][][][].class));</span>
+
+        // Inner types
+<span class="nc" id="L568">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L571">        assertEquals(&quot;ClassUtilsTest.10&quot;, ClassUtils.getShortClassName(new Object() {</span>
+            // empty
+<span class="fc" id="L573">        }.getClass()));</span>
+<span class="fc" id="L574">        assertEquals(&quot;ClassUtilsTest.10Named&quot;, ClassUtils.getShortClassName(Named.class));</span>
+<span class="fc" id="L575">        assertEquals(&quot;ClassUtilsTest.Inner&quot;, ClassUtils.getShortClassName(Inner.class));</span>
+<span class="fc" id="L576">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_getShortClassName_Object() {
+<span class="fc" id="L581">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getShortClassName(new ClassUtils(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L582">        assertEquals(&quot;ClassUtilsTest.Inner&quot;, ClassUtils.getShortClassName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L583">        assertEquals(&quot;String&quot;, ClassUtils.getShortClassName(&quot;hello&quot;, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L584">        assertEquals(&quot;&lt;null&gt;&quot;, ClassUtils.getShortClassName(null, &quot;&lt;null&gt;&quot;));</span>
+
+        // Inner types
+<span class="fc" id="L587">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L590">        assertEquals(&quot;ClassUtilsTest.11&quot;, ClassUtils.getShortClassName(new Object() {</span>
+            // empty
+        }, &quot;&lt;null&gt;&quot;));
+<span class="fc" id="L593">        assertEquals(&quot;ClassUtilsTest.11Named&quot;, ClassUtils.getShortClassName(new Named(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L594">        assertEquals(&quot;ClassUtilsTest.Inner&quot;, ClassUtils.getShortClassName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L595">    }</span>
+
+    @Test
+    public void test_getShortClassName_String() {
+<span class="fc" id="L599">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getShortClassName(ClassUtils.class.getName()));</span>
+<span class="fc" id="L600">        assertEquals(&quot;Map.Entry&quot;, ClassUtils.getShortClassName(Map.Entry.class.getName()));</span>
+<span class="fc" id="L601">        assertEquals(&quot;&quot;, ClassUtils.getShortClassName((String) null));</span>
+<span class="fc" id="L602">        assertEquals(&quot;&quot;, ClassUtils.getShortClassName(&quot;&quot;));</span>
+<span class="fc" id="L603">    }</span>
+
+    @Test
+    public void test_getSimpleName_Class() {
+<span class="fc" id="L607">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getSimpleName(ClassUtils.class));</span>
+<span class="fc" id="L608">        assertEquals(&quot;Entry&quot;, ClassUtils.getSimpleName(Map.Entry.class));</span>
+<span class="fc" id="L609">        assertEquals(&quot;&quot;, ClassUtils.getSimpleName(null));</span>
+
+        // LANG-535
+<span class="fc" id="L612">        assertEquals(&quot;String[]&quot;, ClassUtils.getSimpleName(String[].class));</span>
+<span class="fc" id="L613">        assertEquals(&quot;Entry[]&quot;, ClassUtils.getSimpleName(Map.Entry[].class));</span>
+
+        // Primitives
+<span class="fc" id="L616">        assertEquals(&quot;boolean&quot;, ClassUtils.getSimpleName(boolean.class));</span>
+<span class="fc" id="L617">        assertEquals(&quot;byte&quot;, ClassUtils.getSimpleName(byte.class));</span>
+<span class="fc" id="L618">        assertEquals(&quot;char&quot;, ClassUtils.getSimpleName(char.class));</span>
+<span class="fc" id="L619">        assertEquals(&quot;short&quot;, ClassUtils.getSimpleName(short.class));</span>
+<span class="fc" id="L620">        assertEquals(&quot;int&quot;, ClassUtils.getSimpleName(int.class));</span>
+<span class="fc" id="L621">        assertEquals(&quot;long&quot;, ClassUtils.getSimpleName(long.class));</span>
+<span class="fc" id="L622">        assertEquals(&quot;float&quot;, ClassUtils.getSimpleName(float.class));</span>
+<span class="fc" id="L623">        assertEquals(&quot;double&quot;, ClassUtils.getSimpleName(double.class));</span>
+
+        // Primitive Arrays
+<span class="fc" id="L626">        assertEquals(&quot;boolean[]&quot;, ClassUtils.getSimpleName(boolean[].class));</span>
+<span class="fc" id="L627">        assertEquals(&quot;byte[]&quot;, ClassUtils.getSimpleName(byte[].class));</span>
+<span class="fc" id="L628">        assertEquals(&quot;char[]&quot;, ClassUtils.getSimpleName(char[].class));</span>
+<span class="fc" id="L629">        assertEquals(&quot;short[]&quot;, ClassUtils.getSimpleName(short[].class));</span>
+<span class="fc" id="L630">        assertEquals(&quot;int[]&quot;, ClassUtils.getSimpleName(int[].class));</span>
+<span class="fc" id="L631">        assertEquals(&quot;long[]&quot;, ClassUtils.getSimpleName(long[].class));</span>
+<span class="fc" id="L632">        assertEquals(&quot;float[]&quot;, ClassUtils.getSimpleName(float[].class));</span>
+<span class="fc" id="L633">        assertEquals(&quot;double[]&quot;, ClassUtils.getSimpleName(double[].class));</span>
+
+        // Arrays of arrays of ...
+<span class="fc" id="L636">        assertEquals(&quot;String[][]&quot;, ClassUtils.getSimpleName(String[][].class));</span>
+<span class="fc" id="L637">        assertEquals(&quot;String[][][]&quot;, ClassUtils.getSimpleName(String[][][].class));</span>
+<span class="fc" id="L638">        assertEquals(&quot;String[][][][]&quot;, ClassUtils.getSimpleName(String[][][][].class));</span>
+
+        // On-the-fly types
+<span class="nc" id="L641">        class Named {</span>
+            // empty
+        }
+<span class="fc" id="L644">        assertEquals(&quot;&quot;, ClassUtils.getSimpleName(new Object() {</span>
+            // empty
+<span class="fc" id="L646">        }.getClass()));</span>
+<span class="fc" id="L647">        assertEquals(&quot;Named&quot;, ClassUtils.getSimpleName(Named.class));</span>
+<span class="fc" id="L648">    }</span>
+
+    @Test
+    public void test_getSimpleName_Object() {
+<span class="fc" id="L652">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getSimpleName(new ClassUtils()));</span>
+<span class="fc" id="L653">        assertEquals(&quot;Inner&quot;, ClassUtils.getSimpleName(new Inner()));</span>
+<span class="fc" id="L654">        assertEquals(&quot;String&quot;, ClassUtils.getSimpleName(&quot;hello&quot;));</span>
+<span class="fc" id="L655">        assertEquals(StringUtils.EMPTY, ClassUtils.getSimpleName(null));</span>
+<span class="fc" id="L656">        assertEquals(StringUtils.EMPTY, ClassUtils.getSimpleName(null));</span>
+<span class="fc" id="L657">    }</span>
+
+    @Test
+    public void test_getSimpleName_Object_String() {
+<span class="fc" id="L661">        assertEquals(&quot;ClassUtils&quot;, ClassUtils.getSimpleName(new ClassUtils(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L662">        assertEquals(&quot;Inner&quot;, ClassUtils.getSimpleName(new Inner(), &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L663">        assertEquals(&quot;String&quot;, ClassUtils.getSimpleName(&quot;hello&quot;, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L664">        assertEquals(&quot;&lt;null&gt;&quot;, ClassUtils.getSimpleName(null, &quot;&lt;null&gt;&quot;));</span>
+<span class="fc" id="L665">        assertNull(ClassUtils.getSimpleName(null, null));</span>
+<span class="fc" id="L666">    }</span>
+
+    @Test
+    public void test_isAssignable() {
+<span class="fc" id="L670">        assertFalse(ClassUtils.isAssignable((Class&lt;?&gt;) null, null));</span>
+<span class="fc" id="L671">        assertFalse(ClassUtils.isAssignable(String.class, null));</span>
+
+<span class="fc" id="L673">        assertTrue(ClassUtils.isAssignable(null, Object.class));</span>
+<span class="fc" id="L674">        assertTrue(ClassUtils.isAssignable(null, Integer.class));</span>
+<span class="fc" id="L675">        assertFalse(ClassUtils.isAssignable(null, Integer.TYPE));</span>
+<span class="fc" id="L676">        assertTrue(ClassUtils.isAssignable(String.class, Object.class));</span>
+<span class="fc" id="L677">        assertTrue(ClassUtils.isAssignable(String.class, String.class));</span>
+<span class="fc" id="L678">        assertFalse(ClassUtils.isAssignable(Object.class, String.class));</span>
+
+<span class="fc" id="L680">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Integer.class));</span>
+<span class="fc" id="L681">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Object.class));</span>
+<span class="fc" id="L682">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.TYPE));</span>
+<span class="fc" id="L683">        assertTrue(ClassUtils.isAssignable(Integer.class, Object.class));</span>
+<span class="fc" id="L684">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Integer.TYPE));</span>
+<span class="fc" id="L685">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.class));</span>
+<span class="fc" id="L686">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Boolean.class));</span>
+<span class="fc" id="L687">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Object.class));</span>
+<span class="fc" id="L688">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.TYPE));</span>
+<span class="fc" id="L689">        assertTrue(ClassUtils.isAssignable(Boolean.class, Object.class));</span>
+<span class="fc" id="L690">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Boolean.TYPE));</span>
+<span class="fc" id="L691">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.class));</span>
+<span class="fc" id="L692">    }</span>
+
+    @Test
+    public void test_isAssignable_Autoboxing() {
+<span class="fc" id="L696">        assertFalse(ClassUtils.isAssignable((Class&lt;?&gt;) null, null, true));</span>
+<span class="fc" id="L697">        assertFalse(ClassUtils.isAssignable(String.class, null, true));</span>
+
+<span class="fc" id="L699">        assertTrue(ClassUtils.isAssignable(null, Object.class, true));</span>
+<span class="fc" id="L700">        assertTrue(ClassUtils.isAssignable(null, Integer.class, true));</span>
+<span class="fc" id="L701">        assertFalse(ClassUtils.isAssignable(null, Integer.TYPE, true));</span>
+<span class="fc" id="L702">        assertTrue(ClassUtils.isAssignable(String.class, Object.class, true));</span>
+<span class="fc" id="L703">        assertTrue(ClassUtils.isAssignable(String.class, String.class, true));</span>
+<span class="fc" id="L704">        assertFalse(ClassUtils.isAssignable(Object.class, String.class, true));</span>
+<span class="fc" id="L705">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Integer.class, true));</span>
+<span class="fc" id="L706">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Object.class, true));</span>
+<span class="fc" id="L707">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.TYPE, true));</span>
+<span class="fc" id="L708">        assertTrue(ClassUtils.isAssignable(Integer.class, Object.class, true));</span>
+<span class="fc" id="L709">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Integer.TYPE, true));</span>
+<span class="fc" id="L710">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.class, true));</span>
+<span class="fc" id="L711">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Boolean.class, true));</span>
+<span class="fc" id="L712">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.TYPE, true));</span>
+<span class="fc" id="L713">        assertTrue(ClassUtils.isAssignable(Boolean.class, Object.class, true));</span>
+<span class="fc" id="L714">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Boolean.TYPE, true));</span>
+<span class="fc" id="L715">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.class, true));</span>
+<span class="fc" id="L716">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_isAssignable_ClassArray_ClassArray() {
+<span class="fc" id="L721">        final Class&lt;?&gt;[] array2 = new Class[] {Object.class, Object.class};</span>
+<span class="fc" id="L722">        final Class&lt;?&gt;[] array1 = new Class[] {Object.class};</span>
+<span class="fc" id="L723">        final Class&lt;?&gt;[] array1s = new Class[] {String.class};</span>
+<span class="fc" id="L724">        final Class&lt;?&gt;[] array0 = new Class[] {};</span>
+<span class="fc" id="L725">        final Class&lt;?&gt;[] arrayPrimitives = { Integer.TYPE, Boolean.TYPE };</span>
+<span class="fc" id="L726">        final Class&lt;?&gt;[] arrayWrappers = { Integer.class, Boolean.class };</span>
+
+<span class="fc" id="L728">        assertFalse(ClassUtils.isAssignable(array1, array2));</span>
+<span class="fc" id="L729">        assertFalse(ClassUtils.isAssignable(null, array2));</span>
+<span class="fc" id="L730">        assertTrue(ClassUtils.isAssignable(null, array0));</span>
+<span class="fc" id="L731">        assertTrue(ClassUtils.isAssignable(array0, array0));</span>
+<span class="fc" id="L732">        assertTrue(ClassUtils.isAssignable(array0, (Class&lt;?&gt;[]) null)); // explicit cast to avoid warning</span>
+<span class="fc" id="L733">        assertTrue(ClassUtils.isAssignable(null, (Class&lt;?&gt;[]) null)); // explicit cast to avoid warning</span>
+
+<span class="fc" id="L735">        assertFalse(ClassUtils.isAssignable(array1, array1s));</span>
+<span class="fc" id="L736">        assertTrue(ClassUtils.isAssignable(array1s, array1s));</span>
+<span class="fc" id="L737">        assertTrue(ClassUtils.isAssignable(array1s, array1));</span>
+
+<span class="fc" id="L739">        assertTrue(ClassUtils.isAssignable(arrayPrimitives, arrayWrappers));</span>
+<span class="fc" id="L740">        assertTrue(ClassUtils.isAssignable(arrayWrappers, arrayPrimitives));</span>
+<span class="fc" id="L741">        assertFalse(ClassUtils.isAssignable(arrayPrimitives, array1));</span>
+<span class="fc" id="L742">        assertFalse(ClassUtils.isAssignable(arrayWrappers, array1));</span>
+<span class="fc" id="L743">        assertTrue(ClassUtils.isAssignable(arrayPrimitives, array2));</span>
+<span class="fc" id="L744">        assertTrue(ClassUtils.isAssignable(arrayWrappers, array2));</span>
+<span class="fc" id="L745">    }</span>
+
+    @Test
+    public void test_isAssignable_ClassArray_ClassArray_Autoboxing() {
+<span class="fc" id="L749">        final Class&lt;?&gt;[] array2 = new Class[] {Object.class, Object.class};</span>
+<span class="fc" id="L750">        final Class&lt;?&gt;[] array1 = new Class[] {Object.class};</span>
+<span class="fc" id="L751">        final Class&lt;?&gt;[] array1s = new Class[] {String.class};</span>
+<span class="fc" id="L752">        final Class&lt;?&gt;[] array0 = new Class[] {};</span>
+<span class="fc" id="L753">        final Class&lt;?&gt;[] arrayPrimitives = { Integer.TYPE, Boolean.TYPE };</span>
+<span class="fc" id="L754">        final Class&lt;?&gt;[] arrayWrappers = { Integer.class, Boolean.class };</span>
+
+<span class="fc" id="L756">        assertFalse(ClassUtils.isAssignable(array1, array2, true));</span>
+<span class="fc" id="L757">        assertFalse(ClassUtils.isAssignable(null, array2, true));</span>
+<span class="fc" id="L758">        assertTrue(ClassUtils.isAssignable(null, array0, true));</span>
+<span class="fc" id="L759">        assertTrue(ClassUtils.isAssignable(array0, array0, true));</span>
+<span class="fc" id="L760">        assertTrue(ClassUtils.isAssignable(array0, null, true));</span>
+<span class="fc" id="L761">        assertTrue(ClassUtils.isAssignable((Class[]) null, null, true));</span>
+
+<span class="fc" id="L763">        assertFalse(ClassUtils.isAssignable(array1, array1s, true));</span>
+<span class="fc" id="L764">        assertTrue(ClassUtils.isAssignable(array1s, array1s, true));</span>
+<span class="fc" id="L765">        assertTrue(ClassUtils.isAssignable(array1s, array1, true));</span>
+
+<span class="fc" id="L767">        assertTrue(ClassUtils.isAssignable(arrayPrimitives, arrayWrappers, true));</span>
+<span class="fc" id="L768">        assertTrue(ClassUtils.isAssignable(arrayWrappers, arrayPrimitives, true));</span>
+<span class="fc" id="L769">        assertFalse(ClassUtils.isAssignable(arrayPrimitives, array1, true));</span>
+<span class="fc" id="L770">        assertFalse(ClassUtils.isAssignable(arrayWrappers, array1, true));</span>
+<span class="fc" id="L771">        assertTrue(ClassUtils.isAssignable(arrayPrimitives, array2, true));</span>
+<span class="fc" id="L772">        assertTrue(ClassUtils.isAssignable(arrayWrappers, array2, true));</span>
+<span class="fc" id="L773">    }</span>
+
+    @Test
+    public void test_isAssignable_ClassArray_ClassArray_NoAutoboxing() {
+<span class="fc" id="L777">        final Class&lt;?&gt;[] array2 = new Class[] {Object.class, Object.class};</span>
+<span class="fc" id="L778">        final Class&lt;?&gt;[] array1 = new Class[] {Object.class};</span>
+<span class="fc" id="L779">        final Class&lt;?&gt;[] array1s = new Class[] {String.class};</span>
+<span class="fc" id="L780">        final Class&lt;?&gt;[] array0 = new Class[] {};</span>
+<span class="fc" id="L781">        final Class&lt;?&gt;[] arrayPrimitives = { Integer.TYPE, Boolean.TYPE };</span>
+<span class="fc" id="L782">        final Class&lt;?&gt;[] arrayWrappers = { Integer.class, Boolean.class };</span>
+
+<span class="fc" id="L784">        assertFalse(ClassUtils.isAssignable(array1, array2, false));</span>
+<span class="fc" id="L785">        assertFalse(ClassUtils.isAssignable(null, array2, false));</span>
+<span class="fc" id="L786">        assertTrue(ClassUtils.isAssignable(null, array0, false));</span>
+<span class="fc" id="L787">        assertTrue(ClassUtils.isAssignable(array0, array0, false));</span>
+<span class="fc" id="L788">        assertTrue(ClassUtils.isAssignable(array0, null, false));</span>
+<span class="fc" id="L789">        assertTrue(ClassUtils.isAssignable((Class[]) null, null, false));</span>
+
+<span class="fc" id="L791">        assertFalse(ClassUtils.isAssignable(array1, array1s, false));</span>
+<span class="fc" id="L792">        assertTrue(ClassUtils.isAssignable(array1s, array1s, false));</span>
+<span class="fc" id="L793">        assertTrue(ClassUtils.isAssignable(array1s, array1, false));</span>
+
+<span class="fc" id="L795">        assertFalse(ClassUtils.isAssignable(arrayPrimitives, arrayWrappers, false));</span>
+<span class="fc" id="L796">        assertFalse(ClassUtils.isAssignable(arrayWrappers, arrayPrimitives, false));</span>
+<span class="fc" id="L797">        assertFalse(ClassUtils.isAssignable(arrayPrimitives, array1, false));</span>
+<span class="fc" id="L798">        assertFalse(ClassUtils.isAssignable(arrayWrappers, array1, false));</span>
+<span class="fc" id="L799">        assertTrue(ClassUtils.isAssignable(arrayWrappers, array2, false));</span>
+<span class="fc" id="L800">        assertFalse(ClassUtils.isAssignable(arrayPrimitives, array2, false));</span>
+<span class="fc" id="L801">    }</span>
+
+    @Test
+    public void test_isAssignable_DefaultUnboxing_Widening() {
+        // test byte conversions
+<span class="fc" id="L806">        assertFalse(ClassUtils.isAssignable(Byte.class, Character.TYPE), &quot;byte -&gt; char&quot;);</span>
+<span class="fc" id="L807">        assertTrue(ClassUtils.isAssignable(Byte.class, Byte.TYPE), &quot;byte -&gt; byte&quot;);</span>
+<span class="fc" id="L808">        assertTrue(ClassUtils.isAssignable(Byte.class, Short.TYPE), &quot;byte -&gt; short&quot;);</span>
+<span class="fc" id="L809">        assertTrue(ClassUtils.isAssignable(Byte.class, Integer.TYPE), &quot;byte -&gt; int&quot;);</span>
+<span class="fc" id="L810">        assertTrue(ClassUtils.isAssignable(Byte.class, Long.TYPE), &quot;byte -&gt; long&quot;);</span>
+<span class="fc" id="L811">        assertTrue(ClassUtils.isAssignable(Byte.class, Float.TYPE), &quot;byte -&gt; float&quot;);</span>
+<span class="fc" id="L812">        assertTrue(ClassUtils.isAssignable(Byte.class, Double.TYPE), &quot;byte -&gt; double&quot;);</span>
+<span class="fc" id="L813">        assertFalse(ClassUtils.isAssignable(Byte.class, Boolean.TYPE), &quot;byte -&gt; boolean&quot;);</span>
+
+        // test short conversions
+<span class="fc" id="L816">        assertFalse(ClassUtils.isAssignable(Short.class, Character.TYPE), &quot;short -&gt; char&quot;);</span>
+<span class="fc" id="L817">        assertFalse(ClassUtils.isAssignable(Short.class, Byte.TYPE), &quot;short -&gt; byte&quot;);</span>
+<span class="fc" id="L818">        assertTrue(ClassUtils.isAssignable(Short.class, Short.TYPE), &quot;short -&gt; short&quot;);</span>
+<span class="fc" id="L819">        assertTrue(ClassUtils.isAssignable(Short.class, Integer.TYPE), &quot;short -&gt; int&quot;);</span>
+<span class="fc" id="L820">        assertTrue(ClassUtils.isAssignable(Short.class, Long.TYPE), &quot;short -&gt; long&quot;);</span>
+<span class="fc" id="L821">        assertTrue(ClassUtils.isAssignable(Short.class, Float.TYPE), &quot;short -&gt; float&quot;);</span>
+<span class="fc" id="L822">        assertTrue(ClassUtils.isAssignable(Short.class, Double.TYPE), &quot;short -&gt; double&quot;);</span>
+<span class="fc" id="L823">        assertFalse(ClassUtils.isAssignable(Short.class, Boolean.TYPE), &quot;short -&gt; boolean&quot;);</span>
+
+        // test char conversions
+<span class="fc" id="L826">        assertTrue(ClassUtils.isAssignable(Character.class, Character.TYPE), &quot;char -&gt; char&quot;);</span>
+<span class="fc" id="L827">        assertFalse(ClassUtils.isAssignable(Character.class, Byte.TYPE), &quot;char -&gt; byte&quot;);</span>
+<span class="fc" id="L828">        assertFalse(ClassUtils.isAssignable(Character.class, Short.TYPE), &quot;char -&gt; short&quot;);</span>
+<span class="fc" id="L829">        assertTrue(ClassUtils.isAssignable(Character.class, Integer.TYPE), &quot;char -&gt; int&quot;);</span>
+<span class="fc" id="L830">        assertTrue(ClassUtils.isAssignable(Character.class, Long.TYPE), &quot;char -&gt; long&quot;);</span>
+<span class="fc" id="L831">        assertTrue(ClassUtils.isAssignable(Character.class, Float.TYPE), &quot;char -&gt; float&quot;);</span>
+<span class="fc" id="L832">        assertTrue(ClassUtils.isAssignable(Character.class, Double.TYPE), &quot;char -&gt; double&quot;);</span>
+<span class="fc" id="L833">        assertFalse(ClassUtils.isAssignable(Character.class, Boolean.TYPE), &quot;char -&gt; boolean&quot;);</span>
+
+        // test int conversions
+<span class="fc" id="L836">        assertFalse(ClassUtils.isAssignable(Integer.class, Character.TYPE), &quot;int -&gt; char&quot;);</span>
+<span class="fc" id="L837">        assertFalse(ClassUtils.isAssignable(Integer.class, Byte.TYPE), &quot;int -&gt; byte&quot;);</span>
+<span class="fc" id="L838">        assertFalse(ClassUtils.isAssignable(Integer.class, Short.TYPE), &quot;int -&gt; short&quot;);</span>
+<span class="fc" id="L839">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.TYPE), &quot;int -&gt; int&quot;);</span>
+<span class="fc" id="L840">        assertTrue(ClassUtils.isAssignable(Integer.class, Long.TYPE), &quot;int -&gt; long&quot;);</span>
+<span class="fc" id="L841">        assertTrue(ClassUtils.isAssignable(Integer.class, Float.TYPE), &quot;int -&gt; float&quot;);</span>
+<span class="fc" id="L842">        assertTrue(ClassUtils.isAssignable(Integer.class, Double.TYPE), &quot;int -&gt; double&quot;);</span>
+<span class="fc" id="L843">        assertFalse(ClassUtils.isAssignable(Integer.class, Boolean.TYPE), &quot;int -&gt; boolean&quot;);</span>
+
+        // test long conversions
+<span class="fc" id="L846">        assertFalse(ClassUtils.isAssignable(Long.class, Character.TYPE), &quot;long -&gt; char&quot;);</span>
+<span class="fc" id="L847">        assertFalse(ClassUtils.isAssignable(Long.class, Byte.TYPE), &quot;long -&gt; byte&quot;);</span>
+<span class="fc" id="L848">        assertFalse(ClassUtils.isAssignable(Long.class, Short.TYPE), &quot;long -&gt; short&quot;);</span>
+<span class="fc" id="L849">        assertFalse(ClassUtils.isAssignable(Long.class, Integer.TYPE), &quot;long -&gt; int&quot;);</span>
+<span class="fc" id="L850">        assertTrue(ClassUtils.isAssignable(Long.class, Long.TYPE), &quot;long -&gt; long&quot;);</span>
+<span class="fc" id="L851">        assertTrue(ClassUtils.isAssignable(Long.class, Float.TYPE), &quot;long -&gt; float&quot;);</span>
+<span class="fc" id="L852">        assertTrue(ClassUtils.isAssignable(Long.class, Double.TYPE), &quot;long -&gt; double&quot;);</span>
+<span class="fc" id="L853">        assertFalse(ClassUtils.isAssignable(Long.class, Boolean.TYPE), &quot;long -&gt; boolean&quot;);</span>
+
+        // test float conversions
+<span class="fc" id="L856">        assertFalse(ClassUtils.isAssignable(Float.class, Character.TYPE), &quot;float -&gt; char&quot;);</span>
+<span class="fc" id="L857">        assertFalse(ClassUtils.isAssignable(Float.class, Byte.TYPE), &quot;float -&gt; byte&quot;);</span>
+<span class="fc" id="L858">        assertFalse(ClassUtils.isAssignable(Float.class, Short.TYPE), &quot;float -&gt; short&quot;);</span>
+<span class="fc" id="L859">        assertFalse(ClassUtils.isAssignable(Float.class, Integer.TYPE), &quot;float -&gt; int&quot;);</span>
+<span class="fc" id="L860">        assertFalse(ClassUtils.isAssignable(Float.class, Long.TYPE), &quot;float -&gt; long&quot;);</span>
+<span class="fc" id="L861">        assertTrue(ClassUtils.isAssignable(Float.class, Float.TYPE), &quot;float -&gt; float&quot;);</span>
+<span class="fc" id="L862">        assertTrue(ClassUtils.isAssignable(Float.class, Double.TYPE), &quot;float -&gt; double&quot;);</span>
+<span class="fc" id="L863">        assertFalse(ClassUtils.isAssignable(Float.class, Boolean.TYPE), &quot;float -&gt; boolean&quot;);</span>
+
+        // test double conversions
+<span class="fc" id="L866">        assertFalse(ClassUtils.isAssignable(Double.class, Character.TYPE), &quot;double -&gt; char&quot;);</span>
+<span class="fc" id="L867">        assertFalse(ClassUtils.isAssignable(Double.class, Byte.TYPE), &quot;double -&gt; byte&quot;);</span>
+<span class="fc" id="L868">        assertFalse(ClassUtils.isAssignable(Double.class, Short.TYPE), &quot;double -&gt; short&quot;);</span>
+<span class="fc" id="L869">        assertFalse(ClassUtils.isAssignable(Double.class, Integer.TYPE), &quot;double -&gt; int&quot;);</span>
+<span class="fc" id="L870">        assertFalse(ClassUtils.isAssignable(Double.class, Long.TYPE), &quot;double -&gt; long&quot;);</span>
+<span class="fc" id="L871">        assertFalse(ClassUtils.isAssignable(Double.class, Float.TYPE), &quot;double -&gt; float&quot;);</span>
+<span class="fc" id="L872">        assertTrue(ClassUtils.isAssignable(Double.class, Double.TYPE), &quot;double -&gt; double&quot;);</span>
+<span class="fc" id="L873">        assertFalse(ClassUtils.isAssignable(Double.class, Boolean.TYPE), &quot;double -&gt; boolean&quot;);</span>
+
+        // test boolean conversions
+<span class="fc" id="L876">        assertFalse(ClassUtils.isAssignable(Boolean.class, Character.TYPE), &quot;boolean -&gt; char&quot;);</span>
+<span class="fc" id="L877">        assertFalse(ClassUtils.isAssignable(Boolean.class, Byte.TYPE), &quot;boolean -&gt; byte&quot;);</span>
+<span class="fc" id="L878">        assertFalse(ClassUtils.isAssignable(Boolean.class, Short.TYPE), &quot;boolean -&gt; short&quot;);</span>
+<span class="fc" id="L879">        assertFalse(ClassUtils.isAssignable(Boolean.class, Integer.TYPE), &quot;boolean -&gt; int&quot;);</span>
+<span class="fc" id="L880">        assertFalse(ClassUtils.isAssignable(Boolean.class, Long.TYPE), &quot;boolean -&gt; long&quot;);</span>
+<span class="fc" id="L881">        assertFalse(ClassUtils.isAssignable(Boolean.class, Float.TYPE), &quot;boolean -&gt; float&quot;);</span>
+<span class="fc" id="L882">        assertFalse(ClassUtils.isAssignable(Boolean.class, Double.TYPE), &quot;boolean -&gt; double&quot;);</span>
+<span class="fc" id="L883">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.TYPE), &quot;boolean -&gt; boolean&quot;);</span>
+<span class="fc" id="L884">    }</span>
+
+    @Test
+    public void test_isAssignable_NoAutoboxing() {
+<span class="fc" id="L888">        assertFalse(ClassUtils.isAssignable((Class&lt;?&gt;) null, null, false));</span>
+<span class="fc" id="L889">        assertFalse(ClassUtils.isAssignable(String.class, null, false));</span>
+
+<span class="fc" id="L891">        assertTrue(ClassUtils.isAssignable(null, Object.class, false));</span>
+<span class="fc" id="L892">        assertTrue(ClassUtils.isAssignable(null, Integer.class, false));</span>
+<span class="fc" id="L893">        assertFalse(ClassUtils.isAssignable(null, Integer.TYPE, false));</span>
+<span class="fc" id="L894">        assertTrue(ClassUtils.isAssignable(String.class, Object.class, false));</span>
+<span class="fc" id="L895">        assertTrue(ClassUtils.isAssignable(String.class, String.class, false));</span>
+<span class="fc" id="L896">        assertFalse(ClassUtils.isAssignable(Object.class, String.class, false));</span>
+<span class="fc" id="L897">        assertFalse(ClassUtils.isAssignable(Integer.TYPE, Integer.class, false));</span>
+<span class="fc" id="L898">        assertFalse(ClassUtils.isAssignable(Integer.TYPE, Object.class, false));</span>
+<span class="fc" id="L899">        assertFalse(ClassUtils.isAssignable(Integer.class, Integer.TYPE, false));</span>
+<span class="fc" id="L900">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Integer.TYPE, false));</span>
+<span class="fc" id="L901">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.class, false));</span>
+<span class="fc" id="L902">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Boolean.class, false));</span>
+<span class="fc" id="L903">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Object.class, false));</span>
+<span class="fc" id="L904">        assertFalse(ClassUtils.isAssignable(Boolean.class, Boolean.TYPE, false));</span>
+<span class="fc" id="L905">        assertTrue(ClassUtils.isAssignable(Boolean.class, Object.class, false));</span>
+<span class="fc" id="L906">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Boolean.TYPE, false));</span>
+<span class="fc" id="L907">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.class, false));</span>
+<span class="fc" id="L908">    }</span>
+
+    @Test
+    public void test_isAssignable_Unboxing_Widening() {
+        // test byte conversions
+<span class="fc" id="L913">        assertFalse(ClassUtils.isAssignable(Byte.class, Character.TYPE, true), &quot;byte -&gt; char&quot;);</span>
+<span class="fc" id="L914">        assertTrue(ClassUtils.isAssignable(Byte.class, Byte.TYPE, true), &quot;byte -&gt; byte&quot;);</span>
+<span class="fc" id="L915">        assertTrue(ClassUtils.isAssignable(Byte.class, Short.TYPE, true), &quot;byte -&gt; short&quot;);</span>
+<span class="fc" id="L916">        assertTrue(ClassUtils.isAssignable(Byte.class, Integer.TYPE, true), &quot;byte -&gt; int&quot;);</span>
+<span class="fc" id="L917">        assertTrue(ClassUtils.isAssignable(Byte.class, Long.TYPE, true), &quot;byte -&gt; long&quot;);</span>
+<span class="fc" id="L918">        assertTrue(ClassUtils.isAssignable(Byte.class, Float.TYPE, true), &quot;byte -&gt; float&quot;);</span>
+<span class="fc" id="L919">        assertTrue(ClassUtils.isAssignable(Byte.class, Double.TYPE, true), &quot;byte -&gt; double&quot;);</span>
+<span class="fc" id="L920">        assertFalse(ClassUtils.isAssignable(Byte.class, Boolean.TYPE, true), &quot;byte -&gt; boolean&quot;);</span>
+
+        // test short conversions
+<span class="fc" id="L923">        assertFalse(ClassUtils.isAssignable(Short.class, Character.TYPE, true), &quot;short -&gt; char&quot;);</span>
+<span class="fc" id="L924">        assertFalse(ClassUtils.isAssignable(Short.class, Byte.TYPE, true), &quot;short -&gt; byte&quot;);</span>
+<span class="fc" id="L925">        assertTrue(ClassUtils.isAssignable(Short.class, Short.TYPE, true), &quot;short -&gt; short&quot;);</span>
+<span class="fc" id="L926">        assertTrue(ClassUtils.isAssignable(Short.class, Integer.TYPE, true), &quot;short -&gt; int&quot;);</span>
+<span class="fc" id="L927">        assertTrue(ClassUtils.isAssignable(Short.class, Long.TYPE, true), &quot;short -&gt; long&quot;);</span>
+<span class="fc" id="L928">        assertTrue(ClassUtils.isAssignable(Short.class, Float.TYPE, true), &quot;short -&gt; float&quot;);</span>
+<span class="fc" id="L929">        assertTrue(ClassUtils.isAssignable(Short.class, Double.TYPE, true), &quot;short -&gt; double&quot;);</span>
+<span class="fc" id="L930">        assertFalse(ClassUtils.isAssignable(Short.class, Boolean.TYPE, true), &quot;short -&gt; boolean&quot;);</span>
+
+        // test char conversions
+<span class="fc" id="L933">        assertTrue(ClassUtils.isAssignable(Character.class, Character.TYPE, true), &quot;char -&gt; char&quot;);</span>
+<span class="fc" id="L934">        assertFalse(ClassUtils.isAssignable(Character.class, Byte.TYPE, true), &quot;char -&gt; byte&quot;);</span>
+<span class="fc" id="L935">        assertFalse(ClassUtils.isAssignable(Character.class, Short.TYPE, true), &quot;char -&gt; short&quot;);</span>
+<span class="fc" id="L936">        assertTrue(ClassUtils.isAssignable(Character.class, Integer.TYPE, true), &quot;char -&gt; int&quot;);</span>
+<span class="fc" id="L937">        assertTrue(ClassUtils.isAssignable(Character.class, Long.TYPE, true), &quot;char -&gt; long&quot;);</span>
+<span class="fc" id="L938">        assertTrue(ClassUtils.isAssignable(Character.class, Float.TYPE, true), &quot;char -&gt; float&quot;);</span>
+<span class="fc" id="L939">        assertTrue(ClassUtils.isAssignable(Character.class, Double.TYPE, true), &quot;char -&gt; double&quot;);</span>
+<span class="fc" id="L940">        assertFalse(ClassUtils.isAssignable(Character.class, Boolean.TYPE, true), &quot;char -&gt; boolean&quot;);</span>
+
+        // test int conversions
+<span class="fc" id="L943">        assertFalse(ClassUtils.isAssignable(Integer.class, Character.TYPE, true), &quot;int -&gt; char&quot;);</span>
+<span class="fc" id="L944">        assertFalse(ClassUtils.isAssignable(Integer.class, Byte.TYPE, true), &quot;int -&gt; byte&quot;);</span>
+<span class="fc" id="L945">        assertFalse(ClassUtils.isAssignable(Integer.class, Short.TYPE, true), &quot;int -&gt; short&quot;);</span>
+<span class="fc" id="L946">        assertTrue(ClassUtils.isAssignable(Integer.class, Integer.TYPE, true), &quot;int -&gt; int&quot;);</span>
+<span class="fc" id="L947">        assertTrue(ClassUtils.isAssignable(Integer.class, Long.TYPE, true), &quot;int -&gt; long&quot;);</span>
+<span class="fc" id="L948">        assertTrue(ClassUtils.isAssignable(Integer.class, Float.TYPE, true), &quot;int -&gt; float&quot;);</span>
+<span class="fc" id="L949">        assertTrue(ClassUtils.isAssignable(Integer.class, Double.TYPE, true), &quot;int -&gt; double&quot;);</span>
+<span class="fc" id="L950">        assertFalse(ClassUtils.isAssignable(Integer.class, Boolean.TYPE, true), &quot;int -&gt; boolean&quot;);</span>
+
+        // test long conversions
+<span class="fc" id="L953">        assertFalse(ClassUtils.isAssignable(Long.class, Character.TYPE, true), &quot;long -&gt; char&quot;);</span>
+<span class="fc" id="L954">        assertFalse(ClassUtils.isAssignable(Long.class, Byte.TYPE, true), &quot;long -&gt; byte&quot;);</span>
+<span class="fc" id="L955">        assertFalse(ClassUtils.isAssignable(Long.class, Short.TYPE, true), &quot;long -&gt; short&quot;);</span>
+<span class="fc" id="L956">        assertFalse(ClassUtils.isAssignable(Long.class, Integer.TYPE, true), &quot;long -&gt; int&quot;);</span>
+<span class="fc" id="L957">        assertTrue(ClassUtils.isAssignable(Long.class, Long.TYPE, true), &quot;long -&gt; long&quot;);</span>
+<span class="fc" id="L958">        assertTrue(ClassUtils.isAssignable(Long.class, Float.TYPE, true), &quot;long -&gt; float&quot;);</span>
+<span class="fc" id="L959">        assertTrue(ClassUtils.isAssignable(Long.class, Double.TYPE, true), &quot;long -&gt; double&quot;);</span>
+<span class="fc" id="L960">        assertFalse(ClassUtils.isAssignable(Long.class, Boolean.TYPE, true), &quot;long -&gt; boolean&quot;);</span>
+
+        // test float conversions
+<span class="fc" id="L963">        assertFalse(ClassUtils.isAssignable(Float.class, Character.TYPE, true), &quot;float -&gt; char&quot;);</span>
+<span class="fc" id="L964">        assertFalse(ClassUtils.isAssignable(Float.class, Byte.TYPE, true), &quot;float -&gt; byte&quot;);</span>
+<span class="fc" id="L965">        assertFalse(ClassUtils.isAssignable(Float.class, Short.TYPE, true), &quot;float -&gt; short&quot;);</span>
+<span class="fc" id="L966">        assertFalse(ClassUtils.isAssignable(Float.class, Integer.TYPE, true), &quot;float -&gt; int&quot;);</span>
+<span class="fc" id="L967">        assertFalse(ClassUtils.isAssignable(Float.class, Long.TYPE, true), &quot;float -&gt; long&quot;);</span>
+<span class="fc" id="L968">        assertTrue(ClassUtils.isAssignable(Float.class, Float.TYPE, true), &quot;float -&gt; float&quot;);</span>
+<span class="fc" id="L969">        assertTrue(ClassUtils.isAssignable(Float.class, Double.TYPE, true), &quot;float -&gt; double&quot;);</span>
+<span class="fc" id="L970">        assertFalse(ClassUtils.isAssignable(Float.class, Boolean.TYPE, true), &quot;float -&gt; boolean&quot;);</span>
+
+        // test double conversions
+<span class="fc" id="L973">        assertFalse(ClassUtils.isAssignable(Double.class, Character.TYPE, true), &quot;double -&gt; char&quot;);</span>
+<span class="fc" id="L974">        assertFalse(ClassUtils.isAssignable(Double.class, Byte.TYPE, true), &quot;double -&gt; byte&quot;);</span>
+<span class="fc" id="L975">        assertFalse(ClassUtils.isAssignable(Double.class, Short.TYPE, true), &quot;double -&gt; short&quot;);</span>
+<span class="fc" id="L976">        assertFalse(ClassUtils.isAssignable(Double.class, Integer.TYPE, true), &quot;double -&gt; int&quot;);</span>
+<span class="fc" id="L977">        assertFalse(ClassUtils.isAssignable(Double.class, Long.TYPE, true), &quot;double -&gt; long&quot;);</span>
+<span class="fc" id="L978">        assertFalse(ClassUtils.isAssignable(Double.class, Float.TYPE, true), &quot;double -&gt; float&quot;);</span>
+<span class="fc" id="L979">        assertTrue(ClassUtils.isAssignable(Double.class, Double.TYPE, true), &quot;double -&gt; double&quot;);</span>
+<span class="fc" id="L980">        assertFalse(ClassUtils.isAssignable(Double.class, Boolean.TYPE, true), &quot;double -&gt; boolean&quot;);</span>
+
+        // test boolean conversions
+<span class="fc" id="L983">        assertFalse(ClassUtils.isAssignable(Boolean.class, Character.TYPE, true), &quot;boolean -&gt; char&quot;);</span>
+<span class="fc" id="L984">        assertFalse(ClassUtils.isAssignable(Boolean.class, Byte.TYPE, true), &quot;boolean -&gt; byte&quot;);</span>
+<span class="fc" id="L985">        assertFalse(ClassUtils.isAssignable(Boolean.class, Short.TYPE, true), &quot;boolean -&gt; short&quot;);</span>
+<span class="fc" id="L986">        assertFalse(ClassUtils.isAssignable(Boolean.class, Integer.TYPE, true), &quot;boolean -&gt; int&quot;);</span>
+<span class="fc" id="L987">        assertFalse(ClassUtils.isAssignable(Boolean.class, Long.TYPE, true), &quot;boolean -&gt; long&quot;);</span>
+<span class="fc" id="L988">        assertFalse(ClassUtils.isAssignable(Boolean.class, Float.TYPE, true), &quot;boolean -&gt; float&quot;);</span>
+<span class="fc" id="L989">        assertFalse(ClassUtils.isAssignable(Boolean.class, Double.TYPE, true), &quot;boolean -&gt; double&quot;);</span>
+<span class="fc" id="L990">        assertTrue(ClassUtils.isAssignable(Boolean.class, Boolean.TYPE, true), &quot;boolean -&gt; boolean&quot;);</span>
+<span class="fc" id="L991">    }</span>
+
+    @Test
+    public void test_isAssignable_Widening() {
+        // test byte conversions
+<span class="fc" id="L996">        assertFalse(ClassUtils.isAssignable(Byte.TYPE, Character.TYPE), &quot;byte -&gt; char&quot;);</span>
+<span class="fc" id="L997">        assertTrue(ClassUtils.isAssignable(Byte.TYPE, Byte.TYPE), &quot;byte -&gt; byte&quot;);</span>
+<span class="fc" id="L998">        assertTrue(ClassUtils.isAssignable(Byte.TYPE, Short.TYPE), &quot;byte -&gt; short&quot;);</span>
+<span class="fc" id="L999">        assertTrue(ClassUtils.isAssignable(Byte.TYPE, Integer.TYPE), &quot;byte -&gt; int&quot;);</span>
+<span class="fc" id="L1000">        assertTrue(ClassUtils.isAssignable(Byte.TYPE, Long.TYPE), &quot;byte -&gt; long&quot;);</span>
+<span class="fc" id="L1001">        assertTrue(ClassUtils.isAssignable(Byte.TYPE, Float.TYPE), &quot;byte -&gt; float&quot;);</span>
+<span class="fc" id="L1002">        assertTrue(ClassUtils.isAssignable(Byte.TYPE, Double.TYPE), &quot;byte -&gt; double&quot;);</span>
+<span class="fc" id="L1003">        assertFalse(ClassUtils.isAssignable(Byte.TYPE, Boolean.TYPE), &quot;byte -&gt; boolean&quot;);</span>
+
+        // test short conversions
+<span class="fc" id="L1006">        assertFalse(ClassUtils.isAssignable(Short.TYPE, Character.TYPE), &quot;short -&gt; char&quot;);</span>
+<span class="fc" id="L1007">        assertFalse(ClassUtils.isAssignable(Short.TYPE, Byte.TYPE), &quot;short -&gt; byte&quot;);</span>
+<span class="fc" id="L1008">        assertTrue(ClassUtils.isAssignable(Short.TYPE, Short.TYPE), &quot;short -&gt; short&quot;);</span>
+<span class="fc" id="L1009">        assertTrue(ClassUtils.isAssignable(Short.TYPE, Integer.TYPE), &quot;short -&gt; int&quot;);</span>
+<span class="fc" id="L1010">        assertTrue(ClassUtils.isAssignable(Short.TYPE, Long.TYPE), &quot;short -&gt; long&quot;);</span>
+<span class="fc" id="L1011">        assertTrue(ClassUtils.isAssignable(Short.TYPE, Float.TYPE), &quot;short -&gt; float&quot;);</span>
+<span class="fc" id="L1012">        assertTrue(ClassUtils.isAssignable(Short.TYPE, Double.TYPE), &quot;short -&gt; double&quot;);</span>
+<span class="fc" id="L1013">        assertFalse(ClassUtils.isAssignable(Short.TYPE, Boolean.TYPE), &quot;short -&gt; boolean&quot;);</span>
+
+        // test char conversions
+<span class="fc" id="L1016">        assertTrue(ClassUtils.isAssignable(Character.TYPE, Character.TYPE), &quot;char -&gt; char&quot;);</span>
+<span class="fc" id="L1017">        assertFalse(ClassUtils.isAssignable(Character.TYPE, Byte.TYPE), &quot;char -&gt; byte&quot;);</span>
+<span class="fc" id="L1018">        assertFalse(ClassUtils.isAssignable(Character.TYPE, Short.TYPE), &quot;char -&gt; short&quot;);</span>
+<span class="fc" id="L1019">        assertTrue(ClassUtils.isAssignable(Character.TYPE, Integer.TYPE), &quot;char -&gt; int&quot;);</span>
+<span class="fc" id="L1020">        assertTrue(ClassUtils.isAssignable(Character.TYPE, Long.TYPE), &quot;char -&gt; long&quot;);</span>
+<span class="fc" id="L1021">        assertTrue(ClassUtils.isAssignable(Character.TYPE, Float.TYPE), &quot;char -&gt; float&quot;);</span>
+<span class="fc" id="L1022">        assertTrue(ClassUtils.isAssignable(Character.TYPE, Double.TYPE), &quot;char -&gt; double&quot;);</span>
+<span class="fc" id="L1023">        assertFalse(ClassUtils.isAssignable(Character.TYPE, Boolean.TYPE), &quot;char -&gt; boolean&quot;);</span>
+
+        // test int conversions
+<span class="fc" id="L1026">        assertFalse(ClassUtils.isAssignable(Integer.TYPE, Character.TYPE), &quot;int -&gt; char&quot;);</span>
+<span class="fc" id="L1027">        assertFalse(ClassUtils.isAssignable(Integer.TYPE, Byte.TYPE), &quot;int -&gt; byte&quot;);</span>
+<span class="fc" id="L1028">        assertFalse(ClassUtils.isAssignable(Integer.TYPE, Short.TYPE), &quot;int -&gt; short&quot;);</span>
+<span class="fc" id="L1029">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Integer.TYPE), &quot;int -&gt; int&quot;);</span>
+<span class="fc" id="L1030">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Long.TYPE), &quot;int -&gt; long&quot;);</span>
+<span class="fc" id="L1031">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Float.TYPE), &quot;int -&gt; float&quot;);</span>
+<span class="fc" id="L1032">        assertTrue(ClassUtils.isAssignable(Integer.TYPE, Double.TYPE), &quot;int -&gt; double&quot;);</span>
+<span class="fc" id="L1033">        assertFalse(ClassUtils.isAssignable(Integer.TYPE, Boolean.TYPE), &quot;int -&gt; boolean&quot;);</span>
+
+        // test long conversions
+<span class="fc" id="L1036">        assertFalse(ClassUtils.isAssignable(Long.TYPE, Character.TYPE), &quot;long -&gt; char&quot;);</span>
+<span class="fc" id="L1037">        assertFalse(ClassUtils.isAssignable(Long.TYPE, Byte.TYPE), &quot;long -&gt; byte&quot;);</span>
+<span class="fc" id="L1038">        assertFalse(ClassUtils.isAssignable(Long.TYPE, Short.TYPE), &quot;long -&gt; short&quot;);</span>
+<span class="fc" id="L1039">        assertFalse(ClassUtils.isAssignable(Long.TYPE, Integer.TYPE), &quot;long -&gt; int&quot;);</span>
+<span class="fc" id="L1040">        assertTrue(ClassUtils.isAssignable(Long.TYPE, Long.TYPE), &quot;long -&gt; long&quot;);</span>
+<span class="fc" id="L1041">        assertTrue(ClassUtils.isAssignable(Long.TYPE, Float.TYPE), &quot;long -&gt; float&quot;);</span>
+<span class="fc" id="L1042">        assertTrue(ClassUtils.isAssignable(Long.TYPE, Double.TYPE), &quot;long -&gt; double&quot;);</span>
+<span class="fc" id="L1043">        assertFalse(ClassUtils.isAssignable(Long.TYPE, Boolean.TYPE), &quot;long -&gt; boolean&quot;);</span>
+
+        // test float conversions
+<span class="fc" id="L1046">        assertFalse(ClassUtils.isAssignable(Float.TYPE, Character.TYPE), &quot;float -&gt; char&quot;);</span>
+<span class="fc" id="L1047">        assertFalse(ClassUtils.isAssignable(Float.TYPE, Byte.TYPE), &quot;float -&gt; byte&quot;);</span>
+<span class="fc" id="L1048">        assertFalse(ClassUtils.isAssignable(Float.TYPE, Short.TYPE), &quot;float -&gt; short&quot;);</span>
+<span class="fc" id="L1049">        assertFalse(ClassUtils.isAssignable(Float.TYPE, Integer.TYPE), &quot;float -&gt; int&quot;);</span>
+<span class="fc" id="L1050">        assertFalse(ClassUtils.isAssignable(Float.TYPE, Long.TYPE), &quot;float -&gt; long&quot;);</span>
+<span class="fc" id="L1051">        assertTrue(ClassUtils.isAssignable(Float.TYPE, Float.TYPE), &quot;float -&gt; float&quot;);</span>
+<span class="fc" id="L1052">        assertTrue(ClassUtils.isAssignable(Float.TYPE, Double.TYPE), &quot;float -&gt; double&quot;);</span>
+<span class="fc" id="L1053">        assertFalse(ClassUtils.isAssignable(Float.TYPE, Boolean.TYPE), &quot;float -&gt; boolean&quot;);</span>
+
+        // test double conversions
+<span class="fc" id="L1056">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Character.TYPE), &quot;double -&gt; char&quot;);</span>
+<span class="fc" id="L1057">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Byte.TYPE), &quot;double -&gt; byte&quot;);</span>
+<span class="fc" id="L1058">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Short.TYPE), &quot;double -&gt; short&quot;);</span>
+<span class="fc" id="L1059">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Integer.TYPE), &quot;double -&gt; int&quot;);</span>
+<span class="fc" id="L1060">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Long.TYPE), &quot;double -&gt; long&quot;);</span>
+<span class="fc" id="L1061">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Float.TYPE), &quot;double -&gt; float&quot;);</span>
+<span class="fc" id="L1062">        assertTrue(ClassUtils.isAssignable(Double.TYPE, Double.TYPE), &quot;double -&gt; double&quot;);</span>
+<span class="fc" id="L1063">        assertFalse(ClassUtils.isAssignable(Double.TYPE, Boolean.TYPE), &quot;double -&gt; boolean&quot;);</span>
+
+        // test boolean conversions
+<span class="fc" id="L1066">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Character.TYPE), &quot;boolean -&gt; char&quot;);</span>
+<span class="fc" id="L1067">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Byte.TYPE), &quot;boolean -&gt; byte&quot;);</span>
+<span class="fc" id="L1068">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Short.TYPE), &quot;boolean -&gt; short&quot;);</span>
+<span class="fc" id="L1069">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Integer.TYPE), &quot;boolean -&gt; int&quot;);</span>
+<span class="fc" id="L1070">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Long.TYPE), &quot;boolean -&gt; long&quot;);</span>
+<span class="fc" id="L1071">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Float.TYPE), &quot;boolean -&gt; float&quot;);</span>
+<span class="fc" id="L1072">        assertFalse(ClassUtils.isAssignable(Boolean.TYPE, Double.TYPE), &quot;boolean -&gt; double&quot;);</span>
+<span class="fc" id="L1073">        assertTrue(ClassUtils.isAssignable(Boolean.TYPE, Boolean.TYPE), &quot;boolean -&gt; boolean&quot;);</span>
+<span class="fc" id="L1074">    }</span>
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void test_isInnerClass_Class() {
+<span class="fc" id="L1079">        assertTrue(ClassUtils.isInnerClass(Inner.class));</span>
+<span class="fc" id="L1080">        assertTrue(ClassUtils.isInnerClass(Map.Entry.class));</span>
+<span class="fc" id="L1081">        assertTrue(ClassUtils.isInnerClass(new Cloneable() {</span>
+            // empty
+<span class="fc" id="L1083">        }.getClass()));</span>
+<span class="fc" id="L1084">        assertFalse(ClassUtils.isInnerClass(this.getClass()));</span>
+<span class="fc" id="L1085">        assertFalse(ClassUtils.isInnerClass(String.class));</span>
+<span class="fc" id="L1086">        assertFalse(ClassUtils.isInnerClass(null));</span>
+<span class="fc" id="L1087">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L1092">        assertNotNull(new ClassUtils());</span>
+<span class="fc" id="L1093">        final Constructor&lt;?&gt;[] cons = ClassUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L1094">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L1095">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L1096">        assertTrue(Modifier.isPublic(ClassUtils.class.getModifiers()));</span>
+<span class="fc" id="L1097">        assertFalse(Modifier.isFinal(ClassUtils.class.getModifiers()));</span>
+<span class="fc" id="L1098">    }</span>
+
+    @Test
+    public void testGetClassByNormalNameArrays() throws ClassNotFoundException {
+<span class="fc" id="L1102">        assertEquals( int[].class, ClassUtils.getClass( &quot;int[]&quot; ) );</span>
+<span class="fc" id="L1103">        assertEquals( long[].class, ClassUtils.getClass( &quot;long[]&quot; ) );</span>
+<span class="fc" id="L1104">        assertEquals( short[].class, ClassUtils.getClass( &quot;short[]&quot; ) );</span>
+<span class="fc" id="L1105">        assertEquals( byte[].class, ClassUtils.getClass( &quot;byte[]&quot; ) );</span>
+<span class="fc" id="L1106">        assertEquals( char[].class, ClassUtils.getClass( &quot;char[]&quot; ) );</span>
+<span class="fc" id="L1107">        assertEquals( float[].class, ClassUtils.getClass( &quot;float[]&quot; ) );</span>
+<span class="fc" id="L1108">        assertEquals( double[].class, ClassUtils.getClass( &quot;double[]&quot; ) );</span>
+<span class="fc" id="L1109">        assertEquals( boolean[].class, ClassUtils.getClass( &quot;boolean[]&quot; ) );</span>
+<span class="fc" id="L1110">        assertEquals( String[].class, ClassUtils.getClass( &quot;java.lang.String[]&quot; ) );</span>
+<span class="fc" id="L1111">        assertEquals( java.util.Map.Entry[].class, ClassUtils.getClass( &quot;java.util.Map.Entry[]&quot; ) );</span>
+<span class="fc" id="L1112">        assertEquals( java.util.Map.Entry[].class, ClassUtils.getClass( &quot;java.util.Map$Entry[]&quot; ) );</span>
+<span class="fc" id="L1113">        assertEquals( java.util.Map.Entry[].class, ClassUtils.getClass( &quot;[Ljava.util.Map.Entry;&quot; ) );</span>
+<span class="fc" id="L1114">        assertEquals( java.util.Map.Entry[].class, ClassUtils.getClass( &quot;[Ljava.util.Map$Entry;&quot; ) );</span>
+<span class="fc" id="L1115">    }</span>
+
+    @Test
+    public void testGetClassByNormalNameArrays2D() throws ClassNotFoundException {
+<span class="fc" id="L1119">        assertEquals( int[][].class, ClassUtils.getClass( &quot;int[][]&quot; ) );</span>
+<span class="fc" id="L1120">        assertEquals( long[][].class, ClassUtils.getClass( &quot;long[][]&quot; ) );</span>
+<span class="fc" id="L1121">        assertEquals( short[][].class, ClassUtils.getClass( &quot;short[][]&quot; ) );</span>
+<span class="fc" id="L1122">        assertEquals( byte[][].class, ClassUtils.getClass( &quot;byte[][]&quot; ) );</span>
+<span class="fc" id="L1123">        assertEquals( char[][].class, ClassUtils.getClass( &quot;char[][]&quot; ) );</span>
+<span class="fc" id="L1124">        assertEquals( float[][].class, ClassUtils.getClass( &quot;float[][]&quot; ) );</span>
+<span class="fc" id="L1125">        assertEquals( double[][].class, ClassUtils.getClass( &quot;double[][]&quot; ) );</span>
+<span class="fc" id="L1126">        assertEquals( boolean[][].class, ClassUtils.getClass( &quot;boolean[][]&quot; ) );</span>
+<span class="fc" id="L1127">        assertEquals( String[][].class, ClassUtils.getClass( &quot;java.lang.String[][]&quot; ) );</span>
+<span class="fc" id="L1128">    }</span>
+
+    @Test
+    public void testGetClassClassNotFound() throws Exception {
+<span class="fc" id="L1132">        assertGetClassThrowsClassNotFound( &quot;bool&quot; );</span>
+<span class="fc" id="L1133">        assertGetClassThrowsClassNotFound( &quot;bool[]&quot; );</span>
+<span class="fc" id="L1134">        assertGetClassThrowsClassNotFound( &quot;integer[]&quot; );</span>
+<span class="fc" id="L1135">    }</span>
+
+    @Test
+    public void testGetClassInvalidArguments() throws Exception {
+<span class="fc" id="L1139">        assertGetClassThrowsNullPointerException( null );</span>
+<span class="fc" id="L1140">        assertGetClassThrowsClassNotFound( &quot;[][][]&quot; );</span>
+<span class="fc" id="L1141">        assertGetClassThrowsClassNotFound( &quot;[[]&quot; );</span>
+<span class="fc" id="L1142">        assertGetClassThrowsClassNotFound( &quot;[&quot; );</span>
+<span class="fc" id="L1143">        assertGetClassThrowsClassNotFound( &quot;java.lang.String][&quot; );</span>
+<span class="fc" id="L1144">        assertGetClassThrowsClassNotFound( &quot;.hello.world&quot; );</span>
+<span class="fc" id="L1145">        assertGetClassThrowsClassNotFound( &quot;hello..world&quot; );</span>
+<span class="fc" id="L1146">    }</span>
+
+    @Test
+    public void testGetClassRawPrimitives() throws ClassNotFoundException {
+<span class="fc" id="L1150">        assertEquals( int.class, ClassUtils.getClass( &quot;int&quot; ) );</span>
+<span class="fc" id="L1151">        assertEquals( long.class, ClassUtils.getClass( &quot;long&quot; ) );</span>
+<span class="fc" id="L1152">        assertEquals( short.class, ClassUtils.getClass( &quot;short&quot; ) );</span>
+<span class="fc" id="L1153">        assertEquals( byte.class, ClassUtils.getClass( &quot;byte&quot; ) );</span>
+<span class="fc" id="L1154">        assertEquals( char.class, ClassUtils.getClass( &quot;char&quot; ) );</span>
+<span class="fc" id="L1155">        assertEquals( float.class, ClassUtils.getClass( &quot;float&quot; ) );</span>
+<span class="fc" id="L1156">        assertEquals( double.class, ClassUtils.getClass( &quot;double&quot; ) );</span>
+<span class="fc" id="L1157">        assertEquals( boolean.class, ClassUtils.getClass( &quot;boolean&quot; ) );</span>
+<span class="fc" id="L1158">        assertEquals( void.class, ClassUtils.getClass( &quot;void&quot; ) );</span>
+<span class="fc" id="L1159">    }</span>
+
+    @Test
+    public void testGetClassWithArrayClasses() throws Exception {
+<span class="fc" id="L1163">        assertGetClassReturnsClass( String[].class );</span>
+<span class="fc" id="L1164">        assertGetClassReturnsClass( int[].class );</span>
+<span class="fc" id="L1165">        assertGetClassReturnsClass( long[].class );</span>
+<span class="fc" id="L1166">        assertGetClassReturnsClass( short[].class );</span>
+<span class="fc" id="L1167">        assertGetClassReturnsClass( byte[].class );</span>
+<span class="fc" id="L1168">        assertGetClassReturnsClass( char[].class );</span>
+<span class="fc" id="L1169">        assertGetClassReturnsClass( float[].class );</span>
+<span class="fc" id="L1170">        assertGetClassReturnsClass( double[].class );</span>
+<span class="fc" id="L1171">        assertGetClassReturnsClass( boolean[].class );</span>
+<span class="fc" id="L1172">    }</span>
+
+    @Test
+    public void testGetClassWithArrayClasses2D() throws Exception {
+<span class="fc" id="L1176">        assertGetClassReturnsClass( String[][].class );</span>
+<span class="fc" id="L1177">        assertGetClassReturnsClass( int[][].class );</span>
+<span class="fc" id="L1178">        assertGetClassReturnsClass( long[][].class );</span>
+<span class="fc" id="L1179">        assertGetClassReturnsClass( short[][].class );</span>
+<span class="fc" id="L1180">        assertGetClassReturnsClass( byte[][].class );</span>
+<span class="fc" id="L1181">        assertGetClassReturnsClass( char[][].class );</span>
+<span class="fc" id="L1182">        assertGetClassReturnsClass( float[][].class );</span>
+<span class="fc" id="L1183">        assertGetClassReturnsClass( double[][].class );</span>
+<span class="fc" id="L1184">        assertGetClassReturnsClass( boolean[][].class );</span>
+<span class="fc" id="L1185">    }</span>
+
+    @Test
+    public void testGetInnerClass() throws ClassNotFoundException {
+<span class="fc" id="L1189">        assertEquals( Inner.DeeplyNested.class, ClassUtils.getClass( &quot;org.apache.commons.lang3.ClassUtilsTest.Inner.DeeplyNested&quot; ) );</span>
+<span class="fc" id="L1190">        assertEquals( Inner.DeeplyNested.class, ClassUtils.getClass( &quot;org.apache.commons.lang3.ClassUtilsTest.Inner$DeeplyNested&quot; ) );</span>
+<span class="fc" id="L1191">        assertEquals( Inner.DeeplyNested.class, ClassUtils.getClass( &quot;org.apache.commons.lang3.ClassUtilsTest$Inner$DeeplyNested&quot; ) );</span>
+<span class="fc" id="L1192">        assertEquals( Inner.DeeplyNested.class, ClassUtils.getClass( &quot;org.apache.commons.lang3.ClassUtilsTest$Inner.DeeplyNested&quot; ) );</span>
+<span class="fc" id="L1193">    }</span>
+
+    @Test
+    public void testGetPublicMethod() throws Exception {
+        // Tests with Collections$UnmodifiableSet
+<span class="fc" id="L1198">        final Set&lt;?&gt; set = Collections.unmodifiableSet(new HashSet&lt;&gt;());</span>
+<span class="fc" id="L1199">        final Method isEmptyMethod = ClassUtils.getPublicMethod(set.getClass(), &quot;isEmpty&quot;);</span>
+<span class="fc" id="L1200">        assertTrue(Modifier.isPublic(isEmptyMethod.getDeclaringClass().getModifiers()));</span>
+<span class="fc" id="L1201">        assertTrue((Boolean) isEmptyMethod.invoke(set));</span>
+
+        // Tests with a public Class
+<span class="fc" id="L1204">        final Method toStringMethod = ClassUtils.getPublicMethod(Object.class, &quot;toString&quot;);</span>
+<span class="fc" id="L1205">        assertEquals(Object.class.getMethod(&quot;toString&quot;, new Class[0]), toStringMethod);</span>
+<span class="fc" id="L1206">    }</span>
+
+    @Test
+    public void testHierarchyExcludingInterfaces() {
+<span class="fc" id="L1210">        final Iterator&lt;Class&lt;?&gt;&gt; iter = ClassUtils.hierarchy(StringParameterizedChild.class).iterator();</span>
+<span class="fc" id="L1211">        assertEquals(StringParameterizedChild.class, iter.next());</span>
+<span class="fc" id="L1212">        assertEquals(GenericParent.class, iter.next());</span>
+<span class="fc" id="L1213">        assertEquals(Object.class, iter.next());</span>
+<span class="fc" id="L1214">        assertFalse(iter.hasNext());</span>
+<span class="fc" id="L1215">    }</span>
+
+    @Test
+    public void testHierarchyIncludingInterfaces() {
+<span class="fc" id="L1219">        final Iterator&lt;Class&lt;?&gt;&gt; iter =</span>
+<span class="fc" id="L1220">            ClassUtils.hierarchy(StringParameterizedChild.class, Interfaces.INCLUDE).iterator();</span>
+<span class="fc" id="L1221">        assertEquals(StringParameterizedChild.class, iter.next());</span>
+<span class="fc" id="L1222">        assertEquals(GenericParent.class, iter.next());</span>
+<span class="fc" id="L1223">        assertEquals(GenericConsumer.class, iter.next());</span>
+<span class="fc" id="L1224">        assertEquals(Object.class, iter.next());</span>
+<span class="fc" id="L1225">        assertFalse(iter.hasNext());</span>
+<span class="fc" id="L1226">    }</span>
+
+    @Test
+    public void testIsPrimitiveOrWrapper() {
+
+        // test primitive wrapper classes
+<span class="fc" id="L1232">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Boolean.class), &quot;Boolean.class&quot;);</span>
+<span class="fc" id="L1233">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Byte.class), &quot;Byte.class&quot;);</span>
+<span class="fc" id="L1234">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Character.class), &quot;Character.class&quot;);</span>
+<span class="fc" id="L1235">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Short.class), &quot;Short.class&quot;);</span>
+<span class="fc" id="L1236">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Integer.class), &quot;Integer.class&quot;);</span>
+<span class="fc" id="L1237">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Long.class), &quot;Long.class&quot;);</span>
+<span class="fc" id="L1238">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Double.class), &quot;Double.class&quot;);</span>
+<span class="fc" id="L1239">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Float.class), &quot;Float.class&quot;);</span>
+
+        // test primitive classes
+<span class="fc" id="L1242">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Boolean.TYPE), &quot;boolean&quot;);</span>
+<span class="fc" id="L1243">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Byte.TYPE), &quot;byte&quot;);</span>
+<span class="fc" id="L1244">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Character.TYPE), &quot;char&quot;);</span>
+<span class="fc" id="L1245">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Short.TYPE), &quot;short&quot;);</span>
+<span class="fc" id="L1246">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Integer.TYPE), &quot;int&quot;);</span>
+<span class="fc" id="L1247">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Long.TYPE), &quot;long&quot;);</span>
+<span class="fc" id="L1248">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Double.TYPE), &quot;double&quot;);</span>
+<span class="fc" id="L1249">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Float.TYPE), &quot;float&quot;);</span>
+<span class="fc" id="L1250">        assertTrue(ClassUtils.isPrimitiveOrWrapper(Void.TYPE), &quot;Void.TYPE&quot;);</span>
+
+        // others
+<span class="fc" id="L1253">        assertFalse(ClassUtils.isPrimitiveOrWrapper(null), &quot;null&quot;);</span>
+<span class="fc" id="L1254">        assertFalse(ClassUtils.isPrimitiveOrWrapper(Void.class), &quot;Void.class&quot;);</span>
+<span class="fc" id="L1255">        assertFalse(ClassUtils.isPrimitiveOrWrapper(String.class), &quot;String.class&quot;);</span>
+<span class="fc" id="L1256">        assertFalse(ClassUtils.isPrimitiveOrWrapper(this.getClass()), &quot;this.getClass()&quot;);</span>
+<span class="fc" id="L1257">    }</span>
+
+    @Test
+    public void testIsPrimitiveWrapper() {
+
+        // test primitive wrapper classes
+<span class="fc" id="L1263">        assertTrue(ClassUtils.isPrimitiveWrapper(Boolean.class), &quot;Boolean.class&quot;);</span>
+<span class="fc" id="L1264">        assertTrue(ClassUtils.isPrimitiveWrapper(Byte.class), &quot;Byte.class&quot;);</span>
+<span class="fc" id="L1265">        assertTrue(ClassUtils.isPrimitiveWrapper(Character.class), &quot;Character.class&quot;);</span>
+<span class="fc" id="L1266">        assertTrue(ClassUtils.isPrimitiveWrapper(Short.class), &quot;Short.class&quot;);</span>
+<span class="fc" id="L1267">        assertTrue(ClassUtils.isPrimitiveWrapper(Integer.class), &quot;Integer.class&quot;);</span>
+<span class="fc" id="L1268">        assertTrue(ClassUtils.isPrimitiveWrapper(Long.class), &quot;Long.class&quot;);</span>
+<span class="fc" id="L1269">        assertTrue(ClassUtils.isPrimitiveWrapper(Double.class), &quot;Double.class&quot;);</span>
+<span class="fc" id="L1270">        assertTrue(ClassUtils.isPrimitiveWrapper(Float.class), &quot;Float.class&quot;);</span>
+
+        // test primitive classes
+<span class="fc" id="L1273">        assertFalse(ClassUtils.isPrimitiveWrapper(Boolean.TYPE), &quot;boolean&quot;);</span>
+<span class="fc" id="L1274">        assertFalse(ClassUtils.isPrimitiveWrapper(Byte.TYPE), &quot;byte&quot;);</span>
+<span class="fc" id="L1275">        assertFalse(ClassUtils.isPrimitiveWrapper(Character.TYPE), &quot;char&quot;);</span>
+<span class="fc" id="L1276">        assertFalse(ClassUtils.isPrimitiveWrapper(Short.TYPE), &quot;short&quot;);</span>
+<span class="fc" id="L1277">        assertFalse(ClassUtils.isPrimitiveWrapper(Integer.TYPE), &quot;int&quot;);</span>
+<span class="fc" id="L1278">        assertFalse(ClassUtils.isPrimitiveWrapper(Long.TYPE), &quot;long&quot;);</span>
+<span class="fc" id="L1279">        assertFalse(ClassUtils.isPrimitiveWrapper(Double.TYPE), &quot;double&quot;);</span>
+<span class="fc" id="L1280">        assertFalse(ClassUtils.isPrimitiveWrapper(Float.TYPE), &quot;float&quot;);</span>
+
+        // others
+<span class="fc" id="L1283">        assertFalse(ClassUtils.isPrimitiveWrapper(null), &quot;null&quot;);</span>
+<span class="fc" id="L1284">        assertFalse(ClassUtils.isPrimitiveWrapper(Void.class), &quot;Void.class&quot;);</span>
+<span class="fc" id="L1285">        assertFalse(ClassUtils.isPrimitiveWrapper(Void.TYPE), &quot;Void.TYPE&quot;);</span>
+<span class="fc" id="L1286">        assertFalse(ClassUtils.isPrimitiveWrapper(String.class), &quot;String.class&quot;);</span>
+<span class="fc" id="L1287">        assertFalse(ClassUtils.isPrimitiveWrapper(this.getClass()), &quot;this.getClass()&quot;);</span>
+<span class="fc" id="L1288">    }</span>
+
+    @Test
+    public void testPrimitivesToWrappers() {
+        // test null
+//        assertNull(&quot;null -&gt; null&quot;, ClassUtils.primitivesToWrappers(null)); // generates warning
+<span class="fc" id="L1294">        assertNull(ClassUtils.primitivesToWrappers((Class&lt;?&gt;[]) null), &quot;null -&gt; null&quot;); // equivalent cast to avoid warning</span>
+        // Other possible casts for null
+<span class="fc" id="L1296">        assertArrayEquals(ArrayUtils.EMPTY_CLASS_ARRAY, ClassUtils.primitivesToWrappers(), &quot;empty -&gt; empty&quot;);</span>
+<span class="fc" id="L1297">        final Class&lt;?&gt;[] castNull = ClassUtils.primitivesToWrappers((Class&lt;?&gt;) null); // == new Class&lt;?&gt;[]{null}</span>
+<span class="fc" id="L1298">        assertArrayEquals(new Class&lt;?&gt;[]{null}, castNull, &quot;(Class&lt;?&gt;) null -&gt; [null]&quot;);</span>
+        // test empty array is returned unchanged
+<span class="fc" id="L1300">        assertArrayEquals(ArrayUtils.EMPTY_CLASS_ARRAY, ClassUtils.primitivesToWrappers(ArrayUtils.EMPTY_CLASS_ARRAY),</span>
+                &quot;empty -&gt; empty&quot;);
+
+        // test an array of various classes
+<span class="fc" id="L1304">        final Class&lt;?&gt;[] primitives = new Class[] {</span>
+                Boolean.TYPE, Byte.TYPE, Character.TYPE, Short.TYPE,
+                Integer.TYPE, Long.TYPE, Double.TYPE, Float.TYPE,
+                String.class, ClassUtils.class
+        };
+<span class="fc" id="L1309">        final Class&lt;?&gt;[] wrappers= ClassUtils.primitivesToWrappers(primitives);</span>
+
+<span class="fc bfc" id="L1311" title="All 2 branches covered.">        for (int i=0; i &lt; primitives.length; i++) {</span>
+            // test each returned wrapper
+<span class="fc" id="L1313">            final Class&lt;?&gt; primitive = primitives[i];</span>
+<span class="fc" id="L1314">            final Class&lt;?&gt; expectedWrapper = ClassUtils.primitiveToWrapper(primitive);</span>
+
+<span class="fc" id="L1316">            assertEquals(expectedWrapper, wrappers[i], primitive + &quot; -&gt; &quot; + expectedWrapper);</span>
+        }
+
+        // test an array of no primitive classes
+<span class="fc" id="L1320">        final Class&lt;?&gt;[] noPrimitives = new Class[] {</span>
+                String.class, ClassUtils.class, Void.TYPE
+        };
+        // This used to return the exact same array, but no longer does.
+<span class="fc" id="L1324">        assertNotSame(noPrimitives, ClassUtils.primitivesToWrappers(noPrimitives), &quot;unmodified&quot;);</span>
+<span class="fc" id="L1325">    }</span>
+
+    @Test
+    public void testPrimitiveToWrapper() {
+
+        // test primitive classes
+<span class="fc" id="L1331">        assertEquals(Boolean.class, ClassUtils.primitiveToWrapper(Boolean.TYPE), &quot;boolean -&gt; Boolean.class&quot;);</span>
+<span class="fc" id="L1332">        assertEquals(Byte.class, ClassUtils.primitiveToWrapper(Byte.TYPE), &quot;byte -&gt; Byte.class&quot;);</span>
+<span class="fc" id="L1333">        assertEquals(Character.class, ClassUtils.primitiveToWrapper(Character.TYPE), &quot;char -&gt; Character.class&quot;);</span>
+<span class="fc" id="L1334">        assertEquals(Short.class, ClassUtils.primitiveToWrapper(Short.TYPE), &quot;short -&gt; Short.class&quot;);</span>
+<span class="fc" id="L1335">        assertEquals(Integer.class, ClassUtils.primitiveToWrapper(Integer.TYPE), &quot;int -&gt; Integer.class&quot;);</span>
+<span class="fc" id="L1336">        assertEquals(Long.class, ClassUtils.primitiveToWrapper(Long.TYPE), &quot;long -&gt; Long.class&quot;);</span>
+<span class="fc" id="L1337">        assertEquals(Double.class, ClassUtils.primitiveToWrapper(Double.TYPE), &quot;double -&gt; Double.class&quot;);</span>
+<span class="fc" id="L1338">        assertEquals(Float.class, ClassUtils.primitiveToWrapper(Float.TYPE), &quot;float -&gt; Float.class&quot;);</span>
+
+        // test a few other classes
+<span class="fc" id="L1341">        assertEquals(String.class, ClassUtils.primitiveToWrapper(String.class), &quot;String.class -&gt; String.class&quot;);</span>
+<span class="fc" id="L1342">        assertEquals(ClassUtils.class, ClassUtils.primitiveToWrapper(ClassUtils.class),</span>
+                &quot;ClassUtils.class -&gt; ClassUtils.class&quot;);
+<span class="fc" id="L1344">        assertEquals(Void.TYPE, ClassUtils.primitiveToWrapper(Void.TYPE), &quot;Void.TYPE -&gt; Void.TYPE&quot;);</span>
+
+        // test null
+<span class="fc" id="L1347">        assertNull(ClassUtils.primitiveToWrapper(null), &quot;null -&gt; null&quot;);</span>
+<span class="fc" id="L1348">    }</span>
+
+    // Show the Java bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4071957
+    // We may have to delete this if a JDK fixes the bug.
+    @Test
+    public void testShowJavaBug() throws Exception {
+        // Tests with Collections$UnmodifiableSet
+<span class="fc" id="L1355">        final Set&lt;?&gt; set = Collections.unmodifiableSet(new HashSet&lt;&gt;());</span>
+<span class="fc" id="L1356">        final Method isEmptyMethod = set.getClass().getMethod(&quot;isEmpty&quot;);</span>
+<span class="pc" id="L1357">        assertThrows(IllegalAccessException.class, () -&gt; isEmptyMethod.invoke(set));</span>
+<span class="fc" id="L1358">    }</span>
+
+    @Test
+    public void testToClass_object() {
+//        assertNull(ClassUtils.toClass(null)); // generates warning
+<span class="fc" id="L1363">        assertNull(ClassUtils.toClass((Object[]) null)); // equivalent explicit cast</span>
+
+        // Additional varargs tests
+<span class="fc" id="L1366">        assertArrayEquals(ArrayUtils.EMPTY_CLASS_ARRAY, ClassUtils.toClass(), &quot;empty -&gt; empty&quot;);</span>
+<span class="fc" id="L1367">        final Class&lt;?&gt;[] castNull = ClassUtils.toClass((Object) null); // == new Object[]{null}</span>
+<span class="fc" id="L1368">        assertArrayEquals(new Object[]{null}, castNull, &quot;(Object) null -&gt; [null]&quot;);</span>
+
+<span class="fc" id="L1370">        assertSame(ArrayUtils.EMPTY_CLASS_ARRAY, ClassUtils.toClass(ArrayUtils.EMPTY_OBJECT_ARRAY));</span>
+
+<span class="fc" id="L1372">        assertArrayEquals(new Class[]{String.class, Integer.class, Double.class}, ClassUtils.toClass(&quot;Test&quot;, Integer.valueOf(1), Double.valueOf(99d)));</span>
+
+<span class="fc" id="L1374">        assertArrayEquals(new Class[]{String.class, null, Double.class}, ClassUtils.toClass(&quot;Test&quot;, null, Double.valueOf(99d)));</span>
+<span class="fc" id="L1375">    }</span>
+
+    @Test
+    public void testWithInterleavingWhitespace() throws ClassNotFoundException {
+<span class="fc" id="L1379">        assertEquals( int[].class, ClassUtils.getClass( &quot; int [ ] &quot; ) );</span>
+<span class="fc" id="L1380">        assertEquals( long[].class, ClassUtils.getClass( &quot;\rlong\t[\n]\r&quot; ) );</span>
+<span class="fc" id="L1381">        assertEquals( short[].class, ClassUtils.getClass( &quot;\tshort                \t\t[]&quot; ) );</span>
+<span class="fc" id="L1382">        assertEquals( byte[].class, ClassUtils.getClass( &quot;byte[\t\t\n\r]   &quot; ) );</span>
+<span class="fc" id="L1383">    }</span>
+
+    @Test
+    public void testWrappersToPrimitives() {
+        // an array with classes to test
+<span class="fc" id="L1388">        final Class&lt;?&gt;[] classes = {</span>
+                Boolean.class, Byte.class, Character.class, Short.class,
+                Integer.class, Long.class, Float.class, Double.class,
+                String.class, ClassUtils.class, null
+        };
+
+<span class="fc" id="L1394">        final Class&lt;?&gt;[] primitives = ClassUtils.wrappersToPrimitives(classes);</span>
+        // now test the result
+<span class="fc" id="L1396">        assertEquals(classes.length, primitives.length, &quot;Wrong length of result array&quot;);</span>
+<span class="fc bfc" id="L1397" title="All 2 branches covered.">        for (int i = 0; i &lt; classes.length; i++) {</span>
+<span class="fc" id="L1398">            final Class&lt;?&gt; expectedPrimitive = ClassUtils.wrapperToPrimitive(classes[i]);</span>
+<span class="fc" id="L1399">            assertEquals(expectedPrimitive, primitives[i], classes[i] + &quot; -&gt; &quot; + expectedPrimitive);</span>
+        }
+<span class="fc" id="L1401">    }</span>
+
+    @Test
+    public void testWrappersToPrimitivesEmpty() {
+<span class="fc" id="L1405">        final Class&lt;?&gt;[] empty = new Class[0];</span>
+<span class="fc" id="L1406">        assertArrayEquals(empty, ClassUtils.wrappersToPrimitives(empty), &quot;Wrong result for empty input&quot;);</span>
+<span class="fc" id="L1407">    }</span>
+
+    @Test
+    public void testWrappersToPrimitivesNull() {
+//        assertNull(&quot;Wrong result for null input&quot;, ClassUtils.wrappersToPrimitives(null)); // generates warning
+<span class="fc" id="L1412">        assertNull(ClassUtils.wrappersToPrimitives((Class&lt;?&gt;[]) null), &quot;Wrong result for null input&quot;); // equivalent cast</span>
+        // Other possible casts for null
+<span class="fc" id="L1414">        assertArrayEquals(ArrayUtils.EMPTY_CLASS_ARRAY, ClassUtils.wrappersToPrimitives(), &quot;empty -&gt; empty&quot;);</span>
+<span class="fc" id="L1415">        final Class&lt;?&gt;[] castNull = ClassUtils.wrappersToPrimitives((Class&lt;?&gt;) null); // == new Class&lt;?&gt;[]{null}</span>
+<span class="fc" id="L1416">        assertArrayEquals(new Class&lt;?&gt;[]{null}, castNull, &quot;(Class&lt;?&gt;) null -&gt; [null]&quot;);</span>
+<span class="fc" id="L1417">}</span>
+
+    @Test
+    public void testWrapperToPrimitive() {
+        // an array with classes to convert
+<span class="fc" id="L1422">        final Class&lt;?&gt;[] primitives = {</span>
+                Boolean.TYPE, Byte.TYPE, Character.TYPE, Short.TYPE,
+                Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE
+        };
+<span class="fc bfc" id="L1426" title="All 2 branches covered.">        for (final Class&lt;?&gt; primitive : primitives) {</span>
+<span class="fc" id="L1427">            final Class&lt;?&gt; wrapperCls = ClassUtils.primitiveToWrapper(primitive);</span>
+<span class="fc" id="L1428">            assertFalse(wrapperCls.isPrimitive(), &quot;Still primitive&quot;);</span>
+<span class="fc" id="L1429">            assertEquals(primitive, ClassUtils.wrapperToPrimitive(wrapperCls), wrapperCls + &quot; -&gt; &quot; + primitive);</span>
+        }
+<span class="fc" id="L1431">    }</span>
+
+    @Test
+    public void testWrapperToPrimitiveNoWrapper() {
+<span class="fc" id="L1435">        assertNull(ClassUtils.wrapperToPrimitive(String.class), &quot;Wrong result for non wrapper class&quot;);</span>
+<span class="fc" id="L1436">    }</span>
+
+    @Test
+    public void testWrapperToPrimitiveNull() {
+<span class="fc" id="L1440">        assertNull(ClassUtils.wrapperToPrimitive(null), &quot;Wrong result for null class&quot;);</span>
+<span class="fc" id="L1441">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

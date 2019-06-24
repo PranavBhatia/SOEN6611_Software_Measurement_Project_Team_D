@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RecursiveToStringStyleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">RecursiveToStringStyleTest.java</span></div><h1>RecursiveToStringStyleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.builder.RecursiveToStringStyleTest}.
+ */
+<span class="fc" id="L31">public class RecursiveToStringStyleTest {</span>
+
+<span class="fc" id="L33">    private final Integer base = Integer.valueOf(5);</span>
+<span class="fc" id="L34">    private final String baseStr = base.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(base));</span>
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L38">        ToStringBuilder.setDefaultStyle(new RecursiveToStringStyle());</span>
+<span class="fc" id="L39">    }</span>
+
+    @AfterEach
+    public void tearDown() {
+<span class="fc" id="L43">        ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);</span>
+<span class="fc" id="L44">    }</span>
+
+    //----------------------------------------------------------------
+
+    @Test
+    public void testBlank() {
+<span class="fc" id="L50">        assertEquals(baseStr + &quot;[]&quot;, new ToStringBuilder(base).toString());</span>
+<span class="fc" id="L51">    }</span>
+
+    @Test
+    public void testAppendSuper() {
+<span class="fc" id="L55">        assertEquals(baseStr + &quot;[]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[]&quot;).toString());</span>
+<span class="fc" id="L56">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&lt;null&gt;]&quot;).toString());</span>
+
+<span class="fc" id="L58">        assertEquals(baseStr + &quot;[a=hello]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L59">        assertEquals(baseStr + &quot;[&lt;null&gt;,a=hello]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&lt;null&gt;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L60">        assertEquals(baseStr + &quot;[a=hello]&quot;, new ToStringBuilder(base).appendSuper(null).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L61">    }</span>
+
+    @Test
+    public void testObject() {
+<span class="fc" id="L65">        final Integer i3 = Integer.valueOf(3);</span>
+<span class="fc" id="L66">        final Integer i4 = Integer.valueOf(4);</span>
+<span class="fc" id="L67">        final ArrayList&lt;Object&gt; emptyList = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L69">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) null).toString());</span>
+<span class="fc" id="L70">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append(i3).toString());</span>
+<span class="fc" id="L71">        assertEquals(baseStr + &quot;[a=&lt;null&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) null).toString());</span>
+<span class="fc" id="L72">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).toString());</span>
+<span class="fc" id="L73">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).append(&quot;b&quot;, i4).toString());</span>
+<span class="fc" id="L74">        assertEquals(baseStr + &quot;[a=&lt;Integer&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3, false).toString());</span>
+<span class="fc" id="L75">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, emptyList, false).toString());</span>
+<span class="fc" id="L76">        assertEquals(baseStr + &quot;[a=java.util.ArrayList@&quot; + Integer.toHexString(System.identityHashCode(emptyList)) + &quot;{}]&quot;,</span>
+<span class="fc" id="L77">                new ToStringBuilder(base).append(&quot;a&quot;, emptyList, true).toString());</span>
+<span class="fc" id="L78">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), false).toString());</span>
+<span class="fc" id="L79">        assertEquals(baseStr + &quot;[a={}]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), true).toString());</span>
+<span class="fc" id="L80">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], false).toString());</span>
+<span class="fc" id="L81">        assertEquals(baseStr + &quot;[a={}]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], true).toString());</span>
+<span class="fc" id="L82">    }</span>
+
+    @Test
+    public void testPerson() {
+<span class="fc" id="L86">        final Person p = new Person();</span>
+<span class="fc" id="L87">        p.name = &quot;John Doe&quot;;</span>
+<span class="fc" id="L88">        p.age = 33;</span>
+<span class="fc" id="L89">        p.smoker = false;</span>
+<span class="fc" id="L90">        p.job = new Job();</span>
+<span class="fc" id="L91">        p.job.title = &quot;Manager&quot;;</span>
+<span class="fc" id="L92">        final String pBaseStr = p.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(p));</span>
+<span class="fc" id="L93">        final String pJobStr  = p.job.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(p.job));</span>
+<span class="fc" id="L94">        assertEquals(pBaseStr + &quot;[name=John Doe,age=33,smoker=false,job=&quot; + pJobStr + &quot;[title=Manager]]&quot;,</span>
+<span class="fc" id="L95">                     new ReflectionToStringBuilder(p, new RecursiveToStringStyle()).toString());</span>
+<span class="fc" id="L96">    }</span>
+
+    @Test
+    public void testLong() {
+<span class="fc" id="L100">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append(3L).toString());</span>
+<span class="fc" id="L101">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L).toString());</span>
+<span class="fc" id="L102">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L).append(&quot;b&quot;, 4L).toString());</span>
+<span class="fc" id="L103">    }</span>
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L107">        Object[] array = new Object[] {null, base, new int[] {3, 6}};</span>
+<span class="fc" id="L108">        assertEquals(baseStr + &quot;[{&lt;null&gt;,5,{3,6}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L109">        assertEquals(baseStr + &quot;[{&lt;null&gt;,5,{3,6}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L110">        array = null;</span>
+<span class="fc" id="L111">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L112">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L113">    }</span>
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L117">        long[] array = new long[] {1, 2, -3, 4};</span>
+<span class="fc" id="L118">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L119">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L120">        array = null;</span>
+<span class="fc" id="L121">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L122">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L123">    }</span>
+
+    @Test
+    public void testLongArrayArray() {
+<span class="fc" id="L127">        long[][] array = new long[][] {{1, 2}, null, {5}};</span>
+<span class="fc" id="L128">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L129">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L130">        array = null;</span>
+<span class="fc" id="L131">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L132">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L133">    }</span>
+
+<span class="fc" id="L135">    static class Person {</span>
+        /**
+         * Test String field.
+         */
+        String name;
+
+        /**
+         * Test integer field.
+         */
+        int age;
+
+        /**
+         * Test boolean field.
+         */
+        boolean smoker;
+
+        /**
+         * Test Object field.
+         */
+        Job job;
+    }
+
+<span class="fc" id="L157">    static class Job {</span>
+        /**
+         * Test String field.
+         */
+        String title;
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

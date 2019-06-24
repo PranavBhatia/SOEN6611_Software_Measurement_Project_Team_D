@@ -1,0 +1,1125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FractionTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.math</a> &gt; <span class="el_source">FractionTest.java</span></div><h1>FractionTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.commons.lang3.math;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test cases for the {@link Fraction} class
+ */
+<span class="fc" id="L32">public class FractionTest  {</span>
+
+    private static final int SKIP = 500;  //53
+
+    //--------------------------------------------------------------------------
+    @Test
+    public void testConstants() {
+<span class="fc" id="L39">        assertEquals(0, Fraction.ZERO.getNumerator());</span>
+<span class="fc" id="L40">        assertEquals(1, Fraction.ZERO.getDenominator());</span>
+
+<span class="fc" id="L42">        assertEquals(1, Fraction.ONE.getNumerator());</span>
+<span class="fc" id="L43">        assertEquals(1, Fraction.ONE.getDenominator());</span>
+
+<span class="fc" id="L45">        assertEquals(1, Fraction.ONE_HALF.getNumerator());</span>
+<span class="fc" id="L46">        assertEquals(2, Fraction.ONE_HALF.getDenominator());</span>
+
+<span class="fc" id="L48">        assertEquals(1, Fraction.ONE_THIRD.getNumerator());</span>
+<span class="fc" id="L49">        assertEquals(3, Fraction.ONE_THIRD.getDenominator());</span>
+
+<span class="fc" id="L51">        assertEquals(2, Fraction.TWO_THIRDS.getNumerator());</span>
+<span class="fc" id="L52">        assertEquals(3, Fraction.TWO_THIRDS.getDenominator());</span>
+
+<span class="fc" id="L54">        assertEquals(1, Fraction.ONE_QUARTER.getNumerator());</span>
+<span class="fc" id="L55">        assertEquals(4, Fraction.ONE_QUARTER.getDenominator());</span>
+
+<span class="fc" id="L57">        assertEquals(2, Fraction.TWO_QUARTERS.getNumerator());</span>
+<span class="fc" id="L58">        assertEquals(4, Fraction.TWO_QUARTERS.getDenominator());</span>
+
+<span class="fc" id="L60">        assertEquals(3, Fraction.THREE_QUARTERS.getNumerator());</span>
+<span class="fc" id="L61">        assertEquals(4, Fraction.THREE_QUARTERS.getDenominator());</span>
+
+<span class="fc" id="L63">        assertEquals(1, Fraction.ONE_FIFTH.getNumerator());</span>
+<span class="fc" id="L64">        assertEquals(5, Fraction.ONE_FIFTH.getDenominator());</span>
+
+<span class="fc" id="L66">        assertEquals(2, Fraction.TWO_FIFTHS.getNumerator());</span>
+<span class="fc" id="L67">        assertEquals(5, Fraction.TWO_FIFTHS.getDenominator());</span>
+
+<span class="fc" id="L69">        assertEquals(3, Fraction.THREE_FIFTHS.getNumerator());</span>
+<span class="fc" id="L70">        assertEquals(5, Fraction.THREE_FIFTHS.getDenominator());</span>
+
+<span class="fc" id="L72">        assertEquals(4, Fraction.FOUR_FIFTHS.getNumerator());</span>
+<span class="fc" id="L73">        assertEquals(5, Fraction.FOUR_FIFTHS.getDenominator());</span>
+<span class="fc" id="L74">    }</span>
+
+    @Test
+    public void testFactory_int_int() {
+<span class="fc" id="L78">        Fraction f = null;</span>
+
+        // zero
+<span class="fc" id="L81">        f = Fraction.getFraction(0, 1);</span>
+<span class="fc" id="L82">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L83">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L85">        f = Fraction.getFraction(0, 2);</span>
+<span class="fc" id="L86">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L87">        assertEquals(2, f.getDenominator());</span>
+
+        // normal
+<span class="fc" id="L90">        f = Fraction.getFraction(1, 1);</span>
+<span class="fc" id="L91">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L92">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L94">        f = Fraction.getFraction(2, 1);</span>
+<span class="fc" id="L95">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L96">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L98">        f = Fraction.getFraction(23, 345);</span>
+<span class="fc" id="L99">        assertEquals(23, f.getNumerator());</span>
+<span class="fc" id="L100">        assertEquals(345, f.getDenominator());</span>
+
+        // improper
+<span class="fc" id="L103">        f = Fraction.getFraction(22, 7);</span>
+<span class="fc" id="L104">        assertEquals(22, f.getNumerator());</span>
+<span class="fc" id="L105">        assertEquals(7, f.getDenominator());</span>
+
+        // negatives
+<span class="fc" id="L108">        f = Fraction.getFraction(-6, 10);</span>
+<span class="fc" id="L109">        assertEquals(-6, f.getNumerator());</span>
+<span class="fc" id="L110">        assertEquals(10, f.getDenominator());</span>
+
+<span class="fc" id="L112">        f = Fraction.getFraction(6, -10);</span>
+<span class="fc" id="L113">        assertEquals(-6, f.getNumerator());</span>
+<span class="fc" id="L114">        assertEquals(10, f.getDenominator());</span>
+
+<span class="fc" id="L116">        f = Fraction.getFraction(-6, -10);</span>
+<span class="fc" id="L117">        assertEquals(6, f.getNumerator());</span>
+<span class="fc" id="L118">        assertEquals(10, f.getDenominator());</span>
+
+        // zero denominator
+<span class="pc" id="L121">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, 0));</span>
+<span class="pc" id="L122">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(2, 0));</span>
+<span class="pc" id="L123">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-3, 0));</span>
+
+        // very large: can't represent as unsimplified fraction, although
+<span class="pc" id="L126">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(4, Integer.MIN_VALUE));</span>
+<span class="pc" id="L127">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, Integer.MIN_VALUE));</span>
+<span class="fc" id="L128">    }</span>
+
+    @Test
+    public void testFactory_int_int_int() {
+<span class="fc" id="L132">        Fraction f = null;</span>
+
+        // zero
+<span class="fc" id="L135">        f = Fraction.getFraction(0, 0, 2);</span>
+<span class="fc" id="L136">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L137">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L139">        f = Fraction.getFraction(2, 0, 2);</span>
+<span class="fc" id="L140">        assertEquals(4, f.getNumerator());</span>
+<span class="fc" id="L141">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L143">        f = Fraction.getFraction(0, 1, 2);</span>
+<span class="fc" id="L144">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L145">        assertEquals(2, f.getDenominator());</span>
+
+        // normal
+<span class="fc" id="L148">        f = Fraction.getFraction(1, 1, 2);</span>
+<span class="fc" id="L149">        assertEquals(3, f.getNumerator());</span>
+<span class="fc" id="L150">        assertEquals(2, f.getDenominator());</span>
+
+        // negatives
+<span class="pc" id="L153">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, -6, -10));</span>
+<span class="pc" id="L154">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, -6, -10));</span>
+<span class="pc" id="L155">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, -6, -10));</span>
+
+        // negative whole
+<span class="fc" id="L158">        f = Fraction.getFraction(-1, 6, 10);</span>
+<span class="fc" id="L159">        assertEquals(-16, f.getNumerator());</span>
+<span class="fc" id="L160">        assertEquals(10, f.getDenominator());</span>
+
+<span class="pc" id="L162">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-1, -6, 10));</span>
+<span class="pc" id="L163">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-1, 6, -10));</span>
+<span class="pc" id="L164">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-1, -6, -10));</span>
+
+        // zero denominator
+<span class="pc" id="L167">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(0, 1, 0));</span>
+<span class="pc" id="L168">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, 2, 0));</span>
+<span class="pc" id="L169">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-1, -3, 0));</span>
+<span class="pc" id="L170">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MAX_VALUE, 1, 2));</span>
+<span class="pc" id="L171">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-Integer.MAX_VALUE, 1, 2));</span>
+
+        // very large
+<span class="fc" id="L174">        f = Fraction.getFraction(-1, 0, Integer.MAX_VALUE);</span>
+<span class="fc" id="L175">        assertEquals(-Integer.MAX_VALUE, f.getNumerator());</span>
+<span class="fc" id="L176">        assertEquals(Integer.MAX_VALUE, f.getDenominator());</span>
+
+        // negative denominators not allowed in this constructor.
+<span class="pc" id="L179">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(0, 4, Integer.MIN_VALUE));</span>
+<span class="pc" id="L180">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(1, 1, Integer.MAX_VALUE));</span>
+<span class="pc" id="L181">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(-1, 2, Integer.MAX_VALUE));</span>
+<span class="fc" id="L182">    }</span>
+
+    @Test
+    public void testReducedFactory_int_int() {
+<span class="fc" id="L186">        Fraction f = null;</span>
+
+        // zero
+<span class="fc" id="L189">        f = Fraction.getReducedFraction(0, 1);</span>
+<span class="fc" id="L190">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L191">        assertEquals(1, f.getDenominator());</span>
+
+        // normal
+<span class="fc" id="L194">        f = Fraction.getReducedFraction(1, 1);</span>
+<span class="fc" id="L195">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L196">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L198">        f = Fraction.getReducedFraction(2, 1);</span>
+<span class="fc" id="L199">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L200">        assertEquals(1, f.getDenominator());</span>
+
+        // improper
+<span class="fc" id="L203">        f = Fraction.getReducedFraction(22, 7);</span>
+<span class="fc" id="L204">        assertEquals(22, f.getNumerator());</span>
+<span class="fc" id="L205">        assertEquals(7, f.getDenominator());</span>
+
+        // negatives
+<span class="fc" id="L208">        f = Fraction.getReducedFraction(-6, 10);</span>
+<span class="fc" id="L209">        assertEquals(-3, f.getNumerator());</span>
+<span class="fc" id="L210">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L212">        f = Fraction.getReducedFraction(6, -10);</span>
+<span class="fc" id="L213">        assertEquals(-3, f.getNumerator());</span>
+<span class="fc" id="L214">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L216">        f = Fraction.getReducedFraction(-6, -10);</span>
+<span class="fc" id="L217">        assertEquals(3, f.getNumerator());</span>
+<span class="fc" id="L218">        assertEquals(5, f.getDenominator());</span>
+
+        // zero denominator
+<span class="pc" id="L221">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getReducedFraction(1, 0));</span>
+<span class="pc" id="L222">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getReducedFraction(2, 0));</span>
+<span class="pc" id="L223">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getReducedFraction(-3, 0));</span>
+
+        // reduced
+<span class="fc" id="L226">        f = Fraction.getReducedFraction(0, 2);</span>
+<span class="fc" id="L227">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L228">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L230">        f = Fraction.getReducedFraction(2, 2);</span>
+<span class="fc" id="L231">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L232">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L234">        f = Fraction.getReducedFraction(2, 4);</span>
+<span class="fc" id="L235">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L236">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L238">        f = Fraction.getReducedFraction(15, 10);</span>
+<span class="fc" id="L239">        assertEquals(3, f.getNumerator());</span>
+<span class="fc" id="L240">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L242">        f = Fraction.getReducedFraction(121, 22);</span>
+<span class="fc" id="L243">        assertEquals(11, f.getNumerator());</span>
+<span class="fc" id="L244">        assertEquals(2, f.getDenominator());</span>
+
+        // Extreme values
+        // OK, can reduce before negating
+<span class="fc" id="L248">        f = Fraction.getReducedFraction(-2, Integer.MIN_VALUE);</span>
+<span class="fc" id="L249">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L250">        assertEquals(-(Integer.MIN_VALUE / 2), f.getDenominator());</span>
+
+        // Can't reduce, negation will throw
+<span class="pc" id="L253">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getReducedFraction(-7, Integer.MIN_VALUE));</span>
+
+        // LANG-662
+<span class="fc" id="L256">        f = Fraction.getReducedFraction(Integer.MIN_VALUE, 2);</span>
+<span class="fc" id="L257">        assertEquals(Integer.MIN_VALUE / 2, f.getNumerator());</span>
+<span class="fc" id="L258">        assertEquals(1, f.getDenominator());</span>
+<span class="fc" id="L259">    }</span>
+
+    @Test
+    public void testFactory_double() {
+<span class="pc" id="L263">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Double.NaN));</span>
+<span class="pc" id="L264">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Double.POSITIVE_INFINITY));</span>
+<span class="pc" id="L265">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Double.NEGATIVE_INFINITY));</span>
+<span class="pc" id="L266">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction((double) Integer.MAX_VALUE + 1));</span>
+
+        // zero
+<span class="fc" id="L269">        Fraction f = Fraction.getFraction(0.0d);</span>
+<span class="fc" id="L270">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L271">        assertEquals(1, f.getDenominator());</span>
+
+        // one
+<span class="fc" id="L274">        f = Fraction.getFraction(1.0d);</span>
+<span class="fc" id="L275">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L276">        assertEquals(1, f.getDenominator());</span>
+
+        // one half
+<span class="fc" id="L279">        f = Fraction.getFraction(0.5d);</span>
+<span class="fc" id="L280">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L281">        assertEquals(2, f.getDenominator());</span>
+
+        // negative
+<span class="fc" id="L284">        f = Fraction.getFraction(-0.875d);</span>
+<span class="fc" id="L285">        assertEquals(-7, f.getNumerator());</span>
+<span class="fc" id="L286">        assertEquals(8, f.getDenominator());</span>
+
+        // over 1
+<span class="fc" id="L289">        f = Fraction.getFraction(1.25d);</span>
+<span class="fc" id="L290">        assertEquals(5, f.getNumerator());</span>
+<span class="fc" id="L291">        assertEquals(4, f.getDenominator());</span>
+
+        // two thirds
+<span class="fc" id="L294">        f = Fraction.getFraction(0.66666d);</span>
+<span class="fc" id="L295">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L296">        assertEquals(3, f.getDenominator());</span>
+
+        // small
+<span class="fc" id="L299">        f = Fraction.getFraction(1.0d/10001d);</span>
+<span class="fc" id="L300">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L301">        assertEquals(1, f.getDenominator());</span>
+
+        // normal
+<span class="fc" id="L304">        Fraction f2 = null;</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">        for (int i = 1; i &lt;= 100; i++) {  // denominator</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">            for (int j = 1; j &lt;= i; j++) {  // numerator</span>
+<span class="fc" id="L307">                f = Fraction.getFraction((double) j / (double) i);</span>
+
+<span class="fc" id="L309">                f2 = Fraction.getReducedFraction(j, i);</span>
+<span class="fc" id="L310">                assertEquals(f2.getNumerator(), f.getNumerator());</span>
+<span class="fc" id="L311">                assertEquals(f2.getDenominator(), f.getDenominator());</span>
+            }
+        }
+        // save time by skipping some tests!  (
+<span class="fc bfc" id="L315" title="All 2 branches covered.">        for (int i = 1001; i &lt;= 10000; i+=SKIP) {  // denominator</span>
+<span class="fc bfc" id="L316" title="All 2 branches covered.">            for (int j = 1; j &lt;= i; j++) {  // numerator</span>
+<span class="fc" id="L317">                f = Fraction.getFraction((double) j / (double) i);</span>
+<span class="fc" id="L318">                f2 = Fraction.getReducedFraction(j, i);</span>
+<span class="fc" id="L319">                assertEquals(f2.getNumerator(), f.getNumerator());</span>
+<span class="fc" id="L320">                assertEquals(f2.getDenominator(), f.getDenominator());</span>
+            }
+        }
+<span class="fc" id="L323">    }</span>
+
+    @Test
+    public void testFactory_String() {
+<span class="pc" id="L327">        assertThrows(IllegalArgumentException.class, () -&gt; Fraction.getFraction(null));</span>
+<span class="fc" id="L328">    }</span>
+
+
+    @Test
+    public void testFactory_String_double() {
+<span class="fc" id="L333">        Fraction f = null;</span>
+
+<span class="fc" id="L335">        f = Fraction.getFraction(&quot;0.0&quot;);</span>
+<span class="fc" id="L336">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L337">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L339">        f = Fraction.getFraction(&quot;0.2&quot;);</span>
+<span class="fc" id="L340">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L341">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L343">        f = Fraction.getFraction(&quot;0.5&quot;);</span>
+<span class="fc" id="L344">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L345">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L347">        f = Fraction.getFraction(&quot;0.66666&quot;);</span>
+<span class="fc" id="L348">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L349">        assertEquals(3, f.getDenominator());</span>
+
+<span class="pc" id="L351">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2.3R&quot;));</span>
+<span class="pc" id="L352">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2147483648&quot;)); // too big</span>
+<span class="pc" id="L353">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;.&quot;));</span>
+<span class="fc" id="L354">    }</span>
+
+    @Test
+    public void testFactory_String_proper() {
+<span class="fc" id="L358">        Fraction f = null;</span>
+
+<span class="fc" id="L360">        f = Fraction.getFraction(&quot;0 0/1&quot;);</span>
+<span class="fc" id="L361">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L362">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L364">        f = Fraction.getFraction(&quot;1 1/5&quot;);</span>
+<span class="fc" id="L365">        assertEquals(6, f.getNumerator());</span>
+<span class="fc" id="L366">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L368">        f = Fraction.getFraction(&quot;7 1/2&quot;);</span>
+<span class="fc" id="L369">        assertEquals(15, f.getNumerator());</span>
+<span class="fc" id="L370">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L372">        f = Fraction.getFraction(&quot;1 2/4&quot;);</span>
+<span class="fc" id="L373">        assertEquals(6, f.getNumerator());</span>
+<span class="fc" id="L374">        assertEquals(4, f.getDenominator());</span>
+
+<span class="fc" id="L376">        f = Fraction.getFraction(&quot;-7 1/2&quot;);</span>
+<span class="fc" id="L377">        assertEquals(-15, f.getNumerator());</span>
+<span class="fc" id="L378">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L380">        f = Fraction.getFraction(&quot;-1 2/4&quot;);</span>
+<span class="fc" id="L381">        assertEquals(-6, f.getNumerator());</span>
+<span class="fc" id="L382">        assertEquals(4, f.getDenominator());</span>
+
+<span class="pc" id="L384">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2 3&quot;));</span>
+<span class="pc" id="L385">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;a 3&quot;));</span>
+<span class="pc" id="L386">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2 b/4&quot;));</span>
+<span class="pc" id="L387">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2 &quot;));</span>
+<span class="pc" id="L388">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot; 3&quot;));</span>
+<span class="pc" id="L389">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot; &quot;));</span>
+<span class="fc" id="L390">    }</span>
+
+    @Test
+    public void testFactory_String_improper() {
+<span class="fc" id="L394">        Fraction f = null;</span>
+
+<span class="fc" id="L396">        f = Fraction.getFraction(&quot;0/1&quot;);</span>
+<span class="fc" id="L397">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L398">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L400">        f = Fraction.getFraction(&quot;1/5&quot;);</span>
+<span class="fc" id="L401">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L402">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L404">        f = Fraction.getFraction(&quot;1/2&quot;);</span>
+<span class="fc" id="L405">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L406">        assertEquals(2, f.getDenominator());</span>
+
+<span class="fc" id="L408">        f = Fraction.getFraction(&quot;2/3&quot;);</span>
+<span class="fc" id="L409">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L410">        assertEquals(3, f.getDenominator());</span>
+
+<span class="fc" id="L412">        f = Fraction.getFraction(&quot;7/3&quot;);</span>
+<span class="fc" id="L413">        assertEquals(7, f.getNumerator());</span>
+<span class="fc" id="L414">        assertEquals(3, f.getDenominator());</span>
+
+<span class="fc" id="L416">        f = Fraction.getFraction(&quot;2/4&quot;);</span>
+<span class="fc" id="L417">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L418">        assertEquals(4, f.getDenominator());</span>
+
+<span class="pc" id="L420">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2/d&quot;));</span>
+<span class="pc" id="L421">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2e/3&quot;));</span>
+<span class="pc" id="L422">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;2/&quot;));</span>
+<span class="pc" id="L423">        assertThrows(NumberFormatException.class, () -&gt; Fraction.getFraction(&quot;/&quot;));</span>
+<span class="fc" id="L424">    }</span>
+
+    @Test
+    public void testGets() {
+<span class="fc" id="L428">        Fraction f = null;</span>
+
+<span class="fc" id="L430">        f = Fraction.getFraction(3, 5, 6);</span>
+<span class="fc" id="L431">        assertEquals(23, f.getNumerator());</span>
+<span class="fc" id="L432">        assertEquals(3, f.getProperWhole());</span>
+<span class="fc" id="L433">        assertEquals(5, f.getProperNumerator());</span>
+<span class="fc" id="L434">        assertEquals(6, f.getDenominator());</span>
+
+<span class="fc" id="L436">        f = Fraction.getFraction(-3, 5, 6);</span>
+<span class="fc" id="L437">        assertEquals(-23, f.getNumerator());</span>
+<span class="fc" id="L438">        assertEquals(-3, f.getProperWhole());</span>
+<span class="fc" id="L439">        assertEquals(5, f.getProperNumerator());</span>
+<span class="fc" id="L440">        assertEquals(6, f.getDenominator());</span>
+
+<span class="fc" id="L442">        f = Fraction.getFraction(Integer.MIN_VALUE, 0, 1);</span>
+<span class="fc" id="L443">        assertEquals(Integer.MIN_VALUE, f.getNumerator());</span>
+<span class="fc" id="L444">        assertEquals(Integer.MIN_VALUE, f.getProperWhole());</span>
+<span class="fc" id="L445">        assertEquals(0, f.getProperNumerator());</span>
+<span class="fc" id="L446">        assertEquals(1, f.getDenominator());</span>
+<span class="fc" id="L447">    }</span>
+
+    @Test
+    public void testConversions() {
+<span class="fc" id="L451">        Fraction f = null;</span>
+
+<span class="fc" id="L453">        f = Fraction.getFraction(3, 7, 8);</span>
+<span class="fc" id="L454">        assertEquals(3, f.intValue());</span>
+<span class="fc" id="L455">        assertEquals(3L, f.longValue());</span>
+<span class="fc" id="L456">        assertEquals(3.875f, f.floatValue(), 0.00001f);</span>
+<span class="fc" id="L457">        assertEquals(3.875d, f.doubleValue(), 0.00001d);</span>
+<span class="fc" id="L458">    }</span>
+
+    @Test
+    public void testReduce() {
+<span class="fc" id="L462">        Fraction f = null;</span>
+
+<span class="fc" id="L464">        f = Fraction.getFraction(50, 75);</span>
+<span class="fc" id="L465">        Fraction result = f.reduce();</span>
+<span class="fc" id="L466">        assertEquals(2, result.getNumerator());</span>
+<span class="fc" id="L467">        assertEquals(3, result.getDenominator());</span>
+
+<span class="fc" id="L469">        f = Fraction.getFraction(-2, -3);</span>
+<span class="fc" id="L470">        result = f.reduce();</span>
+<span class="fc" id="L471">        assertEquals(2, result.getNumerator());</span>
+<span class="fc" id="L472">        assertEquals(3, result.getDenominator());</span>
+
+<span class="fc" id="L474">        f = Fraction.getFraction(2, -3);</span>
+<span class="fc" id="L475">        result = f.reduce();</span>
+<span class="fc" id="L476">        assertEquals(-2, result.getNumerator());</span>
+<span class="fc" id="L477">        assertEquals(3, result.getDenominator());</span>
+
+<span class="fc" id="L479">        f = Fraction.getFraction(-2, 3);</span>
+<span class="fc" id="L480">        result = f.reduce();</span>
+<span class="fc" id="L481">        assertEquals(-2, result.getNumerator());</span>
+<span class="fc" id="L482">        assertEquals(3, result.getDenominator());</span>
+<span class="fc" id="L483">        assertSame(f, result);</span>
+
+<span class="fc" id="L485">        f = Fraction.getFraction(2, 3);</span>
+<span class="fc" id="L486">        result = f.reduce();</span>
+<span class="fc" id="L487">        assertEquals(2, result.getNumerator());</span>
+<span class="fc" id="L488">        assertEquals(3, result.getDenominator());</span>
+<span class="fc" id="L489">        assertSame(f, result);</span>
+
+<span class="fc" id="L491">        f = Fraction.getFraction(0, 1);</span>
+<span class="fc" id="L492">        result = f.reduce();</span>
+<span class="fc" id="L493">        assertEquals(0, result.getNumerator());</span>
+<span class="fc" id="L494">        assertEquals(1, result.getDenominator());</span>
+<span class="fc" id="L495">        assertSame(f, result);</span>
+
+<span class="fc" id="L497">        f = Fraction.getFraction(0, 100);</span>
+<span class="fc" id="L498">        result = f.reduce();</span>
+<span class="fc" id="L499">        assertEquals(0, result.getNumerator());</span>
+<span class="fc" id="L500">        assertEquals(1, result.getDenominator());</span>
+<span class="fc" id="L501">        assertSame(result, Fraction.ZERO);</span>
+
+<span class="fc" id="L503">        f = Fraction.getFraction(Integer.MIN_VALUE, 2);</span>
+<span class="fc" id="L504">        result = f.reduce();</span>
+<span class="fc" id="L505">        assertEquals(Integer.MIN_VALUE / 2, result.getNumerator());</span>
+<span class="fc" id="L506">        assertEquals(1, result.getDenominator());</span>
+<span class="fc" id="L507">    }</span>
+
+    @Test
+    public void testInvert() {
+<span class="fc" id="L511">        Fraction f = null;</span>
+
+<span class="fc" id="L513">        f = Fraction.getFraction(50, 75);</span>
+<span class="fc" id="L514">        f = f.invert();</span>
+<span class="fc" id="L515">        assertEquals(75, f.getNumerator());</span>
+<span class="fc" id="L516">        assertEquals(50, f.getDenominator());</span>
+
+<span class="fc" id="L518">        f = Fraction.getFraction(4, 3);</span>
+<span class="fc" id="L519">        f = f.invert();</span>
+<span class="fc" id="L520">        assertEquals(3, f.getNumerator());</span>
+<span class="fc" id="L521">        assertEquals(4, f.getDenominator());</span>
+
+<span class="fc" id="L523">        f = Fraction.getFraction(-15, 47);</span>
+<span class="fc" id="L524">        f = f.invert();</span>
+<span class="fc" id="L525">        assertEquals(-47, f.getNumerator());</span>
+<span class="fc" id="L526">        assertEquals(15, f.getDenominator());</span>
+
+<span class="pc" id="L528">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(0, 3).invert());</span>
+<span class="pc" id="L529">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 1).invert());</span>
+
+<span class="fc" id="L531">        f = Fraction.getFraction(Integer.MAX_VALUE, 1);</span>
+<span class="fc" id="L532">        f = f.invert();</span>
+<span class="fc" id="L533">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L534">        assertEquals(Integer.MAX_VALUE, f.getDenominator());</span>
+<span class="fc" id="L535">    }</span>
+
+    @Test
+    public void testNegate() {
+<span class="fc" id="L539">        Fraction f = null;</span>
+
+<span class="fc" id="L541">        f = Fraction.getFraction(50, 75);</span>
+<span class="fc" id="L542">        f = f.negate();</span>
+<span class="fc" id="L543">        assertEquals(-50, f.getNumerator());</span>
+<span class="fc" id="L544">        assertEquals(75, f.getDenominator());</span>
+
+<span class="fc" id="L546">        f = Fraction.getFraction(-50, 75);</span>
+<span class="fc" id="L547">        f = f.negate();</span>
+<span class="fc" id="L548">        assertEquals(50, f.getNumerator());</span>
+<span class="fc" id="L549">        assertEquals(75, f.getDenominator());</span>
+
+        // large values
+<span class="fc" id="L552">        f = Fraction.getFraction(Integer.MAX_VALUE-1, Integer.MAX_VALUE);</span>
+<span class="fc" id="L553">        f = f.negate();</span>
+<span class="fc" id="L554">        assertEquals(Integer.MIN_VALUE+2, f.getNumerator());</span>
+<span class="fc" id="L555">        assertEquals(Integer.MAX_VALUE, f.getDenominator());</span>
+
+<span class="pc" id="L557">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 1).negate());</span>
+<span class="fc" id="L558">    }</span>
+
+    @Test
+    public void testAbs() {
+<span class="fc" id="L562">        Fraction f = null;</span>
+
+<span class="fc" id="L564">        f = Fraction.getFraction(50, 75);</span>
+<span class="fc" id="L565">        f = f.abs();</span>
+<span class="fc" id="L566">        assertEquals(50, f.getNumerator());</span>
+<span class="fc" id="L567">        assertEquals(75, f.getDenominator());</span>
+
+<span class="fc" id="L569">        f = Fraction.getFraction(-50, 75);</span>
+<span class="fc" id="L570">        f = f.abs();</span>
+<span class="fc" id="L571">        assertEquals(50, f.getNumerator());</span>
+<span class="fc" id="L572">        assertEquals(75, f.getDenominator());</span>
+
+<span class="fc" id="L574">        f = Fraction.getFraction(Integer.MAX_VALUE, 1);</span>
+<span class="fc" id="L575">        f = f.abs();</span>
+<span class="fc" id="L576">        assertEquals(Integer.MAX_VALUE, f.getNumerator());</span>
+<span class="fc" id="L577">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L579">        f = Fraction.getFraction(Integer.MAX_VALUE, -1);</span>
+<span class="fc" id="L580">        f = f.abs();</span>
+<span class="fc" id="L581">        assertEquals(Integer.MAX_VALUE, f.getNumerator());</span>
+<span class="fc" id="L582">        assertEquals(1, f.getDenominator());</span>
+
+<span class="pc" id="L584">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 1).abs());</span>
+<span class="fc" id="L585">    }</span>
+
+    @Test
+    public void testPow() {
+<span class="fc" id="L589">        Fraction f = null;</span>
+
+<span class="fc" id="L591">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L592">        assertEquals(Fraction.ONE, f.pow(0));</span>
+
+<span class="fc" id="L594">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L595">        assertSame(f, f.pow(1));</span>
+<span class="fc" id="L596">        assertEquals(f, f.pow(1));</span>
+
+<span class="fc" id="L598">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L599">        f = f.pow(2);</span>
+<span class="fc" id="L600">        assertEquals(9, f.getNumerator());</span>
+<span class="fc" id="L601">        assertEquals(25, f.getDenominator());</span>
+
+<span class="fc" id="L603">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L604">        f = f.pow(3);</span>
+<span class="fc" id="L605">        assertEquals(27, f.getNumerator());</span>
+<span class="fc" id="L606">        assertEquals(125, f.getDenominator());</span>
+
+<span class="fc" id="L608">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L609">        f = f.pow(-1);</span>
+<span class="fc" id="L610">        assertEquals(5, f.getNumerator());</span>
+<span class="fc" id="L611">        assertEquals(3, f.getDenominator());</span>
+
+<span class="fc" id="L613">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L614">        f = f.pow(-2);</span>
+<span class="fc" id="L615">        assertEquals(25, f.getNumerator());</span>
+<span class="fc" id="L616">        assertEquals(9, f.getDenominator());</span>
+
+        // check unreduced fractions stay that way.
+<span class="fc" id="L619">        f = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L620">        assertEquals(Fraction.ONE, f.pow(0));</span>
+
+<span class="fc" id="L622">        f = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L623">        assertEquals(f, f.pow(1));</span>
+<span class="fc" id="L624">        assertNotEquals(f.pow(1), Fraction.getFraction(3, 5));</span>
+
+<span class="fc" id="L626">        f = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L627">        f = f.pow(2);</span>
+<span class="fc" id="L628">        assertEquals(9, f.getNumerator());</span>
+<span class="fc" id="L629">        assertEquals(25, f.getDenominator());</span>
+
+<span class="fc" id="L631">        f = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L632">        f = f.pow(3);</span>
+<span class="fc" id="L633">        assertEquals(27, f.getNumerator());</span>
+<span class="fc" id="L634">        assertEquals(125, f.getDenominator());</span>
+
+<span class="fc" id="L636">        f = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L637">        f = f.pow(-1);</span>
+<span class="fc" id="L638">        assertEquals(10, f.getNumerator());</span>
+<span class="fc" id="L639">        assertEquals(6, f.getDenominator());</span>
+
+<span class="fc" id="L641">        f = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L642">        f = f.pow(-2);</span>
+<span class="fc" id="L643">        assertEquals(25, f.getNumerator());</span>
+<span class="fc" id="L644">        assertEquals(9, f.getDenominator());</span>
+
+        // zero to any positive power is still zero.
+<span class="fc" id="L647">        f = Fraction.getFraction(0, 1231);</span>
+<span class="fc" id="L648">        f = f.pow(1);</span>
+<span class="fc" id="L649">        assertEquals(0, f.compareTo(Fraction.ZERO));</span>
+<span class="fc" id="L650">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L651">        assertEquals(1231, f.getDenominator());</span>
+<span class="fc" id="L652">        f = f.pow(2);</span>
+<span class="fc" id="L653">        assertEquals(0, f.compareTo(Fraction.ZERO));</span>
+<span class="fc" id="L654">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L655">        assertEquals(1, f.getDenominator());</span>
+
+        // zero to negative powers should throw an exception
+<span class="fc" id="L658">        final Fraction fr = f;</span>
+<span class="pc" id="L659">        assertThrows(ArithmeticException.class, () -&gt; fr.pow(-1));</span>
+<span class="pc" id="L660">        assertThrows(ArithmeticException.class, () -&gt; fr.pow(Integer.MIN_VALUE));</span>
+
+        // one to any power is still one.
+<span class="fc" id="L663">        f = Fraction.getFraction(1, 1);</span>
+<span class="fc" id="L664">        f = f.pow(0);</span>
+<span class="fc" id="L665">        assertEquals(f, Fraction.ONE);</span>
+<span class="fc" id="L666">        f = f.pow(1);</span>
+<span class="fc" id="L667">        assertEquals(f, Fraction.ONE);</span>
+<span class="fc" id="L668">        f = f.pow(-1);</span>
+<span class="fc" id="L669">        assertEquals(f, Fraction.ONE);</span>
+<span class="fc" id="L670">        f = f.pow(Integer.MAX_VALUE);</span>
+<span class="fc" id="L671">        assertEquals(f, Fraction.ONE);</span>
+<span class="fc" id="L672">        f = f.pow(Integer.MIN_VALUE);</span>
+<span class="fc" id="L673">        assertEquals(f, Fraction.ONE);</span>
+
+<span class="pc" id="L675">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MAX_VALUE, 1).pow(2));</span>
+
+        // Numerator growing too negative during the pow operation.
+<span class="pc" id="L678">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 1).pow(3));</span>
+
+<span class="pc" id="L680">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(65536, 1).pow(2));</span>
+<span class="fc" id="L681">    }</span>
+
+    @Test
+    public void testAdd() {
+<span class="fc" id="L685">        Fraction f = null;</span>
+<span class="fc" id="L686">        Fraction f1 = null;</span>
+<span class="fc" id="L687">        Fraction f2 = null;</span>
+
+<span class="fc" id="L689">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L690">        f2 = Fraction.getFraction(1, 5);</span>
+<span class="fc" id="L691">        f = f1.add(f2);</span>
+<span class="fc" id="L692">        assertEquals(4, f.getNumerator());</span>
+<span class="fc" id="L693">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L695">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L696">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="fc" id="L697">        f = f1.add(f2);</span>
+<span class="fc" id="L698">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L699">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L701">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L702">        f2 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L703">        f = f1.add(f2);</span>
+<span class="fc" id="L704">        assertEquals(6, f.getNumerator());</span>
+<span class="fc" id="L705">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L707">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L708">        f2 = Fraction.getFraction(-4, 5);</span>
+<span class="fc" id="L709">        f = f1.add(f2);</span>
+<span class="fc" id="L710">        assertEquals(-1, f.getNumerator());</span>
+<span class="fc" id="L711">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L713">        f1 = Fraction.getFraction(Integer.MAX_VALUE - 1, 1);</span>
+<span class="fc" id="L714">        f2 = Fraction.ONE;</span>
+<span class="fc" id="L715">        f = f1.add(f2);</span>
+<span class="fc" id="L716">        assertEquals(Integer.MAX_VALUE, f.getNumerator());</span>
+<span class="fc" id="L717">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L719">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L720">        f2 = Fraction.getFraction(1, 2);</span>
+<span class="fc" id="L721">        f = f1.add(f2);</span>
+<span class="fc" id="L722">        assertEquals(11, f.getNumerator());</span>
+<span class="fc" id="L723">        assertEquals(10, f.getDenominator());</span>
+
+<span class="fc" id="L725">        f1 = Fraction.getFraction(3, 8);</span>
+<span class="fc" id="L726">        f2 = Fraction.getFraction(1, 6);</span>
+<span class="fc" id="L727">        f = f1.add(f2);</span>
+<span class="fc" id="L728">        assertEquals(13, f.getNumerator());</span>
+<span class="fc" id="L729">        assertEquals(24, f.getDenominator());</span>
+
+<span class="fc" id="L731">        f1 = Fraction.getFraction(0, 5);</span>
+<span class="fc" id="L732">        f2 = Fraction.getFraction(1, 5);</span>
+<span class="fc" id="L733">        f = f1.add(f2);</span>
+<span class="fc" id="L734">        assertSame(f2, f);</span>
+<span class="fc" id="L735">        f = f2.add(f1);</span>
+<span class="fc" id="L736">        assertSame(f2, f);</span>
+
+<span class="fc" id="L738">        f1 = Fraction.getFraction(-1, 13*13*2*2);</span>
+<span class="fc" id="L739">        f2 = Fraction.getFraction(-2, 13*17*2);</span>
+<span class="fc" id="L740">        final Fraction fr = f1.add(f2);</span>
+<span class="fc" id="L741">        assertEquals(13*13*17*2*2, fr.getDenominator());</span>
+<span class="fc" id="L742">        assertEquals(-17 - 2*13*2, fr.getNumerator());</span>
+
+<span class="pc" id="L744">        assertThrows(IllegalArgumentException.class, () -&gt; fr.add(null));</span>
+
+        // if this fraction is added naively, it will overflow.
+        // check that it doesn't.
+<span class="fc" id="L748">        f1 = Fraction.getFraction(1, 32768*3);</span>
+<span class="fc" id="L749">        f2 = Fraction.getFraction(1, 59049);</span>
+<span class="fc" id="L750">        f = f1.add(f2);</span>
+<span class="fc" id="L751">        assertEquals(52451, f.getNumerator());</span>
+<span class="fc" id="L752">        assertEquals(1934917632, f.getDenominator());</span>
+
+<span class="fc" id="L754">        f1 = Fraction.getFraction(Integer.MIN_VALUE, 3);</span>
+<span class="fc" id="L755">        f2 = Fraction.ONE_THIRD;</span>
+<span class="fc" id="L756">        f = f1.add(f2);</span>
+<span class="fc" id="L757">        assertEquals(Integer.MIN_VALUE+1, f.getNumerator());</span>
+<span class="fc" id="L758">        assertEquals(3, f.getDenominator());</span>
+
+<span class="fc" id="L760">        f1 = Fraction.getFraction(Integer.MAX_VALUE - 1, 1);</span>
+<span class="fc" id="L761">        f2 = Fraction.ONE;</span>
+<span class="fc" id="L762">        f = f1.add(f2);</span>
+<span class="fc" id="L763">        assertEquals(Integer.MAX_VALUE, f.getNumerator());</span>
+<span class="fc" id="L764">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L766">        final Fraction overflower = f;</span>
+<span class="pc" id="L767">        assertThrows(ArithmeticException.class, () -&gt; overflower.add(Fraction.ONE)); // should overflow</span>
+
+        // denominator should not be a multiple of 2 or 3 to trigger overflow
+<span class="fc" id="L770">        assertThrows(</span>
+                ArithmeticException.class,
+<span class="nc" id="L772">                () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 5).add(Fraction.getFraction(-1, 5)));</span>
+
+<span class="fc" id="L774">        final Fraction maxValue = Fraction.getFraction(-Integer.MAX_VALUE, 1);</span>
+<span class="pc" id="L775">        assertThrows(ArithmeticException.class, () -&gt; maxValue.add(maxValue));</span>
+
+<span class="fc" id="L777">        final Fraction negativeMaxValue = Fraction.getFraction(-Integer.MAX_VALUE, 1);</span>
+<span class="pc" id="L778">        assertThrows(ArithmeticException.class, () -&gt; negativeMaxValue.add(negativeMaxValue));</span>
+
+<span class="fc" id="L780">        final Fraction f3 = Fraction.getFraction(3, 327680);</span>
+<span class="fc" id="L781">        final Fraction f4 = Fraction.getFraction(2, 59049);</span>
+<span class="pc" id="L782">        assertThrows(ArithmeticException.class, () -&gt; f3.add(f4)); // should overflow</span>
+<span class="fc" id="L783">    }</span>
+
+    @Test
+    public void testSubtract() {
+<span class="fc" id="L787">        Fraction f = null;</span>
+<span class="fc" id="L788">        Fraction f1 = null;</span>
+<span class="fc" id="L789">        Fraction f2 = null;</span>
+
+<span class="fc" id="L791">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L792">        f2 = Fraction.getFraction(1, 5);</span>
+<span class="fc" id="L793">        f = f1.subtract(f2);</span>
+<span class="fc" id="L794">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L795">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L797">        f1 = Fraction.getFraction(7, 5);</span>
+<span class="fc" id="L798">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="fc" id="L799">        f = f1.subtract(f2);</span>
+<span class="fc" id="L800">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L801">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L803">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L804">        f2 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L805">        f = f1.subtract(f2);</span>
+<span class="fc" id="L806">        assertEquals(0, f.getNumerator());</span>
+<span class="fc" id="L807">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L809">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L810">        f2 = Fraction.getFraction(-4, 5);</span>
+<span class="fc" id="L811">        f = f1.subtract(f2);</span>
+<span class="fc" id="L812">        assertEquals(7, f.getNumerator());</span>
+<span class="fc" id="L813">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L815">        f1 = Fraction.getFraction(0, 5);</span>
+<span class="fc" id="L816">        f2 = Fraction.getFraction(4, 5);</span>
+<span class="fc" id="L817">        f = f1.subtract(f2);</span>
+<span class="fc" id="L818">        assertEquals(-4, f.getNumerator());</span>
+<span class="fc" id="L819">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L821">        f1 = Fraction.getFraction(0, 5);</span>
+<span class="fc" id="L822">        f2 = Fraction.getFraction(-4, 5);</span>
+<span class="fc" id="L823">        f = f1.subtract(f2);</span>
+<span class="fc" id="L824">        assertEquals(4, f.getNumerator());</span>
+<span class="fc" id="L825">        assertEquals(5, f.getDenominator());</span>
+
+<span class="fc" id="L827">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L828">        f2 = Fraction.getFraction(1, 2);</span>
+<span class="fc" id="L829">        f = f1.subtract(f2);</span>
+<span class="fc" id="L830">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L831">        assertEquals(10, f.getDenominator());</span>
+
+<span class="fc" id="L833">        f1 = Fraction.getFraction(0, 5);</span>
+<span class="fc" id="L834">        f2 = Fraction.getFraction(1, 5);</span>
+<span class="fc" id="L835">        f = f2.subtract(f1);</span>
+<span class="fc" id="L836">        assertSame(f2, f);</span>
+
+<span class="fc" id="L838">        final Fraction fr = f;</span>
+<span class="pc" id="L839">        assertThrows(IllegalArgumentException.class, () -&gt; fr.subtract(null));</span>
+
+        // if this fraction is subtracted naively, it will overflow.
+        // check that it doesn't.
+<span class="fc" id="L843">        f1 = Fraction.getFraction(1, 32768*3);</span>
+<span class="fc" id="L844">        f2 = Fraction.getFraction(1, 59049);</span>
+<span class="fc" id="L845">        f = f1.subtract(f2);</span>
+<span class="fc" id="L846">        assertEquals(-13085, f.getNumerator());</span>
+<span class="fc" id="L847">        assertEquals(1934917632, f.getDenominator());</span>
+
+<span class="fc" id="L849">        f1 = Fraction.getFraction(Integer.MIN_VALUE, 3);</span>
+<span class="fc" id="L850">        f2 = Fraction.ONE_THIRD.negate();</span>
+<span class="fc" id="L851">        f = f1.subtract(f2);</span>
+<span class="fc" id="L852">        assertEquals(Integer.MIN_VALUE+1, f.getNumerator());</span>
+<span class="fc" id="L853">        assertEquals(3, f.getDenominator());</span>
+
+<span class="fc" id="L855">        f1 = Fraction.getFraction(Integer.MAX_VALUE, 1);</span>
+<span class="fc" id="L856">        f2 = Fraction.ONE;</span>
+<span class="fc" id="L857">        f = f1.subtract(f2);</span>
+<span class="fc" id="L858">        assertEquals(Integer.MAX_VALUE-1, f.getNumerator());</span>
+<span class="fc" id="L859">        assertEquals(1, f.getDenominator());</span>
+
+        // Should overflow
+<span class="fc" id="L862">        assertThrows(</span>
+                ArithmeticException.class,
+<span class="nc" id="L864">                () -&gt; Fraction.getFraction(1, Integer.MAX_VALUE).subtract(Fraction.getFraction(1, Integer.MAX_VALUE - 1)));</span>
+<span class="fc" id="L865">            f = f1.subtract(f2);</span>
+
+        // denominator should not be a multiple of 2 or 3 to trigger overflow
+<span class="fc" id="L868">        assertThrows(</span>
+                ArithmeticException.class,
+<span class="nc" id="L870">                () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 5).subtract(Fraction.getFraction(1, 5)));</span>
+
+<span class="fc" id="L872">        assertThrows(</span>
+<span class="nc" id="L873">                ArithmeticException.class, () -&gt; Fraction.getFraction(Integer.MIN_VALUE, 1).subtract(Fraction.ONE));</span>
+
+<span class="fc" id="L875">        assertThrows(</span>
+                ArithmeticException.class,
+<span class="nc" id="L877">                () -&gt; Fraction.getFraction(Integer.MAX_VALUE, 1).subtract(Fraction.ONE.negate()));</span>
+
+        // Should overflow
+<span class="fc" id="L880">        assertThrows(</span>
+                ArithmeticException.class,
+<span class="nc" id="L882">                () -&gt; Fraction.getFraction(3, 327680).subtract(Fraction.getFraction(2, 59049)));</span>
+<span class="fc" id="L883">    }</span>
+
+    @Test
+    public void testMultiply() {
+<span class="fc" id="L887">        Fraction f = null;</span>
+<span class="fc" id="L888">        Fraction f1 = null;</span>
+<span class="fc" id="L889">        Fraction f2 = null;</span>
+
+<span class="fc" id="L891">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L892">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="fc" id="L893">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L894">        assertEquals(6, f.getNumerator());</span>
+<span class="fc" id="L895">        assertEquals(25, f.getDenominator());</span>
+
+<span class="fc" id="L897">        f1 = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L898">        f2 = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L899">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L900">        assertEquals(9, f.getNumerator());</span>
+<span class="fc" id="L901">        assertEquals(25, f.getDenominator());</span>
+<span class="fc" id="L902">        f = f.multiplyBy(f2);</span>
+<span class="fc" id="L903">        assertEquals(27, f.getNumerator());</span>
+<span class="fc" id="L904">        assertEquals(125, f.getDenominator());</span>
+
+<span class="fc" id="L906">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L907">        f2 = Fraction.getFraction(-2, 5);</span>
+<span class="fc" id="L908">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L909">        assertEquals(-6, f.getNumerator());</span>
+<span class="fc" id="L910">        assertEquals(25, f.getDenominator());</span>
+
+<span class="fc" id="L912">        f1 = Fraction.getFraction(-3, 5);</span>
+<span class="fc" id="L913">        f2 = Fraction.getFraction(-2, 5);</span>
+<span class="fc" id="L914">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L915">        assertEquals(6, f.getNumerator());</span>
+<span class="fc" id="L916">        assertEquals(25, f.getDenominator());</span>
+
+
+<span class="fc" id="L919">        f1 = Fraction.getFraction(0, 5);</span>
+<span class="fc" id="L920">        f2 = Fraction.getFraction(2, 7);</span>
+<span class="fc" id="L921">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L922">        assertSame(Fraction.ZERO, f);</span>
+
+<span class="fc" id="L924">        f1 = Fraction.getFraction(2, 7);</span>
+<span class="fc" id="L925">        f2 = Fraction.ONE;</span>
+<span class="fc" id="L926">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L927">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L928">        assertEquals(7, f.getDenominator());</span>
+
+<span class="fc" id="L930">        f1 = Fraction.getFraction(Integer.MAX_VALUE, 1);</span>
+<span class="fc" id="L931">        f2 = Fraction.getFraction(Integer.MIN_VALUE, Integer.MAX_VALUE);</span>
+<span class="fc" id="L932">        f = f1.multiplyBy(f2);</span>
+<span class="fc" id="L933">        assertEquals(Integer.MIN_VALUE, f.getNumerator());</span>
+<span class="fc" id="L934">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L936">        final Fraction fr = f;</span>
+<span class="pc" id="L937">        assertThrows(IllegalArgumentException.class, () -&gt; fr.multiplyBy(null));</span>
+
+<span class="fc" id="L939">        final Fraction fr1 = Fraction.getFraction(1, Integer.MAX_VALUE);</span>
+<span class="pc" id="L940">        assertThrows(ArithmeticException.class, () -&gt; fr1.multiplyBy(fr1));</span>
+
+<span class="fc" id="L942">        final Fraction fr2 = Fraction.getFraction(1, -Integer.MAX_VALUE);</span>
+<span class="pc" id="L943">        assertThrows(ArithmeticException.class, () -&gt; fr2.multiplyBy(fr2));</span>
+<span class="fc" id="L944">    }</span>
+
+    @Test
+    public void testDivide() {
+<span class="fc" id="L948">        Fraction f = null;</span>
+<span class="fc" id="L949">        Fraction f1 = null;</span>
+<span class="fc" id="L950">        Fraction f2 = null;</span>
+
+<span class="fc" id="L952">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L953">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="fc" id="L954">        f = f1.divideBy(f2);</span>
+<span class="fc" id="L955">        assertEquals(3, f.getNumerator());</span>
+<span class="fc" id="L956">        assertEquals(2, f.getDenominator());</span>
+
+<span class="pc" id="L958">        assertThrows(ArithmeticException.class, () -&gt; Fraction.getFraction(3, 5).divideBy(Fraction.ZERO));</span>
+
+<span class="fc" id="L960">        f1 = Fraction.getFraction(0, 5);</span>
+<span class="fc" id="L961">        f2 = Fraction.getFraction(2, 7);</span>
+<span class="fc" id="L962">        f = f1.divideBy(f2);</span>
+<span class="fc" id="L963">        assertSame(Fraction.ZERO, f);</span>
+
+<span class="fc" id="L965">        f1 = Fraction.getFraction(2, 7);</span>
+<span class="fc" id="L966">        f2 = Fraction.ONE;</span>
+<span class="fc" id="L967">        f = f1.divideBy(f2);</span>
+<span class="fc" id="L968">        assertEquals(2, f.getNumerator());</span>
+<span class="fc" id="L969">        assertEquals(7, f.getDenominator());</span>
+
+<span class="fc" id="L971">        f1 = Fraction.getFraction(1, Integer.MAX_VALUE);</span>
+<span class="fc" id="L972">        f = f1.divideBy(f1);</span>
+<span class="fc" id="L973">        assertEquals(1, f.getNumerator());</span>
+<span class="fc" id="L974">        assertEquals(1, f.getDenominator());</span>
+
+<span class="fc" id="L976">        f1 = Fraction.getFraction(Integer.MIN_VALUE, Integer.MAX_VALUE);</span>
+<span class="fc" id="L977">        f2 = Fraction.getFraction(1, Integer.MAX_VALUE);</span>
+<span class="fc" id="L978">        final Fraction fr = f1.divideBy(f2);</span>
+<span class="fc" id="L979">        assertEquals(Integer.MIN_VALUE, fr.getNumerator());</span>
+<span class="fc" id="L980">        assertEquals(1, fr.getDenominator());</span>
+
+<span class="pc" id="L982">        assertThrows(IllegalArgumentException.class, () -&gt; fr.divideBy(null));</span>
+
+<span class="fc" id="L984">        final Fraction smallest = Fraction.getFraction(1, Integer.MAX_VALUE);</span>
+<span class="pc" id="L985">        assertThrows(ArithmeticException.class, () -&gt; smallest.divideBy(smallest.invert())); // Should overflow</span>
+
+<span class="fc" id="L987">        final Fraction negative = Fraction.getFraction(1, -Integer.MAX_VALUE);</span>
+<span class="pc" id="L988">        assertThrows(ArithmeticException.class, () -&gt; negative.divideBy(negative.invert())); // Should overflow</span>
+<span class="fc" id="L989">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L993">        Fraction f1 = null;</span>
+<span class="fc" id="L994">        Fraction f2 = null;</span>
+
+<span class="fc" id="L996">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L997">        assertNotEquals(null, f1);</span>
+<span class="fc" id="L998">        assertNotEquals(f1, new Object());</span>
+<span class="fc" id="L999">        assertNotEquals(f1, Integer.valueOf(6));</span>
+
+<span class="fc" id="L1001">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1002">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="fc" id="L1003">        assertNotEquals(f1, f2);</span>
+<span class="fc" id="L1004">        assertEquals(f1, f1);</span>
+<span class="fc" id="L1005">        assertEquals(f2, f2);</span>
+
+<span class="fc" id="L1007">        f2 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1008">        assertEquals(f1, f2);</span>
+
+<span class="fc" id="L1010">        f2 = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L1011">        assertNotEquals(f1, f2);</span>
+<span class="fc" id="L1012">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L1016">        final Fraction f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1017">        Fraction f2 = Fraction.getFraction(3, 5);</span>
+
+<span class="fc" id="L1019">        assertEquals(f1.hashCode(), f2.hashCode());</span>
+
+<span class="fc" id="L1021">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="pc bpc" id="L1022" title="1 of 2 branches missed.">        assertTrue(f1.hashCode() != f2.hashCode());</span>
+
+<span class="fc" id="L1024">        f2 = Fraction.getFraction(6, 10);</span>
+<span class="pc bpc" id="L1025" title="1 of 2 branches missed.">        assertTrue(f1.hashCode() != f2.hashCode());</span>
+<span class="fc" id="L1026">    }</span>
+
+    @Test
+    public void testCompareTo() {
+<span class="fc" id="L1030">        Fraction f1 = null;</span>
+<span class="fc" id="L1031">        Fraction f2 = null;</span>
+
+<span class="fc" id="L1033">        f1 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1034">        assertEquals(0, f1.compareTo(f1));</span>
+
+<span class="fc" id="L1036">        final Fraction fr = f1;</span>
+<span class="pc" id="L1037">        assertThrows(NullPointerException.class, () -&gt; fr.compareTo(null));</span>
+
+<span class="fc" id="L1039">        f2 = Fraction.getFraction(2, 5);</span>
+<span class="pc bpc" id="L1040" title="1 of 2 branches missed.">        assertTrue(f1.compareTo(f2) &gt; 0);</span>
+<span class="fc" id="L1041">        assertEquals(0, f2.compareTo(f2));</span>
+
+<span class="fc" id="L1043">        f2 = Fraction.getFraction(4, 5);</span>
+<span class="pc bpc" id="L1044" title="1 of 2 branches missed.">        assertTrue(f1.compareTo(f2) &lt; 0);</span>
+<span class="fc" id="L1045">        assertEquals(0, f2.compareTo(f2));</span>
+
+<span class="fc" id="L1047">        f2 = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1048">        assertEquals(0, f1.compareTo(f2));</span>
+<span class="fc" id="L1049">        assertEquals(0, f2.compareTo(f2));</span>
+
+<span class="fc" id="L1051">        f2 = Fraction.getFraction(6, 10);</span>
+<span class="fc" id="L1052">        assertEquals(0, f1.compareTo(f2));</span>
+<span class="fc" id="L1053">        assertEquals(0, f2.compareTo(f2));</span>
+
+<span class="fc" id="L1055">        f2 = Fraction.getFraction(-1, 1, Integer.MAX_VALUE);</span>
+<span class="pc bpc" id="L1056" title="1 of 2 branches missed.">        assertTrue(f1.compareTo(f2) &gt; 0);</span>
+<span class="fc" id="L1057">        assertEquals(0, f2.compareTo(f2));</span>
+
+<span class="fc" id="L1059">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L1063">        Fraction f = null;</span>
+
+<span class="fc" id="L1065">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1066">        final String str = f.toString();</span>
+<span class="fc" id="L1067">        assertEquals(&quot;3/5&quot;, str);</span>
+<span class="fc" id="L1068">        assertSame(str, f.toString());</span>
+
+<span class="fc" id="L1070">        f = Fraction.getFraction(7, 5);</span>
+<span class="fc" id="L1071">        assertEquals(&quot;7/5&quot;, f.toString());</span>
+
+<span class="fc" id="L1073">        f = Fraction.getFraction(4, 2);</span>
+<span class="fc" id="L1074">        assertEquals(&quot;4/2&quot;, f.toString());</span>
+
+<span class="fc" id="L1076">        f = Fraction.getFraction(0, 2);</span>
+<span class="fc" id="L1077">        assertEquals(&quot;0/2&quot;, f.toString());</span>
+
+<span class="fc" id="L1079">        f = Fraction.getFraction(2, 2);</span>
+<span class="fc" id="L1080">        assertEquals(&quot;2/2&quot;, f.toString());</span>
+
+<span class="fc" id="L1082">        f = Fraction.getFraction(Integer.MIN_VALUE, 0, 1);</span>
+<span class="fc" id="L1083">        assertEquals(&quot;-2147483648/1&quot;, f.toString());</span>
+
+<span class="fc" id="L1085">        f = Fraction.getFraction(-1, 1, Integer.MAX_VALUE);</span>
+<span class="fc" id="L1086">        assertEquals(&quot;-2147483648/2147483647&quot;, f.toString());</span>
+<span class="fc" id="L1087">    }</span>
+
+    @Test
+    public void testToProperString() {
+<span class="fc" id="L1091">        Fraction f = null;</span>
+
+<span class="fc" id="L1093">        f = Fraction.getFraction(3, 5);</span>
+<span class="fc" id="L1094">        final String str = f.toProperString();</span>
+<span class="fc" id="L1095">        assertEquals(&quot;3/5&quot;, str);</span>
+<span class="fc" id="L1096">        assertSame(str, f.toProperString());</span>
+
+<span class="fc" id="L1098">        f = Fraction.getFraction(7, 5);</span>
+<span class="fc" id="L1099">        assertEquals(&quot;1 2/5&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1101">        f = Fraction.getFraction(14, 10);</span>
+<span class="fc" id="L1102">        assertEquals(&quot;1 4/10&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1104">        f = Fraction.getFraction(4, 2);</span>
+<span class="fc" id="L1105">        assertEquals(&quot;2&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1107">        f = Fraction.getFraction(0, 2);</span>
+<span class="fc" id="L1108">        assertEquals(&quot;0&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1110">        f = Fraction.getFraction(2, 2);</span>
+<span class="fc" id="L1111">        assertEquals(&quot;1&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1113">        f = Fraction.getFraction(-7, 5);</span>
+<span class="fc" id="L1114">        assertEquals(&quot;-1 2/5&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1116">        f = Fraction.getFraction(Integer.MIN_VALUE, 0, 1);</span>
+<span class="fc" id="L1117">        assertEquals(&quot;-2147483648&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1119">        f = Fraction.getFraction(-1, 1, Integer.MAX_VALUE);</span>
+<span class="fc" id="L1120">        assertEquals(&quot;-1 1/2147483647&quot;, f.toProperString());</span>
+
+<span class="fc" id="L1122">        assertEquals(&quot;-1&quot;, Fraction.getFraction(-1).toProperString());</span>
+<span class="fc" id="L1123">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

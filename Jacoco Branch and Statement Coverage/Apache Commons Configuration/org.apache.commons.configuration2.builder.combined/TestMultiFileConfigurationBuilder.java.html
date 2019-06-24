@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestMultiFileConfigurationBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestMultiFileConfigurationBuilder.java</span></div><h1>TestMultiFileConfigurationBuilder.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.apache.commons.configuration2.ConfigurationLookup;
+import org.apache.commons.configuration2.DynamicCombinedConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.BuilderConfigurationWrapperFactory;
+import org.apache.commons.configuration2.builder.BuilderEventListenerImpl;
+import org.apache.commons.configuration2.builder.BuilderParameters;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderEvent;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderResultCreatedEvent;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.XMLBuilderParametersImpl;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.Event;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.DefaultLookups;
+import org.apache.commons.configuration2.tree.ExpressionEngine;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
+import org.easymock.EasyMock;
+import org.junit.Test;
+import org.xml.sax.SAXParseException;
+
+/**
+ * Test class for {@code MultiFileConfigurationBuilder}.
+ *
+ */
+<span class="fc" id="L61">public class TestMultiFileConfigurationBuilder extends AbstractMultiFileConfigurationBuilderTest</span>
+{
+    /**
+     * Creates a test builder object with default settings.
+     *
+     * @param managedParams the parameters for managed configurations
+     * @return the test instance
+     */
+    private static MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; createTestBuilder(
+            final BuilderParameters managedParams)
+    {
+<span class="fc" id="L72">        return new MultiFileConfigurationBuilder&lt;&gt;(</span>
+                XMLConfiguration.class)
+<span class="fc" id="L74">                .configure(createTestBuilderParameters(managedParams));</span>
+    }
+
+    /**
+     * Creates a test builder instance which allows access to the managed
+     * builders created by it. The returned builder instance overrides the
+     * method for creating managed builders. It stores newly created builders in
+     * the passed in collection.
+     *
+     * @param managedBuilders a collection in which to store managed builders
+     * @return the test builder instance
+     */
+    private static MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; createBuilderWithAccessToManagedBuilders(
+            final Collection&lt;FileBasedConfigurationBuilder&lt;XMLConfiguration&gt;&gt; managedBuilders)
+    {
+<span class="fc" id="L89">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;XMLConfiguration&gt;(
+                        XMLConfiguration.class)
+<span class="fc" id="L92">                {</span>
+                    @Override
+                    protected FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; createInitializedManagedBuilder(
+                            final String fileName,
+                            final java.util.Map&lt;String, Object&gt; params)
+                            throws ConfigurationException
+                    {
+<span class="fc" id="L99">                        final FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; result =</span>
+<span class="fc" id="L100">                                super.createInitializedManagedBuilder(fileName,</span>
+                                        params);
+<span class="fc" id="L102">                        managedBuilders.add(result);</span>
+<span class="fc" id="L103">                        return result;</span>
+                    }
+                };
+<span class="fc" id="L106">        builder.configure(createTestBuilderParameters(null));</span>
+<span class="fc" id="L107">        return builder;</span>
+    }
+
+    /**
+     * Tests whether access to multiple configurations works.
+     */
+    @Test
+    public void testGetConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L116">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L117">                createTestBuilder(null);</span>
+<span class="fc" id="L118">        final String key = &quot;rowsPerPage&quot;;</span>
+<span class="fc" id="L119">        switchToConfig(1);</span>
+<span class="fc" id="L120">        assertEquals(&quot;Wrong property (1)&quot;, 15, builder.getConfiguration()</span>
+<span class="fc" id="L121">                .getInt(key));</span>
+<span class="fc" id="L122">        switchToConfig(2);</span>
+<span class="fc" id="L123">        assertEquals(&quot;Wrong property (2)&quot;, 25, builder.getConfiguration()</span>
+<span class="fc" id="L124">                .getInt(key));</span>
+<span class="fc" id="L125">        switchToConfig(3);</span>
+<span class="fc" id="L126">        assertEquals(&quot;Wrong property (3)&quot;, 35, builder.getConfiguration()</span>
+<span class="fc" id="L127">                .getInt(key));</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Tests whether a {@code ConfigurationInterpolator} is created from
+     * properties defined in the parameters object if necessary.
+     */
+    @Test
+    public void testInterpolatorFromParameters() throws ConfigurationException
+    {
+<span class="fc" id="L137">        final BasicBuilderParameters params =</span>
+<span class="fc" id="L138">                new MultiFileBuilderParametersImpl().setFilePattern(PATTERN)</span>
+<span class="fc" id="L139">                        .setPrefixLookups(</span>
+<span class="fc" id="L140">                                Collections.singletonMap(</span>
+                                        DefaultLookups.SYSTEM_PROPERTIES
+<span class="fc" id="L142">                                                .getPrefix(),</span>
+                                        DefaultLookups.SYSTEM_PROPERTIES
+<span class="fc" id="L144">                                                .getLookup()));</span>
+<span class="fc" id="L145">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L148">        builder.configure(params);</span>
+<span class="fc" id="L149">        switchToConfig(1);</span>
+<span class="fc" id="L150">        assertEquals(&quot;Wrong property&quot;, 15,</span>
+<span class="fc" id="L151">                builder.getConfiguration().getInt(&quot;rowsPerPage&quot;));</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Tests whether a managed configuration is properly initialized.
+     */
+    @Test
+    public void testManagedConfigurationSettings()
+            throws ConfigurationException
+    {
+<span class="fc" id="L161">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L164">        final ExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L165">        final BuilderParameters xmlParams =</span>
+<span class="fc" id="L166">                new XMLBuilderParametersImpl().setExpressionEngine(engine)</span>
+<span class="fc" id="L167">                        .setListDelimiterHandler(</span>
+                                new DefaultListDelimiterHandler(';'));
+<span class="fc" id="L169">        final MultiFileBuilderParametersImpl params =</span>
+<span class="fc" id="L170">                new MultiFileBuilderParametersImpl().setFilePattern(PATTERN)</span>
+<span class="fc" id="L171">                        .setManagedBuilderParameters(xmlParams);</span>
+<span class="fc" id="L172">        final ConfigurationInterpolator ci = createInterpolator();</span>
+<span class="fc" id="L173">        params.setInterpolator(ci).setListDelimiterHandler(</span>
+                new DefaultListDelimiterHandler('#'));
+<span class="fc" id="L175">        builder.configure(params);</span>
+<span class="fc" id="L176">        switchToConfig(1);</span>
+<span class="fc" id="L177">        final XMLConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L178">        assertSame(&quot;Wrong expression engine&quot;, engine,</span>
+<span class="fc" id="L179">                config.getExpressionEngine());</span>
+<span class="fc" id="L180">        final DefaultListDelimiterHandler listHandler =</span>
+<span class="fc" id="L181">                (DefaultListDelimiterHandler) config.getListDelimiterHandler();</span>
+<span class="fc" id="L182">        assertEquals(&quot;Wrong list delimiter&quot;, ';', listHandler.getDelimiter());</span>
+<span class="fc" id="L183">        assertNotSame(&quot;Interpolator was copied&quot;, ci, config.getInterpolator());</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Tests whether XML schema validation can be enabled.
+     */
+    @Test
+    public void testSchemaValidationError()
+    {
+<span class="fc" id="L192">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L193">                createTestBuilder(new XMLBuilderParametersImpl().setValidating(</span>
+<span class="fc" id="L194">                        true).setSchemaValidation(true));</span>
+<span class="fc" id="L195">        switchToConfig(&quot;2001&quot;);</span>
+        try
+        {
+<span class="nc" id="L198">            builder.getConfiguration();</span>
+<span class="nc" id="L199">            fail(&quot;No exception thrown&quot;);</span>
+        }
+<span class="fc" id="L201">        catch (final ConfigurationException ex)</span>
+        {
+<span class="fc" id="L203">            Throwable cause = ex.getCause();</span>
+<span class="pc bpc" id="L204" title="2 of 4 branches missed.">            while (cause != null &amp;&amp; !(cause instanceof SAXParseException))</span>
+            {
+<span class="nc" id="L206">                cause = cause.getCause();</span>
+            }
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">            assertTrue(&quot;SAXParseException was not thrown&quot;, cause != null);</span>
+<span class="nc" id="L209">        }</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Tests the behavior if a configuration is accessed which cannot be
+     * located.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testFileNotFound() throws ConfigurationException
+    {
+<span class="fc" id="L219">        switchToConfig(&quot;unknown configuration ID&quot;);</span>
+<span class="nc" id="L220">        createTestBuilder(null).getConfiguration();</span>
+<span class="nc" id="L221">    }</span>
+
+    /**
+     * Tests whether exceptions when creating configurations can be suppressed.
+     */
+    @Test
+    public void testFileNotFoundAllowFailOnInit() throws ConfigurationException
+    {
+<span class="fc" id="L229">        final BasicBuilderParameters params = createTestBuilderParameters(null);</span>
+<span class="fc" id="L230">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L232">                        XMLConfiguration.class, params.getParameters(), true);</span>
+<span class="fc" id="L233">        switchToConfig(&quot;unknown configuration ID&quot;);</span>
+<span class="fc" id="L234">        final XMLConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L235">        assertTrue(&quot;Got content&quot;, config.isEmpty());</span>
+<span class="fc" id="L236">    }</span>
+
+    /**
+     * Tests whether a missing file name pattern causes an exception.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testNoPattern() throws ConfigurationException
+    {
+<span class="fc" id="L244">        final BasicBuilderParameters params =</span>
+                new MultiFileBuilderParametersImpl()
+<span class="fc" id="L246">                        .setInterpolator(createInterpolator());</span>
+<span class="fc" id="L247">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L249">                        XMLConfiguration.class, params.getParameters(), true);</span>
+<span class="fc" id="L250">        switchToConfig(1);</span>
+<span class="nc" id="L251">        builder.getConfiguration();</span>
+<span class="nc" id="L252">    }</span>
+
+    /**
+     * Tests whether configuration listeners are handled correctly.
+     */
+    @Test
+    public void testAddConfigurationListener() throws ConfigurationException
+    {
+<span class="fc" id="L260">        final EventListener&lt;ConfigurationEvent&gt; l1 = new EventListenerTestImpl(null);</span>
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L263">        EventListener&lt;Event&gt; l2 =</span>
+<span class="fc" id="L264">                EasyMock.createMock(EventListener.class);</span>
+<span class="fc" id="L265">        EasyMock.replay(l2);</span>
+<span class="fc" id="L266">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L267">                createTestBuilder(null);</span>
+<span class="fc" id="L268">        builder.addEventListener(ConfigurationEvent.ANY, l1);</span>
+<span class="fc" id="L269">        switchToConfig(1);</span>
+<span class="fc" id="L270">        final XMLConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L271">        assertTrue(&quot;Listener not added&quot;, config.getEventListeners(ConfigurationEvent.ANY)</span>
+<span class="fc" id="L272">                .contains(l1));</span>
+<span class="fc" id="L273">        builder.addEventListener(Event.ANY, l2);</span>
+<span class="fc" id="L274">        assertTrue(&quot;Listener 2 not added&quot;, config.getEventListeners(Event.ANY)</span>
+<span class="fc" id="L275">                .contains(l2));</span>
+<span class="fc" id="L276">        assertTrue(&quot;Wrong result&quot;, builder.removeEventListener(Event.ANY, l2));</span>
+<span class="fc" id="L277">        assertFalse(&quot;Wrong result after removal&quot;,</span>
+<span class="fc" id="L278">                builder.removeEventListener(Event.ANY, l2));</span>
+<span class="fc" id="L279">        assertFalse(&quot;Listener not removed&quot;, config.getEventListeners(Event.ANY)</span>
+<span class="fc" id="L280">                .contains(l2));</span>
+<span class="fc" id="L281">        switchToConfig(2);</span>
+<span class="fc" id="L282">        final XMLConfiguration config2 = builder.getConfiguration();</span>
+<span class="fc" id="L283">        assertFalse(&quot;Listener not globally removed&quot;, config2</span>
+<span class="fc" id="L284">                .getEventListeners(Event.ANY).contains(l2));</span>
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Tests whether managed builders are cached.
+     */
+    @Test
+    public void testCaching() throws ConfigurationException
+    {
+<span class="fc" id="L293">        final Collection&lt;FileBasedConfigurationBuilder&lt;XMLConfiguration&gt;&gt; managedBuilders =</span>
+                new ArrayList&lt;&gt;();
+<span class="fc" id="L295">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L296">                createBuilderWithAccessToManagedBuilders(managedBuilders);</span>
+<span class="fc" id="L297">        switchToConfig(1);</span>
+<span class="fc" id="L298">        builder.getConfiguration();</span>
+<span class="fc" id="L299">        assertEquals(&quot;Wrong number of managed builders (1)&quot;, 1,</span>
+<span class="fc" id="L300">                managedBuilders.size());</span>
+<span class="fc" id="L301">        builder.getConfiguration();</span>
+<span class="fc" id="L302">        assertEquals(&quot;Wrong number of managed builders (2)&quot;, 1,</span>
+<span class="fc" id="L303">                managedBuilders.size());</span>
+<span class="fc" id="L304">        switchToConfig(2);</span>
+<span class="fc" id="L305">        builder.getConfiguration();</span>
+<span class="fc" id="L306">        assertEquals(&quot;Wrong number of managed builders (3)&quot;, 2,</span>
+<span class="fc" id="L307">                managedBuilders.size());</span>
+<span class="fc" id="L308">    }</span>
+
+    /**
+     * Tests whether a reset of the builder configuration also flushes the
+     * cache.
+     */
+    @Test
+    public void testCachingWithReset() throws ConfigurationException
+    {
+<span class="fc" id="L317">        final Collection&lt;FileBasedConfigurationBuilder&lt;XMLConfiguration&gt;&gt; managedBuilders =</span>
+                new ArrayList&lt;&gt;();
+<span class="fc" id="L319">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L320">                createBuilderWithAccessToManagedBuilders(managedBuilders);</span>
+<span class="fc" id="L321">        switchToConfig(1);</span>
+<span class="fc" id="L322">        builder.getConfiguration();</span>
+<span class="fc" id="L323">        builder.resetParameters();</span>
+<span class="fc" id="L324">        builder.configure(createTestBuilderParameters(null));</span>
+<span class="fc" id="L325">        builder.getConfiguration();</span>
+<span class="fc" id="L326">        assertEquals(&quot;Wrong number of managed builders&quot;, 2,</span>
+<span class="fc" id="L327">                managedBuilders.size());</span>
+<span class="fc" id="L328">    }</span>
+
+    /**
+     * Tests whether the ConfigurationInterpolator is reset, too.
+     */
+    @Test
+    public void testInterpolatorReset()
+    {
+<span class="fc" id="L336">        final BasicBuilderParameters params =</span>
+<span class="fc" id="L337">                new MultiFileBuilderParametersImpl().setFilePattern(PATTERN);</span>
+<span class="fc" id="L338">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L341">        builder.configure(params);</span>
+<span class="fc" id="L342">        final ConfigurationInterpolator interpolator = builder.getInterpolator();</span>
+<span class="fc" id="L343">        assertNotNull(&quot;No interpolator&quot;, interpolator);</span>
+<span class="fc" id="L344">        builder.resetParameters();</span>
+<span class="fc" id="L345">        assertNotSame(&quot;No new interpolator&quot;, interpolator,</span>
+<span class="fc" id="L346">                builder.getInterpolator());</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * Tests whether builder reset events are handled correctly.
+     */
+    @Test
+    public void testBuilderListenerReset() throws ConfigurationException
+    {
+<span class="fc" id="L355">        final BuilderEventListenerImpl listener = new BuilderEventListenerImpl();</span>
+<span class="fc" id="L356">        final Collection&lt;FileBasedConfigurationBuilder&lt;XMLConfiguration&gt;&gt; managedBuilders =</span>
+                new ArrayList&lt;&gt;();
+<span class="fc" id="L358">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L359">                createBuilderWithAccessToManagedBuilders(managedBuilders);</span>
+<span class="fc" id="L360">        switchToConfig(1);</span>
+<span class="fc" id="L361">        builder.addEventListener(ConfigurationBuilderEvent.RESET, listener);</span>
+<span class="fc" id="L362">        final XMLConfiguration configuration = builder.getConfiguration();</span>
+<span class="fc" id="L363">        managedBuilders.iterator().next().resetResult();</span>
+<span class="fc" id="L364">        final ConfigurationBuilderEvent event =</span>
+<span class="fc" id="L365">                listener.nextEvent(ConfigurationBuilderEvent.RESET);</span>
+<span class="fc" id="L366">        assertSame(&quot;Wrong event source&quot;, builder, event.getSource());</span>
+<span class="fc" id="L367">        assertNotSame(&quot;Configuration not reset&quot;, configuration,</span>
+<span class="fc" id="L368">                builder.getConfiguration());</span>
+<span class="fc" id="L369">    }</span>
+
+    /**
+     * Tests whether listeners at managed builders are removed when the cache is
+     * cleared.
+     */
+    @Test
+    public void testRemoveBuilderListenerOnReset()
+            throws ConfigurationException
+    {
+<span class="fc" id="L379">        final BuilderEventListenerImpl listener = new BuilderEventListenerImpl();</span>
+<span class="fc" id="L380">        final Collection&lt;FileBasedConfigurationBuilder&lt;XMLConfiguration&gt;&gt; managedBuilders =</span>
+                new ArrayList&lt;&gt;();
+<span class="fc" id="L382">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L383">                createBuilderWithAccessToManagedBuilders(managedBuilders);</span>
+<span class="fc" id="L384">        switchToConfig(1);</span>
+<span class="fc" id="L385">        builder.addEventListener(ConfigurationBuilderEvent.RESET, listener);</span>
+<span class="fc" id="L386">        builder.getConfiguration();</span>
+<span class="fc" id="L387">        builder.resetParameters();</span>
+<span class="fc" id="L388">        managedBuilders.iterator().next().resetResult();</span>
+<span class="fc" id="L389">        listener.assertNoMoreEvents();</span>
+<span class="fc" id="L390">    }</span>
+
+    /**
+     * Tests whether builder events of other types can be received.
+     */
+    @Test
+    public void testBuilderListenerOtherTypes() throws ConfigurationException
+    {
+<span class="fc" id="L398">        final BuilderEventListenerImpl listener = new BuilderEventListenerImpl();</span>
+<span class="fc" id="L399">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L400">                createTestBuilder(null);</span>
+<span class="fc" id="L401">        builder.addEventListener(ConfigurationBuilderEvent.ANY, listener);</span>
+<span class="fc" id="L402">        switchToConfig(1);</span>
+<span class="fc" id="L403">        builder.getConfiguration();</span>
+<span class="fc" id="L404">        final ConfigurationBuilderEvent event =</span>
+<span class="fc" id="L405">                listener.nextEvent(ConfigurationBuilderEvent.CONFIGURATION_REQUEST);</span>
+<span class="fc" id="L406">        assertEquals(&quot;Wrong event source of request event&quot;, builder,</span>
+<span class="fc" id="L407">                event.getSource());</span>
+<span class="fc" id="L408">        final ConfigurationBuilderResultCreatedEvent createdEvent =</span>
+<span class="fc" id="L409">                listener.nextEvent(ConfigurationBuilderResultCreatedEvent.RESULT_CREATED);</span>
+<span class="fc" id="L410">        assertEquals(&quot;Wrong source of creation event&quot;, builder,</span>
+<span class="fc" id="L411">                createdEvent.getSource());</span>
+<span class="fc" id="L412">        listener.assertNoMoreEvents();</span>
+<span class="fc" id="L413">    }</span>
+
+    /**
+     * Tests whether initialization parameters of managed builders are cloned
+     * before they are applied.
+     */
+    @Test
+    public void testGetManagedBuilderClonedParameters()
+            throws ConfigurationException
+    {
+<span class="fc" id="L423">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+<span class="fc" id="L424">                createTestBuilder(new XMLBuilderParametersImpl());</span>
+<span class="fc" id="L425">        switchToConfig(1);</span>
+<span class="fc" id="L426">        final FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; managedBuilder1 =</span>
+<span class="fc" id="L427">                builder.getManagedBuilder();</span>
+<span class="fc" id="L428">        switchToConfig(2);</span>
+<span class="fc" id="L429">        final FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; managedBuilder2 =</span>
+<span class="fc" id="L430">                builder.getManagedBuilder();</span>
+<span class="fc" id="L431">        assertNotSame(&quot;Managed parameters not cloned&quot;,</span>
+<span class="fc" id="L432">                managedBuilder1.getFileHandler(),</span>
+<span class="fc" id="L433">                managedBuilder2.getFileHandler());</span>
+<span class="fc" id="L434">    }</span>
+
+    /**
+     * Tests whether infinite loops on constructing the file name using
+     * interpolation can be handled. This can happen if a pattern cannot be
+     * resolved and the {@code ConfigurationInterpolator} causes again a lookup
+     * of the builder's configuration.
+     */
+    @Test
+    public void testRecursiveInterpolation()
+    {
+<span class="fc" id="L445">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L447">        config.setKeyPattern(PATTERN_VAR);</span>
+<span class="fc" id="L448">        final BasicBuilderParameters params = createTestBuilderParameters(null);</span>
+<span class="fc" id="L449">        final ConfigurationInterpolator ci = new ConfigurationInterpolator();</span>
+<span class="fc" id="L450">        ci.addDefaultLookup(new ConfigurationLookup(config));</span>
+<span class="fc" id="L451">        params.setInterpolator(ci);</span>
+<span class="fc" id="L452">        final MultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class, null, true);
+<span class="fc" id="L455">        builder.configure(params);</span>
+<span class="fc" id="L456">        final BuilderConfigurationWrapperFactory wrapFactory =</span>
+                new BuilderConfigurationWrapperFactory();
+<span class="fc" id="L458">        config.addConfiguration(wrapFactory.createBuilderConfigurationWrapper(</span>
+                HierarchicalConfiguration.class, builder), &quot;Multi&quot;);
+<span class="fc" id="L460">        assertTrue(&quot;Got configuration data&quot;, config.isEmpty());</span>
+<span class="fc" id="L461">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

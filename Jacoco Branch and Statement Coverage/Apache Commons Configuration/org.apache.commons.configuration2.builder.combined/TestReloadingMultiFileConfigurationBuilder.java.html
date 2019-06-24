@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestReloadingMultiFileConfigurationBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestReloadingMultiFileConfigurationBuilder.java</span></div><h1>TestReloadingMultiFileConfigurationBuilder.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.XMLBuilderParametersImpl;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.reloading.ReloadingController;
+import org.apache.commons.configuration2.tree.ExpressionEngine;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ReloadingMultiFileConfigurationBuilder}.
+ *
+ */
+<span class="fc" id="L44">public class TestReloadingMultiFileConfigurationBuilder extends</span>
+        AbstractMultiFileConfigurationBuilderTest
+{
+    /**
+     * Tests whether parameters passed to the constructor are passed to the
+     * super class.
+     */
+    @Test
+    public void testInitWithParameters() throws ConfigurationException
+    {
+<span class="fc" id="L54">        final ExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L55">        final BasicBuilderParameters params =</span>
+<span class="fc" id="L56">                createTestBuilderParameters(new XMLBuilderParametersImpl()</span>
+<span class="fc" id="L57">                        .setExpressionEngine(engine));</span>
+<span class="fc" id="L58">        final ReloadingMultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new ReloadingMultiFileConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L60">                        XMLConfiguration.class, params.getParameters());</span>
+<span class="fc" id="L61">        switchToConfig(1);</span>
+<span class="fc" id="L62">        final XMLConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L63">        assertSame(&quot;Expression engine not set&quot;, engine,</span>
+<span class="fc" id="L64">                config.getExpressionEngine());</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Tests whether correct managed builders are created.
+     */
+    @Test
+    public void testCreateManagedBuilder() throws ConfigurationException
+    {
+<span class="fc" id="L73">        final ReloadingMultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new ReloadingMultiFileConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L76">        final FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; managedBuilder =</span>
+<span class="fc" id="L77">                builder.createManagedBuilder(&quot;test.xml&quot;,</span>
+<span class="fc" id="L78">                        createTestBuilderParameters(null).getParameters());</span>
+<span class="fc" id="L79">        assertTrue(</span>
+                &quot;Not a reloading builder&quot;,
+                managedBuilder instanceof ReloadingFileBasedConfigurationBuilder);
+<span class="fc" id="L82">        assertFalse(&quot;Wrong flag value&quot;, managedBuilder.isAllowFailOnInit());</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Tests whether the allowFailOnInit flag is passed to newly created managed
+     * builders.
+     */
+    @Test
+    public void testCreateManagedBuilderWithAllowFailFlag()
+            throws ConfigurationException
+    {
+<span class="fc" id="L93">        final ReloadingMultiFileConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new ReloadingMultiFileConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class, null, true);
+<span class="fc" id="L96">        final FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; managedBuilder =</span>
+<span class="fc" id="L97">                builder.createManagedBuilder(&quot;test.xml&quot;,</span>
+<span class="fc" id="L98">                        createTestBuilderParameters(null).getParameters());</span>
+<span class="fc" id="L99">        assertTrue(&quot;Wrong flag value&quot;, managedBuilder.isAllowFailOnInit());</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Tests whether a reloading check works correctly.
+     */
+    @Test
+    public void testReloadingControllerCheck() throws ConfigurationException
+    {
+<span class="fc" id="L108">        final ReloadingMultiFileConfigurationBuilderTestImpl builder =</span>
+                new ReloadingMultiFileConfigurationBuilderTestImpl();
+<span class="fc" id="L110">        switchToConfig(1);</span>
+<span class="fc" id="L111">        builder.getConfiguration();</span>
+<span class="fc" id="L112">        switchToConfig(2);</span>
+<span class="fc" id="L113">        builder.getConfiguration();</span>
+<span class="fc" id="L114">        final List&lt;ReloadingController&gt; controllers =</span>
+<span class="fc" id="L115">                builder.getReloadingControllers();</span>
+<span class="fc" id="L116">        assertEquals(&quot;Wrong number of reloading controllers&quot;, 2,</span>
+<span class="fc" id="L117">                controllers.size());</span>
+<span class="fc" id="L118">        EasyMock.reset(controllers.toArray());</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        for (final ReloadingController c : controllers)</span>
+        {
+<span class="fc" id="L121">            EasyMock.expect(c.checkForReloading(null)).andReturn(Boolean.FALSE);</span>
+<span class="fc" id="L122">        }</span>
+<span class="fc" id="L123">        EasyMock.replay(controllers.toArray());</span>
+<span class="fc" id="L124">        assertFalse(&quot;Wrong result&quot;, builder.getReloadingController()</span>
+<span class="fc" id="L125">                .checkForReloading(this));</span>
+<span class="fc" id="L126">        EasyMock.verify(controllers.toArray());</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests a reloading check which detects the need to reload.
+     */
+    @Test
+    public void testReloadingControllerCheckReloadingRequired()
+            throws ConfigurationException
+    {
+<span class="fc" id="L136">        final ReloadingMultiFileConfigurationBuilderTestImpl builder =</span>
+                new ReloadingMultiFileConfigurationBuilderTestImpl();
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        for (int i = 1; i &lt;= 3; i++)</span>
+        {
+<span class="fc" id="L140">            switchToConfig(i);</span>
+<span class="fc" id="L141">            builder.getConfiguration();</span>
+        }
+<span class="fc" id="L143">        final List&lt;ReloadingController&gt; controllers =</span>
+<span class="fc" id="L144">                builder.getReloadingControllers();</span>
+<span class="fc" id="L145">        EasyMock.reset(controllers.toArray());</span>
+<span class="fc" id="L146">        EasyMock.expect(controllers.get(0).checkForReloading(null))</span>
+<span class="fc" id="L147">                .andReturn(Boolean.FALSE).anyTimes();</span>
+<span class="fc" id="L148">        EasyMock.expect(controllers.get(1).checkForReloading(null)).andReturn(</span>
+                Boolean.TRUE);
+<span class="fc" id="L150">        EasyMock.expect(controllers.get(2).checkForReloading(null))</span>
+<span class="fc" id="L151">                .andReturn(Boolean.FALSE).anyTimes();</span>
+<span class="fc" id="L152">        EasyMock.replay(controllers.toArray());</span>
+<span class="fc" id="L153">        assertTrue(&quot;Wrong result&quot;, builder.getReloadingController()</span>
+<span class="fc" id="L154">                .checkForReloading(this));</span>
+<span class="fc" id="L155">        EasyMock.verify(controllers.toArray());</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Tests whether the reloading state of the reloading controller can be
+     * reset.
+     */
+    @Test
+    public void testReloadingControllerResetReloadingState()
+            throws ConfigurationException
+    {
+<span class="fc" id="L166">        final ReloadingMultiFileConfigurationBuilderTestImpl builder =</span>
+                new ReloadingMultiFileConfigurationBuilderTestImpl();
+<span class="fc" id="L168">        switchToConfig(1);</span>
+<span class="fc" id="L169">        builder.getConfiguration();</span>
+<span class="fc" id="L170">        switchToConfig(2);</span>
+<span class="fc" id="L171">        builder.getConfiguration();</span>
+<span class="fc" id="L172">        final List&lt;ReloadingController&gt; controllers =</span>
+<span class="fc" id="L173">                builder.getReloadingControllers();</span>
+<span class="fc" id="L174">        EasyMock.reset(controllers.toArray());</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        for (final ReloadingController c : controllers)</span>
+        {
+<span class="fc" id="L177">            EasyMock.expect(c.checkForReloading(null)).andReturn(Boolean.TRUE)</span>
+<span class="fc" id="L178">                    .anyTimes();</span>
+<span class="fc" id="L179">            c.resetReloadingState();</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        EasyMock.replay(controllers.toArray());</span>
+<span class="fc" id="L182">        builder.getReloadingController().checkForReloading(null);</span>
+<span class="fc" id="L183">        builder.getReloadingController().resetReloadingState();</span>
+<span class="fc" id="L184">        EasyMock.verify(controllers.toArray());</span>
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * A test implementation of the class under test which allows access to
+     * reloading controllers of managed configuration builders.
+     *
+         */
+    private static class ReloadingMultiFileConfigurationBuilderTestImpl extends
+            ReloadingMultiFileConfigurationBuilder&lt;XMLConfiguration&gt;
+    {
+        /**
+         * A list with mocks for reloading controllers created by this instance.
+         */
+        private final List&lt;ReloadingController&gt; reloadingControllers;
+
+        public ReloadingMultiFileConfigurationBuilderTestImpl()
+        {
+<span class="fc" id="L202">            super(XMLConfiguration.class, createTestBuilderParameters(null)</span>
+<span class="fc" id="L203">                    .getParameters());</span>
+<span class="fc" id="L204">            reloadingControllers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L205">        }</span>
+
+        /**
+         * Returns the list with the mock reloading controllers for the managed
+         * configuration builders created by this instance.
+         *
+         * @return the list with mock reloading controllers
+         */
+        public List&lt;ReloadingController&gt; getReloadingControllers()
+        {
+<span class="fc" id="L215">            return reloadingControllers;</span>
+        }
+
+        /**
+         * {@inheritDoc} This implementation creates a specialized reloading
+         * builder which is associated with a mock reloading controller.
+         */
+        @Override
+        protected FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; createManagedBuilder(
+                final String fileName, final Map&lt;String, Object&gt; params)
+                throws ConfigurationException
+        {
+<span class="fc" id="L227">            final ReloadingController ctrl =</span>
+<span class="fc" id="L228">                    EasyMock.createMock(ReloadingController.class);</span>
+<span class="fc" id="L229">            reloadingControllers.add(ctrl);</span>
+<span class="fc" id="L230">            return new ReloadingFileBasedConfigurationBuilder&lt;XMLConfiguration&gt;(</span>
+<span class="fc" id="L231">                    getResultClass(), params)</span>
+<span class="fc" id="L232">            {</span>
+                @Override
+                public ReloadingController getReloadingController()
+                {
+<span class="fc" id="L236">                    return ctrl;</span>
+                }
+            };
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

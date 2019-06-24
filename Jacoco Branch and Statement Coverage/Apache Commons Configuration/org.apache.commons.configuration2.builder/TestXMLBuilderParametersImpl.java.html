@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestXMLBuilderParametersImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestXMLBuilderParametersImpl.java</span></div><h1>TestXMLBuilderParametersImpl.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+import javax.xml.parsers.DocumentBuilder;
+import java.util.Map;
+
+import org.apache.commons.configuration2.beanutils.BeanHelper;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+import org.xml.sax.EntityResolver;
+
+/**
+ * Test class for {@code XMLBuilderParametersImpl}.
+ *
+ */
+<span class="fc" id="L35">public class TestXMLBuilderParametersImpl</span>
+{
+    /** The parameters object to be tested. */
+    private XMLBuilderParametersImpl params;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L43">        params = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Tests whether an entity resolver can be set.
+     */
+    @Test
+    public void testSetEntityResolver()
+    {
+<span class="fc" id="L52">        final EntityResolver resolver = EasyMock.createMock(EntityResolver.class);</span>
+<span class="fc" id="L53">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L54">        assertSame(&quot;Wrong result&quot;, params, params.setEntityResolver(resolver));</span>
+<span class="fc" id="L55">        assertSame(&quot;Resolver not set&quot;, resolver, params.getEntityResolver());</span>
+<span class="fc" id="L56">        assertSame(&quot;Resolver not in parameters&quot;, resolver, params</span>
+<span class="fc" id="L57">                .getParameters().get(&quot;entityResolver&quot;));</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Tests whether a document builder can be set.
+     */
+    @Test
+    public void testSetDocumentBuilder()
+    {
+<span class="fc" id="L66">        final DocumentBuilder builder = EasyMock.createMock(DocumentBuilder.class);</span>
+<span class="fc" id="L67">        EasyMock.replay(builder);</span>
+<span class="fc" id="L68">        assertSame(&quot;Wrong result&quot;, params, params.setDocumentBuilder(builder));</span>
+<span class="fc" id="L69">        assertSame(&quot;Builder not in parameters&quot;, builder, params.getParameters()</span>
+<span class="fc" id="L70">                .get(&quot;documentBuilder&quot;));</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Tests whether a public ID can be set.
+     */
+    @Test
+    public void testSetPublicID()
+    {
+<span class="fc" id="L79">        final String pubID = &quot;testPublicID&quot;;</span>
+<span class="fc" id="L80">        assertSame(&quot;Wrong result&quot;, params, params.setPublicID(pubID));</span>
+<span class="fc" id="L81">        assertEquals(&quot;ID not in parameters&quot;, pubID,</span>
+<span class="fc" id="L82">                params.getParameters().get(&quot;publicID&quot;));</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Tests whether a system ID can be set.
+     */
+    @Test
+    public void testSetSystemID()
+    {
+<span class="fc" id="L91">        final String sysID = &quot;testSystemID&quot;;</span>
+<span class="fc" id="L92">        assertSame(&quot;Wrong result&quot;, params, params.setSystemID(sysID));</span>
+<span class="fc" id="L93">        assertEquals(&quot;ID not in parameters&quot;, sysID,</span>
+<span class="fc" id="L94">                params.getParameters().get(&quot;systemID&quot;));</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Tests whether validating property can be set.
+     */
+    @Test
+    public void testSetValidating()
+    {
+<span class="fc" id="L103">        assertSame(&quot;Wrong result&quot;, params, params.setValidating(true));</span>
+<span class="fc" id="L104">        assertEquals(&quot;Flag not in parameters&quot;, Boolean.TRUE, params</span>
+<span class="fc" id="L105">                .getParameters().get(&quot;validating&quot;));</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Tests whether the schema validation flag can be set.
+     */
+    @Test
+    public void testSetSchemaValidation()
+    {
+<span class="fc" id="L114">        assertSame(&quot;Wrong result&quot;, params, params.setSchemaValidation(false));</span>
+<span class="fc" id="L115">        assertEquals(&quot;Flag not in parameters&quot;, Boolean.FALSE, params</span>
+<span class="fc" id="L116">                .getParameters().get(&quot;schemaValidation&quot;));</span>
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * Tests whether properties can be set through BeanUtils.
+     */
+    @Test
+    public void testBeanPropertiesAccess() throws Exception
+    {
+<span class="fc" id="L125">        final EntityResolver resolver = EasyMock.createMock(EntityResolver.class);</span>
+<span class="fc" id="L126">        final DocumentBuilder builder = EasyMock.createMock(DocumentBuilder.class);</span>
+<span class="fc" id="L127">        EasyMock.replay(resolver, builder);</span>
+<span class="fc" id="L128">        BeanHelper.setProperty(params, &quot;throwExceptionOnMissing&quot;,</span>
+                Boolean.TRUE);
+<span class="fc" id="L130">        BeanHelper.setProperty(params, &quot;fileName&quot;, &quot;test.xml&quot;);</span>
+<span class="fc" id="L131">        BeanHelper.setProperty(params, &quot;entityResolver&quot;, resolver);</span>
+<span class="fc" id="L132">        BeanHelper.setProperty(params, &quot;documentBuilder&quot;, builder);</span>
+<span class="fc" id="L133">        assertEquals(&quot;Wrong file name&quot;, &quot;test.xml&quot;, params.getFileHandler()</span>
+<span class="fc" id="L134">                .getFileName());</span>
+<span class="fc" id="L135">        final Map&lt;String, Object&gt; paramsMap = params.getParameters();</span>
+<span class="fc" id="L136">        assertEquals(&quot;Wrong exception flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L137">                paramsMap.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L138">        assertSame(&quot;Wrong resolver&quot;, resolver, paramsMap.get(&quot;entityResolver&quot;));</span>
+<span class="fc" id="L139">        assertSame(&quot;Wrong builder&quot;, builder, paramsMap.get(&quot;documentBuilder&quot;));</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests whether properties can be inherited.
+     */
+    @Test
+    public void testInheritFrom()
+    {
+<span class="fc" id="L148">        final EntityResolver resolver = EasyMock.createMock(EntityResolver.class);</span>
+<span class="fc" id="L149">        final DocumentBuilder builder = EasyMock.createMock(DocumentBuilder.class);</span>
+<span class="fc" id="L150">        params.setDocumentBuilder(builder).setEntityResolver(resolver)</span>
+<span class="fc" id="L151">                .setSchemaValidation(true).setValidating(true);</span>
+<span class="fc" id="L152">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L153">        final XMLBuilderParametersImpl params2 = new XMLBuilderParametersImpl();</span>
+
+<span class="fc" id="L155">        params2.inheritFrom(params.getParameters());</span>
+<span class="fc" id="L156">        final Map&lt;String, Object&gt; parameters = params2.getParameters();</span>
+<span class="fc" id="L157">        assertEquals(&quot;Exception flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L158">                parameters.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L159">        assertEquals(&quot;Entity resolver not set&quot;, resolver,</span>
+<span class="fc" id="L160">                parameters.get(&quot;entityResolver&quot;));</span>
+<span class="fc" id="L161">        assertEquals(&quot;Document builder not set&quot;, builder,</span>
+<span class="fc" id="L162">                parameters.get(&quot;documentBuilder&quot;));</span>
+<span class="fc" id="L163">        assertEquals(&quot;Validation flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L164">                parameters.get(&quot;validating&quot;));</span>
+<span class="fc" id="L165">        assertEquals(&quot;Schema flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L166">                parameters.get(&quot;schemaValidation&quot;));</span>
+<span class="fc" id="L167">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

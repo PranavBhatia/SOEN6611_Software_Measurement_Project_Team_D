@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDefaultConfigurationKey.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestDefaultConfigurationKey.java</span></div><h1>TestDefaultConfigurationKey.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.NoSuchElementException;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for DefaultConfigurationKey.
+ *
+ * @author Oliver Heger
+ */
+<span class="fc" id="L35">public class TestDefaultConfigurationKey</span>
+{
+    /** Constant for a test key. */
+    private static final String TESTPROPS = &quot;tables.table(0).fields.field(1)&quot;;
+
+    /** Constant for a test attribute key. */
+    private static final String TESTATTR = &quot;[@dataType]&quot;;
+
+    /** Constant for a complex attribute key. */
+    private static final String TESTKEY = TESTPROPS + TESTATTR;
+
+    /** Stores the expression engine of the key to test. */
+    private DefaultExpressionEngine expressionEngine;
+
+    /** Stores the object to be tested. */
+    private DefaultConfigurationKey key;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L55">        expressionEngine = DefaultExpressionEngine.INSTANCE;</span>
+<span class="fc" id="L56">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Helper method to create a key instance with the given content.
+     *
+     * @param k the key for initialization
+     * @return the newly created {@code DefaultConfigurationKey} instance
+     */
+    private DefaultConfigurationKey key(final String k)
+    {
+<span class="fc" id="L67">        return new DefaultConfigurationKey(expressionEngine, k);</span>
+    }
+
+    /**
+     * Tests setting the expression engine to null. This should not be allowed.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetNullExpressionEngine()
+    {
+<span class="nc" id="L76">        new DefaultConfigurationKey(null);</span>
+<span class="nc" id="L77">    }</span>
+
+    /**
+     * Tests the isAttributeKey() method with several keys.
+     */
+    @Test
+    public void testIsAttributeKey()
+    {
+<span class="fc" id="L85">        assertTrue(&quot;Attribute key not detected&quot;, key.isAttributeKey(TESTATTR));</span>
+<span class="fc" id="L86">        assertFalse(&quot;Property key considered as attribute&quot;, key</span>
+<span class="fc" id="L87">                .isAttributeKey(TESTPROPS));</span>
+<span class="fc" id="L88">        assertFalse(&quot;Null key considered as attribute&quot;, key</span>
+<span class="fc" id="L89">                .isAttributeKey(null));</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Returns a builder for symbols with default property settings.
+     *
+     * @return the initialized builder object
+     */
+    private DefaultExpressionEngineSymbols.Builder symbols()
+    {
+<span class="fc" id="L99">        return new DefaultExpressionEngineSymbols.Builder(</span>
+<span class="fc" id="L100">                expressionEngine.getSymbols());</span>
+    }
+
+    /**
+     * Tests if attribute keys are correctly detected if no end markers are set.
+     * (In this test case we use the same delimiter for attributes as for simple
+     * properties.)
+     */
+    @Test
+    public void testIsAttributeKeyWithoutEndMarkers()
+    {
+<span class="fc" id="L111">        final DefaultExpressionEngineSymbols symbols =</span>
+<span class="fc" id="L112">                symbols()</span>
+<span class="fc" id="L113">                        .setAttributeEnd(null)</span>
+<span class="fc" id="L114">                        .setAttributeStart(</span>
+                                DefaultExpressionEngineSymbols.DEFAULT_PROPERTY_DELIMITER)
+<span class="fc" id="L116">                        .create();</span>
+<span class="fc" id="L117">        expressionEngine = new DefaultExpressionEngine(symbols);</span>
+<span class="fc" id="L118">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L119">        assertTrue(</span>
+                &quot;Attribute key not detected&quot;,
+<span class="fc" id="L121">                key.isAttributeKey(DefaultExpressionEngineSymbols.DEFAULT_PROPERTY_DELIMITER</span>
+                        + &quot;test&quot;));
+<span class="fc" id="L123">        assertFalse(&quot;Property key considered as attribute key&quot;,</span>
+<span class="fc" id="L124">                key.isAttributeKey(TESTATTR));</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Tests removing leading delimiters.
+     */
+    @Test
+    public void testTrimLeft()
+    {
+<span class="fc" id="L133">        assertEquals(&quot;Key was not left trimmed&quot;, &quot;test.&quot;, key</span>
+<span class="fc" id="L134">                .trimLeft(&quot;.test.&quot;));</span>
+<span class="fc" id="L135">        assertEquals(&quot;Too much left trimming&quot;, &quot;..test.&quot;, key</span>
+<span class="fc" id="L136">                .trimLeft(&quot;..test.&quot;));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Tests removing trailing delimiters.
+     */
+    @Test
+    public void testTrimRight()
+    {
+<span class="fc" id="L145">        assertEquals(&quot;Key was not right trimmed&quot;, &quot;.test&quot;, key</span>
+<span class="fc" id="L146">                .trimRight(&quot;.test.&quot;));</span>
+<span class="fc" id="L147">        assertEquals(&quot;Too much right trimming&quot;, &quot;.test..&quot;, key</span>
+<span class="fc" id="L148">                .trimRight(&quot;.test..&quot;));</span>
+<span class="fc" id="L149">    }</span>
+
+    /**
+     * Tests removing delimiters.
+     */
+    @Test
+    public void testTrim()
+    {
+<span class="fc" id="L157">        assertEquals(&quot;Key was not trimmed&quot;, &quot;test&quot;, key.trim(&quot;.test.&quot;));</span>
+<span class="fc" id="L158">        assertEquals(&quot;Null key could not be processed&quot;, &quot;&quot;, key.trim(null));</span>
+<span class="fc" id="L159">        assertEquals(&quot;Delimiter could not be processed&quot;, &quot;&quot;, key</span>
+<span class="fc" id="L160">                .trim(DefaultExpressionEngineSymbols.DEFAULT_PROPERTY_DELIMITER));</span>
+<span class="fc" id="L161">    }</span>
+
+    /**
+     * Tests appending keys.
+     */
+    @Test
+    public void testAppend()
+    {
+<span class="fc" id="L169">        key.append(&quot;tables&quot;).append(&quot;table(0).&quot;);</span>
+<span class="fc" id="L170">        key.append(&quot;fields.&quot;).append(&quot;field(1)&quot;);</span>
+<span class="fc" id="L171">        key.append(null).append(TESTATTR);</span>
+<span class="fc" id="L172">        assertEquals(&quot;Wrong key&quot;, TESTKEY, key.toString());</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Tests appending keys that contain delimiters.
+     */
+    @Test
+    public void testAppendDelimiters()
+    {
+<span class="fc" id="L181">        key.append(&quot;key..&quot;).append(&quot;test&quot;).append(&quot;.&quot;);</span>
+<span class="fc" id="L182">        key.append(&quot;.more&quot;).append(&quot;..tests&quot;);</span>
+<span class="fc" id="L183">        assertEquals(&quot;Wrong key&quot;, &quot;key...test.more...tests&quot;, key.toString());</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Tests appending keys that contain delimiters when no escaped delimiter
+     * is defined.
+     */
+    @Test
+    public void testAppendDelimitersWithoutEscaping()
+    {
+<span class="fc" id="L193">        expressionEngine =</span>
+<span class="fc" id="L194">                new DefaultExpressionEngine(symbols().setEscapedDelimiter(null)</span>
+<span class="fc" id="L195">                        .create());</span>
+<span class="fc" id="L196">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L197">        key.append(&quot;key.......&quot;).append(&quot;test&quot;).append(&quot;.&quot;);</span>
+<span class="fc" id="L198">        key.append(&quot;.more&quot;).append(&quot;..tests&quot;);</span>
+<span class="fc" id="L199">        assertEquals(&quot;Wrong constructed key&quot;, &quot;key.test.more.tests&quot;, key</span>
+<span class="fc" id="L200">                .toString());</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * Tests calling append with the escape flag.
+     */
+    @Test
+    public void testAppendWithEscapeFlag()
+    {
+<span class="fc" id="L209">        key.append(&quot;.key.test.&quot;, true);</span>
+<span class="fc" id="L210">        key.append(&quot;.more&quot;).append(&quot;.tests&quot;, true);</span>
+<span class="fc" id="L211">        assertEquals(&quot;Wrong constructed key&quot;, &quot;..key..test...more...tests&quot;, key</span>
+<span class="fc" id="L212">                .toString());</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * Tests constructing keys for attributes.
+     */
+    @Test
+    public void testConstructAttributeKey()
+    {
+<span class="fc" id="L221">        assertEquals(&quot;Wrong attribute key&quot;, TESTATTR, key</span>
+<span class="fc" id="L222">                .constructAttributeKey(&quot;dataType&quot;));</span>
+<span class="fc" id="L223">        assertEquals(&quot;Attribute key was incorrectly converted&quot;, TESTATTR, key</span>
+<span class="fc" id="L224">                .constructAttributeKey(TESTATTR));</span>
+<span class="fc" id="L225">        assertEquals(&quot;Null key could not be processed&quot;, &quot;&quot;, key</span>
+<span class="fc" id="L226">                .constructAttributeKey(null));</span>
+<span class="fc" id="L227">    }</span>
+
+    /**
+     * Tests constructing attribute keys when no end markers are defined. In
+     * this test case we use the property delimiter as attribute prefix.
+     */
+    @Test
+    public void testConstructAttributeKeyWithoutEndMarkers()
+    {
+<span class="fc" id="L236">        final DefaultExpressionEngineSymbols symbols =</span>
+<span class="fc" id="L237">                symbols()</span>
+<span class="fc" id="L238">                        .setAttributeEnd(null)</span>
+<span class="fc" id="L239">                        .setAttributeStart(</span>
+<span class="fc" id="L240">                                expressionEngine.getSymbols()</span>
+<span class="fc" id="L241">                                        .getPropertyDelimiter()).create();</span>
+<span class="fc" id="L242">        expressionEngine = new DefaultExpressionEngine(symbols);</span>
+<span class="fc" id="L243">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L244">        assertEquals(&quot;Wrong attribute key&quot;, &quot;.test&quot;, key</span>
+<span class="fc" id="L245">                .constructAttributeKey(&quot;test&quot;));</span>
+<span class="fc" id="L246">        assertEquals(&quot;Attribute key was incorrectly converted&quot;, &quot;.test&quot;, key</span>
+<span class="fc" id="L247">                .constructAttributeKey(&quot;.test&quot;));</span>
+<span class="fc" id="L248">    }</span>
+
+    /**
+     * Tests appending attribute keys.
+     */
+    @Test
+    public void testAppendAttribute()
+    {
+<span class="fc" id="L256">        key.appendAttribute(&quot;dataType&quot;);</span>
+<span class="fc" id="L257">        assertEquals(&quot;Attribute key not correctly appended&quot;, TESTATTR, key</span>
+<span class="fc" id="L258">                .toString());</span>
+<span class="fc" id="L259">    }</span>
+
+    /**
+     * Tests appending an attribute key that is already decorated-
+     */
+    @Test
+    public void testAppendDecoratedAttributeKey()
+    {
+<span class="fc" id="L267">        key.appendAttribute(TESTATTR);</span>
+<span class="fc" id="L268">        assertEquals(&quot;Decorated attribute key not correctly appended&quot;,</span>
+<span class="fc" id="L269">                TESTATTR, key.toString());</span>
+<span class="fc" id="L270">    }</span>
+
+    /**
+     * Tests appending a null attribute key.
+     */
+    @Test
+    public void testAppendNullAttributeKey()
+    {
+<span class="fc" id="L278">        key.appendAttribute(null);</span>
+<span class="fc" id="L279">        assertEquals(&quot;Null attribute key not correctly appended&quot;, &quot;&quot;, key</span>
+<span class="fc" id="L280">                .toString());</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Tests appending an index to a key.
+     */
+    @Test
+    public void testAppendIndex()
+    {
+<span class="fc" id="L289">        key.append(&quot;test&quot;).appendIndex(42);</span>
+<span class="fc" id="L290">        assertEquals(&quot;Index was not correctly appended&quot;, &quot;test(42)&quot;, key</span>
+<span class="fc" id="L291">                .toString());</span>
+<span class="fc" id="L292">    }</span>
+
+    /**
+     * Tests constructing a complex key by chaining multiple append operations.
+     */
+    @Test
+    public void testAppendComplexKey()
+    {
+<span class="fc" id="L300">        key.append(&quot;tables&quot;).append(&quot;table.&quot;).appendIndex(0);</span>
+<span class="fc" id="L301">        key.append(&quot;fields.&quot;).append(&quot;field&quot;).appendIndex(1);</span>
+<span class="fc" id="L302">        key.appendAttribute(&quot;dataType&quot;);</span>
+<span class="fc" id="L303">        assertEquals(&quot;Wrong complex key&quot;, TESTKEY, key.toString());</span>
+<span class="fc" id="L304">    }</span>
+
+    /**
+     * Tests getting and setting the key's length.
+     */
+    @Test
+    public void testLength()
+    {
+<span class="fc" id="L312">        key.append(TESTPROPS);</span>
+<span class="fc" id="L313">        assertEquals(&quot;Wrong length&quot;, TESTPROPS.length(), key.length());</span>
+<span class="fc" id="L314">        key.appendAttribute(&quot;dataType&quot;);</span>
+<span class="fc" id="L315">        assertEquals(&quot;Wrong length&quot;, TESTKEY.length(), key.length());</span>
+<span class="fc" id="L316">        key.setLength(TESTPROPS.length());</span>
+<span class="fc" id="L317">        assertEquals(&quot;Wrong length after shortening&quot;, TESTPROPS.length(), key</span>
+<span class="fc" id="L318">                .length());</span>
+<span class="fc" id="L319">        assertEquals(&quot;Wrong resulting key&quot;, TESTPROPS, key.toString());</span>
+<span class="fc" id="L320">    }</span>
+
+    /**
+     * Tests comparing configuration keys.
+     */
+    @Test
+    public void testEquals()
+    {
+<span class="fc" id="L328">        final DefaultConfigurationKey k1 = key(TESTKEY);</span>
+<span class="fc" id="L329">        assertTrue(&quot;Key not equal to itself&quot;, k1.equals(k1));</span>
+<span class="fc" id="L330">        final DefaultConfigurationKey k2 = key(TESTKEY);</span>
+<span class="fc" id="L331">        assertTrue(&quot;Keys are not equal&quot;, k1.equals(k2));</span>
+<span class="fc" id="L332">        assertTrue(&quot;Not reflexiv&quot;, k2.equals(k1));</span>
+<span class="fc" id="L333">        assertEquals(&quot;Hash codes not equal&quot;, k1.hashCode(), k2.hashCode());</span>
+<span class="fc" id="L334">        k2.append(&quot;anotherPart&quot;);</span>
+<span class="fc" id="L335">        assertFalse(&quot;Keys considered equal&quot;, k1.equals(k2));</span>
+<span class="fc" id="L336">        assertFalse(&quot;Keys considered equal (2)&quot;, k2.equals(k1));</span>
+<span class="fc" id="L337">        assertFalse(&quot;Key equals null key&quot;, k1.equals(null));</span>
+<span class="fc" id="L338">        assertFalse(&quot;Equal with string&quot;, k1.equals(TESTKEY));</span>
+<span class="fc" id="L339">    }</span>
+
+    /**
+     * Tests determining an attribute key's name.
+     */
+    @Test
+    public void testAttributeName()
+    {
+<span class="fc" id="L347">        assertEquals(&quot;Plain key not detected&quot;, &quot;test&quot;, key</span>
+<span class="fc" id="L348">                .attributeName(&quot;test&quot;));</span>
+<span class="fc" id="L349">        assertEquals(&quot;Attribute markers not stripped&quot;, &quot;dataType&quot;, key</span>
+<span class="fc" id="L350">                .attributeName(TESTATTR));</span>
+<span class="fc" id="L351">        assertNull(&quot;Null key not processed&quot;, key.attributeName(null));</span>
+<span class="fc" id="L352">    }</span>
+
+    /**
+     * Tests to iterate over a simple key.
+     */
+    @Test
+    public void testIterate()
+    {
+<span class="fc" id="L360">        key.append(TESTKEY);</span>
+<span class="fc" id="L361">        final DefaultConfigurationKey.KeyIterator it = key.iterator();</span>
+<span class="fc" id="L362">        assertTrue(&quot;No key parts&quot;, it.hasNext());</span>
+<span class="fc" id="L363">        assertEquals(&quot;Wrong key part&quot;, &quot;tables&quot;, it.nextKey());</span>
+<span class="fc" id="L364">        assertEquals(&quot;Wrong key part&quot;, &quot;table&quot;, it.nextKey());</span>
+<span class="fc" id="L365">        assertTrue(&quot;No index found&quot;, it.hasIndex());</span>
+<span class="fc" id="L366">        assertEquals(&quot;Wrong index&quot;, 0, it.getIndex());</span>
+<span class="fc" id="L367">        assertEquals(&quot;Wrong key part&quot;, &quot;fields&quot;, it.nextKey());</span>
+<span class="fc" id="L368">        assertFalse(&quot;Found an index&quot;, it.hasIndex());</span>
+<span class="fc" id="L369">        assertEquals(&quot;Wrong key part&quot;, &quot;field&quot;, it.nextKey(true));</span>
+<span class="fc" id="L370">        assertEquals(&quot;Wrong index&quot;, 1, it.getIndex());</span>
+<span class="fc" id="L371">        assertFalse(&quot;Found an attribute&quot;, it.isAttribute());</span>
+<span class="fc" id="L372">        assertEquals(&quot;Wrong current key&quot;, &quot;field&quot;, it.currentKey(true));</span>
+<span class="fc" id="L373">        assertEquals(&quot;Wrong key part&quot;, &quot;dataType&quot;, it.nextKey());</span>
+<span class="fc" id="L374">        assertEquals(&quot;Wrong decorated key part&quot;, &quot;[@dataType]&quot;, it</span>
+<span class="fc" id="L375">                .currentKey(true));</span>
+<span class="fc" id="L376">        assertTrue(&quot;Attribute not found&quot;, it.isAttribute());</span>
+<span class="fc" id="L377">        assertFalse(&quot;Too many key parts&quot;, it.hasNext());</span>
+        try
+        {
+<span class="nc" id="L380">            it.next();</span>
+<span class="nc" id="L381">            fail(&quot;Could iterate over the iteration's end!&quot;);</span>
+        }
+<span class="fc" id="L383">        catch (final NoSuchElementException nex)</span>
+        {
+            // ok
+<span class="nc" id="L386">        }</span>
+<span class="fc" id="L387">    }</span>
+
+    /**
+     * Tests an iteration where the remove() method is called. This is not
+     * supported.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testIterateWithRemove()
+    {
+<span class="fc" id="L396">        assertFalse(key.iterator().hasNext());</span>
+<span class="fc" id="L397">        key.append(&quot;simple&quot;);</span>
+<span class="fc" id="L398">        final DefaultConfigurationKey.KeyIterator it = key.iterator();</span>
+<span class="fc" id="L399">        assertTrue(it.hasNext());</span>
+<span class="fc" id="L400">        assertEquals(&quot;simple&quot;, it.next());</span>
+<span class="nc" id="L401">        it.remove();</span>
+<span class="nc" id="L402">    }</span>
+
+    /**
+     * Tests iterating over some funny keys.
+     */
+    @Test
+    public void testIterateStrangeKeys()
+    {
+<span class="fc" id="L410">        key = new DefaultConfigurationKey(expressionEngine, &quot;key.&quot;);</span>
+<span class="fc" id="L411">        DefaultConfigurationKey.KeyIterator it = key.iterator();</span>
+<span class="fc" id="L412">        assertTrue(&quot;Too few key parts&quot;, it.hasNext());</span>
+<span class="fc" id="L413">        assertEquals(&quot;Wrong key part&quot;, &quot;key&quot;, it.next());</span>
+<span class="fc" id="L414">        assertFalse(&quot;Too many key parts&quot;, it.hasNext());</span>
+
+<span class="fc" id="L416">        key = new DefaultConfigurationKey(expressionEngine, &quot;.&quot;);</span>
+<span class="fc" id="L417">        it = key.iterator();</span>
+<span class="fc" id="L418">        assertFalse(&quot;Simple delimiter key has more parts&quot;, it.hasNext());</span>
+
+<span class="fc" id="L420">        key = new DefaultConfigurationKey(expressionEngine,</span>
+                &quot;key().index()undefined(0).test&quot;);
+<span class="fc" id="L422">        it = key.iterator();</span>
+<span class="fc" id="L423">        assertEquals(&quot;Wrong first part&quot;, &quot;key()&quot;, it.next());</span>
+<span class="fc" id="L424">        assertFalse(&quot;Index detected in first part&quot;, it.hasIndex());</span>
+<span class="fc" id="L425">        assertEquals(&quot;Wrong second part&quot;, &quot;index()undefined&quot;, it.nextKey(false));</span>
+<span class="fc" id="L426">        assertTrue(&quot;No index detected in second part&quot;, it.hasIndex());</span>
+<span class="fc" id="L427">        assertEquals(&quot;Wrong index value&quot;, 0, it.getIndex());</span>
+<span class="fc" id="L428">    }</span>
+
+    /**
+     * Tests iterating over keys with escaped delimiters.
+     */
+    @Test
+    public void testIterateEscapedDelimiters()
+    {
+<span class="fc" id="L436">        key.append(&quot;my..elem&quot;);</span>
+<span class="fc" id="L437">        key.append(&quot;trailing..dot..&quot;);</span>
+<span class="fc" id="L438">        key.append(&quot;.strange&quot;);</span>
+<span class="fc" id="L439">        assertEquals(&quot;my..elem.trailing..dot...strange&quot;, key.toString());</span>
+<span class="fc" id="L440">        final DefaultConfigurationKey.KeyIterator kit = key.iterator();</span>
+<span class="fc" id="L441">        assertEquals(&quot;Wrong first part&quot;, &quot;my.elem&quot;, kit.nextKey());</span>
+<span class="fc" id="L442">        assertEquals(&quot;Wrong second part&quot;, &quot;trailing.dot.&quot;, kit.nextKey());</span>
+<span class="fc" id="L443">        assertEquals(&quot;Wrong third part&quot;, &quot;strange&quot;, kit.nextKey());</span>
+<span class="fc" id="L444">        assertFalse(&quot;Too many parts&quot;, kit.hasNext());</span>
+<span class="fc" id="L445">    }</span>
+
+    /**
+     * Tests iterating over keys when a different escaped delimiter is used.
+     */
+    @Test
+    public void testIterateAlternativeEscapeDelimiter()
+    {
+<span class="fc" id="L453">        expressionEngine =</span>
+<span class="fc" id="L454">                new DefaultExpressionEngine(symbols()</span>
+<span class="fc" id="L455">                        .setEscapedDelimiter(&quot;\\.&quot;).create());</span>
+<span class="fc" id="L456">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L457">        key.append(&quot;\\.my\\.elem&quot;);</span>
+<span class="fc" id="L458">        key.append(&quot;trailing\\.dot\\.&quot;);</span>
+<span class="fc" id="L459">        key.append(&quot;.strange&quot;);</span>
+<span class="fc" id="L460">        assertEquals(&quot;\\.my\\.elem.trailing\\.dot\\..strange&quot;, key.toString());</span>
+<span class="fc" id="L461">        final DefaultConfigurationKey.KeyIterator kit = key.iterator();</span>
+<span class="fc" id="L462">        assertEquals(&quot;Wrong first part&quot;, &quot;.my.elem&quot;, kit.nextKey());</span>
+<span class="fc" id="L463">        assertEquals(&quot;Wrong second part&quot;, &quot;trailing.dot.&quot;, kit.nextKey());</span>
+<span class="fc" id="L464">        assertEquals(&quot;Wrong third part&quot;, &quot;strange&quot;, kit.nextKey());</span>
+<span class="fc" id="L465">        assertFalse(&quot;Too many parts&quot;, kit.hasNext());</span>
+<span class="fc" id="L466">    }</span>
+
+    /**
+     * Tests iterating when no escape delimiter is defined.
+     */
+    @Test
+    public void testIterateWithoutEscapeDelimiter()
+    {
+<span class="fc" id="L474">        expressionEngine =</span>
+<span class="fc" id="L475">                new DefaultExpressionEngine(symbols()</span>
+<span class="fc" id="L476">                        .setEscapedDelimiter(null).create());</span>
+<span class="fc" id="L477">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L478">        key.append(&quot;..my..elem.trailing..dot...strange&quot;);</span>
+<span class="fc" id="L479">        assertEquals(&quot;Wrong key&quot;, &quot;my..elem.trailing..dot...strange&quot;, key</span>
+<span class="fc" id="L480">                .toString());</span>
+<span class="fc" id="L481">        final DefaultConfigurationKey.KeyIterator kit = key.iterator();</span>
+<span class="fc" id="L482">        final String[] parts =</span>
+        { &quot;my&quot;, &quot;elem&quot;, &quot;trailing&quot;, &quot;dot&quot;, &quot;strange&quot;};
+<span class="fc bfc" id="L484" title="All 2 branches covered.">        for (int i = 0; i &lt; parts.length; i++)</span>
+        {
+<span class="fc" id="L486">            assertEquals(&quot;Wrong key part &quot; + i, parts[i], kit.next());</span>
+        }
+<span class="fc" id="L488">        assertFalse(&quot;Too many parts&quot;, kit.hasNext());</span>
+<span class="fc" id="L489">    }</span>
+
+    /**
+     * Tests whether a key with brackets in it can be iterated over.
+     */
+    @Test
+    public void testIterateWithBrackets()
+    {
+<span class="fc" id="L497">        key.append(&quot;directory.platform(x86).path&quot;);</span>
+<span class="fc" id="L498">        final DefaultConfigurationKey.KeyIterator kit = key.iterator();</span>
+<span class="fc" id="L499">        String part = kit.nextKey();</span>
+<span class="fc" id="L500">        assertEquals(&quot;Wrong part 1&quot;, &quot;directory&quot;, part);</span>
+<span class="fc" id="L501">        assertFalse(&quot;Has index 1&quot;, kit.hasIndex());</span>
+<span class="fc" id="L502">        part = kit.nextKey();</span>
+<span class="fc" id="L503">        assertEquals(&quot;Wrong part 2&quot;, &quot;platform(x86)&quot;, part);</span>
+<span class="fc" id="L504">        assertFalse(&quot;Has index 2&quot;, kit.hasIndex());</span>
+<span class="fc" id="L505">        part = kit.nextKey();</span>
+<span class="fc" id="L506">        assertEquals(&quot;Wrong part 3&quot;, &quot;path&quot;, part);</span>
+<span class="fc" id="L507">        assertFalse(&quot;Has index 3&quot;, kit.hasIndex());</span>
+<span class="fc" id="L508">        assertFalse(&quot;Too many elements&quot;, kit.hasNext());</span>
+<span class="fc" id="L509">    }</span>
+
+    /**
+     * Tests iterating over an attribute key that has an index.
+     */
+    @Test
+    public void testAttributeKeyWithIndex()
+    {
+<span class="fc" id="L517">        key.append(TESTATTR);</span>
+<span class="fc" id="L518">        key.appendIndex(0);</span>
+<span class="fc" id="L519">        assertEquals(&quot;Wrong attribute key with index&quot;, TESTATTR + &quot;(0)&quot;, key</span>
+<span class="fc" id="L520">                .toString());</span>
+
+<span class="fc" id="L522">        final DefaultConfigurationKey.KeyIterator it = key.iterator();</span>
+<span class="fc" id="L523">        assertTrue(&quot;No first element&quot;, it.hasNext());</span>
+<span class="fc" id="L524">        it.next();</span>
+<span class="fc" id="L525">        assertTrue(&quot;Index not found&quot;, it.hasIndex());</span>
+<span class="fc" id="L526">        assertEquals(&quot;Incorrect index&quot;, 0, it.getIndex());</span>
+<span class="fc" id="L527">        assertTrue(&quot;Attribute not found&quot;, it.isAttribute());</span>
+<span class="fc" id="L528">        assertEquals(&quot;Wrong plain key&quot;, &quot;dataType&quot;, it.currentKey(false));</span>
+<span class="fc" id="L529">        assertEquals(&quot;Wrong decorated key&quot;, TESTATTR, it.currentKey(true));</span>
+<span class="fc" id="L530">    }</span>
+
+    /**
+     * Tests iteration when the attribute markers equals the property delimiter.
+     */
+    @Test
+    public void testIterateAttributeEqualsPropertyDelimiter()
+    {
+<span class="fc" id="L538">        expressionEngine =</span>
+                new DefaultExpressionEngine(
+<span class="fc" id="L540">                        symbols()</span>
+<span class="fc" id="L541">                                .setAttributeEnd(null)</span>
+<span class="fc" id="L542">                                .setAttributeStart(</span>
+                                        DefaultExpressionEngineSymbols.DEFAULT_PROPERTY_DELIMITER)
+<span class="fc" id="L544">                                .create());</span>
+<span class="fc" id="L545">        key = new DefaultConfigurationKey(expressionEngine);</span>
+<span class="fc" id="L546">        key.append(&quot;this.isa.key&quot;);</span>
+<span class="fc" id="L547">        final DefaultConfigurationKey.KeyIterator kit = key.iterator();</span>
+<span class="fc" id="L548">        assertEquals(&quot;Wrong first key part&quot;, &quot;this&quot;, kit.next());</span>
+<span class="fc" id="L549">        assertFalse(&quot;First part is an attribute&quot;, kit.isAttribute());</span>
+<span class="fc" id="L550">        assertTrue(&quot;First part is not a property key&quot;, kit.isPropertyKey());</span>
+<span class="fc" id="L551">        assertEquals(&quot;Wrong second key part&quot;, &quot;isa&quot;, kit.next());</span>
+<span class="fc" id="L552">        assertFalse(&quot;Second part is an attribute&quot;, kit.isAttribute());</span>
+<span class="fc" id="L553">        assertTrue(&quot;Second part is not a property key&quot;, kit.isPropertyKey());</span>
+<span class="fc" id="L554">        assertEquals(&quot;Wrong third key part&quot;, &quot;key&quot;, kit.next());</span>
+<span class="fc" id="L555">        assertTrue(&quot;Third part is not an attribute&quot;, kit.isAttribute());</span>
+<span class="fc" id="L556">        assertTrue(&quot;Third part is not a property key&quot;, kit.isPropertyKey());</span>
+<span class="fc" id="L557">        assertEquals(&quot;Wrong decorated key part&quot;, &quot;key&quot;, kit.currentKey(true));</span>
+<span class="fc" id="L558">    }</span>
+
+    /**
+     * Tests whether common key parts can be extracted.
+     */
+    @Test
+    public void testCommonKey()
+    {
+<span class="fc" id="L566">        final DefaultConfigurationKey k1 = key(TESTKEY);</span>
+<span class="fc" id="L567">        DefaultConfigurationKey k2 = key(&quot;tables.table(0).name&quot;);</span>
+<span class="fc" id="L568">        DefaultConfigurationKey kc = k1.commonKey(k2);</span>
+<span class="fc" id="L569">        assertEquals(&quot;Wrong common key (1)&quot;, key(&quot;tables.table(0)&quot;), kc);</span>
+<span class="fc" id="L570">        assertEquals(&quot;Not symmetric&quot;, kc, k2.commonKey(k1));</span>
+
+<span class="fc" id="L572">        k2 = key(&quot;tables.table(1).fields.field(1)&quot;);</span>
+<span class="fc" id="L573">        kc = k1.commonKey(k2);</span>
+<span class="fc" id="L574">        assertEquals(&quot;Wrong common key (2)&quot;, key(&quot;tables&quot;), kc);</span>
+
+<span class="fc" id="L576">        k2 = key(&quot;completely.different.key&quot;);</span>
+<span class="fc" id="L577">        kc = k1.commonKey(k2);</span>
+<span class="fc" id="L578">        assertEquals(&quot;Got a common key for different keys&quot;, 0, kc.length());</span>
+
+<span class="fc" id="L580">        kc = k1.commonKey(key);</span>
+<span class="fc" id="L581">        assertEquals(&quot;Got a common key for empty key&quot;, 0, kc.length());</span>
+
+<span class="fc" id="L583">        kc = k1.commonKey(k1);</span>
+<span class="fc" id="L584">        assertEquals(&quot;Wrong result for reflexiv invocation&quot;, kc, k1);</span>
+<span class="fc" id="L585">    }</span>
+
+    /**
+     * Tries to call commonKey() with null input.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCommonKeyNull()
+    {
+<span class="nc" id="L593">        key.commonKey(null);</span>
+<span class="nc" id="L594">    }</span>
+
+    /**
+     * Tests differenceKey() on the same object.
+     */
+    @Test
+    public void testDifferenceKeySame()
+    {
+<span class="fc" id="L602">        final DefaultConfigurationKey k1 = key(TESTKEY);</span>
+<span class="fc" id="L603">        final DefaultConfigurationKey kd = k1.differenceKey(k1);</span>
+<span class="fc" id="L604">        assertEquals(&quot;Got difference for same keys&quot;, 0, kd.length());</span>
+<span class="fc" id="L605">    }</span>
+
+    /**
+     * Tests the differenceKey() method.
+     */
+    @Test
+    public void testDifferenceKey()
+    {
+<span class="fc" id="L613">        final DefaultConfigurationKey k1 = key(TESTKEY);</span>
+<span class="fc" id="L614">        DefaultConfigurationKey k2 = key(&quot;tables.table(0).name&quot;);</span>
+<span class="fc" id="L615">        DefaultConfigurationKey kd = k1.differenceKey(k2);</span>
+<span class="fc" id="L616">        assertEquals(&quot;Wrong difference (1)&quot;, &quot;name&quot;, kd.toString());</span>
+
+<span class="fc" id="L618">        k2 = key(&quot;tables.table(1).fields.field(1)&quot;);</span>
+<span class="fc" id="L619">        kd = k1.differenceKey(k2);</span>
+<span class="fc" id="L620">        assertEquals(&quot;Wrong difference (2)&quot;, &quot;table(1).fields.field(1)&quot;, kd.toString());</span>
+
+<span class="fc" id="L622">        k2 = key(&quot;completely.different.key&quot;);</span>
+<span class="fc" id="L623">        kd = k1.differenceKey(k2);</span>
+<span class="fc" id="L624">        assertEquals(&quot;Wrong difference (3)&quot;, k2, kd);</span>
+<span class="fc" id="L625">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

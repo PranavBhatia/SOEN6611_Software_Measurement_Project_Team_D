@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutableBooleanTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.mutable</a> &gt; <span class="el_source">MutableBooleanTest.java</span></div><h1>MutableBooleanTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.mutable;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * JUnit tests.
+ *
+ * @since 2.2
+ * @see MutableBoolean
+ */
+<span class="fc" id="L34">public class MutableBooleanTest {</span>
+
+    @Test
+    public void testCompareTo() {
+<span class="fc" id="L38">        final MutableBoolean mutBool = new MutableBoolean(false);</span>
+
+<span class="fc" id="L40">        assertEquals(0, mutBool.compareTo(new MutableBoolean(false)));</span>
+<span class="fc" id="L41">        assertEquals(-1, mutBool.compareTo(new MutableBoolean(true)));</span>
+<span class="fc" id="L42">        mutBool.setValue(true);</span>
+<span class="fc" id="L43">        assertEquals(+1, mutBool.compareTo(new MutableBoolean(false)));</span>
+<span class="fc" id="L44">        assertEquals(0, mutBool.compareTo(new MutableBoolean(true)));</span>
+<span class="fc" id="L45">    }</span>
+
+    @Test
+    public void testCompareToNull() {
+<span class="fc" id="L49">        final MutableBoolean mutBool = new MutableBoolean(false);</span>
+<span class="pc" id="L50">        assertThrows(NullPointerException.class, () -&gt; mutBool.compareTo(null));</span>
+<span class="fc" id="L51">    }</span>
+
+    // ----------------------------------------------------------------
+    @Test
+    public void testConstructors() {
+<span class="fc" id="L56">        assertFalse(new MutableBoolean().booleanValue());</span>
+
+<span class="fc" id="L58">        assertTrue(new MutableBoolean(true).booleanValue());</span>
+<span class="fc" id="L59">        assertFalse(new MutableBoolean(false).booleanValue());</span>
+
+<span class="fc" id="L61">        assertTrue(new MutableBoolean(Boolean.TRUE).booleanValue());</span>
+<span class="fc" id="L62">        assertFalse(new MutableBoolean(Boolean.FALSE).booleanValue());</span>
+
+<span class="fc" id="L64">    }</span>
+
+    @Test
+    public void testConstructorNull() {
+<span class="pc" id="L68">        assertThrows(NullPointerException.class, () -&gt; new MutableBoolean(null));</span>
+<span class="fc" id="L69">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L73">        final MutableBoolean mutBoolA = new MutableBoolean(false);</span>
+<span class="fc" id="L74">        final MutableBoolean mutBoolB = new MutableBoolean(false);</span>
+<span class="fc" id="L75">        final MutableBoolean mutBoolC = new MutableBoolean(true);</span>
+
+<span class="fc" id="L77">        assertEquals(mutBoolA, mutBoolA);</span>
+<span class="fc" id="L78">        assertEquals(mutBoolA, mutBoolB);</span>
+<span class="fc" id="L79">        assertEquals(mutBoolB, mutBoolA);</span>
+<span class="fc" id="L80">        assertEquals(mutBoolB, mutBoolB);</span>
+<span class="fc" id="L81">        assertNotEquals(mutBoolA, mutBoolC);</span>
+<span class="fc" id="L82">        assertNotEquals(mutBoolB, mutBoolC);</span>
+<span class="fc" id="L83">        assertEquals(mutBoolC, mutBoolC);</span>
+<span class="fc" id="L84">        assertNotEquals(null, mutBoolA);</span>
+<span class="fc" id="L85">        assertNotEquals(mutBoolA, Boolean.FALSE);</span>
+<span class="fc" id="L86">        assertNotEquals(&quot;false&quot;, mutBoolA);</span>
+<span class="fc" id="L87">    }</span>
+
+    @Test
+    public void testGetSet() {
+<span class="fc" id="L91">        assertFalse(new MutableBoolean().booleanValue());</span>
+<span class="fc" id="L92">        assertEquals(Boolean.FALSE, new MutableBoolean().getValue());</span>
+
+<span class="fc" id="L94">        final MutableBoolean mutBool = new MutableBoolean(false);</span>
+<span class="fc" id="L95">        assertEquals(Boolean.FALSE, mutBool.toBoolean());</span>
+<span class="fc" id="L96">        assertFalse(mutBool.booleanValue());</span>
+<span class="fc" id="L97">        assertTrue(mutBool.isFalse());</span>
+<span class="fc" id="L98">        assertFalse(mutBool.isTrue());</span>
+
+<span class="fc" id="L100">        mutBool.setValue(Boolean.TRUE);</span>
+<span class="fc" id="L101">        assertEquals(Boolean.TRUE, mutBool.toBoolean());</span>
+<span class="fc" id="L102">        assertTrue(mutBool.booleanValue());</span>
+<span class="fc" id="L103">        assertFalse(mutBool.isFalse());</span>
+<span class="fc" id="L104">        assertTrue(mutBool.isTrue());</span>
+
+<span class="fc" id="L106">        mutBool.setValue(false);</span>
+<span class="fc" id="L107">        assertFalse(mutBool.booleanValue());</span>
+
+<span class="fc" id="L109">        mutBool.setValue(true);</span>
+<span class="fc" id="L110">        assertTrue(mutBool.booleanValue());</span>
+
+<span class="fc" id="L112">        mutBool.setFalse();</span>
+<span class="fc" id="L113">        assertFalse(mutBool.booleanValue());</span>
+
+<span class="fc" id="L115">        mutBool.setTrue();</span>
+<span class="fc" id="L116">        assertTrue(mutBool.booleanValue());</span>
+
+<span class="fc" id="L118">    }</span>
+
+    @Test
+    public void testSetNull() {
+<span class="fc" id="L122">        final MutableBoolean mutBool = new MutableBoolean(false);</span>
+<span class="pc" id="L123">        assertThrows(NullPointerException.class, () -&gt; mutBool.setValue(null));</span>
+<span class="fc" id="L124">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L128">        final MutableBoolean mutBoolA = new MutableBoolean(false);</span>
+<span class="fc" id="L129">        final MutableBoolean mutBoolB = new MutableBoolean(false);</span>
+<span class="fc" id="L130">        final MutableBoolean mutBoolC = new MutableBoolean(true);</span>
+
+<span class="fc" id="L132">        assertEquals(mutBoolA.hashCode(), mutBoolA.hashCode());</span>
+<span class="fc" id="L133">        assertEquals(mutBoolA.hashCode(), mutBoolB.hashCode());</span>
+<span class="fc" id="L134">        assertNotEquals(mutBoolA.hashCode(), mutBoolC.hashCode());</span>
+<span class="fc" id="L135">        assertEquals(mutBoolA.hashCode(), Boolean.FALSE.hashCode());</span>
+<span class="fc" id="L136">        assertEquals(mutBoolC.hashCode(), Boolean.TRUE.hashCode());</span>
+<span class="fc" id="L137">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L141">        assertEquals(Boolean.FALSE.toString(), new MutableBoolean(false).toString());</span>
+<span class="fc" id="L142">        assertEquals(Boolean.TRUE.toString(), new MutableBoolean(true).toString());</span>
+<span class="fc" id="L143">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

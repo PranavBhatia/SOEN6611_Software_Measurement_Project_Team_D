@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestAutoSaveListener.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestAutoSaveListener.java</span></div><h1>TestAutoSaveListener.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code AutoSaveListener}.
+ *
+ */
+<span class="fc" id="L30">public class TestAutoSaveListener</span>
+{
+    /** A mock for the associated builder. */
+    private FileBasedConfigurationBuilder&lt;?&gt; builder;
+
+    /** The listener to be tested. */
+    private AutoSaveListener listener;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L41">        builder = EasyMock.createMock(FileBasedConfigurationBuilder.class);</span>
+<span class="fc" id="L42">        listener = new AutoSaveListener(builder);</span>
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Sends a configuration changed notification to the test listener.
+     *
+     * @param before flag whether the event is before the update
+     */
+    private void fireChangeEvent(final boolean before)
+    {
+<span class="fc" id="L52">        listener.onEvent(new ConfigurationEvent(this,</span>
+                ConfigurationEvent.ADD_PROPERTY, &quot;someProperty&quot;,
+                &quot;someValue&quot;, before));
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Tests whether the file handler can be updated and is correctly
+     * initialized.
+     */
+    @Test
+    public void testUpdateFileHandler()
+    {
+<span class="fc" id="L64">        final FileHandler handler = EasyMock.createMock(FileHandler.class);</span>
+<span class="fc" id="L65">        final FileHandler handler2 = EasyMock.createMock(FileHandler.class);</span>
+<span class="fc" id="L66">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L67">        handler.removeFileHandlerListener(listener);</span>
+<span class="fc" id="L68">        handler2.addFileHandlerListener(listener);</span>
+<span class="fc" id="L69">        EasyMock.replay(handler, handler2);</span>
+<span class="fc" id="L70">        listener.updateFileHandler(handler);</span>
+<span class="fc" id="L71">        listener.updateFileHandler(handler2);</span>
+<span class="fc" id="L72">        EasyMock.verify(handler, handler2);</span>
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Tests whether updateFileHandler() can deal with null input. This is used
+     * for removing the listener when it is no longer needed.
+     */
+    @Test
+    public void testUpdateFileHandlerNull()
+    {
+<span class="fc" id="L82">        final FileHandler handler = EasyMock.createMock(FileHandler.class);</span>
+<span class="fc" id="L83">        handler.addFileHandlerListener(listener);</span>
+<span class="fc" id="L84">        handler.removeFileHandlerListener(listener);</span>
+<span class="fc" id="L85">        EasyMock.replay(handler);</span>
+<span class="fc" id="L86">        listener.updateFileHandler(handler);</span>
+<span class="fc" id="L87">        listener.updateFileHandler(null);</span>
+<span class="fc" id="L88">        EasyMock.verify(handler);</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Tests whether a change of the monitored configuration causes a save
+     * operation.
+     */
+    @Test
+    public void testConfigurationChangedAutoSave()
+            throws ConfigurationException
+    {
+<span class="fc" id="L99">        builder.save();</span>
+<span class="fc" id="L100">        EasyMock.replay(builder);</span>
+<span class="fc" id="L101">        fireChangeEvent(false);</span>
+<span class="fc" id="L102">        EasyMock.verify(builder);</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Tests whether an exception thrown by the builder's save() method is
+     * handled.
+     */
+    @Test
+    public void testConfigurationChangedAutoSaveException()
+            throws ConfigurationException
+    {
+<span class="fc" id="L113">        builder.save();</span>
+<span class="fc" id="L114">        EasyMock.expectLastCall().andThrow(new ConfigurationException());</span>
+<span class="fc" id="L115">        EasyMock.replay(builder);</span>
+<span class="fc" id="L116">        fireChangeEvent(false);</span>
+<span class="fc" id="L117">        EasyMock.verify(builder);</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Tests whether no auto save is triggered before the change to the
+     * monitored configuration actually happens.
+     */
+    @Test
+    public void testConfigurationChangedBeforeUpdateNoSave()
+    {
+<span class="fc" id="L127">        EasyMock.replay(builder);</span>
+<span class="fc" id="L128">        fireChangeEvent(true);</span>
+<span class="fc" id="L129">    }</span>
+
+    /**
+     * Tests that updated during load operations do not create an auto save.
+     */
+    @Test
+    public void testConfigurationChangedWhileLoading()
+    {
+<span class="fc" id="L137">        EasyMock.replay(builder);</span>
+<span class="fc" id="L138">        listener.loading(new FileHandler());</span>
+<span class="fc" id="L139">        fireChangeEvent(false);</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests that after a load operation changes on the monitored configuration
+     * are detected again.
+     */
+    @Test
+    public void testConfigurationChangedAfterLoading()
+            throws ConfigurationException
+    {
+<span class="fc" id="L150">        builder.save();</span>
+<span class="fc" id="L151">        EasyMock.replay(builder);</span>
+<span class="fc" id="L152">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L153">        listener.loading(handler);</span>
+<span class="fc" id="L154">        fireChangeEvent(false);</span>
+<span class="fc" id="L155">        listener.loaded(handler);</span>
+<span class="fc" id="L156">        fireChangeEvent(false);</span>
+<span class="fc" id="L157">        EasyMock.verify(builder);</span>
+<span class="fc" id="L158">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

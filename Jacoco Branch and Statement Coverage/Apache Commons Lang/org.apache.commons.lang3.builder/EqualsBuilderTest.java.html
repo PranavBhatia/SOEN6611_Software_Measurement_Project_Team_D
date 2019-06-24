@@ -1,0 +1,1407 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EqualsBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">EqualsBuilderTest.java</span></div><h1>EqualsBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Method;
+
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.builder.EqualsBuilder}.
+ */
+<span class="fc" id="L34">public class EqualsBuilderTest {</span>
+
+    //-----------------------------------------------------------------------
+
+    static class TestObject {
+        private int a;
+
+<span class="fc" id="L41">        TestObject() {</span>
+<span class="fc" id="L42">        }</span>
+
+<span class="fc" id="L44">        TestObject(final int a) {</span>
+<span class="fc" id="L45">            this.a = a;</span>
+<span class="fc" id="L46">        }</span>
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (o == null) {</span>
+<span class="nc" id="L51">                return false;</span>
+            }
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">            if (o == this) {</span>
+<span class="nc" id="L54">                return true;</span>
+            }
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (o.getClass() != getClass()) {</span>
+<span class="fc" id="L57">                return false;</span>
+            }
+
+<span class="fc" id="L60">            final TestObject rhs = (TestObject) o;</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            return a == rhs.a;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L66">            return a;</span>
+        }
+
+        public void setA(final int a) {
+<span class="fc" id="L70">            this.a = a;</span>
+<span class="fc" id="L71">        }</span>
+
+        public int getA() {
+<span class="fc" id="L74">            return a;</span>
+        }
+    }
+
+    static class TestSubObject extends TestObject {
+        private int b;
+
+        TestSubObject() {
+<span class="fc" id="L82">            super(0);</span>
+<span class="fc" id="L83">        }</span>
+
+        TestSubObject(final int a, final int b) {
+<span class="fc" id="L86">            super(a);</span>
+<span class="fc" id="L87">            this.b = b;</span>
+<span class="fc" id="L88">        }</span>
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            if (o == null) {</span>
+<span class="nc" id="L93">                return false;</span>
+            }
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            if (o == this) {</span>
+<span class="nc" id="L96">                return true;</span>
+            }
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (o.getClass() != getClass()) {</span>
+<span class="nc" id="L99">                return false;</span>
+            }
+
+<span class="nc" id="L102">            final TestSubObject rhs = (TestSubObject) o;</span>
+<span class="nc bnc" id="L103" title="All 4 branches missed.">            return super.equals(o) &amp;&amp; b == rhs.b;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L108">            return b * 17 + super.hashCode();</span>
+        }
+
+        public void setB(final int b) {
+<span class="fc" id="L112">            this.b = b;</span>
+<span class="fc" id="L113">        }</span>
+
+        public int getB() {
+<span class="fc" id="L116">            return b;</span>
+        }
+    }
+
+    static class TestEmptySubObject extends TestObject {
+        TestEmptySubObject(final int a) {
+<span class="fc" id="L122">            super(a);</span>
+<span class="fc" id="L123">        }</span>
+    }
+
+    static class TestTSubObject extends TestObject {
+        @SuppressWarnings(&quot;unused&quot;)
+        private transient int t;
+
+        TestTSubObject(final int a, final int t) {
+<span class="fc" id="L131">            super(a);</span>
+<span class="fc" id="L132">            this.t = t;</span>
+<span class="fc" id="L133">        }</span>
+    }
+
+    static class TestTTSubObject extends TestTSubObject {
+        @SuppressWarnings(&quot;unused&quot;)
+        private transient int tt;
+
+        TestTTSubObject(final int a, final int t, final int tt) {
+<span class="fc" id="L141">            super(a, t);</span>
+<span class="fc" id="L142">            this.tt = tt;</span>
+<span class="fc" id="L143">        }</span>
+    }
+
+    static class TestTTLeafObject extends TestTTSubObject {
+        @SuppressWarnings(&quot;unused&quot;)
+        private final int leafValue;
+
+        TestTTLeafObject(final int a, final int t, final int tt, final int leafValue) {
+<span class="fc" id="L151">            super(a, t, tt);</span>
+<span class="fc" id="L152">            this.leafValue = leafValue;</span>
+<span class="fc" id="L153">        }</span>
+    }
+
+    static class TestTSubObject2 extends TestObject {
+        private transient int t;
+
+        TestTSubObject2(final int a, final int t) {
+<span class="nc" id="L160">            super(a);</span>
+<span class="nc" id="L161">        }</span>
+
+        public int getT() {
+<span class="nc" id="L164">            return t;</span>
+        }
+
+        public void setT(final int t) {
+<span class="nc" id="L168">            this.t = t;</span>
+<span class="nc" id="L169">        }</span>
+    }
+
+    static class TestRecursiveGenericObject&lt;T&gt; {
+
+        private final T a;
+
+<span class="fc" id="L176">        TestRecursiveGenericObject(final T a) {</span>
+<span class="fc" id="L177">            this.a = a;</span>
+<span class="fc" id="L178">        }</span>
+
+        public T getA() {
+<span class="nc" id="L181">            return a;</span>
+        }
+    }
+
+    static class TestRecursiveObject {
+        private final TestRecursiveInnerObject a;
+        private final TestRecursiveInnerObject b;
+        private int z;
+
+        TestRecursiveObject(final TestRecursiveInnerObject a,
+<span class="fc" id="L191">                            final TestRecursiveInnerObject b, final int z) {</span>
+<span class="fc" id="L192">            this.a = a;</span>
+<span class="fc" id="L193">            this.b = b;</span>
+<span class="fc" id="L194">        }</span>
+
+        public TestRecursiveInnerObject getA() {
+<span class="nc" id="L197">            return a;</span>
+        }
+
+        public TestRecursiveInnerObject getB() {
+<span class="nc" id="L201">            return b;</span>
+        }
+
+        public int getZ() {
+<span class="nc" id="L205">            return z;</span>
+        }
+
+    }
+
+    static class TestRecursiveInnerObject {
+        private final int n;
+
+<span class="fc" id="L213">        TestRecursiveInnerObject(final int n) {</span>
+<span class="fc" id="L214">            this.n = n;</span>
+<span class="fc" id="L215">        }</span>
+
+        public int getN() {
+<span class="nc" id="L218">            return n;</span>
+        }
+    }
+
+    static class TestRecursiveCycleObject {
+        private TestRecursiveCycleObject cycle;
+        private final int n;
+
+<span class="fc" id="L226">        TestRecursiveCycleObject(final int n) {</span>
+<span class="fc" id="L227">            this.n = n;</span>
+<span class="fc" id="L228">            this.cycle = this;</span>
+<span class="fc" id="L229">        }</span>
+
+<span class="fc" id="L231">        TestRecursiveCycleObject(final TestRecursiveCycleObject cycle, final int n) {</span>
+<span class="fc" id="L232">            this.n = n;</span>
+<span class="fc" id="L233">            this.cycle = cycle;</span>
+<span class="fc" id="L234">        }</span>
+
+        public int getN() {
+<span class="nc" id="L237">            return n;</span>
+        }
+
+        public TestRecursiveCycleObject getCycle() {
+<span class="nc" id="L241">            return cycle;</span>
+        }
+
+        public void setCycle(final TestRecursiveCycleObject cycle) {
+<span class="fc" id="L245">            this.cycle = cycle;</span>
+<span class="fc" id="L246">        }</span>
+    }
+
+    @Test
+    public void testReflectionEquals() {
+<span class="fc" id="L251">        final TestObject o1 = new TestObject(4);</span>
+<span class="fc" id="L252">        final TestObject o2 = new TestObject(5);</span>
+<span class="fc" id="L253">        assertTrue(EqualsBuilder.reflectionEquals(o1, o1));</span>
+<span class="fc" id="L254">        assertFalse(EqualsBuilder.reflectionEquals(o1, o2));</span>
+<span class="fc" id="L255">        o2.setA(4);</span>
+<span class="fc" id="L256">        assertTrue(EqualsBuilder.reflectionEquals(o1, o2));</span>
+
+<span class="fc" id="L258">        assertFalse(EqualsBuilder.reflectionEquals(o1, this));</span>
+
+<span class="fc" id="L260">        assertFalse(EqualsBuilder.reflectionEquals(o1, null));</span>
+<span class="fc" id="L261">        assertFalse(EqualsBuilder.reflectionEquals(null, o2));</span>
+<span class="fc" id="L262">        assertTrue(EqualsBuilder.reflectionEquals(null, null));</span>
+<span class="fc" id="L263">    }</span>
+
+    @Test
+    public void testReflectionHierarchyEquals() {
+<span class="fc" id="L267">        testReflectionHierarchyEquals(false);</span>
+<span class="fc" id="L268">        testReflectionHierarchyEquals(true);</span>
+        // Transients
+<span class="fc" id="L270">        assertTrue(EqualsBuilder.reflectionEquals(new TestTTLeafObject(1, 2, 3, 4), new TestTTLeafObject(1, 2, 3, 4), true));</span>
+<span class="fc" id="L271">        assertTrue(EqualsBuilder.reflectionEquals(new TestTTLeafObject(1, 2, 3, 4), new TestTTLeafObject(1, 2, 3, 4), false));</span>
+<span class="fc" id="L272">        assertFalse(EqualsBuilder.reflectionEquals(new TestTTLeafObject(1, 0, 0, 4), new TestTTLeafObject(1, 2, 3, 4), true));</span>
+<span class="fc" id="L273">        assertFalse(EqualsBuilder.reflectionEquals(new TestTTLeafObject(1, 2, 3, 4), new TestTTLeafObject(1, 2, 3, 0), true));</span>
+<span class="fc" id="L274">        assertFalse(EqualsBuilder.reflectionEquals(new TestTTLeafObject(0, 2, 3, 4), new TestTTLeafObject(1, 2, 3, 4), true));</span>
+<span class="fc" id="L275">    }</span>
+
+    private void testReflectionHierarchyEquals(final boolean testTransients) {
+<span class="fc" id="L278">        final TestObject to1 = new TestObject(4);</span>
+<span class="fc" id="L279">        final TestObject to1Bis = new TestObject(4);</span>
+<span class="fc" id="L280">        final TestObject to1Ter = new TestObject(4);</span>
+<span class="fc" id="L281">        final TestObject to2 = new TestObject(5);</span>
+<span class="fc" id="L282">        final TestEmptySubObject teso = new TestEmptySubObject(4);</span>
+<span class="fc" id="L283">        final TestTSubObject ttso = new TestTSubObject(4, 1);</span>
+<span class="fc" id="L284">        final TestTTSubObject tttso = new TestTTSubObject(4, 1, 2);</span>
+<span class="fc" id="L285">        final TestTTLeafObject ttlo = new TestTTLeafObject(4, 1, 2, 3);</span>
+<span class="fc" id="L286">        final TestSubObject tso1 = new TestSubObject(1, 4);</span>
+<span class="fc" id="L287">        final TestSubObject tso1bis = new TestSubObject(1, 4);</span>
+<span class="fc" id="L288">        final TestSubObject tso1ter = new TestSubObject(1, 4);</span>
+<span class="fc" id="L289">        final TestSubObject tso2 = new TestSubObject(2, 5);</span>
+
+<span class="fc" id="L291">        testReflectionEqualsEquivalenceRelationship(to1, to1Bis, to1Ter, to2, new TestObject(), testTransients);</span>
+<span class="fc" id="L292">        testReflectionEqualsEquivalenceRelationship(tso1, tso1bis, tso1ter, tso2, new TestSubObject(), testTransients);</span>
+
+        // More sanity checks:
+
+        // same values
+<span class="fc" id="L297">        assertTrue(EqualsBuilder.reflectionEquals(ttlo, ttlo, testTransients));</span>
+<span class="fc" id="L298">        assertTrue(EqualsBuilder.reflectionEquals(new TestSubObject(1, 10), new TestSubObject(1, 10), testTransients));</span>
+        // same super values, diff sub values
+<span class="fc" id="L300">        assertFalse(EqualsBuilder.reflectionEquals(new TestSubObject(1, 10), new TestSubObject(1, 11), testTransients));</span>
+<span class="fc" id="L301">        assertFalse(EqualsBuilder.reflectionEquals(new TestSubObject(1, 11), new TestSubObject(1, 10), testTransients));</span>
+        // diff super values, same sub values
+<span class="fc" id="L303">        assertFalse(EqualsBuilder.reflectionEquals(new TestSubObject(0, 10), new TestSubObject(1, 10), testTransients));</span>
+<span class="fc" id="L304">        assertFalse(EqualsBuilder.reflectionEquals(new TestSubObject(1, 10), new TestSubObject(0, 10), testTransients));</span>
+
+        // mix super and sub types: equals
+<span class="fc" id="L307">        assertTrue(EqualsBuilder.reflectionEquals(to1, teso, testTransients));</span>
+<span class="fc" id="L308">        assertTrue(EqualsBuilder.reflectionEquals(teso, to1, testTransients));</span>
+
+<span class="fc" id="L310">        assertTrue(EqualsBuilder.reflectionEquals(to1, ttso, false)); // Force testTransients = false for this assert</span>
+<span class="fc" id="L311">        assertTrue(EqualsBuilder.reflectionEquals(ttso, to1, false)); // Force testTransients = false for this assert</span>
+
+<span class="fc" id="L313">        assertTrue(EqualsBuilder.reflectionEquals(to1, tttso, false)); // Force testTransients = false for this assert</span>
+<span class="fc" id="L314">        assertTrue(EqualsBuilder.reflectionEquals(tttso, to1, false)); // Force testTransients = false for this assert</span>
+
+<span class="fc" id="L316">        assertTrue(EqualsBuilder.reflectionEquals(ttso, tttso, false)); // Force testTransients = false for this assert</span>
+<span class="fc" id="L317">        assertTrue(EqualsBuilder.reflectionEquals(tttso, ttso, false)); // Force testTransients = false for this assert</span>
+
+        // mix super and sub types: NOT equals
+<span class="fc" id="L320">        assertFalse(EqualsBuilder.reflectionEquals(new TestObject(0), new TestEmptySubObject(1), testTransients));</span>
+<span class="fc" id="L321">        assertFalse(EqualsBuilder.reflectionEquals(new TestEmptySubObject(1), new TestObject(0), testTransients));</span>
+
+<span class="fc" id="L323">        assertFalse(EqualsBuilder.reflectionEquals(new TestObject(0), new TestTSubObject(1, 1), testTransients));</span>
+<span class="fc" id="L324">        assertFalse(EqualsBuilder.reflectionEquals(new TestTSubObject(1, 1), new TestObject(0), testTransients));</span>
+
+<span class="fc" id="L326">        assertFalse(EqualsBuilder.reflectionEquals(new TestObject(1), new TestSubObject(0, 10), testTransients));</span>
+<span class="fc" id="L327">        assertFalse(EqualsBuilder.reflectionEquals(new TestSubObject(0, 10), new TestObject(1), testTransients));</span>
+
+<span class="fc" id="L329">        assertFalse(EqualsBuilder.reflectionEquals(to1, ttlo));</span>
+<span class="fc" id="L330">        assertFalse(EqualsBuilder.reflectionEquals(tso1, this));</span>
+<span class="fc" id="L331">    }</span>
+
+    /**
+     * Equivalence relationship tests inspired by &quot;Effective Java&quot;:
+     * &lt;ul&gt;
+     * &lt;li&gt;reflection&lt;/li&gt;
+     * &lt;li&gt;symmetry&lt;/li&gt;
+     * &lt;li&gt;transitive&lt;/li&gt;
+     * &lt;li&gt;consistency&lt;/li&gt;
+     * &lt;li&gt;non-null reference&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param to             a TestObject
+     * @param toBis          a TestObject, equal to to and toTer
+     * @param toTer          Left hand side, equal to to and toBis
+     * @param to2            a different TestObject
+     * @param oToChange      a TestObject that will be changed
+     * @param testTransients whether to test transient instance variables
+     */
+    private void testReflectionEqualsEquivalenceRelationship(
+            final TestObject to,
+            final TestObject toBis,
+            final TestObject toTer,
+            final TestObject to2,
+            final TestObject oToChange,
+            final boolean testTransients) {
+
+        // reflection test
+<span class="fc" id="L359">        assertTrue(EqualsBuilder.reflectionEquals(to, to, testTransients));</span>
+<span class="fc" id="L360">        assertTrue(EqualsBuilder.reflectionEquals(to2, to2, testTransients));</span>
+
+        // symmetry test
+<span class="pc bpc" id="L363" title="2 of 4 branches missed.">        assertTrue(EqualsBuilder.reflectionEquals(to, toBis, testTransients) &amp;&amp; EqualsBuilder.reflectionEquals(toBis, to, testTransients));</span>
+
+        // transitive test
+<span class="fc" id="L366">        assertTrue(</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">                EqualsBuilder.reflectionEquals(to, toBis, testTransients)</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">                        &amp;&amp; EqualsBuilder.reflectionEquals(toBis, toTer, testTransients)</span>
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">                        &amp;&amp; EqualsBuilder.reflectionEquals(to, toTer, testTransients));</span>
+
+        // consistency test
+<span class="fc" id="L372">        oToChange.setA(to.getA());</span>
+<span class="fc bfc" id="L373" title="All 2 branches covered.">        if (oToChange instanceof TestSubObject) {</span>
+<span class="fc" id="L374">            ((TestSubObject) oToChange).setB(((TestSubObject) to).getB());</span>
+        }
+<span class="fc" id="L376">        assertTrue(EqualsBuilder.reflectionEquals(oToChange, to, testTransients));</span>
+<span class="fc" id="L377">        assertTrue(EqualsBuilder.reflectionEquals(oToChange, to, testTransients));</span>
+<span class="fc" id="L378">        oToChange.setA(to.getA() + 1);</span>
+<span class="fc bfc" id="L379" title="All 2 branches covered.">        if (oToChange instanceof TestSubObject) {</span>
+<span class="fc" id="L380">            ((TestSubObject) oToChange).setB(((TestSubObject) to).getB() + 1);</span>
+        }
+<span class="fc" id="L382">        assertFalse(EqualsBuilder.reflectionEquals(oToChange, to, testTransients));</span>
+<span class="fc" id="L383">        assertFalse(EqualsBuilder.reflectionEquals(oToChange, to, testTransients));</span>
+
+        // non-null reference test
+<span class="fc" id="L386">        assertFalse(EqualsBuilder.reflectionEquals(to, null, testTransients));</span>
+<span class="fc" id="L387">        assertFalse(EqualsBuilder.reflectionEquals(to2, null, testTransients));</span>
+<span class="fc" id="L388">        assertFalse(EqualsBuilder.reflectionEquals(null, to, testTransients));</span>
+<span class="fc" id="L389">        assertFalse(EqualsBuilder.reflectionEquals(null, to2, testTransients));</span>
+<span class="fc" id="L390">        assertTrue(EqualsBuilder.reflectionEquals(null, null, testTransients));</span>
+<span class="fc" id="L391">    }</span>
+
+    @Test
+    public void testSuper() {
+<span class="fc" id="L395">        final TestObject o1 = new TestObject(4);</span>
+<span class="fc" id="L396">        final TestObject o2 = new TestObject(5);</span>
+<span class="fc" id="L397">        assertTrue(new EqualsBuilder().appendSuper(true).append(o1, o1).isEquals());</span>
+<span class="fc" id="L398">        assertFalse(new EqualsBuilder().appendSuper(false).append(o1, o1).isEquals());</span>
+<span class="fc" id="L399">        assertFalse(new EqualsBuilder().appendSuper(true).append(o1, o2).isEquals());</span>
+<span class="fc" id="L400">        assertFalse(new EqualsBuilder().appendSuper(false).append(o1, o2).isEquals());</span>
+<span class="fc" id="L401">    }</span>
+
+    @Test
+    public void testObject() {
+<span class="fc" id="L405">        final TestObject o1 = new TestObject(4);</span>
+<span class="fc" id="L406">        final TestObject o2 = new TestObject(5);</span>
+<span class="fc" id="L407">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L408">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L409">        o2.setA(4);</span>
+<span class="fc" id="L410">        assertTrue(new EqualsBuilder().append(o1, o2).isEquals());</span>
+
+<span class="fc" id="L412">        assertFalse(new EqualsBuilder().append(o1, this).isEquals());</span>
+
+<span class="fc" id="L414">        assertFalse(new EqualsBuilder().append(o1, null).isEquals());</span>
+<span class="fc" id="L415">        assertFalse(new EqualsBuilder().append(null, o2).isEquals());</span>
+<span class="fc" id="L416">        assertTrue(new EqualsBuilder().append((Object) null, null).isEquals());</span>
+<span class="fc" id="L417">    }</span>
+
+    @Test
+    public void testObjectBuild() {
+<span class="fc" id="L421">        final TestObject o1 = new TestObject(4);</span>
+<span class="fc" id="L422">        final TestObject o2 = new TestObject(5);</span>
+<span class="fc" id="L423">        assertEquals(Boolean.TRUE, new EqualsBuilder().append(o1, o1).build());</span>
+<span class="fc" id="L424">        assertEquals(Boolean.FALSE, new EqualsBuilder().append(o1, o2).build());</span>
+<span class="fc" id="L425">        o2.setA(4);</span>
+<span class="fc" id="L426">        assertEquals(Boolean.TRUE, new EqualsBuilder().append(o1, o2).build());</span>
+
+<span class="fc" id="L428">        assertEquals(Boolean.FALSE, new EqualsBuilder().append(o1, this).build());</span>
+
+<span class="fc" id="L430">        assertEquals(Boolean.FALSE, new EqualsBuilder().append(o1, null).build());</span>
+<span class="fc" id="L431">        assertEquals(Boolean.FALSE, new EqualsBuilder().append(null, o2).build());</span>
+<span class="fc" id="L432">        assertEquals(Boolean.TRUE, new EqualsBuilder().append((Object) null, null).build());</span>
+<span class="fc" id="L433">    }</span>
+
+    @Test
+    public void testObjectRecursiveGenericInteger() {
+<span class="fc" id="L437">        final TestRecursiveGenericObject&lt;Integer&gt; o1_a = new TestRecursiveGenericObject&lt;&gt;(1);</span>
+<span class="fc" id="L438">        final TestRecursiveGenericObject&lt;Integer&gt; o1_b = new TestRecursiveGenericObject&lt;&gt;(1);</span>
+<span class="fc" id="L439">        final TestRecursiveGenericObject&lt;Integer&gt; o2 = new TestRecursiveGenericObject&lt;&gt;(2);</span>
+
+<span class="fc" id="L441">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_b).isEquals());</span>
+<span class="fc" id="L442">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_b, o1_a).isEquals());</span>
+
+<span class="fc" id="L444">        assertFalse(new EqualsBuilder().setTestRecursive(true).append(o1_b, o2).isEquals());</span>
+<span class="fc" id="L445">    }</span>
+
+    @Test
+    public void testObjectRecursiveGenericString() {
+        // Note: Do not use literals, because string literals are always mapped by same object (internal() of String))!
+<span class="fc" id="L450">        String s1_a = String.valueOf(1);</span>
+<span class="fc" id="L451">        final TestRecursiveGenericObject&lt;String&gt; o1_a = new TestRecursiveGenericObject&lt;&gt;(s1_a);</span>
+<span class="fc" id="L452">        final TestRecursiveGenericObject&lt;String&gt; o1_b = new TestRecursiveGenericObject&lt;&gt;(String.valueOf(1));</span>
+<span class="fc" id="L453">        final TestRecursiveGenericObject&lt;String&gt; o2 = new TestRecursiveGenericObject&lt;&gt;(String.valueOf(2));</span>
+
+        // To trigger bug reported in LANG-1356, call hashCode only on string in instance o1_a
+<span class="fc" id="L456">        s1_a.hashCode();</span>
+
+<span class="fc" id="L458">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_b).isEquals());</span>
+<span class="fc" id="L459">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_b, o1_a).isEquals());</span>
+
+<span class="fc" id="L461">        assertFalse(new EqualsBuilder().setTestRecursive(true).append(o1_b, o2).isEquals());</span>
+<span class="fc" id="L462">    }</span>
+
+    @Test
+    public void testObjectRecursive() {
+<span class="fc" id="L466">        final TestRecursiveInnerObject i1_1 = new TestRecursiveInnerObject(1);</span>
+<span class="fc" id="L467">        final TestRecursiveInnerObject i1_2 = new TestRecursiveInnerObject(1);</span>
+<span class="fc" id="L468">        final TestRecursiveInnerObject i2_1 = new TestRecursiveInnerObject(2);</span>
+<span class="fc" id="L469">        final TestRecursiveInnerObject i2_2 = new TestRecursiveInnerObject(2);</span>
+<span class="fc" id="L470">        final TestRecursiveInnerObject i3 = new TestRecursiveInnerObject(3);</span>
+<span class="fc" id="L471">        final TestRecursiveInnerObject i4 = new TestRecursiveInnerObject(4);</span>
+
+<span class="fc" id="L473">        final TestRecursiveObject o1_a = new TestRecursiveObject(i1_1, i2_1, 1);</span>
+<span class="fc" id="L474">        final TestRecursiveObject o1_b = new TestRecursiveObject(i1_2, i2_2, 1);</span>
+<span class="fc" id="L475">        final TestRecursiveObject o2 = new TestRecursiveObject(i3, i4, 2);</span>
+<span class="fc" id="L476">        final TestRecursiveObject oNull = new TestRecursiveObject(null, null, 2);</span>
+
+<span class="fc" id="L478">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_a).isEquals());</span>
+<span class="fc" id="L479">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_b).isEquals());</span>
+
+<span class="fc" id="L481">        assertFalse(new EqualsBuilder().setTestRecursive(true).append(o1_a, o2).isEquals());</span>
+
+<span class="fc" id="L483">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(oNull, oNull).isEquals());</span>
+<span class="fc" id="L484">        assertFalse(new EqualsBuilder().setTestRecursive(true).append(o1_a, oNull).isEquals());</span>
+<span class="fc" id="L485">    }</span>
+
+    @Test
+    public void testObjectRecursiveCycleSelfreference() {
+<span class="fc" id="L489">        final TestRecursiveCycleObject o1_a = new TestRecursiveCycleObject(1);</span>
+<span class="fc" id="L490">        final TestRecursiveCycleObject o1_b = new TestRecursiveCycleObject(1);</span>
+<span class="fc" id="L491">        final TestRecursiveCycleObject o2 = new TestRecursiveCycleObject(2);</span>
+
+<span class="fc" id="L493">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_a).isEquals());</span>
+<span class="fc" id="L494">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_b).isEquals());</span>
+<span class="fc" id="L495">        assertFalse(new EqualsBuilder().setTestRecursive(true).append(o1_a, o2).isEquals());</span>
+<span class="fc" id="L496">    }</span>
+
+    @Test
+    public void testObjectRecursiveCycle() {
+<span class="fc" id="L500">        final TestRecursiveCycleObject o1_a = new TestRecursiveCycleObject(1);</span>
+<span class="fc" id="L501">        final TestRecursiveCycleObject i1_a = new TestRecursiveCycleObject(o1_a, 100);</span>
+<span class="fc" id="L502">        o1_a.setCycle(i1_a);</span>
+
+<span class="fc" id="L504">        final TestRecursiveCycleObject o1_b = new TestRecursiveCycleObject(1);</span>
+<span class="fc" id="L505">        final TestRecursiveCycleObject i1_b = new TestRecursiveCycleObject(o1_b, 100);</span>
+<span class="fc" id="L506">        o1_b.setCycle(i1_b);</span>
+
+<span class="fc" id="L508">        final TestRecursiveCycleObject o2 = new TestRecursiveCycleObject(2);</span>
+<span class="fc" id="L509">        final TestRecursiveCycleObject i2 = new TestRecursiveCycleObject(o1_b, 200);</span>
+<span class="fc" id="L510">        o2.setCycle(i2);</span>
+
+<span class="fc" id="L512">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_a).isEquals());</span>
+<span class="fc" id="L513">        assertTrue(new EqualsBuilder().setTestRecursive(true).append(o1_a, o1_b).isEquals());</span>
+<span class="fc" id="L514">        assertFalse(new EqualsBuilder().setTestRecursive(true).append(o1_a, o2).isEquals());</span>
+
+<span class="fc" id="L516">        assertTrue(EqualsBuilder.reflectionEquals(o1_a, o1_b, false, null, true));</span>
+<span class="fc" id="L517">        assertFalse(EqualsBuilder.reflectionEquals(o1_a, o2, false, null, true));</span>
+<span class="fc" id="L518">    }</span>
+
+    @Test
+    public void testLong() {
+<span class="fc" id="L522">        final long o1 = 1L;</span>
+<span class="fc" id="L523">        final long o2 = 2L;</span>
+<span class="fc" id="L524">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L525">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L526">    }</span>
+
+    @Test
+    public void testInt() {
+<span class="fc" id="L530">        final int o1 = 1;</span>
+<span class="fc" id="L531">        final int o2 = 2;</span>
+<span class="fc" id="L532">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L533">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L534">    }</span>
+
+    @Test
+    public void testShort() {
+<span class="fc" id="L538">        final short o1 = 1;</span>
+<span class="fc" id="L539">        final short o2 = 2;</span>
+<span class="fc" id="L540">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L541">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L542">    }</span>
+
+    @Test
+    public void testChar() {
+<span class="fc" id="L546">        final char o1 = 1;</span>
+<span class="fc" id="L547">        final char o2 = 2;</span>
+<span class="fc" id="L548">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L549">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L550">    }</span>
+
+    @Test
+    public void testByte() {
+<span class="fc" id="L554">        final byte o1 = 1;</span>
+<span class="fc" id="L555">        final byte o2 = 2;</span>
+<span class="fc" id="L556">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L557">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L558">    }</span>
+
+    @Test
+    public void testDouble() {
+<span class="fc" id="L562">        final double o1 = 1;</span>
+<span class="fc" id="L563">        final double o2 = 2;</span>
+<span class="fc" id="L564">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L565">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L566">        assertFalse(new EqualsBuilder().append(o1, Double.NaN).isEquals());</span>
+<span class="fc" id="L567">        assertTrue(new EqualsBuilder().append(Double.NaN, Double.NaN).isEquals());</span>
+<span class="fc" id="L568">        assertTrue(new EqualsBuilder().append(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY).isEquals());</span>
+<span class="fc" id="L569">    }</span>
+
+    @Test
+    public void testFloat() {
+<span class="fc" id="L573">        final float o1 = 1;</span>
+<span class="fc" id="L574">        final float o2 = 2;</span>
+<span class="fc" id="L575">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L576">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L577">        assertFalse(new EqualsBuilder().append(o1, Float.NaN).isEquals());</span>
+<span class="fc" id="L578">        assertTrue(new EqualsBuilder().append(Float.NaN, Float.NaN).isEquals());</span>
+<span class="fc" id="L579">        assertTrue(new EqualsBuilder().append(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY).isEquals());</span>
+<span class="fc" id="L580">    }</span>
+
+    @Test
+    public void testAccessors() {
+<span class="fc" id="L584">        final EqualsBuilder equalsBuilder = new EqualsBuilder();</span>
+<span class="fc" id="L585">        assertTrue(equalsBuilder.isEquals());</span>
+<span class="fc" id="L586">        equalsBuilder.setEquals(true);</span>
+<span class="fc" id="L587">        assertTrue(equalsBuilder.isEquals());</span>
+<span class="fc" id="L588">        equalsBuilder.setEquals(false);</span>
+<span class="fc" id="L589">        assertFalse(equalsBuilder.isEquals());</span>
+<span class="fc" id="L590">    }</span>
+
+    @Test
+    public void testReset() {
+<span class="fc" id="L594">        final EqualsBuilder equalsBuilder = new EqualsBuilder();</span>
+<span class="fc" id="L595">        assertTrue(equalsBuilder.isEquals());</span>
+<span class="fc" id="L596">        equalsBuilder.setEquals(false);</span>
+<span class="fc" id="L597">        assertFalse(equalsBuilder.isEquals());</span>
+<span class="fc" id="L598">        equalsBuilder.reset();</span>
+<span class="fc" id="L599">        assertTrue(equalsBuilder.isEquals());</span>
+<span class="fc" id="L600">    }</span>
+
+    @Test
+    public void testBoolean() {
+<span class="fc" id="L604">        final boolean o1 = true;</span>
+<span class="fc" id="L605">        final boolean o2 = false;</span>
+<span class="fc" id="L606">        assertTrue(new EqualsBuilder().append(o1, o1).isEquals());</span>
+<span class="fc" id="L607">        assertFalse(new EqualsBuilder().append(o1, o2).isEquals());</span>
+<span class="fc" id="L608">    }</span>
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L612">        TestObject[] obj1 = new TestObject[3];</span>
+<span class="fc" id="L613">        obj1[0] = new TestObject(4);</span>
+<span class="fc" id="L614">        obj1[1] = new TestObject(5);</span>
+<span class="fc" id="L615">        obj1[2] = null;</span>
+<span class="fc" id="L616">        TestObject[] obj2 = new TestObject[3];</span>
+<span class="fc" id="L617">        obj2[0] = new TestObject(4);</span>
+<span class="fc" id="L618">        obj2[1] = new TestObject(5);</span>
+<span class="fc" id="L619">        obj2[2] = null;</span>
+
+<span class="fc" id="L621">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L622">        assertTrue(new EqualsBuilder().append(obj2, obj2).isEquals());</span>
+<span class="fc" id="L623">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L624">        obj1[1].setA(6);</span>
+<span class="fc" id="L625">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L626">        obj1[1].setA(5);</span>
+<span class="fc" id="L627">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L628">        obj1[2] = obj1[1];</span>
+<span class="fc" id="L629">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L630">        obj1[2] = null;</span>
+<span class="fc" id="L631">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L633">        obj2 = null;</span>
+<span class="fc" id="L634">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L635">        obj1 = null;</span>
+<span class="fc" id="L636">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L637">    }</span>
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L641">        long[] obj1 = new long[2];</span>
+<span class="fc" id="L642">        obj1[0] = 5L;</span>
+<span class="fc" id="L643">        obj1[1] = 6L;</span>
+<span class="fc" id="L644">        long[] obj2 = new long[2];</span>
+<span class="fc" id="L645">        obj2[0] = 5L;</span>
+<span class="fc" id="L646">        obj2[1] = 6L;</span>
+<span class="fc" id="L647">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L648">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L649">        obj1[1] = 7;</span>
+<span class="fc" id="L650">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L652">        obj2 = null;</span>
+<span class="fc" id="L653">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L654">        obj1 = null;</span>
+<span class="fc" id="L655">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L656">    }</span>
+
+    @Test
+    public void testIntArray() {
+<span class="fc" id="L660">        int[] obj1 = new int[2];</span>
+<span class="fc" id="L661">        obj1[0] = 5;</span>
+<span class="fc" id="L662">        obj1[1] = 6;</span>
+<span class="fc" id="L663">        int[] obj2 = new int[2];</span>
+<span class="fc" id="L664">        obj2[0] = 5;</span>
+<span class="fc" id="L665">        obj2[1] = 6;</span>
+<span class="fc" id="L666">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L667">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L668">        obj1[1] = 7;</span>
+<span class="fc" id="L669">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L671">        obj2 = null;</span>
+<span class="fc" id="L672">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L673">        obj1 = null;</span>
+<span class="fc" id="L674">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L675">    }</span>
+
+    @Test
+    public void testShortArray() {
+<span class="fc" id="L679">        short[] obj1 = new short[2];</span>
+<span class="fc" id="L680">        obj1[0] = 5;</span>
+<span class="fc" id="L681">        obj1[1] = 6;</span>
+<span class="fc" id="L682">        short[] obj2 = new short[2];</span>
+<span class="fc" id="L683">        obj2[0] = 5;</span>
+<span class="fc" id="L684">        obj2[1] = 6;</span>
+<span class="fc" id="L685">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L686">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L687">        obj1[1] = 7;</span>
+<span class="fc" id="L688">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L690">        obj2 = null;</span>
+<span class="fc" id="L691">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L692">        obj1 = null;</span>
+<span class="fc" id="L693">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L694">    }</span>
+
+    @Test
+    public void testCharArray() {
+<span class="fc" id="L698">        char[] obj1 = new char[2];</span>
+<span class="fc" id="L699">        obj1[0] = 5;</span>
+<span class="fc" id="L700">        obj1[1] = 6;</span>
+<span class="fc" id="L701">        char[] obj2 = new char[2];</span>
+<span class="fc" id="L702">        obj2[0] = 5;</span>
+<span class="fc" id="L703">        obj2[1] = 6;</span>
+<span class="fc" id="L704">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L705">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L706">        obj1[1] = 7;</span>
+<span class="fc" id="L707">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L709">        obj2 = null;</span>
+<span class="fc" id="L710">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L711">        obj1 = null;</span>
+<span class="fc" id="L712">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L713">    }</span>
+
+    @Test
+    public void testByteArray() {
+<span class="fc" id="L717">        byte[] obj1 = new byte[2];</span>
+<span class="fc" id="L718">        obj1[0] = 5;</span>
+<span class="fc" id="L719">        obj1[1] = 6;</span>
+<span class="fc" id="L720">        byte[] obj2 = new byte[2];</span>
+<span class="fc" id="L721">        obj2[0] = 5;</span>
+<span class="fc" id="L722">        obj2[1] = 6;</span>
+<span class="fc" id="L723">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L724">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L725">        obj1[1] = 7;</span>
+<span class="fc" id="L726">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L728">        obj2 = null;</span>
+<span class="fc" id="L729">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L730">        obj1 = null;</span>
+<span class="fc" id="L731">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L732">    }</span>
+
+    @Test
+    public void testDoubleArray() {
+<span class="fc" id="L736">        double[] obj1 = new double[2];</span>
+<span class="fc" id="L737">        obj1[0] = 5;</span>
+<span class="fc" id="L738">        obj1[1] = 6;</span>
+<span class="fc" id="L739">        double[] obj2 = new double[2];</span>
+<span class="fc" id="L740">        obj2[0] = 5;</span>
+<span class="fc" id="L741">        obj2[1] = 6;</span>
+<span class="fc" id="L742">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L743">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L744">        obj1[1] = 7;</span>
+<span class="fc" id="L745">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L747">        obj2 = null;</span>
+<span class="fc" id="L748">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L749">        obj1 = null;</span>
+<span class="fc" id="L750">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L751">    }</span>
+
+    @Test
+    public void testFloatArray() {
+<span class="fc" id="L755">        float[] obj1 = new float[2];</span>
+<span class="fc" id="L756">        obj1[0] = 5;</span>
+<span class="fc" id="L757">        obj1[1] = 6;</span>
+<span class="fc" id="L758">        float[] obj2 = new float[2];</span>
+<span class="fc" id="L759">        obj2[0] = 5;</span>
+<span class="fc" id="L760">        obj2[1] = 6;</span>
+<span class="fc" id="L761">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L762">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L763">        obj1[1] = 7;</span>
+<span class="fc" id="L764">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L766">        obj2 = null;</span>
+<span class="fc" id="L767">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L768">        obj1 = null;</span>
+<span class="fc" id="L769">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L770">    }</span>
+
+    @Test
+    public void testBooleanArray() {
+<span class="fc" id="L774">        boolean[] obj1 = new boolean[2];</span>
+<span class="fc" id="L775">        obj1[0] = true;</span>
+<span class="fc" id="L776">        obj1[1] = false;</span>
+<span class="fc" id="L777">        boolean[] obj2 = new boolean[2];</span>
+<span class="fc" id="L778">        obj2[0] = true;</span>
+<span class="fc" id="L779">        obj2[1] = false;</span>
+<span class="fc" id="L780">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L781">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L782">        obj1[1] = true;</span>
+<span class="fc" id="L783">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+
+<span class="fc" id="L785">        obj2 = null;</span>
+<span class="fc" id="L786">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L787">        obj1 = null;</span>
+<span class="fc" id="L788">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L789">    }</span>
+
+    @Test
+    public void testMultiLongArray() {
+<span class="fc" id="L793">        final long[][] array1 = new long[2][2];</span>
+<span class="fc" id="L794">        final long[][] array2 = new long[2][2];</span>
+<span class="fc bfc" id="L795" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L796" title="All 2 branches covered.">            for (int j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L797">                array1[i][j] = (i + 1) * (j + 1);</span>
+<span class="fc" id="L798">                array2[i][j] = (i + 1) * (j + 1);</span>
+            }
+        }
+<span class="fc" id="L801">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L802">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L803">        array1[1][1] = 0;</span>
+<span class="fc" id="L804">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L805">    }</span>
+
+    @Test
+    public void testMultiIntArray() {
+<span class="fc" id="L809">        final int[][] array1 = new int[2][2];</span>
+<span class="fc" id="L810">        final int[][] array2 = new int[2][2];</span>
+<span class="fc bfc" id="L811" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L812" title="All 2 branches covered.">            for (int j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L813">                array1[i][j] = (i + 1) * (j + 1);</span>
+<span class="fc" id="L814">                array2[i][j] = (i + 1) * (j + 1);</span>
+            }
+        }
+<span class="fc" id="L817">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L818">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L819">        array1[1][1] = 0;</span>
+<span class="fc" id="L820">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L821">    }</span>
+
+    @Test
+    public void testMultiShortArray() {
+<span class="fc" id="L825">        final short[][] array1 = new short[2][2];</span>
+<span class="fc" id="L826">        final short[][] array2 = new short[2][2];</span>
+<span class="fc bfc" id="L827" title="All 2 branches covered.">        for (short i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L828" title="All 2 branches covered.">            for (short j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L829">                array1[i][j] = i;</span>
+<span class="fc" id="L830">                array2[i][j] = i;</span>
+            }
+        }
+<span class="fc" id="L833">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L834">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L835">        array1[1][1] = 0;</span>
+<span class="fc" id="L836">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L837">    }</span>
+
+    @Test
+    public void testMultiCharArray() {
+<span class="fc" id="L841">        final char[][] array1 = new char[2][2];</span>
+<span class="fc" id="L842">        final char[][] array2 = new char[2][2];</span>
+<span class="fc bfc" id="L843" title="All 2 branches covered.">        for (char i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L844" title="All 2 branches covered.">            for (char j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L845">                array1[i][j] = i;</span>
+<span class="fc" id="L846">                array2[i][j] = i;</span>
+            }
+        }
+<span class="fc" id="L849">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L850">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L851">        array1[1][1] = 0;</span>
+<span class="fc" id="L852">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L853">    }</span>
+
+    @Test
+    public void testMultiByteArray() {
+<span class="fc" id="L857">        final byte[][] array1 = new byte[2][2];</span>
+<span class="fc" id="L858">        final byte[][] array2 = new byte[2][2];</span>
+<span class="fc bfc" id="L859" title="All 2 branches covered.">        for (byte i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L860" title="All 2 branches covered.">            for (byte j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L861">                array1[i][j] = i;</span>
+<span class="fc" id="L862">                array2[i][j] = i;</span>
+            }
+        }
+<span class="fc" id="L865">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L866">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L867">        array1[1][1] = 0;</span>
+<span class="fc" id="L868">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L869">    }</span>
+
+    @Test
+    public void testMultiFloatArray() {
+<span class="fc" id="L873">        final float[][] array1 = new float[2][2];</span>
+<span class="fc" id="L874">        final float[][] array2 = new float[2][2];</span>
+<span class="fc bfc" id="L875" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L876" title="All 2 branches covered.">            for (int j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L877">                array1[i][j] = (i + 1) * (j + 1);</span>
+<span class="fc" id="L878">                array2[i][j] = (i + 1) * (j + 1);</span>
+            }
+        }
+<span class="fc" id="L881">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L882">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L883">        array1[1][1] = 0;</span>
+<span class="fc" id="L884">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L885">    }</span>
+
+    @Test
+    public void testMultiDoubleArray() {
+<span class="fc" id="L889">        final double[][] array1 = new double[2][2];</span>
+<span class="fc" id="L890">        final double[][] array2 = new double[2][2];</span>
+<span class="fc bfc" id="L891" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L892" title="All 2 branches covered.">            for (int j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc" id="L893">                array1[i][j] = (i + 1) * (j + 1);</span>
+<span class="fc" id="L894">                array2[i][j] = (i + 1) * (j + 1);</span>
+            }
+        }
+<span class="fc" id="L897">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L898">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L899">        array1[1][1] = 0;</span>
+<span class="fc" id="L900">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L901">    }</span>
+
+    @Test
+    public void testMultiBooleanArray() {
+<span class="fc" id="L905">        final boolean[][] array1 = new boolean[2][2];</span>
+<span class="fc" id="L906">        final boolean[][] array2 = new boolean[2][2];</span>
+<span class="fc bfc" id="L907" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc bfc" id="L908" title="All 2 branches covered.">            for (int j = 0; j &lt; array1[0].length; j++) {</span>
+<span class="fc bfc" id="L909" title="All 4 branches covered.">                array1[i][j] = i == 1 || j == 1;</span>
+<span class="fc bfc" id="L910" title="All 4 branches covered.">                array2[i][j] = i == 1 || j == 1;</span>
+            }
+        }
+<span class="fc" id="L913">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L914">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L915">        array1[1][1] = false;</span>
+<span class="fc" id="L916">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+
+        // compare 1 dim to 2.
+<span class="fc" id="L919">        final boolean[] array3 = new boolean[]{true, true};</span>
+<span class="fc" id="L920">        assertFalse(new EqualsBuilder().append(array1, array3).isEquals());</span>
+<span class="fc" id="L921">        assertFalse(new EqualsBuilder().append(array3, array1).isEquals());</span>
+<span class="fc" id="L922">        assertFalse(new EqualsBuilder().append(array2, array3).isEquals());</span>
+<span class="fc" id="L923">        assertFalse(new EqualsBuilder().append(array3, array2).isEquals());</span>
+<span class="fc" id="L924">    }</span>
+
+    @Test
+    public void testRaggedArray() {
+<span class="fc" id="L928">        final long array1[][] = new long[2][];</span>
+<span class="fc" id="L929">        final long array2[][] = new long[2][];</span>
+<span class="fc bfc" id="L930" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc" id="L931">            array1[i] = new long[2];</span>
+<span class="fc" id="L932">            array2[i] = new long[2];</span>
+<span class="fc bfc" id="L933" title="All 2 branches covered.">            for (int j = 0; j &lt; array1[i].length; ++j) {</span>
+<span class="fc" id="L934">                array1[i][j] = (i + 1) * (j + 1);</span>
+<span class="fc" id="L935">                array2[i][j] = (i + 1) * (j + 1);</span>
+            }
+        }
+<span class="fc" id="L938">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L939">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L940">        array1[1][1] = 0;</span>
+<span class="fc" id="L941">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L942">    }</span>
+
+    @Test
+    public void testMixedArray() {
+<span class="fc" id="L946">        final Object array1[] = new Object[2];</span>
+<span class="fc" id="L947">        final Object array2[] = new Object[2];</span>
+<span class="fc bfc" id="L948" title="All 2 branches covered.">        for (int i = 0; i &lt; array1.length; ++i) {</span>
+<span class="fc" id="L949">            array1[i] = new long[2];</span>
+<span class="fc" id="L950">            array2[i] = new long[2];</span>
+<span class="fc bfc" id="L951" title="All 2 branches covered.">            for (int j = 0; j &lt; 2; ++j) {</span>
+<span class="fc" id="L952">                ((long[]) array1[i])[j] = (i + 1) * (j + 1);</span>
+<span class="fc" id="L953">                ((long[]) array2[i])[j] = (i + 1) * (j + 1);</span>
+            }
+        }
+<span class="fc" id="L956">        assertTrue(new EqualsBuilder().append(array1, array1).isEquals());</span>
+<span class="fc" id="L957">        assertTrue(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L958">        ((long[]) array1[1])[1] = 0;</span>
+<span class="fc" id="L959">        assertFalse(new EqualsBuilder().append(array1, array2).isEquals());</span>
+<span class="fc" id="L960">    }</span>
+
+    @Test
+    public void testObjectArrayHiddenByObject() {
+<span class="fc" id="L964">        final TestObject[] array1 = new TestObject[2];</span>
+<span class="fc" id="L965">        array1[0] = new TestObject(4);</span>
+<span class="fc" id="L966">        array1[1] = new TestObject(5);</span>
+<span class="fc" id="L967">        final TestObject[] array2 = new TestObject[2];</span>
+<span class="fc" id="L968">        array2[0] = new TestObject(4);</span>
+<span class="fc" id="L969">        array2[1] = new TestObject(5);</span>
+<span class="fc" id="L970">        final Object obj1 = array1;</span>
+<span class="fc" id="L971">        final Object obj2 = array2;</span>
+<span class="fc" id="L972">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L973">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L974">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L975">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L976">        array1[1].setA(6);</span>
+<span class="fc" id="L977">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L978">    }</span>
+
+    @Test
+    public void testLongArrayHiddenByObject() {
+<span class="fc" id="L982">        final long[] array1 = new long[2];</span>
+<span class="fc" id="L983">        array1[0] = 5L;</span>
+<span class="fc" id="L984">        array1[1] = 6L;</span>
+<span class="fc" id="L985">        final long[] array2 = new long[2];</span>
+<span class="fc" id="L986">        array2[0] = 5L;</span>
+<span class="fc" id="L987">        array2[1] = 6L;</span>
+<span class="fc" id="L988">        final Object obj1 = array1;</span>
+<span class="fc" id="L989">        final Object obj2 = array2;</span>
+<span class="fc" id="L990">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L991">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L992">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L993">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L994">        array1[1] = 7;</span>
+<span class="fc" id="L995">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L996">    }</span>
+
+    @Test
+    public void testIntArrayHiddenByObject() {
+<span class="fc" id="L1000">        final int[] array1 = new int[2];</span>
+<span class="fc" id="L1001">        array1[0] = 5;</span>
+<span class="fc" id="L1002">        array1[1] = 6;</span>
+<span class="fc" id="L1003">        final int[] array2 = new int[2];</span>
+<span class="fc" id="L1004">        array2[0] = 5;</span>
+<span class="fc" id="L1005">        array2[1] = 6;</span>
+<span class="fc" id="L1006">        final Object obj1 = array1;</span>
+<span class="fc" id="L1007">        final Object obj2 = array2;</span>
+<span class="fc" id="L1008">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1009">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1010">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1011">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1012">        array1[1] = 7;</span>
+<span class="fc" id="L1013">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1014">    }</span>
+
+    @Test
+    public void testShortArrayHiddenByObject() {
+<span class="fc" id="L1018">        final short[] array1 = new short[2];</span>
+<span class="fc" id="L1019">        array1[0] = 5;</span>
+<span class="fc" id="L1020">        array1[1] = 6;</span>
+<span class="fc" id="L1021">        final short[] array2 = new short[2];</span>
+<span class="fc" id="L1022">        array2[0] = 5;</span>
+<span class="fc" id="L1023">        array2[1] = 6;</span>
+<span class="fc" id="L1024">        final Object obj1 = array1;</span>
+<span class="fc" id="L1025">        final Object obj2 = array2;</span>
+<span class="fc" id="L1026">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1027">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1028">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1029">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1030">        array1[1] = 7;</span>
+<span class="fc" id="L1031">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1032">    }</span>
+
+    @Test
+    public void testCharArrayHiddenByObject() {
+<span class="fc" id="L1036">        final char[] array1 = new char[2];</span>
+<span class="fc" id="L1037">        array1[0] = 5;</span>
+<span class="fc" id="L1038">        array1[1] = 6;</span>
+<span class="fc" id="L1039">        final char[] array2 = new char[2];</span>
+<span class="fc" id="L1040">        array2[0] = 5;</span>
+<span class="fc" id="L1041">        array2[1] = 6;</span>
+<span class="fc" id="L1042">        final Object obj1 = array1;</span>
+<span class="fc" id="L1043">        final Object obj2 = array2;</span>
+<span class="fc" id="L1044">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1045">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1046">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1047">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1048">        array1[1] = 7;</span>
+<span class="fc" id="L1049">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1050">    }</span>
+
+    @Test
+    public void testByteArrayHiddenByObject() {
+<span class="fc" id="L1054">        final byte[] array1 = new byte[2];</span>
+<span class="fc" id="L1055">        array1[0] = 5;</span>
+<span class="fc" id="L1056">        array1[1] = 6;</span>
+<span class="fc" id="L1057">        final byte[] array2 = new byte[2];</span>
+<span class="fc" id="L1058">        array2[0] = 5;</span>
+<span class="fc" id="L1059">        array2[1] = 6;</span>
+<span class="fc" id="L1060">        final Object obj1 = array1;</span>
+<span class="fc" id="L1061">        final Object obj2 = array2;</span>
+<span class="fc" id="L1062">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1063">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1064">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1065">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1066">        array1[1] = 7;</span>
+<span class="fc" id="L1067">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1068">    }</span>
+
+    @Test
+    public void testDoubleArrayHiddenByObject() {
+<span class="fc" id="L1072">        final double[] array1 = new double[2];</span>
+<span class="fc" id="L1073">        array1[0] = 5;</span>
+<span class="fc" id="L1074">        array1[1] = 6;</span>
+<span class="fc" id="L1075">        final double[] array2 = new double[2];</span>
+<span class="fc" id="L1076">        array2[0] = 5;</span>
+<span class="fc" id="L1077">        array2[1] = 6;</span>
+<span class="fc" id="L1078">        final Object obj1 = array1;</span>
+<span class="fc" id="L1079">        final Object obj2 = array2;</span>
+<span class="fc" id="L1080">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1081">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1082">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1083">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1084">        array1[1] = 7;</span>
+<span class="fc" id="L1085">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1086">    }</span>
+
+    @Test
+    public void testFloatArrayHiddenByObject() {
+<span class="fc" id="L1090">        final float[] array1 = new float[2];</span>
+<span class="fc" id="L1091">        array1[0] = 5;</span>
+<span class="fc" id="L1092">        array1[1] = 6;</span>
+<span class="fc" id="L1093">        final float[] array2 = new float[2];</span>
+<span class="fc" id="L1094">        array2[0] = 5;</span>
+<span class="fc" id="L1095">        array2[1] = 6;</span>
+<span class="fc" id="L1096">        final Object obj1 = array1;</span>
+<span class="fc" id="L1097">        final Object obj2 = array2;</span>
+<span class="fc" id="L1098">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1099">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1100">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1101">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1102">        array1[1] = 7;</span>
+<span class="fc" id="L1103">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1104">    }</span>
+
+    @Test
+    public void testBooleanArrayHiddenByObject() {
+<span class="fc" id="L1108">        final boolean[] array1 = new boolean[2];</span>
+<span class="fc" id="L1109">        array1[0] = true;</span>
+<span class="fc" id="L1110">        array1[1] = false;</span>
+<span class="fc" id="L1111">        final boolean[] array2 = new boolean[2];</span>
+<span class="fc" id="L1112">        array2[0] = true;</span>
+<span class="fc" id="L1113">        array2[1] = false;</span>
+<span class="fc" id="L1114">        final Object obj1 = array1;</span>
+<span class="fc" id="L1115">        final Object obj2 = array2;</span>
+<span class="fc" id="L1116">        assertTrue(new EqualsBuilder().append(obj1, obj1).isEquals());</span>
+<span class="fc" id="L1117">        assertTrue(new EqualsBuilder().append(obj1, array1).isEquals());</span>
+<span class="fc" id="L1118">        assertTrue(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1119">        assertTrue(new EqualsBuilder().append(obj1, array2).isEquals());</span>
+<span class="fc" id="L1120">        array1[1] = true;</span>
+<span class="fc" id="L1121">        assertFalse(new EqualsBuilder().append(obj1, obj2).isEquals());</span>
+<span class="fc" id="L1122">    }</span>
+
+    public static class TestACanEqualB {
+        private final int a;
+
+<span class="fc" id="L1127">        public TestACanEqualB(final int a) {</span>
+<span class="fc" id="L1128">            this.a = a;</span>
+<span class="fc" id="L1129">        }</span>
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="fc bfc" id="L1133" title="All 2 branches covered.">            if (o == this) {</span>
+<span class="fc" id="L1134">                return true;</span>
+            }
+<span class="pc bpc" id="L1136" title="1 of 2 branches missed.">            if (o instanceof TestACanEqualB) {</span>
+<span class="nc bnc" id="L1137" title="All 2 branches missed.">                return this.a == ((TestACanEqualB) o).getA();</span>
+            }
+<span class="pc bpc" id="L1139" title="1 of 2 branches missed.">            if (o instanceof TestBCanEqualA) {</span>
+<span class="pc bpc" id="L1140" title="1 of 2 branches missed.">                return this.a == ((TestBCanEqualA) o).getB();</span>
+            }
+<span class="nc" id="L1142">            return false;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L1147">            return a;</span>
+        }
+
+        public int getA() {
+<span class="fc" id="L1151">            return this.a;</span>
+        }
+    }
+
+    public static class TestBCanEqualA {
+        private final int b;
+
+<span class="fc" id="L1158">        public TestBCanEqualA(final int b) {</span>
+<span class="fc" id="L1159">            this.b = b;</span>
+<span class="fc" id="L1160">        }</span>
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="fc bfc" id="L1164" title="All 2 branches covered.">            if (o == this) {</span>
+<span class="fc" id="L1165">                return true;</span>
+            }
+<span class="pc bpc" id="L1167" title="1 of 2 branches missed.">            if (o instanceof TestACanEqualB) {</span>
+<span class="pc bpc" id="L1168" title="1 of 2 branches missed.">                return this.b == ((TestACanEqualB) o).getA();</span>
+            }
+<span class="nc bnc" id="L1170" title="All 2 branches missed.">            if (o instanceof TestBCanEqualA) {</span>
+<span class="nc bnc" id="L1171" title="All 2 branches missed.">                return this.b == ((TestBCanEqualA) o).getB();</span>
+            }
+<span class="nc" id="L1173">            return false;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L1178">            return b;</span>
+        }
+
+        public int getB() {
+<span class="fc" id="L1182">            return this.b;</span>
+        }
+    }
+
+    /**
+     * Tests two instances of classes that can be equal and that are not &quot;related&quot;. The two classes are not subclasses
+     * of each other and do not share a parent aside from Object.
+     * See http://issues.apache.org/bugzilla/show_bug.cgi?id=33069
+     */
+    @Test
+    public void testUnrelatedClasses() {
+<span class="fc" id="L1193">        final Object[] x = new Object[]{new TestACanEqualB(1)};</span>
+<span class="fc" id="L1194">        final Object[] y = new Object[]{new TestBCanEqualA(1)};</span>
+
+        // sanity checks:
+<span class="fc" id="L1197">        assertArrayEquals(x, x);</span>
+<span class="fc" id="L1198">        assertArrayEquals(y, y);</span>
+<span class="fc" id="L1199">        assertArrayEquals(x, y);</span>
+<span class="fc" id="L1200">        assertArrayEquals(y, x);</span>
+        // real tests:
+<span class="fc" id="L1202">        assertEquals(x[0], x[0]);</span>
+<span class="fc" id="L1203">        assertEquals(y[0], y[0]);</span>
+<span class="fc" id="L1204">        assertEquals(x[0], y[0]);</span>
+<span class="fc" id="L1205">        assertEquals(y[0], x[0]);</span>
+<span class="fc" id="L1206">        assertTrue(new EqualsBuilder().append(x, x).isEquals());</span>
+<span class="fc" id="L1207">        assertTrue(new EqualsBuilder().append(y, y).isEquals());</span>
+<span class="fc" id="L1208">        assertTrue(new EqualsBuilder().append(x, y).isEquals());</span>
+<span class="fc" id="L1209">        assertTrue(new EqualsBuilder().append(y, x).isEquals());</span>
+<span class="fc" id="L1210">    }</span>
+
+    /**
+     * Test from http://issues.apache.org/bugzilla/show_bug.cgi?id=33067
+     */
+    @Test
+    public void testNpeForNullElement() {
+<span class="fc" id="L1217">        final Object[] x1 = new Object[]{Integer.valueOf(1), null, Integer.valueOf(3)};</span>
+<span class="fc" id="L1218">        final Object[] x2 = new Object[]{Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)};</span>
+
+        // causes an NPE in 2.0 according to:
+        // http://issues.apache.org/bugzilla/show_bug.cgi?id=33067
+<span class="fc" id="L1222">        new EqualsBuilder().append(x1, x2);</span>
+<span class="fc" id="L1223">    }</span>
+
+    @Test
+    public void testReflectionEqualsExcludeFields() {
+<span class="fc" id="L1227">        final TestObjectWithMultipleFields x1 = new TestObjectWithMultipleFields(1, 2, 3);</span>
+<span class="fc" id="L1228">        final TestObjectWithMultipleFields x2 = new TestObjectWithMultipleFields(1, 3, 4);</span>
+
+        // not equal when including all fields
+<span class="fc" id="L1231">        assertFalse(EqualsBuilder.reflectionEquals(x1, x2));</span>
+
+        // doesn't barf on null, empty array, or non-existent field, but still tests as not equal
+<span class="fc" id="L1234">        assertFalse(EqualsBuilder.reflectionEquals(x1, x2, (String[]) null));</span>
+<span class="fc" id="L1235">        assertFalse(EqualsBuilder.reflectionEquals(x1, x2));</span>
+<span class="fc" id="L1236">        assertFalse(EqualsBuilder.reflectionEquals(x1, x2, &quot;xxx&quot;));</span>
+
+        // not equal if only one of the differing fields excluded
+<span class="fc" id="L1239">        assertFalse(EqualsBuilder.reflectionEquals(x1, x2, &quot;two&quot;));</span>
+<span class="fc" id="L1240">        assertFalse(EqualsBuilder.reflectionEquals(x1, x2, &quot;three&quot;));</span>
+
+        // equal if both differing fields excluded
+<span class="fc" id="L1243">        assertTrue(EqualsBuilder.reflectionEquals(x1, x2, &quot;two&quot;, &quot;three&quot;));</span>
+
+        // still equal as long as both differing fields are among excluded
+<span class="fc" id="L1246">        assertTrue(EqualsBuilder.reflectionEquals(x1, x2, &quot;one&quot;, &quot;two&quot;, &quot;three&quot;));</span>
+<span class="fc" id="L1247">        assertTrue(EqualsBuilder.reflectionEquals(x1, x2, &quot;one&quot;, &quot;two&quot;, &quot;three&quot;, &quot;xxx&quot;));</span>
+<span class="fc" id="L1248">    }</span>
+
+    static class TestObjectWithMultipleFields {
+        @SuppressWarnings(&quot;unused&quot;)
+        private final TestObject one;
+        @SuppressWarnings(&quot;unused&quot;)
+        private final TestObject two;
+        @SuppressWarnings(&quot;unused&quot;)
+        private final TestObject three;
+
+<span class="fc" id="L1258">        TestObjectWithMultipleFields(final int one, final int two, final int three) {</span>
+<span class="fc" id="L1259">            this.one = new TestObject(one);</span>
+<span class="fc" id="L1260">            this.two = new TestObject(two);</span>
+<span class="fc" id="L1261">            this.three = new TestObject(three);</span>
+<span class="fc" id="L1262">        }</span>
+    }
+
+    /**
+     * Test cyclical object references which cause a StackOverflowException if
+     * not handled properly. s. LANG-606
+     */
+    @Test
+    public void testCyclicalObjectReferences() {
+<span class="fc" id="L1271">        final TestObjectReference refX1 = new TestObjectReference(1);</span>
+<span class="fc" id="L1272">        final TestObjectReference x1 = new TestObjectReference(1);</span>
+<span class="fc" id="L1273">        x1.setObjectReference(refX1);</span>
+<span class="fc" id="L1274">        refX1.setObjectReference(x1);</span>
+
+<span class="fc" id="L1276">        final TestObjectReference refX2 = new TestObjectReference(1);</span>
+<span class="fc" id="L1277">        final TestObjectReference x2 = new TestObjectReference(1);</span>
+<span class="fc" id="L1278">        x2.setObjectReference(refX2);</span>
+<span class="fc" id="L1279">        refX2.setObjectReference(x2);</span>
+
+<span class="fc" id="L1281">        final TestObjectReference refX3 = new TestObjectReference(2);</span>
+<span class="fc" id="L1282">        final TestObjectReference x3 = new TestObjectReference(2);</span>
+<span class="fc" id="L1283">        x3.setObjectReference(refX3);</span>
+<span class="fc" id="L1284">        refX3.setObjectReference(x3);</span>
+
+<span class="fc" id="L1286">        assertEquals(x1, x2);</span>
+<span class="fc" id="L1287">        assertNull(EqualsBuilder.getRegistry());</span>
+<span class="fc" id="L1288">        assertNotEquals(x1, x3);</span>
+<span class="fc" id="L1289">        assertNull(EqualsBuilder.getRegistry());</span>
+<span class="fc" id="L1290">        assertNotEquals(x2, x3);</span>
+<span class="fc" id="L1291">        assertNull(EqualsBuilder.getRegistry());</span>
+<span class="fc" id="L1292">    }</span>
+
+    static class TestObjectReference {
+        @SuppressWarnings(&quot;unused&quot;)
+        private TestObjectReference reference;
+        @SuppressWarnings(&quot;unused&quot;)
+        private final TestObject one;
+
+<span class="fc" id="L1300">        TestObjectReference(final int one) {</span>
+<span class="fc" id="L1301">            this.one = new TestObject(one);</span>
+<span class="fc" id="L1302">        }</span>
+
+        public void setObjectReference(final TestObjectReference reference) {
+<span class="fc" id="L1305">            this.reference = reference;</span>
+<span class="fc" id="L1306">        }</span>
+
+        @Override
+        public boolean equals(final Object obj) {
+<span class="fc" id="L1310">            return EqualsBuilder.reflectionEquals(this, obj);</span>
+        }
+    }
+
+    @Test
+    public void testReflectionArrays() {
+
+<span class="fc" id="L1317">        final TestObject one = new TestObject(1);</span>
+<span class="fc" id="L1318">        final TestObject two = new TestObject(2);</span>
+
+<span class="fc" id="L1320">        final Object[] o1 = new Object[]{one};</span>
+<span class="fc" id="L1321">        final Object[] o2 = new Object[]{two};</span>
+<span class="fc" id="L1322">        final Object[] o3 = new Object[]{one};</span>
+
+<span class="fc" id="L1324">        assertFalse(EqualsBuilder.reflectionEquals(o1, o2));</span>
+<span class="fc" id="L1325">        assertTrue(EqualsBuilder.reflectionEquals(o1, o1));</span>
+<span class="fc" id="L1326">        assertTrue(EqualsBuilder.reflectionEquals(o1, o3));</span>
+
+<span class="fc" id="L1328">        final double[] d1 = {0, 1};</span>
+<span class="fc" id="L1329">        final double[] d2 = {2, 3};</span>
+<span class="fc" id="L1330">        final double[] d3 = {0, 1};</span>
+
+<span class="fc" id="L1332">        assertFalse(EqualsBuilder.reflectionEquals(d1, d2));</span>
+<span class="fc" id="L1333">        assertTrue(EqualsBuilder.reflectionEquals(d1, d1));</span>
+<span class="fc" id="L1334">        assertTrue(EqualsBuilder.reflectionEquals(d1, d3));</span>
+<span class="fc" id="L1335">    }</span>
+
+    static class TestObjectEqualsExclude {
+        @EqualsExclude
+        private final int a;
+        private final int b;
+
+<span class="fc" id="L1342">        TestObjectEqualsExclude(final int a, final int b) {</span>
+<span class="fc" id="L1343">            this.a = a;</span>
+<span class="fc" id="L1344">            this.b = b;</span>
+<span class="fc" id="L1345">        }</span>
+
+        public int getA() {
+<span class="nc" id="L1348">            return a;</span>
+        }
+
+        public int getB() {
+<span class="nc" id="L1352">            return b;</span>
+        }
+    }
+
+    @Test
+    public void testToEqualsExclude() {
+<span class="fc" id="L1358">        TestObjectEqualsExclude one = new TestObjectEqualsExclude(1, 2);</span>
+<span class="fc" id="L1359">        TestObjectEqualsExclude two = new TestObjectEqualsExclude(1, 3);</span>
+
+<span class="fc" id="L1361">        assertFalse(EqualsBuilder.reflectionEquals(one, two));</span>
+
+<span class="fc" id="L1363">        one = new TestObjectEqualsExclude(1, 2);</span>
+<span class="fc" id="L1364">        two = new TestObjectEqualsExclude(2, 2);</span>
+
+<span class="fc" id="L1366">        assertTrue(EqualsBuilder.reflectionEquals(one, two));</span>
+<span class="fc" id="L1367">    }</span>
+
+    @Test
+    public void testReflectionAppend() {
+<span class="fc" id="L1371">        assertTrue(EqualsBuilder.reflectionEquals(null, null));</span>
+
+<span class="fc" id="L1373">        final TestObject o1 = new TestObject(4);</span>
+<span class="fc" id="L1374">        final TestObject o2 = new TestObject(5);</span>
+<span class="fc" id="L1375">        assertTrue(new EqualsBuilder().reflectionAppend(o1, o1).build());</span>
+<span class="fc" id="L1376">        assertFalse(new EqualsBuilder().reflectionAppend(o1, o2).build());</span>
+
+<span class="fc" id="L1378">        o2.setA(4);</span>
+<span class="fc" id="L1379">        assertTrue(new EqualsBuilder().reflectionAppend(o1, o2).build());</span>
+
+<span class="fc" id="L1381">        assertFalse(new EqualsBuilder().reflectionAppend(o1, this).build());</span>
+
+<span class="fc" id="L1383">        assertFalse(new EqualsBuilder().reflectionAppend(o1, null).build());</span>
+<span class="fc" id="L1384">        assertFalse(new EqualsBuilder().reflectionAppend(null, o2).build());</span>
+<span class="fc" id="L1385">    }</span>
+
+    @Test
+    public void testIsRegistered() throws Exception {
+<span class="fc" id="L1389">        final Object firstObject = new Object();</span>
+<span class="fc" id="L1390">        final Object secondObject = new Object();</span>
+
+        try {
+<span class="fc" id="L1393">            final Method registerMethod = MethodUtils.getMatchingMethod(EqualsBuilder.class, &quot;register&quot;, Object.class, Object.class);</span>
+<span class="fc" id="L1394">            registerMethod.setAccessible(true);</span>
+<span class="fc" id="L1395">            registerMethod.invoke(null, firstObject, secondObject);</span>
+
+<span class="fc" id="L1397">            assertTrue(EqualsBuilder.isRegistered(firstObject, secondObject));</span>
+<span class="fc" id="L1398">            assertTrue(EqualsBuilder.isRegistered(secondObject, firstObject)); // LANG-1349</span>
+        } finally {
+<span class="fc" id="L1400">            final Method unregisterMethod = MethodUtils.getMatchingMethod(EqualsBuilder.class, &quot;unregister&quot;, Object.class, Object.class);</span>
+<span class="fc" id="L1401">            unregisterMethod.setAccessible(true);</span>
+<span class="fc" id="L1402">            unregisterMethod.invoke(null, firstObject, secondObject);</span>
+        }
+<span class="fc" id="L1404">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

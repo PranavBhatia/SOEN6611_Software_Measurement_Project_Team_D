@@ -1,0 +1,1266 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArrayUtilsRemoveMultipleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">ArrayUtilsRemoveMultipleTest.java</span></div><h1>ArrayUtilsRemoveMultipleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests ArrayUtils remove and removeElement methods.
+ */
+<span class="fc" id="L31">public class ArrayUtilsRemoveMultipleTest {</span>
+
+    @Test
+    public void testRemoveAllObjectArray() {
+        Object[] array;
+
+<span class="fc" id="L37">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot; }, 0);</span>
+<span class="fc" id="L38">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L39">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L41">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot; }, 0, 1);</span>
+<span class="fc" id="L42">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L43">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L45">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot; }, 1, 2);</span>
+<span class="fc" id="L46">        assertArrayEquals(new Object[] { &quot;a&quot; }, array);</span>
+<span class="fc" id="L47">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L49">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot; }, 1, 2);</span>
+<span class="fc" id="L50">        assertArrayEquals(new Object[] { &quot;a&quot;, &quot;d&quot; }, array);</span>
+<span class="fc" id="L51">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L53">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot; }, 0, 3);</span>
+<span class="fc" id="L54">        assertArrayEquals(new Object[] { &quot;b&quot;, &quot;c&quot; }, array);</span>
+<span class="fc" id="L55">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L57">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot; }, 0, 1, 3);</span>
+<span class="fc" id="L58">        assertArrayEquals(new Object[] { &quot;c&quot; }, array);</span>
+<span class="fc" id="L59">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L61">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot; }, 0, 1, 3);</span>
+<span class="fc" id="L62">        assertArrayEquals(new Object[] { &quot;c&quot;, &quot;e&quot; }, array);</span>
+<span class="fc" id="L63">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L65">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot; }, 0, 2, 4);</span>
+<span class="fc" id="L66">        assertArrayEquals(new Object[] { &quot;b&quot;, &quot;d&quot; }, array);</span>
+<span class="fc" id="L67">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L69">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot; }, 0, 1, 3, 0, 1, 3);</span>
+<span class="fc" id="L70">        assertArrayEquals(new Object[] { &quot;c&quot; }, array);</span>
+<span class="fc" id="L71">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L73">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot; }, 2, 1, 0, 3);</span>
+<span class="fc" id="L74">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L75">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L77">        array = ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot; }, 2, 0, 1, 3, 0, 2, 1, 3);</span>
+<span class="fc" id="L78">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L79">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+<span class="fc" id="L80">    }</span>
+
+    @Test
+    public void testRemoveAllObjectArrayRemoveNone() {
+<span class="fc" id="L84">        final Object[] array1 = new Object[] { &quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot; };</span>
+<span class="fc" id="L85">        final Object[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L86">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L87">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L88">        assertEquals(Object.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testRemoveAllObjectArrayNegativeIndex() {
+<span class="pc" id="L93">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot; }, -1));</span>
+<span class="fc" id="L94">    }</span>
+
+    @Test
+    public void testRemoveAllObjectArrayOutOfBoundsIndex() {
+<span class="pc" id="L98">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new Object[] { &quot;a&quot;, &quot;b&quot; }, 2));</span>
+<span class="fc" id="L99">    }</span>
+
+    @Test
+    public void testRemoveAllNullObjectArray() {
+<span class="pc" id="L103">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.remove((Object[]) null, 0));</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testRemoveAllNumberArray() {
+<span class="fc" id="L108">        final Number[] inarray = { Integer.valueOf(1), Long.valueOf(2L), Byte.valueOf((byte) 3) };</span>
+<span class="fc" id="L109">        assertEquals(3, inarray.length);</span>
+        Number[] outarray;
+
+<span class="fc" id="L112">        outarray = ArrayUtils.removeAll(inarray, 1);</span>
+<span class="fc" id="L113">        assertArrayEquals(new Number[] { Integer.valueOf(1), Byte.valueOf((byte) 3) }, outarray);</span>
+<span class="fc" id="L114">        assertEquals(Number.class, outarray.getClass().getComponentType());</span>
+
+<span class="fc" id="L116">        outarray = ArrayUtils.removeAll(outarray, 1);</span>
+<span class="fc" id="L117">        assertArrayEquals(new Number[] { Integer.valueOf(1) }, outarray);</span>
+<span class="fc" id="L118">        assertEquals(Number.class, outarray.getClass().getComponentType());</span>
+
+<span class="fc" id="L120">        outarray = ArrayUtils.removeAll(outarray, 0);</span>
+<span class="fc" id="L121">        assertEquals(0, outarray.length);</span>
+<span class="fc" id="L122">        assertEquals(Number.class, outarray.getClass().getComponentType());</span>
+
+<span class="fc" id="L124">        outarray = ArrayUtils.removeAll(inarray, 0, 1);</span>
+<span class="fc" id="L125">        assertArrayEquals(new Number[] { Byte.valueOf((byte) 3) }, outarray);</span>
+<span class="fc" id="L126">        assertEquals(Number.class, outarray.getClass().getComponentType());</span>
+
+<span class="fc" id="L128">        outarray = ArrayUtils.removeAll(inarray, 0, 2);</span>
+<span class="fc" id="L129">        assertArrayEquals(new Number[] { Long.valueOf(2L) }, outarray);</span>
+<span class="fc" id="L130">        assertEquals(Number.class, outarray.getClass().getComponentType());</span>
+
+<span class="fc" id="L132">        outarray = ArrayUtils.removeAll(inarray, 1, 2);</span>
+<span class="fc" id="L133">        assertArrayEquals(new Number[] { Integer.valueOf(1) }, outarray);</span>
+<span class="fc" id="L134">        assertEquals(Number.class, outarray.getClass().getComponentType());</span>
+<span class="fc" id="L135">    }</span>
+
+    @Test
+    public void testRemoveAllBooleanArray() {
+        boolean[] array;
+
+<span class="fc" id="L141">        array = ArrayUtils.removeAll(new boolean[] { true }, 0);</span>
+<span class="fc" id="L142">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L143">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L145">        array = ArrayUtils.removeAll(new boolean[] { true, false }, 0);</span>
+<span class="fc" id="L146">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L147">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L149">        array = ArrayUtils.removeAll(new boolean[] { true, false }, 1);</span>
+<span class="fc" id="L150">        assertArrayEquals(new boolean[]{true}, array);</span>
+<span class="fc" id="L151">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L153">        array = ArrayUtils.removeAll(new boolean[] { true, false, true }, 1);</span>
+<span class="fc" id="L154">        assertArrayEquals(new boolean[]{true, true}, array);</span>
+<span class="fc" id="L155">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L157">        array = ArrayUtils.removeAll(new boolean[] { true, false }, 0, 1);</span>
+<span class="fc" id="L158">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L159">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L161">        array = ArrayUtils.removeAll(new boolean[] { true, false, false }, 0, 1);</span>
+<span class="fc" id="L162">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L163">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L165">        array = ArrayUtils.removeAll(new boolean[] { true, false, false }, 0, 2);</span>
+<span class="fc" id="L166">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L167">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L169">        array = ArrayUtils.removeAll(new boolean[] { true, false, false }, 1, 2);</span>
+<span class="fc" id="L170">        assertArrayEquals(new boolean[]{true}, array);</span>
+<span class="fc" id="L171">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L173">        array = ArrayUtils.removeAll(new boolean[] { true, false, true, false, true }, 0, 2, 4);</span>
+<span class="fc" id="L174">        assertArrayEquals(new boolean[]{false, false}, array);</span>
+<span class="fc" id="L175">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L177">        array = ArrayUtils.removeAll(new boolean[] { true, false, true, false, true }, 1, 3);</span>
+<span class="fc" id="L178">        assertArrayEquals(new boolean[]{true, true, true}, array);</span>
+<span class="fc" id="L179">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L181">        array = ArrayUtils.removeAll(new boolean[] { true, false, true, false, true }, 1, 3, 4);</span>
+<span class="fc" id="L182">        assertArrayEquals(new boolean[]{true, true}, array);</span>
+<span class="fc" id="L183">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L185">        array = ArrayUtils.removeAll(new boolean[] { true, false, true, false, true, false, true }, 0, 2, 4, 6);</span>
+<span class="fc" id="L186">        assertArrayEquals(new boolean[]{false, false, false}, array);</span>
+<span class="fc" id="L187">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L189">        array = ArrayUtils.removeAll(new boolean[] { true, false, true, false, true, false, true }, 1, 3, 5);</span>
+<span class="fc" id="L190">        assertArrayEquals(new boolean[]{true, true, true, true}, array);</span>
+<span class="fc" id="L191">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L193">        array = ArrayUtils.removeAll(new boolean[] { true, false, true, false, true, false, true }, 0, 1, 2);</span>
+<span class="fc" id="L194">        assertArrayEquals(new boolean[]{false, true, false, true}, array);</span>
+<span class="fc" id="L195">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L196">    }</span>
+
+    @Test
+    public void testRemoveAllBooleanArrayRemoveNone() {
+<span class="fc" id="L200">        final boolean[] array1 = new boolean[] { true, false };</span>
+<span class="fc" id="L201">        final boolean[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L202">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L203">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L204">        assertEquals(boolean.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L205">    }</span>
+
+    @Test
+    public void testRemoveAllBooleanArrayNegativeIndex() {
+<span class="pc" id="L209">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new boolean[] { true, false }, -1));</span>
+<span class="fc" id="L210">    }</span>
+
+    @Test
+    public void testRemoveAllBooleanArrayOutOfBoundsIndex() {
+<span class="pc" id="L214">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new boolean[] { true, false }, 2));</span>
+<span class="fc" id="L215">    }</span>
+
+    @Test
+    public void testRemoveAllNullBooleanArray() {
+<span class="pc" id="L219">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((boolean[]) null, 0));</span>
+<span class="fc" id="L220">    }</span>
+
+    @Test
+    public void testRemoveAllByteArray() {
+        byte[] array;
+
+<span class="fc" id="L226">        array = ArrayUtils.removeAll(new byte[] { 1 }, 0);</span>
+<span class="fc" id="L227">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L228">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L230">        array = ArrayUtils.removeAll(new byte[] { 1, 2 }, 0);</span>
+<span class="fc" id="L231">        assertArrayEquals(new byte[]{2}, array);</span>
+<span class="fc" id="L232">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L234">        array = ArrayUtils.removeAll(new byte[] { 1, 2 }, 1);</span>
+<span class="fc" id="L235">        assertArrayEquals(new byte[]{1}, array);</span>
+<span class="fc" id="L236">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L238">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L239">        assertArrayEquals(new byte[]{1, 1}, array);</span>
+<span class="fc" id="L240">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L242">        array = ArrayUtils.removeAll(new byte[] { 1, 2 }, 0, 1);</span>
+<span class="fc" id="L243">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L244">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L246">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3 }, 0, 1);</span>
+<span class="fc" id="L247">        assertArrayEquals(new byte[]{3}, array);</span>
+<span class="fc" id="L248">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L250">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3 }, 1, 2);</span>
+<span class="fc" id="L251">        assertArrayEquals(new byte[]{1}, array);</span>
+<span class="fc" id="L252">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L254">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3 }, 0, 2);</span>
+<span class="fc" id="L255">        assertArrayEquals(new byte[]{2}, array);</span>
+<span class="fc" id="L256">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L258">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3, 4, 5 }, 1, 3);</span>
+<span class="fc" id="L259">        assertArrayEquals(new byte[]{1, 3, 5}, array);</span>
+<span class="fc" id="L260">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L262">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3, 4, 5 }, 0, 2, 4);</span>
+<span class="fc" id="L263">        assertArrayEquals(new byte[]{2, 4}, array);</span>
+<span class="fc" id="L264">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L266">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3, 4, 5, 6, 7 }, 1, 3, 5);</span>
+<span class="fc" id="L267">        assertArrayEquals(new byte[]{1, 3, 5, 7}, array);</span>
+<span class="fc" id="L268">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L270">        array = ArrayUtils.removeAll(new byte[] { 1, 2, 3, 4, 5, 6, 7 }, 0, 2, 4, 6);</span>
+<span class="fc" id="L271">        assertArrayEquals(new byte[]{2, 4, 6}, array);</span>
+<span class="fc" id="L272">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L273">    }</span>
+
+    @Test
+    public void testRemoveAllByteArrayRemoveNone() {
+<span class="fc" id="L277">        final byte[] array1 = new byte[] { 1, 2 };</span>
+<span class="fc" id="L278">        final byte[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L279">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L280">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L281">        assertEquals(byte.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L282">    }</span>
+
+    @Test
+    public void testRemoveAllByteArrayNegativeIndex() {
+<span class="pc" id="L286">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new byte[] { 1, 2 }, -1));</span>
+<span class="fc" id="L287">    }</span>
+
+    @Test
+    public void testRemoveAllByteArrayOutOfBoundsIndex() {
+<span class="pc" id="L291">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new byte[] { 1, 2 }, 2));</span>
+<span class="fc" id="L292">    }</span>
+
+    @Test
+    public void testRemoveAllNullByteArray() {
+<span class="pc" id="L296">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((byte[]) null, 0));</span>
+<span class="fc" id="L297">    }</span>
+
+    @Test
+    public void testRemoveAllCharArray() {
+        char[] array;
+
+<span class="fc" id="L303">        array = ArrayUtils.removeAll(new char[] { 'a' }, 0);</span>
+<span class="fc" id="L304">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L305">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L307">        array = ArrayUtils.removeAll(new char[] { 'a', 'b' }, 0);</span>
+<span class="fc" id="L308">        assertArrayEquals(new char[]{'b'}, array);</span>
+<span class="fc" id="L309">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L311">        array = ArrayUtils.removeAll(new char[] { 'a', 'b' }, 1);</span>
+<span class="fc" id="L312">        assertArrayEquals(new char[]{'a'}, array);</span>
+<span class="fc" id="L313">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L315">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c' }, 1);</span>
+<span class="fc" id="L316">        assertArrayEquals(new char[]{'a', 'c'}, array);</span>
+<span class="fc" id="L317">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L319">        array = ArrayUtils.removeAll(new char[] { 'a', 'b' }, 0, 1);</span>
+<span class="fc" id="L320">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L321">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L323">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c' }, 0, 1);</span>
+<span class="fc" id="L324">        assertArrayEquals(new char[]{'c'}, array);</span>
+<span class="fc" id="L325">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L327">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c' }, 1, 2);</span>
+<span class="fc" id="L328">        assertArrayEquals(new char[]{'a'}, array);</span>
+<span class="fc" id="L329">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L331">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c' }, 0, 2);</span>
+<span class="fc" id="L332">        assertArrayEquals(new char[]{'b'}, array);</span>
+<span class="fc" id="L333">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L335">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c', 'd', 'e' }, 1, 3);</span>
+<span class="fc" id="L336">        assertArrayEquals(new char[]{'a', 'c', 'e'}, array);</span>
+<span class="fc" id="L337">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L339">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c', 'd', 'e' }, 0, 2, 4);</span>
+<span class="fc" id="L340">        assertArrayEquals(new char[]{'b', 'd'}, array);</span>
+<span class="fc" id="L341">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L343">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g' }, 1, 3, 5);</span>
+<span class="fc" id="L344">        assertArrayEquals(new char[]{'a', 'c', 'e', 'g'}, array);</span>
+<span class="fc" id="L345">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L347">        array = ArrayUtils.removeAll(new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g' }, 0, 2, 4, 6);</span>
+<span class="fc" id="L348">        assertArrayEquals(new char[]{'b', 'd', 'f'}, array);</span>
+<span class="fc" id="L349">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L350">    }</span>
+
+    @Test
+    public void testRemoveAllCharArrayRemoveNone() {
+<span class="fc" id="L354">        final char[] array1 = new char[] { 'a', 'b' };</span>
+<span class="fc" id="L355">        final char[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L356">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L357">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L358">        assertEquals(char.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L359">    }</span>
+
+    @Test
+    public void testRemoveAllCharArrayNegativeIndex() {
+<span class="pc" id="L363">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new char[] { 'a', 'b' }, -1));</span>
+<span class="fc" id="L364">    }</span>
+
+    @Test
+    public void testRemoveAllCharArrayOutOfBoundsIndex() {
+<span class="pc" id="L368">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new char[] { 'a', 'b' }, 2));</span>
+<span class="fc" id="L369">    }</span>
+
+    @Test
+    public void testRemoveAllNullCharArray() {
+<span class="pc" id="L373">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((char[]) null, 0));</span>
+<span class="fc" id="L374">    }</span>
+
+    @Test
+    public void testRemoveAllDoubleArray() {
+        double[] array;
+
+<span class="fc" id="L380">        array = ArrayUtils.removeAll(new double[] { 1 }, 0);</span>
+<span class="fc" id="L381">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L382">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L384">        array = ArrayUtils.removeAll(new double[] { 1, 2 }, 0);</span>
+<span class="fc" id="L385">        assertArrayEquals(new double[]{2}, array);</span>
+<span class="fc" id="L386">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L388">        array = ArrayUtils.removeAll(new double[] { 1, 2 }, 1);</span>
+<span class="fc" id="L389">        assertArrayEquals(new double[]{1}, array);</span>
+<span class="fc" id="L390">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L392">        array = ArrayUtils.removeAll(new double[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L393">        assertArrayEquals(new double[]{1, 1}, array);</span>
+<span class="fc" id="L394">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L396">        array = ArrayUtils.removeAll(new double[] { 1, 2 }, 0, 1);</span>
+<span class="fc" id="L397">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L398">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L400">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3 }, 0, 1);</span>
+<span class="fc" id="L401">        assertArrayEquals(new double[]{3}, array);</span>
+<span class="fc" id="L402">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L404">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3 }, 1, 2);</span>
+<span class="fc" id="L405">        assertArrayEquals(new double[]{1}, array);</span>
+<span class="fc" id="L406">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L408">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3 }, 0, 2);</span>
+<span class="fc" id="L409">        assertArrayEquals(new double[]{2}, array);</span>
+<span class="fc" id="L410">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L412">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3, 4, 5 }, 1, 3);</span>
+<span class="fc" id="L413">        assertArrayEquals(new double[]{1, 3, 5}, array);</span>
+<span class="fc" id="L414">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L416">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3, 4, 5 }, 0, 2, 4);</span>
+<span class="fc" id="L417">        assertArrayEquals(new double[]{2, 4}, array);</span>
+<span class="fc" id="L418">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L420">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3, 4, 5, 6, 7 }, 1, 3, 5);</span>
+<span class="fc" id="L421">        assertArrayEquals(new double[]{1, 3, 5, 7}, array);</span>
+<span class="fc" id="L422">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L424">        array = ArrayUtils.removeAll(new double[] { 1, 2, 3, 4, 5, 6, 7 }, 0, 2, 4, 6);</span>
+<span class="fc" id="L425">        assertArrayEquals(new double[]{2, 4, 6}, array);</span>
+<span class="fc" id="L426">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L427">    }</span>
+
+    @Test
+    public void testRemoveAllDoubleArrayRemoveNone() {
+<span class="fc" id="L431">        final double[] array1 = new double[] { 1, 2 };</span>
+<span class="fc" id="L432">        final double[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L433">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L434">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L435">        assertEquals(double.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L436">    }</span>
+
+    @Test
+    public void testRemoveAllDoubleArrayNegativeIndex() {
+<span class="pc" id="L440">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new double[] { 1, 2 }, -1));</span>
+<span class="fc" id="L441">    }</span>
+
+    @Test
+    public void testRemoveAllDoubleArrayOutOfBoundsIndex() {
+<span class="pc" id="L445">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new double[] { 1, 2 }, 2));</span>
+<span class="fc" id="L446">    }</span>
+
+    @Test
+    public void testRemoveAllNullDoubleArray() {
+<span class="pc" id="L450">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((double[]) null, 0));</span>
+<span class="fc" id="L451">    }</span>
+
+    @Test
+    public void testRemoveAllFloatArray() {
+        float[] array;
+
+<span class="fc" id="L457">        array = ArrayUtils.removeAll(new float[] { 1 }, 0);</span>
+<span class="fc" id="L458">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L459">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L461">        array = ArrayUtils.removeAll(new float[] { 1, 2 }, 0);</span>
+<span class="fc" id="L462">        assertArrayEquals(new float[]{2}, array);</span>
+<span class="fc" id="L463">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L465">        array = ArrayUtils.removeAll(new float[] { 1, 2 }, 1);</span>
+<span class="fc" id="L466">        assertArrayEquals(new float[]{1}, array);</span>
+<span class="fc" id="L467">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L469">        array = ArrayUtils.removeAll(new float[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L470">        assertArrayEquals(new float[]{1, 1}, array);</span>
+<span class="fc" id="L471">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L473">        array = ArrayUtils.removeAll(new float[] { 1, 2 }, 0, 1);</span>
+<span class="fc" id="L474">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L475">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L477">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3 }, 0, 1);</span>
+<span class="fc" id="L478">        assertArrayEquals(new float[]{3}, array);</span>
+<span class="fc" id="L479">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L481">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3 }, 1, 2);</span>
+<span class="fc" id="L482">        assertArrayEquals(new float[]{1}, array);</span>
+<span class="fc" id="L483">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L485">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3 }, 0, 2);</span>
+<span class="fc" id="L486">        assertArrayEquals(new float[]{2}, array);</span>
+<span class="fc" id="L487">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L489">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3, 4, 5 }, 1, 3);</span>
+<span class="fc" id="L490">        assertArrayEquals(new float[]{1, 3, 5}, array);</span>
+<span class="fc" id="L491">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L493">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3, 4, 5 }, 0, 2, 4);</span>
+<span class="fc" id="L494">        assertArrayEquals(new float[]{2, 4}, array);</span>
+<span class="fc" id="L495">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L497">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3, 4, 5, 6, 7 }, 1, 3, 5);</span>
+<span class="fc" id="L498">        assertArrayEquals(new float[]{1, 3, 5, 7}, array);</span>
+<span class="fc" id="L499">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L501">        array = ArrayUtils.removeAll(new float[] { 1, 2, 3, 4, 5, 6, 7 }, 0, 2, 4, 6);</span>
+<span class="fc" id="L502">        assertArrayEquals(new float[]{2, 4, 6}, array);</span>
+<span class="fc" id="L503">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L504">    }</span>
+
+    @Test
+    public void testRemoveAllFloatArrayRemoveNone() {
+<span class="fc" id="L508">        final float[] array1 = new float[] { 1, 2 };</span>
+<span class="fc" id="L509">        final float[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L510">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L511">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L512">        assertEquals(float.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L513">    }</span>
+
+    @Test
+    public void testRemoveAllFloatArrayNegativeIndex() {
+<span class="pc" id="L517">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new float[] { 1, 2 }, -1));</span>
+<span class="fc" id="L518">    }</span>
+
+    @Test
+    public void testRemoveAllFloatArrayOutOfBoundsIndex() {
+<span class="pc" id="L522">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new float[] { 1, 2 }, 2));</span>
+<span class="fc" id="L523">    }</span>
+
+    @Test
+    public void testRemoveAllNullFloatArray() {
+<span class="pc" id="L527">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((float[]) null, 0));</span>
+<span class="fc" id="L528">    }</span>
+
+    @Test
+    public void testRemoveAllIntArray() {
+        int[] array;
+
+<span class="fc" id="L534">        array = ArrayUtils.removeAll(ArrayUtils.EMPTY_INT_ARRAY, ArrayUtils.EMPTY_INT_ARRAY);</span>
+<span class="fc" id="L535">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+
+<span class="fc" id="L537">        array = ArrayUtils.removeAll(new int[] { 1 }, ArrayUtils.EMPTY_INT_ARRAY);</span>
+<span class="fc" id="L538">        assertArrayEquals(new int[]{1}, array);</span>
+
+<span class="fc" id="L540">        array = ArrayUtils.removeAll(new int[] { 1 }, 0);</span>
+<span class="fc" id="L541">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L542">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L544">        array = ArrayUtils.removeAll(new int[] { 1, 2 }, 0);</span>
+<span class="fc" id="L545">        assertArrayEquals(new int[]{2}, array);</span>
+<span class="fc" id="L546">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L548">        array = ArrayUtils.removeAll(new int[] { 1, 2 }, 1);</span>
+<span class="fc" id="L549">        assertArrayEquals(new int[]{1}, array);</span>
+<span class="fc" id="L550">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L552">        array = ArrayUtils.removeAll(new int[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L553">        assertArrayEquals(new int[]{1, 1}, array);</span>
+<span class="fc" id="L554">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L556">        array = ArrayUtils.removeAll(new int[] { 1, 2 }, 0, 1);</span>
+<span class="fc" id="L557">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L558">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L560">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3 }, 0, 1);</span>
+<span class="fc" id="L561">        assertArrayEquals(new int[]{3}, array);</span>
+<span class="fc" id="L562">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L564">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3 }, 1, 2);</span>
+<span class="fc" id="L565">        assertArrayEquals(new int[]{1}, array);</span>
+<span class="fc" id="L566">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L568">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3 }, 0, 2);</span>
+<span class="fc" id="L569">        assertArrayEquals(new int[]{2}, array);</span>
+<span class="fc" id="L570">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L572">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3, 4, 5 }, 1, 3);</span>
+<span class="fc" id="L573">        assertArrayEquals(new int[]{1, 3, 5}, array);</span>
+<span class="fc" id="L574">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L576">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3, 4, 5 }, 0, 2, 4);</span>
+<span class="fc" id="L577">        assertArrayEquals(new int[]{2, 4}, array);</span>
+<span class="fc" id="L578">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L580">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3, 4, 5, 6, 7 }, 1, 3, 5);</span>
+<span class="fc" id="L581">        assertArrayEquals(new int[]{1, 3, 5, 7}, array);</span>
+<span class="fc" id="L582">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L584">        array = ArrayUtils.removeAll(new int[] { 1, 2, 3, 4, 5, 6, 7 }, 0, 2, 4, 6);</span>
+<span class="fc" id="L585">        assertArrayEquals(new int[]{2, 4, 6}, array);</span>
+<span class="fc" id="L586">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L587">    }</span>
+
+    @Test
+    public void testRemoveAllIntArrayRemoveNone() {
+<span class="fc" id="L591">        final int[] array1 = new int[] { 1, 2 };</span>
+<span class="fc" id="L592">        final int[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L593">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L594">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L595">        assertEquals(int.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L596">    }</span>
+
+    @Test
+    public void testRemoveAllIntArrayNegativeIndex() {
+<span class="pc" id="L600">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new int[] { 1, 2 }, -1));</span>
+<span class="fc" id="L601">    }</span>
+
+    @Test
+    public void testRemoveAllIntArrayOutOfBoundsIndex() {
+<span class="pc" id="L605">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new int[] { 1, 2 }, 2));</span>
+<span class="fc" id="L606">    }</span>
+
+    @Test
+    public void testRemoveAllNullIntArray() {
+<span class="pc" id="L610">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((int[]) null, 0));</span>
+<span class="fc" id="L611">    }</span>
+
+    @Test
+    public void testRemoveAllLongArray() {
+        long[] array;
+
+<span class="fc" id="L617">        array = ArrayUtils.removeAll(new long[] { 1 }, 0);</span>
+<span class="fc" id="L618">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L619">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L621">        array = ArrayUtils.removeAll(new long[] { 1, 2 }, 0);</span>
+<span class="fc" id="L622">        assertArrayEquals(new long[]{2}, array);</span>
+<span class="fc" id="L623">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L625">        array = ArrayUtils.removeAll(new long[] { 1, 2 }, 1);</span>
+<span class="fc" id="L626">        assertArrayEquals(new long[]{1}, array);</span>
+<span class="fc" id="L627">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L629">        array = ArrayUtils.removeAll(new long[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L630">        assertArrayEquals(new long[]{1, 1}, array);</span>
+<span class="fc" id="L631">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L633">        array = ArrayUtils.removeAll(new long[] { 1, 2 }, 0, 1);</span>
+<span class="fc" id="L634">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L635">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L637">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3 }, 0, 1);</span>
+<span class="fc" id="L638">        assertArrayEquals(new long[]{3}, array);</span>
+<span class="fc" id="L639">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L641">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3 }, 1, 2);</span>
+<span class="fc" id="L642">        assertArrayEquals(new long[]{1}, array);</span>
+<span class="fc" id="L643">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L645">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3 }, 0, 2);</span>
+<span class="fc" id="L646">        assertArrayEquals(new long[]{2}, array);</span>
+<span class="fc" id="L647">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L649">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3, 4, 5 }, 1, 3);</span>
+<span class="fc" id="L650">        assertArrayEquals(new long[]{1, 3, 5}, array);</span>
+<span class="fc" id="L651">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L653">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3, 4, 5 }, 0, 2, 4);</span>
+<span class="fc" id="L654">        assertArrayEquals(new long[]{2, 4}, array);</span>
+<span class="fc" id="L655">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L657">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3, 4, 5, 6, 7 }, 1, 3, 5);</span>
+<span class="fc" id="L658">        assertArrayEquals(new long[]{1, 3, 5, 7}, array);</span>
+<span class="fc" id="L659">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L661">        array = ArrayUtils.removeAll(new long[] { 1, 2, 3, 4, 5, 6, 7 }, 0, 2, 4, 6);</span>
+<span class="fc" id="L662">        assertArrayEquals(new long[]{2, 4, 6}, array);</span>
+<span class="fc" id="L663">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L664">    }</span>
+
+    @Test
+    public void testRemoveAllLongArrayRemoveNone() {
+<span class="fc" id="L668">        final long[] array1 = new long[] { 1, 2 };</span>
+<span class="fc" id="L669">        final long[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L670">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L671">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L672">        assertEquals(long.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L673">    }</span>
+
+    @Test
+    public void testRemoveAllLongArrayNegativeIndex() {
+<span class="pc" id="L677">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new long[] { 1, 2 }, -1));</span>
+<span class="fc" id="L678">    }</span>
+
+    @Test
+    public void testRemoveAllLongArrayOutOfBoundsIndex() {
+<span class="pc" id="L682">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new long[] { 1, 2 }, 2));</span>
+<span class="fc" id="L683">    }</span>
+
+    @Test
+    public void testRemoveAllNullLongArray() {
+<span class="pc" id="L687">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((long[]) null, 0));</span>
+<span class="fc" id="L688">    }</span>
+
+    @Test
+    public void testRemoveAllShortArray() {
+        short[] array;
+
+<span class="fc" id="L694">        array = ArrayUtils.removeAll(new short[] { 1 }, 0);</span>
+<span class="fc" id="L695">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L696">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L698">        array = ArrayUtils.removeAll(new short[] { 1, 2 }, 0);</span>
+<span class="fc" id="L699">        assertArrayEquals(new short[]{2}, array);</span>
+<span class="fc" id="L700">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L702">        array = ArrayUtils.removeAll(new short[] { 1, 2 }, 1);</span>
+<span class="fc" id="L703">        assertArrayEquals(new short[]{1}, array);</span>
+<span class="fc" id="L704">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L706">        array = ArrayUtils.removeAll(new short[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L707">        assertArrayEquals(new short[]{1, 1}, array);</span>
+<span class="fc" id="L708">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L710">        array = ArrayUtils.removeAll(new short[] { 1, 2 }, 0, 1);</span>
+<span class="fc" id="L711">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L712">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L714">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3 }, 0, 1);</span>
+<span class="fc" id="L715">        assertArrayEquals(new short[]{3}, array);</span>
+<span class="fc" id="L716">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L718">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3 }, 1, 2);</span>
+<span class="fc" id="L719">        assertArrayEquals(new short[]{1}, array);</span>
+<span class="fc" id="L720">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L722">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3 }, 0, 2);</span>
+<span class="fc" id="L723">        assertArrayEquals(new short[]{2}, array);</span>
+<span class="fc" id="L724">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L726">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3, 4, 5 }, 1, 3);</span>
+<span class="fc" id="L727">        assertArrayEquals(new short[]{1, 3, 5}, array);</span>
+<span class="fc" id="L728">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L730">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3, 4, 5 }, 0, 2, 4);</span>
+<span class="fc" id="L731">        assertArrayEquals(new short[]{2, 4}, array);</span>
+<span class="fc" id="L732">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L734">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3, 4, 5, 6, 7 }, 1, 3, 5);</span>
+<span class="fc" id="L735">        assertArrayEquals(new short[]{1, 3, 5, 7}, array);</span>
+<span class="fc" id="L736">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L738">        array = ArrayUtils.removeAll(new short[] { 1, 2, 3, 4, 5, 6, 7 }, 0, 2, 4, 6);</span>
+<span class="fc" id="L739">        assertArrayEquals(new short[]{2, 4, 6}, array);</span>
+<span class="fc" id="L740">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L741">    }</span>
+
+    @Test
+    public void testRemoveAllShortArrayRemoveNone() {
+<span class="fc" id="L745">        final short[] array1 = new short[] { 1, 2 };</span>
+<span class="fc" id="L746">        final short[] array2 = ArrayUtils.removeAll(array1);</span>
+<span class="fc" id="L747">        assertNotSame(array1, array2);</span>
+<span class="fc" id="L748">        assertArrayEquals(array1, array2);</span>
+<span class="fc" id="L749">        assertEquals(short.class, array2.getClass().getComponentType());</span>
+<span class="fc" id="L750">    }</span>
+
+    @Test
+    public void testRemoveAllShortArrayNegativeIndex() {
+<span class="pc" id="L754">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new short[] { 1, 2 }, -1, 0));</span>
+<span class="fc" id="L755">    }</span>
+
+    @Test
+    public void testRemoveAllShortArrayOutOfBoundsIndex() {
+<span class="pc" id="L759">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll(new short[] { 1, 2 }, 2, 0));</span>
+<span class="fc" id="L760">    }</span>
+
+    @Test
+    public void testRemoveAllNullShortArray() {
+<span class="pc" id="L764">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.removeAll((short[]) null, 0));</span>
+<span class="fc" id="L765">    }</span>
+
+    @Test
+    public void testRemoveElementsObjectArray() {
+        Object[] array;
+
+<span class="fc" id="L771">        array = ArrayUtils.removeElements((Object[]) null, &quot;a&quot;);</span>
+<span class="fc" id="L772">        assertNull(array);</span>
+
+<span class="fc" id="L774">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_OBJECT_ARRAY, &quot;a&quot;);</span>
+<span class="fc" id="L775">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L776">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L778">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot; }, &quot;a&quot;);</span>
+<span class="fc" id="L779">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L780">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L782">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot; }, &quot;a&quot;);</span>
+<span class="fc" id="L783">        assertArrayEquals(new Object[]{&quot;b&quot;}, array);</span>
+<span class="fc" id="L784">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L786">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;a&quot; }, &quot;a&quot;);</span>
+<span class="fc" id="L787">        assertArrayEquals(new Object[]{&quot;b&quot;, &quot;a&quot;}, array);</span>
+<span class="fc" id="L788">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L790">        array = ArrayUtils.removeElements((Object[]) null, &quot;a&quot;, &quot;b&quot;);</span>
+<span class="fc" id="L791">        assertNull(array);</span>
+
+<span class="fc" id="L793">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_OBJECT_ARRAY, &quot;a&quot;, &quot;b&quot;);</span>
+<span class="fc" id="L794">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L795">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L797">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot; }, &quot;a&quot;, &quot;b&quot;);</span>
+<span class="fc" id="L798">        assertArrayEquals(ArrayUtils.EMPTY_OBJECT_ARRAY, array);</span>
+<span class="fc" id="L799">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L801">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot; }, &quot;a&quot;, &quot;c&quot;);</span>
+<span class="fc" id="L802">        assertArrayEquals(new Object[]{&quot;b&quot;}, array);</span>
+<span class="fc" id="L803">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L805">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;a&quot; }, &quot;a&quot;);</span>
+<span class="fc" id="L806">        assertArrayEquals(new Object[]{&quot;b&quot;, &quot;a&quot;}, array);</span>
+<span class="fc" id="L807">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L809">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;a&quot; }, &quot;a&quot;, &quot;b&quot;);</span>
+<span class="fc" id="L810">        assertArrayEquals(new Object[]{&quot;a&quot;}, array);</span>
+<span class="fc" id="L811">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L813">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;a&quot; }, &quot;a&quot;, &quot;a&quot;);</span>
+<span class="fc" id="L814">        assertArrayEquals(new Object[]{&quot;b&quot;}, array);</span>
+<span class="fc" id="L815">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L817">        array = ArrayUtils.removeElements(new Object[] { &quot;a&quot;, &quot;b&quot;, &quot;a&quot; }, &quot;a&quot;, &quot;a&quot;, &quot;a&quot;, &quot;a&quot;);</span>
+<span class="fc" id="L818">        assertArrayEquals(new Object[]{&quot;b&quot;}, array);</span>
+<span class="fc" id="L819">        assertEquals(Object.class, array.getClass().getComponentType());</span>
+<span class="fc" id="L820">    }</span>
+
+    @Test
+    public void testRemoveElementBooleanArray() {
+        boolean[] array;
+
+<span class="fc" id="L826">        array = ArrayUtils.removeElements((boolean[]) null, true);</span>
+<span class="fc" id="L827">        assertNull(array);</span>
+
+<span class="fc" id="L829">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_BOOLEAN_ARRAY, true);</span>
+<span class="fc" id="L830">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L831">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L833">        array = ArrayUtils.removeElements(new boolean[] { true }, true);</span>
+<span class="fc" id="L834">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L835">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L837">        array = ArrayUtils.removeElements(new boolean[] { true, false }, true);</span>
+<span class="fc" id="L838">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L839">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L841">        array = ArrayUtils.removeElements(new boolean[] { true, false, true }, true);</span>
+<span class="fc" id="L842">        assertArrayEquals(new boolean[]{false, true}, array);</span>
+<span class="fc" id="L843">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L845">        array = ArrayUtils.removeElements((boolean[]) null, true, false);</span>
+<span class="fc" id="L846">        assertNull(array);</span>
+
+<span class="fc" id="L848">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_BOOLEAN_ARRAY, true, false);</span>
+<span class="fc" id="L849">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L850">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L852">        array = ArrayUtils.removeElements(new boolean[] { true }, true, false);</span>
+<span class="fc" id="L853">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L854">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L856">        array = ArrayUtils.removeElements(new boolean[] { true, false }, true, false);</span>
+<span class="fc" id="L857">        assertArrayEquals(ArrayUtils.EMPTY_BOOLEAN_ARRAY, array);</span>
+<span class="fc" id="L858">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L860">        array = ArrayUtils.removeElements(new boolean[] { true, false }, true, true);</span>
+<span class="fc" id="L861">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L862">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L864">        array = ArrayUtils.removeElements(new boolean[] { true, false, true }, true, false);</span>
+<span class="fc" id="L865">        assertArrayEquals(new boolean[]{true}, array);</span>
+<span class="fc" id="L866">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L868">        array = ArrayUtils.removeElements(new boolean[] { true, false, true }, true, true);</span>
+<span class="fc" id="L869">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L870">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L872">        array = ArrayUtils.removeElements(new boolean[] { true, false, true }, true, true, true, true);</span>
+<span class="fc" id="L873">        assertArrayEquals(new boolean[]{false}, array);</span>
+<span class="fc" id="L874">        assertEquals(Boolean.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L875">    }</span>
+
+    @Test
+    public void testRemoveElementByteArray() {
+        byte[] array;
+
+<span class="fc" id="L881">        array = ArrayUtils.removeElements((byte[]) null, (byte) 1);</span>
+<span class="fc" id="L882">        assertNull(array);</span>
+
+<span class="fc" id="L884">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_BYTE_ARRAY, (byte) 1);</span>
+<span class="fc" id="L885">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L886">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L888">        array = ArrayUtils.removeElements(new byte[] { 1 }, (byte) 1);</span>
+<span class="fc" id="L889">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L890">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L892">        array = ArrayUtils.removeElements(new byte[] { 1, 2 }, (byte) 1);</span>
+<span class="fc" id="L893">        assertArrayEquals(new byte[]{2}, array);</span>
+<span class="fc" id="L894">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L896">        array = ArrayUtils.removeElements(new byte[] { 1, 2, 1 }, (byte) 1);</span>
+<span class="fc" id="L897">        assertArrayEquals(new byte[]{2, 1}, array);</span>
+<span class="fc" id="L898">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L900">        array = ArrayUtils.removeElements((byte[]) null, (byte) 1, (byte) 2);</span>
+<span class="fc" id="L901">        assertNull(array);</span>
+
+<span class="fc" id="L903">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_BYTE_ARRAY, (byte) 1, (byte) 2);</span>
+<span class="fc" id="L904">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L905">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L907">        array = ArrayUtils.removeElements(new byte[] { 1 }, (byte) 1, (byte) 2);</span>
+<span class="fc" id="L908">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L909">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L911">        array = ArrayUtils.removeElements(new byte[] { 1, 2 }, (byte) 1, (byte) 2);</span>
+<span class="fc" id="L912">        assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, array);</span>
+<span class="fc" id="L913">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L915">        array = ArrayUtils.removeElements(new byte[] { 1, 2 }, (byte) 1, (byte) 1);</span>
+<span class="fc" id="L916">        assertArrayEquals(new byte[]{2}, array);</span>
+<span class="fc" id="L917">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L919">        array = ArrayUtils.removeElements(new byte[] { 1, 2, 1 }, (byte) 1, (byte) 2);</span>
+<span class="fc" id="L920">        assertArrayEquals(new byte[]{1}, array);</span>
+<span class="fc" id="L921">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L923">        array = ArrayUtils.removeElements(new byte[] { 1, 2, 1 }, (byte) 1, (byte) 1);</span>
+<span class="fc" id="L924">        assertArrayEquals(new byte[]{2}, array);</span>
+<span class="fc" id="L925">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L927">        array = ArrayUtils.removeElements(new byte[] { 1, 2, 1 }, (byte) 1, (byte) 1, (byte) 1, (byte) 1);</span>
+<span class="fc" id="L928">        assertArrayEquals(new byte[]{2}, array);</span>
+<span class="fc" id="L929">        assertEquals(Byte.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L930">    }</span>
+
+    @Test
+    public void testRemoveElementCharArray() {
+        char[] array;
+
+<span class="fc" id="L936">        array = ArrayUtils.removeElements((char[]) null, 'a');</span>
+<span class="fc" id="L937">        assertNull(array);</span>
+
+<span class="fc" id="L939">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_CHAR_ARRAY, 'a');</span>
+<span class="fc" id="L940">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L941">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L943">        array = ArrayUtils.removeElements(new char[] { 'a' }, 'a');</span>
+<span class="fc" id="L944">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L945">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L947">        array = ArrayUtils.removeElements(new char[] { 'a', 'b' }, 'a');</span>
+<span class="fc" id="L948">        assertArrayEquals(new char[]{'b'}, array);</span>
+<span class="fc" id="L949">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L951">        array = ArrayUtils.removeElements(new char[] { 'a', 'b', 'a' }, 'a');</span>
+<span class="fc" id="L952">        assertArrayEquals(new char[]{'b', 'a'}, array);</span>
+<span class="fc" id="L953">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L955">        array = ArrayUtils.removeElements((char[]) null, 'a', 'b');</span>
+<span class="fc" id="L956">        assertNull(array);</span>
+
+<span class="fc" id="L958">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_CHAR_ARRAY, 'a', 'b');</span>
+<span class="fc" id="L959">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L960">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L962">        array = ArrayUtils.removeElements(new char[] { 'a' }, 'a', 'b');</span>
+<span class="fc" id="L963">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L964">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L966">        array = ArrayUtils.removeElements(new char[] { 'a', 'b' }, 'a', 'b');</span>
+<span class="fc" id="L967">        assertArrayEquals(ArrayUtils.EMPTY_CHAR_ARRAY, array);</span>
+<span class="fc" id="L968">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L970">        array = ArrayUtils.removeElements(new char[] { 'a', 'b' }, 'a', 'a');</span>
+<span class="fc" id="L971">        assertArrayEquals(new char[]{'b'}, array);</span>
+<span class="fc" id="L972">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L974">        array = ArrayUtils.removeElements(new char[] { 'a', 'b', 'a' }, 'a', 'b');</span>
+<span class="fc" id="L975">        assertArrayEquals(new char[]{'a'}, array);</span>
+<span class="fc" id="L976">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L978">        array = ArrayUtils.removeElements(new char[] { 'a', 'b', 'a' }, 'a', 'a');</span>
+<span class="fc" id="L979">        assertArrayEquals(new char[]{'b'}, array);</span>
+<span class="fc" id="L980">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L982">        array = ArrayUtils.removeElements(new char[] { 'a', 'b', 'a' }, 'a', 'a', 'a', 'a');</span>
+<span class="fc" id="L983">        assertArrayEquals(new char[]{'b'}, array);</span>
+<span class="fc" id="L984">        assertEquals(Character.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L985">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;)
+    public void testRemoveElementDoubleArray() {
+        double[] array;
+
+<span class="fc" id="L992">        array = ArrayUtils.removeElements((double[]) null, (double) 1);</span>
+<span class="fc" id="L993">        assertNull(array);</span>
+
+<span class="fc" id="L995">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_DOUBLE_ARRAY, (double) 1);</span>
+<span class="fc" id="L996">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L997">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L999">        array = ArrayUtils.removeElements(new double[] { 1 }, (double) 1);</span>
+<span class="fc" id="L1000">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L1001">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1003">        array = ArrayUtils.removeElements(new double[] { 1, 2 }, (double) 1);</span>
+<span class="fc" id="L1004">        assertArrayEquals(new double[]{2}, array);</span>
+<span class="fc" id="L1005">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1007">        array = ArrayUtils.removeElements(new double[] { 1, 2, 1 }, (double) 1);</span>
+<span class="fc" id="L1008">        assertArrayEquals(new double[]{2, 1}, array);</span>
+<span class="fc" id="L1009">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1011">        array = ArrayUtils.removeElements((double[]) null, (double) 1, (double) 2);</span>
+<span class="fc" id="L1012">        assertNull(array);</span>
+
+<span class="fc" id="L1014">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_DOUBLE_ARRAY, (double) 1, (double) 2);</span>
+<span class="fc" id="L1015">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L1016">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1018">        array = ArrayUtils.removeElements(new double[] { 1 }, (double) 1, (double) 2);</span>
+<span class="fc" id="L1019">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L1020">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1022">        array = ArrayUtils.removeElements(new double[] { 1, 2 }, (double) 1, (double) 2);</span>
+<span class="fc" id="L1023">        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, array);</span>
+<span class="fc" id="L1024">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1026">        array = ArrayUtils.removeElements(new double[] { 1, 2 }, (double) 1, (double) 1);</span>
+<span class="fc" id="L1027">        assertArrayEquals(new double[]{2}, array);</span>
+<span class="fc" id="L1028">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1030">        array = ArrayUtils.removeElements(new double[] { 1, 2, 1 }, (double) 1, (double) 2);</span>
+<span class="fc" id="L1031">        assertArrayEquals(new double[]{1}, array);</span>
+<span class="fc" id="L1032">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1034">        array = ArrayUtils.removeElements(new double[] { 1, 2, 1 }, (double) 1, (double) 1);</span>
+<span class="fc" id="L1035">        assertArrayEquals(new double[]{2}, array);</span>
+<span class="fc" id="L1036">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1038">        array = ArrayUtils.removeElements(new double[] { 1, 2, 1 }, (double) 1, (double) 1, (double) 1, (double) 1);</span>
+<span class="fc" id="L1039">        assertArrayEquals(new double[]{2}, array);</span>
+<span class="fc" id="L1040">        assertEquals(Double.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L1041">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;)
+    public void testRemoveElementFloatArray() {
+        float[] array;
+
+<span class="fc" id="L1048">        array = ArrayUtils.removeElements((float[]) null, (float) 1);</span>
+<span class="fc" id="L1049">        assertNull(array);</span>
+
+<span class="fc" id="L1051">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_FLOAT_ARRAY, (float) 1);</span>
+<span class="fc" id="L1052">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L1053">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1055">        array = ArrayUtils.removeElements(new float[] { 1 }, (float) 1);</span>
+<span class="fc" id="L1056">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L1057">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1059">        array = ArrayUtils.removeElements(new float[] { 1, 2 }, (float) 1);</span>
+<span class="fc" id="L1060">        assertArrayEquals(new float[]{2}, array);</span>
+<span class="fc" id="L1061">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1063">        array = ArrayUtils.removeElements(new float[] { 1, 2, 1 }, (float) 1);</span>
+<span class="fc" id="L1064">        assertArrayEquals(new float[]{2, 1}, array);</span>
+<span class="fc" id="L1065">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1067">        array = ArrayUtils.removeElements((float[]) null, (float) 1, (float) 1);</span>
+<span class="fc" id="L1068">        assertNull(array);</span>
+
+<span class="fc" id="L1070">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_FLOAT_ARRAY, (float) 1, (float) 1);</span>
+<span class="fc" id="L1071">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L1072">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1074">        array = ArrayUtils.removeElements(new float[] { 1 }, (float) 1, (float) 1);</span>
+<span class="fc" id="L1075">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L1076">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1078">        array = ArrayUtils.removeElements(new float[] { 1, 2 }, (float) 1, (float) 2);</span>
+<span class="fc" id="L1079">        assertArrayEquals(ArrayUtils.EMPTY_FLOAT_ARRAY, array);</span>
+<span class="fc" id="L1080">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1082">        array = ArrayUtils.removeElements(new float[] { 1, 2 }, (float) 1, (float) 1);</span>
+<span class="fc" id="L1083">        assertArrayEquals(new float[]{2}, array);</span>
+<span class="fc" id="L1084">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1086">        array = ArrayUtils.removeElements(new float[] { 1, 2, 1 }, (float) 1, (float) 1);</span>
+<span class="fc" id="L1087">        assertArrayEquals(new float[]{2}, array);</span>
+<span class="fc" id="L1088">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1090">        array = ArrayUtils.removeElements(new float[] { 1, 2, 1 }, (float) 1, (float) 2);</span>
+<span class="fc" id="L1091">        assertArrayEquals(new float[]{1}, array);</span>
+<span class="fc" id="L1092">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1094">        array = ArrayUtils.removeElements(new float[] { 1, 2, 1 }, (float) 1, (float) 1, (float) 1, (float) 1);</span>
+<span class="fc" id="L1095">        assertArrayEquals(new float[]{2}, array);</span>
+<span class="fc" id="L1096">        assertEquals(Float.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L1097">    }</span>
+
+    @Test
+    public void testRemoveElementIntArray() {
+        int[] array;
+
+<span class="fc" id="L1103">        array = ArrayUtils.removeElements((int[]) null, 1);</span>
+<span class="fc" id="L1104">        assertNull(array);</span>
+
+<span class="fc" id="L1106">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_INT_ARRAY, 1);</span>
+<span class="fc" id="L1107">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L1108">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1110">        array = ArrayUtils.removeElements(new int[] { 1 }, 1);</span>
+<span class="fc" id="L1111">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L1112">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1114">        array = ArrayUtils.removeElements(new int[] { 1, 2 }, 1);</span>
+<span class="fc" id="L1115">        assertArrayEquals(new int[]{2}, array);</span>
+<span class="fc" id="L1116">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1118">        array = ArrayUtils.removeElements(new int[] { 1, 2, 1 }, 1);</span>
+<span class="fc" id="L1119">        assertArrayEquals(new int[]{2, 1}, array);</span>
+<span class="fc" id="L1120">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1122">        array = ArrayUtils.removeElements((int[]) null, 1);</span>
+<span class="fc" id="L1123">        assertNull(array);</span>
+
+<span class="fc" id="L1125">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_INT_ARRAY, 1, 1);</span>
+<span class="fc" id="L1126">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L1127">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1129">        array = ArrayUtils.removeElements(new int[] { 1 }, 1, 1);</span>
+<span class="fc" id="L1130">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L1131">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1133">        array = ArrayUtils.removeElements(new int[] { 1, 2 }, 1, 2);</span>
+<span class="fc" id="L1134">        assertArrayEquals(ArrayUtils.EMPTY_INT_ARRAY, array);</span>
+<span class="fc" id="L1135">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1137">        array = ArrayUtils.removeElements(new int[] { 1, 2 }, 1, 1);</span>
+<span class="fc" id="L1138">        assertArrayEquals(new int[]{2}, array);</span>
+<span class="fc" id="L1139">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1141">        array = ArrayUtils.removeElements(new int[] { 1, 2, 1 }, 1, 2);</span>
+<span class="fc" id="L1142">        assertArrayEquals(new int[]{1}, array);</span>
+<span class="fc" id="L1143">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1145">        array = ArrayUtils.removeElements(new int[] { 1, 2, 1 }, 1, 1);</span>
+<span class="fc" id="L1146">        assertArrayEquals(new int[]{2}, array);</span>
+<span class="fc" id="L1147">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1149">        array = ArrayUtils.removeElements(new int[] { 1, 2, 1 }, 1, 1, 1, 1);</span>
+<span class="fc" id="L1150">        assertArrayEquals(new int[]{2}, array);</span>
+<span class="fc" id="L1151">        assertEquals(Integer.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L1152">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;)
+    public void testRemoveElementLongArray() {
+        long[] array;
+
+<span class="fc" id="L1159">        array = ArrayUtils.removeElements((long[]) null, 1L);</span>
+<span class="fc" id="L1160">        assertNull(array);</span>
+
+<span class="fc" id="L1162">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_LONG_ARRAY, 1L);</span>
+<span class="fc" id="L1163">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L1164">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1166">        array = ArrayUtils.removeElements(new long[] { 1 }, 1L);</span>
+<span class="fc" id="L1167">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L1168">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1170">        array = ArrayUtils.removeElements(new long[] { 1, 2 }, 1L);</span>
+<span class="fc" id="L1171">        assertArrayEquals(new long[]{2}, array);</span>
+<span class="fc" id="L1172">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1174">        array = ArrayUtils.removeElements(new long[] { 1, 2, 1 }, 1L);</span>
+<span class="fc" id="L1175">        assertArrayEquals(new long[]{2, 1}, array);</span>
+<span class="fc" id="L1176">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1178">        array = ArrayUtils.removeElements((long[]) null, 1L, 1L);</span>
+<span class="fc" id="L1179">        assertNull(array);</span>
+
+<span class="fc" id="L1181">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_LONG_ARRAY, 1L, 1L);</span>
+<span class="fc" id="L1182">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L1183">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1185">        array = ArrayUtils.removeElements(new long[] { 1 }, 1L, 1L);</span>
+<span class="fc" id="L1186">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L1187">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1189">        array = ArrayUtils.removeElements(new long[] { 1, 2 }, 1L, 2L);</span>
+<span class="fc" id="L1190">        assertArrayEquals(ArrayUtils.EMPTY_LONG_ARRAY, array);</span>
+<span class="fc" id="L1191">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1193">        array = ArrayUtils.removeElements(new long[] { 1, 2 }, 1L, 1L);</span>
+<span class="fc" id="L1194">        assertArrayEquals(new long[]{2}, array);</span>
+<span class="fc" id="L1195">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1197">        array = ArrayUtils.removeElements(new long[] { 1, 2, 1 }, 1L, 1L);</span>
+<span class="fc" id="L1198">        assertArrayEquals(new long[]{2}, array);</span>
+<span class="fc" id="L1199">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1201">        array = ArrayUtils.removeElements(new long[] { 1, 2, 1 }, 1L, 2L);</span>
+<span class="fc" id="L1202">        assertArrayEquals(new long[]{1}, array);</span>
+<span class="fc" id="L1203">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1205">        array = ArrayUtils.removeElements(new long[] { 1, 2, 1 }, 1L, 1L, 1L, 1L);</span>
+<span class="fc" id="L1206">        assertArrayEquals(new long[]{2}, array);</span>
+<span class="fc" id="L1207">        assertEquals(Long.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L1208">    }</span>
+
+    @Test
+    public void testRemoveElementShortArray() {
+        short[] array;
+
+<span class="fc" id="L1214">        array = ArrayUtils.removeElements((short[]) null, (short) 1);</span>
+<span class="fc" id="L1215">        assertNull(array);</span>
+
+<span class="fc" id="L1217">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_SHORT_ARRAY, (short) 1);</span>
+<span class="fc" id="L1218">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L1219">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1221">        array = ArrayUtils.removeElements(new short[] { 1 }, (short) 1);</span>
+<span class="fc" id="L1222">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L1223">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1225">        array = ArrayUtils.removeElements(new short[] { 1, 2 }, (short) 1);</span>
+<span class="fc" id="L1226">        assertArrayEquals(new short[]{2}, array);</span>
+<span class="fc" id="L1227">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1229">        array = ArrayUtils.removeElements(new short[] { 1, 2, 1 }, (short) 1);</span>
+<span class="fc" id="L1230">        assertArrayEquals(new short[]{2, 1}, array);</span>
+<span class="fc" id="L1231">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1233">        array = ArrayUtils.removeElements((short[]) null, (short) 1, (short) 1);</span>
+<span class="fc" id="L1234">        assertNull(array);</span>
+
+<span class="fc" id="L1236">        array = ArrayUtils.removeElements(ArrayUtils.EMPTY_SHORT_ARRAY, (short) 1, (short) 1);</span>
+<span class="fc" id="L1237">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L1238">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1240">        array = ArrayUtils.removeElements(new short[] { 1 }, (short) 1, (short) 1);</span>
+<span class="fc" id="L1241">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L1242">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1244">        array = ArrayUtils.removeElements(new short[] { 1, 2 }, (short) 1, (short) 2);</span>
+<span class="fc" id="L1245">        assertArrayEquals(ArrayUtils.EMPTY_SHORT_ARRAY, array);</span>
+<span class="fc" id="L1246">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1248">        array = ArrayUtils.removeElements(new short[] { 1, 2 }, (short) 1, (short) 1);</span>
+<span class="fc" id="L1249">        assertArrayEquals(new short[]{2}, array);</span>
+<span class="fc" id="L1250">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1252">        array = ArrayUtils.removeElements(new short[] { 1, 2, 1 }, (short) 1, (short) 1);</span>
+<span class="fc" id="L1253">        assertArrayEquals(new short[]{2}, array);</span>
+<span class="fc" id="L1254">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1256">        array = ArrayUtils.removeElements(new short[] { 1, 2, 1 }, (short) 1, (short) 2);</span>
+<span class="fc" id="L1257">        assertArrayEquals(new short[]{1}, array);</span>
+<span class="fc" id="L1258">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+
+<span class="fc" id="L1260">        array = ArrayUtils.removeElements(new short[] { 1, 2, 1 }, (short) 1, (short) 1, (short) 1, (short) 1);</span>
+<span class="fc" id="L1261">        assertArrayEquals(new short[]{2}, array);</span>
+<span class="fc" id="L1262">        assertEquals(Short.TYPE, array.getClass().getComponentType());</span>
+<span class="fc" id="L1263">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

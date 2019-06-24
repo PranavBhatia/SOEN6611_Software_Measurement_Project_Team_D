@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationDynaBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.beanutils</a> &gt; <span class="el_source">TestConfigurationDynaBean.java</span></div><h1>TestConfigurationDynaBean.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2.beanutils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+import junitx.framework.ObjectAssert;
+
+import org.apache.commons.beanutils.DynaProperty;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * &lt;p&gt;Test Case for the &lt;code&gt;ConfigurationDynaBean&lt;/code&gt; implementation class.
+ * These tests were based on the ones in &lt;code&gt;BasicDynaBeanTestCase&lt;/code&gt;
+ * because the two classes provide similar levels of functionality.&lt;/p&gt;
+ *
+ * @author &lt;a href=&quot;mailto:ricardo.gladwell@btinternet.com&quot;&gt;Ricardo Gladwell&lt;/a&gt;
+ */
+<span class="fc" id="L47">public class TestConfigurationDynaBean</span>
+{
+    /**
+     * The basic test bean for each test.
+     */
+    private ConfigurationDynaBean bean;
+
+    /**
+     * The set of property names we expect to have returned when calling
+     * &lt;code&gt;getDynaProperties()&lt;/code&gt;.  You should update this list
+     * when new properties are added to TestBean.
+     */
+<span class="fc" id="L59">    String[] properties = {</span>
+            &quot;booleanProperty&quot;,
+            &quot;booleanSecond&quot;,
+            &quot;doubleProperty&quot;,
+            &quot;floatProperty&quot;,
+            &quot;intProperty&quot;,
+            &quot;longProperty&quot;,
+            &quot;mappedProperty.key1&quot;,
+            &quot;mappedProperty.key2&quot;,
+            &quot;mappedProperty.key3&quot;,
+            &quot;mappedIntProperty.key1&quot;,
+            &quot;shortProperty&quot;,
+            &quot;stringProperty&quot;,
+            &quot;byteProperty&quot;,
+            &quot;charProperty&quot;
+    };
+
+<span class="fc" id="L76">    Object[] values = {</span>
+            Boolean.TRUE,
+            Boolean.TRUE,
+            new Double(Double.MAX_VALUE),
+            new Float(Float.MAX_VALUE),
+            new Integer(Integer.MAX_VALUE),
+            new Long(Long.MAX_VALUE),
+            &quot;First Value&quot;,
+            &quot;Second Value&quot;,
+            &quot;Third Value&quot;,
+            new Integer(Integer.MAX_VALUE),
+            new Short(Short.MAX_VALUE),
+            &quot;This is a string&quot;,
+            new Byte(Byte.MAX_VALUE),
+            new Character(Character.MAX_VALUE)
+    };
+
+<span class="fc" id="L93">    int[] intArray = {0, 10, 20, 30, 40};</span>
+<span class="fc" id="L94">    boolean[] booleanArray = {true, false, true, false, true};</span>
+<span class="fc" id="L95">    char[] charArray = {'a', 'b', 'c', 'd', 'e'};</span>
+<span class="fc" id="L96">    byte[] byteArray = {0, 10, 20, 30, 40};</span>
+<span class="fc" id="L97">    long[] longArray = {0, 10, 20, 30, 40};</span>
+<span class="fc" id="L98">    short[] shortArray = {0, 10, 20, 30, 40};</span>
+<span class="fc" id="L99">    float[] floatArray = {0, 10, 20, 30, 40};</span>
+<span class="fc" id="L100">    double[] doubleArray = {0.0, 10.0, 20.0, 30.0, 40.0};</span>
+<span class="fc" id="L101">    String[] stringArray = {&quot;String 0&quot;, &quot;String 1&quot;, &quot;String 2&quot;, &quot;String 3&quot;, &quot;String 4&quot;};</span>
+
+
+    /**
+     * Set up instance variables required by this test case.
+     */
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L110">        final Configuration configuration = createConfiguration();</span>
+
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        for (int i = 0; i &lt; properties.length; i++)</span>
+        {
+<span class="fc" id="L114">            configuration.setProperty(properties[i], values[i]);</span>
+        }
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (final int element : intArray) {</span>
+<span class="fc" id="L118">            configuration.addProperty(&quot;intIndexed&quot;, new Integer(element));</span>
+        }
+
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        for (final String element : stringArray) {</span>
+<span class="fc" id="L122">            configuration.addProperty(&quot;stringIndexed&quot;, element);</span>
+        }
+
+<span class="fc" id="L125">        final List&lt;String&gt; list = Arrays.asList(stringArray);</span>
+<span class="fc" id="L126">        configuration.addProperty(&quot;listIndexed&quot;, list);</span>
+
+<span class="fc" id="L128">        bean = new ConfigurationDynaBean(configuration);</span>
+
+<span class="fc" id="L130">        bean.set(&quot;listIndexed&quot;, list);</span>
+<span class="fc" id="L131">        bean.set(&quot;intArray&quot;, intArray);</span>
+<span class="fc" id="L132">        bean.set(&quot;booleanArray&quot;, booleanArray);</span>
+<span class="fc" id="L133">        bean.set(&quot;charArray&quot;, charArray);</span>
+<span class="fc" id="L134">        bean.set(&quot;longArray&quot;, longArray);</span>
+<span class="fc" id="L135">        bean.set(&quot;shortArray&quot;, shortArray);</span>
+<span class="fc" id="L136">        bean.set(&quot;floatArray&quot;, floatArray);</span>
+<span class="fc" id="L137">        bean.set(&quot;doubleArray&quot;, doubleArray);</span>
+<span class="fc" id="L138">        bean.set(&quot;byteArray&quot;, byteArray);</span>
+<span class="fc" id="L139">        bean.set(&quot;stringArray&quot;, stringArray);</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Creates the underlying configuration object for the dyna bean.
+     * @return the underlying configuration object
+     */
+    protected Configuration createConfiguration()
+    {
+<span class="fc" id="L148">        return new BaseConfiguration();</span>
+    }
+
+    /**
+     * Corner cases on getDynaProperty invalid arguments.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetDescriptorArguments()
+    {
+<span class="fc" id="L157">        final DynaProperty descriptor = bean.getDynaClass().getDynaProperty(&quot;unknown&quot;);</span>
+<span class="fc" id="L158">        assertNull(&quot;Unknown property descriptor should be null&quot;, descriptor);</span>
+<span class="nc" id="L159">        bean.getDynaClass().getDynaProperty(null);</span>
+<span class="nc" id="L160">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;booleanProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorBoolean()
+    {
+<span class="fc" id="L168">        testGetDescriptorBase(&quot;booleanProperty&quot;, Boolean.TYPE);</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;doubleProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorDouble()
+    {
+<span class="fc" id="L177">        testGetDescriptorBase(&quot;doubleProperty&quot;, Double.TYPE);</span>
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;floatProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorFloat()
+    {
+<span class="fc" id="L186">        testGetDescriptorBase(&quot;floatProperty&quot;, Float.TYPE);</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;intProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorInt()
+    {
+<span class="fc" id="L195">        testGetDescriptorBase(&quot;intProperty&quot;, Integer.TYPE);</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;longProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorLong()
+    {
+<span class="fc" id="L204">        testGetDescriptorBase(&quot;longProperty&quot;, Long.TYPE);</span>
+<span class="fc" id="L205">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;booleanSecond&lt;/code&gt;
+     * that uses an &quot;is&quot; method as the getter.
+     */
+    @Test
+    public void testGetDescriptorSecond()
+    {
+<span class="fc" id="L214">        testGetDescriptorBase(&quot;booleanSecond&quot;, Boolean.TYPE);</span>
+<span class="fc" id="L215">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;shortProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorShort()
+    {
+<span class="fc" id="L223">        testGetDescriptorBase(&quot;shortProperty&quot;, Short.TYPE);</span>
+<span class="fc" id="L224">    }</span>
+
+    /**
+     * Positive getDynaProperty on property &lt;code&gt;stringProperty&lt;/code&gt;.
+     */
+    @Test
+    public void testGetDescriptorString()
+    {
+<span class="fc" id="L232">        testGetDescriptorBase(&quot;stringProperty&quot;, String.class);</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Positive test for getDynaPropertys().  Each property name
+     * listed in &lt;code&gt;properties&lt;/code&gt; should be returned exactly once.
+     */
+    @Test
+    public void testGetDescriptors()
+    {
+<span class="fc" id="L242">        final DynaProperty pd[] = bean.getDynaClass().getDynaProperties();</span>
+<span class="fc" id="L243">        assertNotNull(&quot;Got descriptors&quot;, pd);</span>
+<span class="fc" id="L244">        final int count[] = new int[properties.length];</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">        for (final DynaProperty element : pd) {</span>
+<span class="fc" id="L246">            final String name = element.getName();</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">            for (int j = 0; j &lt; properties.length; j++)</span>
+            {
+<span class="fc bfc" id="L249" title="All 2 branches covered.">                if (name.equals(properties[j]))</span>
+                {
+<span class="fc" id="L251">                    count[j]++;</span>
+                }
+            }
+        }
+
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        for (int j = 0; j &lt; properties.length; j++)</span>
+        {
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">            if (count[j] &lt; 0)</span>
+            {
+<span class="nc" id="L260">                fail(&quot;Missing property &quot; + properties[j]);</span>
+            }
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">            else if (count[j] &gt; 1)</span>
+            {
+<span class="nc" id="L264">                fail(&quot;Duplicate property &quot; + properties[j]);</span>
+            }
+        }
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * Corner cases on getIndexedProperty invalid arguments.
+     */
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testGetIndexedArguments()
+    {
+<span class="nc" id="L275">        bean.get(&quot;intArray&quot;, -1);</span>
+<span class="nc" id="L276">    }</span>
+
+    /**
+     * Positive and negative tests on getIndexedProperty valid arguments.
+     */
+    @Test
+    public void testGetIndexedValues()
+    {
+<span class="fc bfc" id="L284" title="All 2 branches covered.">        for (int i = 0; i &lt; 5; i++)</span>
+        {
+<span class="fc" id="L286">            Object value = bean.get(&quot;intArray&quot;, i);</span>
+
+<span class="fc" id="L288">            assertNotNull(&quot;intArray index &quot; + i + &quot; did not return value.&quot;, value);</span>
+<span class="fc" id="L289">            ObjectAssert.assertInstanceOf(&quot;intArray index &quot; + i, Integer.class, value);</span>
+<span class="fc" id="L290">            assertEquals(&quot;intArray &quot; + i + &quot; returned incorrect value.&quot;, i * 10, ((Integer) value).intValue());</span>
+
+<span class="fc" id="L292">            value = bean.get(&quot;intIndexed&quot;, i);</span>
+
+<span class="fc" id="L294">            assertNotNull(&quot;intIndexed index &quot; + i + &quot;returned value &quot; + i, value);</span>
+<span class="fc" id="L295">            ObjectAssert.assertInstanceOf(&quot;intIndexed index &quot; + i, Integer.class, value);</span>
+<span class="fc" id="L296">            assertEquals(&quot;intIndexed index &quot; + i + &quot;returned correct &quot; + i, i * 10, ((Integer) value).intValue());</span>
+
+<span class="fc" id="L298">            value = bean.get(&quot;listIndexed&quot;, i);</span>
+
+<span class="fc" id="L300">            assertNotNull(&quot;listIndexed index &quot; + i + &quot;returned value &quot; + i, value);</span>
+<span class="fc" id="L301">            ObjectAssert.assertInstanceOf(&quot;list index &quot; + i, String.class, value);</span>
+<span class="fc" id="L302">            assertEquals(&quot;listIndexed index &quot; + i + &quot;returned correct &quot; + i, &quot;String &quot; + i, value);</span>
+
+<span class="fc" id="L304">            value = bean.get(&quot;stringArray&quot;, i);</span>
+
+<span class="fc" id="L306">            assertNotNull(&quot;stringArray index &quot; + i + &quot; returnde null.&quot;, value);</span>
+<span class="fc" id="L307">            assertFalse(&quot;stringArray index &quot; + i + &quot; returned array instead of String.&quot;, value.getClass().isArray());</span>
+<span class="fc" id="L308">            ObjectAssert.assertInstanceOf(&quot;stringArray index &quot; + i, String.class, value);</span>
+<span class="fc" id="L309">            assertEquals(&quot;stringArray returned correct &quot; + i, &quot;String &quot; + i, value);</span>
+
+<span class="fc" id="L311">            value = bean.get(&quot;stringIndexed&quot;, i);</span>
+
+<span class="fc" id="L313">            assertNotNull(&quot;stringIndexed returned value &quot; + i, value);</span>
+<span class="fc" id="L314">            ObjectAssert.assertInstanceOf(&quot;stringIndexed&quot;, String.class, value);</span>
+<span class="fc" id="L315">            assertEquals(&quot;stringIndexed returned correct &quot; + i, &quot;String &quot; + i, value);</span>
+        }
+<span class="fc" id="L317">    }</span>
+
+    /**
+     * Corner cases on getMappedProperty invalid arguments.
+     */
+    @Test
+    public void testGetMappedArguments()
+    {
+        try
+        {
+<span class="fc" id="L327">            final Object value = bean.get(&quot;mappedProperty&quot;, &quot;unknown&quot;);</span>
+<span class="fc" id="L328">            assertNull(&quot;Should not return a value&quot;, value);</span>
+        }
+<span class="nc" id="L330">        catch (final Throwable t)</span>
+        {
+<span class="nc" id="L332">            fail(&quot;Threw &quot; + t + &quot; instead of returning null&quot;);</span>
+<span class="fc" id="L333">        }</span>
+<span class="fc" id="L334">    }</span>
+
+    /**
+     * Positive and negative tests on getMappedProperty valid arguments.
+     */
+    @Test
+    public void testGetMappedValues()
+    {
+<span class="fc" id="L342">        Object value = bean.get(&quot;mappedProperty&quot;, &quot;key1&quot;);</span>
+<span class="fc" id="L343">        assertEquals(&quot;Can find first value&quot;, &quot;First Value&quot;, value);</span>
+
+<span class="fc" id="L345">        value = bean.get(&quot;mappedProperty&quot;, &quot;key2&quot;);</span>
+<span class="fc" id="L346">        assertEquals(&quot;Can find second value&quot;, &quot;Second Value&quot;, value);</span>
+
+<span class="fc" id="L348">        value = bean.get(&quot;mappedProperty&quot;, &quot;key3&quot;);</span>
+<span class="fc" id="L349">        assertNotNull(&quot;Cannot find third value&quot;, value);</span>
+<span class="fc" id="L350">    }</span>
+
+    /**
+     * Corner cases on getSimpleProperty invalid arguments.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetSimpleArguments()
+    {
+<span class="nc" id="L358">        bean.get(&quot;a non existing property&quot;);</span>
+<span class="nc" id="L359">    }</span>
+
+    /**
+     * Test getSimpleProperty on a boolean property.
+     */
+    @Test
+    public void testGetSimpleBoolean()
+    {
+<span class="fc" id="L367">        final Object value = bean.get(&quot;booleanProperty&quot;);</span>
+<span class="fc" id="L368">        assertNotNull(&quot;Got a value&quot;, value);</span>
+<span class="fc" id="L369">        ObjectAssert.assertInstanceOf(&quot;Got correct type&quot;, Boolean.class, value);</span>
+<span class="fc" id="L370">        assertTrue(&quot;Got correct value&quot;, ((Boolean) value).booleanValue());</span>
+<span class="fc" id="L371">    }</span>
+
+    /**
+     * Test getSimpleProperty on a double property.
+     */
+    @Test
+    public void testGetSimpleDouble()
+    {
+<span class="fc" id="L379">        final Object value = bean.get(&quot;doubleProperty&quot;);</span>
+<span class="fc" id="L380">        assertNotNull(&quot;Got a value&quot;, value);</span>
+<span class="fc" id="L381">        ObjectAssert.assertInstanceOf(&quot;Got correct type&quot;, Double.class, value);</span>
+<span class="fc" id="L382">        assertEquals(&quot;Got correct value&quot;, ((Double) value).doubleValue(), Double.MAX_VALUE, 0.005);</span>
+<span class="fc" id="L383">    }</span>
+
+    /**
+     * Test getSimpleProperty on a float property.
+     */
+    @Test
+    public void testGetSimpleFloat()
+    {
+<span class="fc" id="L391">        final Object value = bean.get(&quot;floatProperty&quot;);</span>
+<span class="fc" id="L392">        assertNotNull(&quot;Got a value&quot;, value);</span>
+<span class="fc" id="L393">        ObjectAssert.assertInstanceOf(&quot;Got correct type&quot;, Float.class, value);</span>
+<span class="fc" id="L394">        assertEquals(&quot;Got correct value&quot;, ((Float) value).floatValue(), Float.MAX_VALUE, 0.005f);</span>
+<span class="fc" id="L395">    }</span>
+
+    /**
+     * Test getSimpleProperty on a int property.
+     */
+    @Test
+    public void testGetSimpleInt()
+    {
+<span class="fc" id="L403">        final Object value = bean.get(&quot;intProperty&quot;);</span>
+<span class="fc" id="L404">        assertNotNull(&quot;Failed to get value&quot;, value);</span>
+<span class="fc" id="L405">        ObjectAssert.assertInstanceOf(&quot;Incorrect type&quot;, Integer.class, value);</span>
+<span class="fc" id="L406">        assertEquals(&quot;Incorrect value&quot;, ((Integer) value).intValue(), Integer.MAX_VALUE);</span>
+<span class="fc" id="L407">    }</span>
+
+    /**
+     * Test getSimpleProperty on a long property.
+     */
+    @Test
+    public void testGetSimpleLong()
+    {
+<span class="fc" id="L415">        final Object value = bean.get(&quot;longProperty&quot;);</span>
+<span class="fc" id="L416">        assertNotNull(&quot;Got a value&quot;, value);</span>
+<span class="fc" id="L417">        ObjectAssert.assertInstanceOf(&quot;Returned incorrect type&quot;, Long.class, value);</span>
+<span class="fc" id="L418">        assertEquals(&quot;Returned value of Incorrect value&quot;, ((Long) value).longValue(), Long.MAX_VALUE);</span>
+<span class="fc" id="L419">    }</span>
+
+    /**
+     * Test getSimpleProperty on a short property.
+     */
+    @Test
+    public void testGetSimpleShort()
+    {
+<span class="fc" id="L427">        final Object value = bean.get(&quot;shortProperty&quot;);</span>
+<span class="fc" id="L428">        assertNotNull(&quot;Got a value&quot;, value);</span>
+<span class="fc" id="L429">        ObjectAssert.assertInstanceOf(&quot;Got correct type&quot;, Short.class, value);</span>
+<span class="fc" id="L430">        assertEquals(&quot;Got correct value&quot;, ((Short) value).shortValue(), Short.MAX_VALUE);</span>
+<span class="fc" id="L431">    }</span>
+
+    /**
+     * Test getSimpleProperty on a String property.
+     */
+    @Test
+    public void testGetSimpleString()
+    {
+<span class="fc" id="L439">        final Object value = bean.get(&quot;stringProperty&quot;);</span>
+<span class="fc" id="L440">        assertNotNull(&quot;Got a value&quot;, value);</span>
+<span class="fc" id="L441">        ObjectAssert.assertInstanceOf(&quot;Got correct type&quot;, String.class, value);</span>
+<span class="fc" id="L442">        assertEquals(&quot;Got correct value&quot;, value, &quot;This is a string&quot;);</span>
+<span class="fc" id="L443">    }</span>
+
+    /**
+     * Test &lt;code&gt;contains()&lt;/code&gt; method for mapped properties.
+     */
+    @Test
+    public void testMappedContains()
+    {
+<span class="fc" id="L451">        assertTrue(&quot;Can't see first key&quot;, bean.contains(&quot;mappedProperty&quot;, &quot;key1&quot;));</span>
+<span class="pc bpc" id="L452" title="1 of 2 branches missed.">        assertTrue(&quot;Can see unknown key&quot;, !bean.contains(&quot;mappedProperty&quot;, &quot;Unknown Key&quot;));</span>
+<span class="fc" id="L453">    }</span>
+
+    /**
+     * Test &lt;code&gt;remove()&lt;/code&gt; method for mapped properties.
+     */
+    @Test
+    public void testMappedRemove()
+    {
+<span class="fc" id="L461">        assertTrue(&quot;Can see first key&quot;, bean.contains(&quot;mappedProperty&quot;, &quot;key1&quot;));</span>
+<span class="fc" id="L462">        bean.remove(&quot;mappedProperty&quot;, &quot;key1&quot;);</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">        assertTrue(&quot;Can not see first key&quot;, !bean.contains(&quot;mappedProperty&quot;, &quot;key1&quot;));</span>
+
+<span class="pc bpc" id="L465" title="1 of 2 branches missed.">        assertTrue(&quot;Can not see unknown key&quot;, !bean.contains(&quot;mappedProperty&quot;, &quot;key4&quot;));</span>
+<span class="fc" id="L466">        bean.remove(&quot;mappedProperty&quot;, &quot;key4&quot;);</span>
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">        assertTrue(&quot;Can not see unknown key&quot;, !bean.contains(&quot;mappedProperty&quot;, &quot;key4&quot;));</span>
+<span class="fc" id="L468">    }</span>
+
+    /**
+     * Corner cases on setIndexedProperty invalid arguments.
+     */
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testSetIndexedArguments()
+    {
+<span class="nc" id="L476">        bean.set(&quot;intArray&quot;, -1, new Integer(0));</span>
+<span class="nc" id="L477">    }</span>
+
+    /**
+     * Positive and negative tests on setIndexedProperty valid arguments.
+     */
+    @Test
+    public void testSetIndexedValues()
+    {
+<span class="fc" id="L485">        bean.set(&quot;intArray&quot;, 0, new Integer(1));</span>
+<span class="fc" id="L486">        Object value = bean.get(&quot;intArray&quot;, 0);</span>
+
+<span class="fc" id="L488">        assertNotNull(&quot;Returned new value 0&quot;, value);</span>
+<span class="fc" id="L489">        ObjectAssert.assertInstanceOf(&quot;Returned Integer new value 0&quot;, Integer.class,  value);</span>
+<span class="fc" id="L490">        assertEquals(&quot;Returned correct new value 0&quot;, 1, ((Integer) value).intValue());</span>
+
+
+<span class="fc" id="L493">        bean.set(&quot;intIndexed&quot;, 1, new Integer(11));</span>
+<span class="fc" id="L494">        value = bean.get(&quot;intIndexed&quot;, 1);</span>
+
+<span class="fc" id="L496">        assertNotNull(&quot;Returned new value 1&quot;, value);</span>
+<span class="fc" id="L497">        ObjectAssert.assertInstanceOf(&quot;Returned Integer new value 1&quot;, Integer.class,  value);</span>
+<span class="fc" id="L498">        assertEquals(&quot;Returned correct new value 1&quot;, 11, ((Integer) value).intValue());</span>
+
+
+<span class="fc" id="L501">        bean.set(&quot;listIndexed&quot;, 2, &quot;New Value 2&quot;);</span>
+<span class="fc" id="L502">        value = bean.get(&quot;listIndexed&quot;, 2);</span>
+
+<span class="fc" id="L504">        assertNotNull(&quot;Returned new value 2&quot;, value);</span>
+<span class="fc" id="L505">        ObjectAssert.assertInstanceOf(&quot;Returned String new value 2&quot;, String.class,  value);</span>
+<span class="fc" id="L506">        assertEquals(&quot;Returned correct new value 2&quot;, &quot;New Value 2&quot;, value);</span>
+
+
+<span class="fc" id="L509">        bean.set(&quot;stringArray&quot;, 3, &quot;New Value 3&quot;);</span>
+<span class="fc" id="L510">        value = bean.get(&quot;stringArray&quot;, 3);</span>
+
+<span class="fc" id="L512">        assertNotNull(&quot;Returned new value 3&quot;, value);</span>
+<span class="fc" id="L513">        ObjectAssert.assertInstanceOf(&quot;Returned String new value 3&quot;, String.class,  value);</span>
+<span class="fc" id="L514">        assertEquals(&quot;Returned correct new value 3&quot;, &quot;New Value 3&quot;, value);</span>
+
+
+<span class="fc" id="L517">        bean.set(&quot;stringIndexed&quot;, 4, &quot;New Value 4&quot;);</span>
+<span class="fc" id="L518">        value = bean.get(&quot;stringIndexed&quot;, 4);</span>
+
+<span class="fc" id="L520">        assertNotNull(&quot;Returned new value 4&quot;, value);</span>
+<span class="fc" id="L521">        ObjectAssert.assertInstanceOf(&quot;Returned String new value 4&quot;, String.class,  value);</span>
+<span class="fc" id="L522">        assertEquals(&quot;Returned correct new value 4&quot;, &quot;New Value 4&quot;, value);</span>
+<span class="fc" id="L523">    }</span>
+
+    /**
+     * Test the modification of a configuration property stored internally as an array.
+     */
+    @Test
+    public void testSetArrayValue()
+    {
+<span class="fc" id="L531">        final MapConfiguration configuration = new MapConfiguration(new HashMap&lt;String, Object&gt;());</span>
+<span class="fc" id="L532">        configuration.getMap().put(&quot;objectArray&quot;, new Object[] {&quot;value1&quot;, &quot;value2&quot;, &quot;value3&quot;});</span>
+
+<span class="fc" id="L534">        final ConfigurationDynaBean bean = new ConfigurationDynaBean(configuration);</span>
+
+<span class="fc" id="L536">        bean.set(&quot;objectArray&quot;, 1, &quot;New Value 1&quot;);</span>
+<span class="fc" id="L537">        final Object value = bean.get(&quot;objectArray&quot;, 1);</span>
+
+<span class="fc" id="L539">        assertNotNull(&quot;Returned new value 1&quot;, value);</span>
+<span class="fc" id="L540">        ObjectAssert.assertInstanceOf(&quot;Returned String new value 1&quot;, String.class,  value);</span>
+<span class="fc" id="L541">        assertEquals(&quot;Returned correct new value 1&quot;, &quot;New Value 1&quot;, value);</span>
+<span class="fc" id="L542">    }</span>
+
+    /**
+     * Positive and negative tests on setMappedProperty valid arguments.
+     */
+    @Test
+    public void testSetMappedValues()
+    {
+<span class="fc" id="L550">        bean.set(&quot;mappedProperty&quot;, &quot;First Key&quot;, &quot;New First Value&quot;);</span>
+<span class="fc" id="L551">        assertEquals(&quot;Can replace old value&quot;, &quot;New First Value&quot;, bean.get(&quot;mappedProperty&quot;, &quot;First Key&quot;));</span>
+
+<span class="fc" id="L553">        bean.set(&quot;mappedProperty&quot;, &quot;Fourth Key&quot;, &quot;Fourth Value&quot;);</span>
+<span class="fc" id="L554">        assertEquals(&quot;Can set new value&quot;, &quot;Fourth Value&quot;, bean.get(&quot;mappedProperty&quot;, &quot;Fourth Key&quot;));</span>
+<span class="fc" id="L555">    }</span>
+
+    /**
+     * Test setSimpleProperty on a boolean property.
+     */
+    @Test
+    public void testSetSimpleBoolean()
+    {
+<span class="fc" id="L563">        final boolean oldValue = ((Boolean) bean.get(&quot;booleanProperty&quot;)).booleanValue();</span>
+<span class="pc bpc" id="L564" title="1 of 2 branches missed.">        final boolean newValue = !oldValue;</span>
+<span class="fc" id="L565">        bean.set(&quot;booleanProperty&quot;, new Boolean(newValue));</span>
+<span class="pc bpc" id="L566" title="1 of 2 branches missed.">        assertTrue(&quot;Matched new value&quot;, newValue == ((Boolean) bean.get(&quot;booleanProperty&quot;)).booleanValue());</span>
+<span class="fc" id="L567">    }</span>
+
+    /**
+     * Test setSimpleProperty on a double property.
+     */
+    @Test
+    public void testSetSimpleDouble()
+    {
+<span class="fc" id="L575">        final double oldValue = ((Double) bean.get(&quot;doubleProperty&quot;)).doubleValue();</span>
+<span class="fc" id="L576">        final double newValue = oldValue + 1.0;</span>
+<span class="fc" id="L577">        bean.set(&quot;doubleProperty&quot;, new Double(newValue));</span>
+<span class="fc" id="L578">        assertEquals(&quot;Matched new value&quot;, newValue, ((Double) bean.get(&quot;doubleProperty&quot;)).doubleValue(), 0.005);</span>
+<span class="fc" id="L579">    }</span>
+
+    /**
+     * Test setSimpleProperty on a float property.
+     */
+    @Test
+    public void testSetSimpleFloat()
+    {
+<span class="fc" id="L587">        final float oldValue = ((Float) bean.get(&quot;floatProperty&quot;)).floatValue();</span>
+<span class="fc" id="L588">        final float newValue = oldValue + (float) 1.0;</span>
+<span class="fc" id="L589">        bean.set(&quot;floatProperty&quot;, new Float(newValue));</span>
+<span class="fc" id="L590">        assertEquals(&quot;Matched new value&quot;, newValue, ((Float) bean.get(&quot;floatProperty&quot;)).floatValue(), 0.005f);</span>
+<span class="fc" id="L591">    }</span>
+
+    /**
+     * Test setSimpleProperty on a int property.
+     */
+    @Test
+    public void testSetSimpleInt()
+    {
+<span class="fc" id="L599">        final int oldValue = ((Integer) bean.get(&quot;intProperty&quot;)).intValue();</span>
+<span class="fc" id="L600">        final int newValue = oldValue + 1;</span>
+<span class="fc" id="L601">        bean.set(&quot;intProperty&quot;, new Integer(newValue));</span>
+<span class="fc" id="L602">        assertEquals(&quot;Matched new value&quot;, newValue, ((Integer) bean.get(&quot;intProperty&quot;)).intValue());</span>
+<span class="fc" id="L603">    }</span>
+
+    /**
+     * Test setSimpleProperty on a long property.
+     */
+    @Test
+    public void testSetSimpleLong()
+    {
+<span class="fc" id="L611">        final long oldValue = ((Long) bean.get(&quot;longProperty&quot;)).longValue();</span>
+<span class="fc" id="L612">        final long newValue = oldValue + 1;</span>
+<span class="fc" id="L613">        bean.set(&quot;longProperty&quot;, new Long(newValue));</span>
+<span class="fc" id="L614">        assertEquals(&quot;Matched new value&quot;, newValue, ((Long) bean.get(&quot;longProperty&quot;)).longValue());</span>
+<span class="fc" id="L615">    }</span>
+
+    /**
+     * Test setSimpleProperty on a short property.
+     */
+    @Test
+    public void testSetSimpleShort()
+    {
+<span class="fc" id="L623">        final short oldValue = ((Short) bean.get(&quot;shortProperty&quot;)).shortValue();</span>
+<span class="fc" id="L624">        final short newValue = (short) (oldValue + 1);</span>
+<span class="fc" id="L625">        bean.set(&quot;shortProperty&quot;, new Short(newValue));</span>
+<span class="fc" id="L626">        assertEquals(&quot;Matched new value&quot;, newValue, ((Short) bean.get(&quot;shortProperty&quot;)).shortValue());</span>
+<span class="fc" id="L627">    }</span>
+
+    /**
+     * Test setSimpleProperty on a String property.
+     */
+    @Test
+    public void testSetSimpleString()
+    {
+<span class="fc" id="L635">        final String oldValue = (String) bean.get(&quot;stringProperty&quot;);</span>
+<span class="fc" id="L636">        final String newValue = oldValue + &quot; Extra Value&quot;;</span>
+<span class="fc" id="L637">        bean.set(&quot;stringProperty&quot;, newValue);</span>
+<span class="fc" id="L638">        assertEquals(&quot;Matched new value&quot;, newValue, bean.get(&quot;stringProperty&quot;));</span>
+<span class="fc" id="L639">    }</span>
+
+    /**
+     * Tests set on a null value: should throw NPE.
+     */
+    @Test(expected = NullPointerException.class)
+    public void testAddNullPropertyValue()
+    {
+<span class="nc" id="L647">        bean.set(&quot;nullProperty&quot;, null);</span>
+<span class="nc" id="L648">    }</span>
+
+    /**
+     * Test the retrieval of a non-existent property.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNonExistentProperty()
+    {
+<span class="nc" id="L656">        bean.get(&quot;nonexistProperty&quot;);</span>
+<span class="nc" id="L657">    }</span>
+
+    /**
+     * Base for testGetDescriptorXxxxx() series of tests.
+     *
+     * @param name Name of the property to be retrieved
+     * @param type Expected class type of this property
+     */
+    protected void testGetDescriptorBase(final String name, final Class&lt;?&gt; type)
+    {
+<span class="fc" id="L667">        final DynaProperty descriptor = bean.getDynaClass().getDynaProperty(name);</span>
+
+<span class="fc" id="L669">        assertNotNull(&quot;Failed to get descriptor&quot;, descriptor);</span>
+<span class="fc" id="L670">        assertEquals(&quot;Got incorrect type&quot;, type, descriptor.getType());</span>
+<span class="fc" id="L671">    }</span>
+
+    /**
+     * Tests whether nested properties can be accessed.
+     */
+    @Test
+    public void testNestedPropeties()
+    {
+<span class="fc" id="L679">        final ConfigurationDynaBean nested = (ConfigurationDynaBean) bean.get(&quot;mappedProperty&quot;);</span>
+
+<span class="fc" id="L681">        final String value = (String) nested.get(&quot;key1&quot;);</span>
+<span class="fc" id="L682">        assertEquals(&quot;Can find first value&quot;, &quot;First Value&quot;, value);</span>
+
+<span class="fc" id="L684">        nested.set(&quot;key1&quot;, &quot;undefined&quot;);</span>
+<span class="fc" id="L685">        assertEquals(&quot;Incorrect value returned&quot;, &quot;undefined&quot;, bean.get(&quot;mappedProperty.key1&quot;));</span>
+<span class="fc" id="L686">    }</span>
+
+    /**
+     * Tests if reading a non-indexed property using the index
+     * get method throws an IllegalArgumentException as it
+     * should.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNonIndexedProperties()
+    {
+<span class="nc" id="L696">        bean.get(&quot;booleanProperty&quot;, 0);</span>
+<span class="nc" id="L697">    }</span>
+
+    /**
+     * Tests whether accessing a non-indexed string property using the index get
+     * method causes an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetIndexedString()
+    {
+<span class="fc" id="L706">        bean.set(&quot;stringProp&quot;, &quot;value&quot;);</span>
+<span class="nc" id="L707">        bean.get(&quot;stringProp&quot;, 0);</span>
+<span class="nc" id="L708">    }</span>
+
+    /**
+     * Tests whether an indexed access to a non-existing property causes an
+     * exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetIndexedNonExisting()
+    {
+<span class="nc" id="L717">        bean.get(&quot;Non existing property&quot;, 0);</span>
+<span class="nc" id="L718">    }</span>
+
+    /**
+     * Tests if writing a non-indexed property using the index
+     * set method with an index &amp;gt; 0 throws an IllegalArgumentException as it
+     * should.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetNonIndexedProperties()
+    {
+<span class="nc" id="L728">        bean.set(&quot;booleanProperty&quot;, 1, Boolean.TRUE);</span>
+<span class="nc" id="L729">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

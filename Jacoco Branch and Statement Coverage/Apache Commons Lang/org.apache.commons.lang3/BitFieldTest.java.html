@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BitFieldTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">BitFieldTest.java</span></div><h1>BitFieldTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Class to test BitField functionality
+ */
+<span class="fc" id="L28">public class BitFieldTest  {</span>
+
+<span class="fc" id="L30">    private static final BitField bf_multi  = new BitField(0x3F80);</span>
+<span class="fc" id="L31">    private static final BitField bf_single = new BitField(0x4000);</span>
+<span class="fc" id="L32">    private static final BitField bf_zero = new BitField(0);</span>
+
+    /**
+     * test the getValue() method
+     */
+    @Test
+    public void testGetValue() {
+<span class="fc" id="L39">        assertEquals(bf_multi.getValue(-1), 127);</span>
+<span class="fc" id="L40">        assertEquals(bf_multi.getValue(0), 0);</span>
+<span class="fc" id="L41">        assertEquals(bf_single.getValue(-1), 1);</span>
+<span class="fc" id="L42">        assertEquals(bf_single.getValue(0), 0);</span>
+<span class="fc" id="L43">        assertEquals(bf_zero.getValue(-1), 0);</span>
+<span class="fc" id="L44">        assertEquals(bf_zero.getValue(0), 0);</span>
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * test the getShortValue() method
+     */
+    @Test
+    public void testGetShortValue() {
+<span class="fc" id="L52">        assertEquals(bf_multi.getShortValue((short) - 1), (short) 127);</span>
+<span class="fc" id="L53">        assertEquals(bf_multi.getShortValue((short) 0), (short) 0);</span>
+<span class="fc" id="L54">        assertEquals(bf_single.getShortValue((short) - 1), (short) 1);</span>
+<span class="fc" id="L55">        assertEquals(bf_single.getShortValue((short) 0), (short) 0);</span>
+<span class="fc" id="L56">        assertEquals(bf_zero.getShortValue((short) -1), (short) 0);</span>
+<span class="fc" id="L57">        assertEquals(bf_zero.getShortValue((short) 0), (short) 0);</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * test the getRawValue() method
+     */
+    @Test
+    public void testGetRawValue() {
+<span class="fc" id="L65">        assertEquals(bf_multi.getRawValue(-1), 0x3F80);</span>
+<span class="fc" id="L66">        assertEquals(bf_multi.getRawValue(0), 0);</span>
+<span class="fc" id="L67">        assertEquals(bf_single.getRawValue(-1), 0x4000);</span>
+<span class="fc" id="L68">        assertEquals(bf_single.getRawValue(0), 0);</span>
+<span class="fc" id="L69">        assertEquals(bf_zero.getRawValue(-1), 0);</span>
+<span class="fc" id="L70">        assertEquals(bf_zero.getRawValue(0), 0);</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * test the getShortRawValue() method
+     */
+    @Test
+    public void testGetShortRawValue() {
+<span class="fc" id="L78">        assertEquals(bf_multi.getShortRawValue((short) - 1), (short) 0x3F80);</span>
+<span class="fc" id="L79">        assertEquals(bf_multi.getShortRawValue((short) 0), (short) 0);</span>
+<span class="fc" id="L80">        assertEquals(bf_single.getShortRawValue((short) - 1), (short) 0x4000);</span>
+<span class="fc" id="L81">        assertEquals(bf_single.getShortRawValue((short) 0), (short) 0);</span>
+<span class="fc" id="L82">        assertEquals(bf_zero.getShortRawValue((short) -1), (short) 0);</span>
+<span class="fc" id="L83">        assertEquals(bf_zero.getShortRawValue((short) 0), (short) 0);</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * test the isSet() method
+     */
+    @Test
+    public void testIsSet() {
+<span class="fc" id="L91">        assertFalse(bf_multi.isSet(0));</span>
+<span class="fc" id="L92">        assertFalse(bf_zero.isSet(0));</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        for (int j = 0x80; j &lt;= 0x3F80; j += 0x80) {</span>
+<span class="fc" id="L94">            assertTrue(bf_multi.isSet(j));</span>
+        }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        for (int j = 0x80; j &lt;= 0x3F80; j += 0x80) {</span>
+<span class="fc" id="L97">            assertFalse(bf_zero.isSet(j));</span>
+        }
+<span class="fc" id="L99">        assertFalse(bf_single.isSet(0));</span>
+<span class="fc" id="L100">        assertTrue(bf_single.isSet(0x4000));</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * test the isAllSet() method
+     */
+    @Test
+    public void testIsAllSet() {
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (int j = 0; j &lt; 0x3F80; j += 0x80) {</span>
+<span class="fc" id="L109">            assertFalse(bf_multi.isAllSet(j));</span>
+<span class="fc" id="L110">            assertTrue(bf_zero.isAllSet(j));</span>
+        }
+<span class="fc" id="L112">        assertTrue(bf_multi.isAllSet(0x3F80));</span>
+<span class="fc" id="L113">        assertFalse(bf_single.isAllSet(0));</span>
+<span class="fc" id="L114">        assertTrue(bf_single.isAllSet(0x4000));</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * test the setValue() method
+     */
+    @Test
+    public void testSetValue() {
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        for (int j = 0; j &lt; 128; j++) {</span>
+<span class="fc" id="L123">            assertEquals(bf_multi.getValue(bf_multi.setValue(0, j)), j);</span>
+<span class="fc" id="L124">            assertEquals(bf_multi.setValue(0, j), j &lt;&lt; 7);</span>
+        }
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        for (int j = 0; j &lt; 128; j++) {</span>
+<span class="fc" id="L127">          assertEquals(bf_zero.getValue(bf_zero.setValue(0, j)), 0);</span>
+<span class="fc" id="L128">          assertEquals(bf_zero.setValue(0, j), 0);</span>
+      }
+
+        // verify that excess bits are stripped off
+<span class="fc" id="L132">        assertEquals(bf_multi.setValue(0x3f80, 128), 0);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        for (int j = 0; j &lt; 2; j++) {</span>
+<span class="fc" id="L134">            assertEquals(bf_single.getValue(bf_single.setValue(0, j)), j);</span>
+<span class="fc" id="L135">            assertEquals(bf_single.setValue(0, j), j &lt;&lt; 14);</span>
+        }
+
+        // verify that excess bits are stripped off
+<span class="fc" id="L139">        assertEquals(bf_single.setValue(0x4000, 2), 0);</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * test the setShortValue() method
+     */
+    @Test
+    public void testSetShortValue() {
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        for (int j = 0; j &lt; 128; j++) {</span>
+<span class="fc" id="L148">            assertEquals(bf_multi.getShortValue(bf_multi.setShortValue((short) 0, (short) j)), (short) j);</span>
+<span class="fc" id="L149">            assertEquals(bf_multi.setShortValue((short) 0, (short) j), (short) (j &lt;&lt; 7));</span>
+        }
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        for (int j = 0; j &lt; 128; j++) {</span>
+<span class="fc" id="L152">            assertEquals(bf_zero.getShortValue(bf_zero.setShortValue((short) 0, (short) j)), (short) 0);</span>
+<span class="fc" id="L153">            assertEquals(bf_zero.setShortValue((short) 0, (short) j), (short) 0);</span>
+        }
+
+        // verify that excess bits are stripped off
+<span class="fc" id="L157">        assertEquals(bf_multi.setShortValue((short) 0x3f80, (short) 128), (short) 0);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        for (int j = 0; j &lt; 2; j++) {</span>
+<span class="fc" id="L159">            assertEquals(bf_single.getShortValue(bf_single.setShortValue((short) 0, (short) j)), (short) j);</span>
+<span class="fc" id="L160">            assertEquals(bf_single.setShortValue((short) 0, (short) j), (short) (j &lt;&lt; 14));</span>
+        }
+
+        // verify that excess bits are stripped off
+<span class="fc" id="L164">        assertEquals(bf_single.setShortValue((short) 0x4000, (short) 2), (short) 0);</span>
+<span class="fc" id="L165">    }</span>
+
+    @Test
+    public void testByte() {
+<span class="fc" id="L169">        assertEquals(0, new BitField(0).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L170">        assertEquals(1, new BitField(1).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L171">        assertEquals(2, new BitField(2).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L172">        assertEquals(4, new BitField(4).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L173">        assertEquals(8, new BitField(8).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L174">        assertEquals(16, new BitField(16).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L175">        assertEquals(32, new BitField(32).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L176">        assertEquals(64, new BitField(64).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L177">        assertEquals(-128, new BitField(128).setByteBoolean((byte) 0, true));</span>
+<span class="fc" id="L178">        assertEquals(1, new BitField(0).setByteBoolean((byte) 1, false));</span>
+<span class="fc" id="L179">        assertEquals(0, new BitField(1).setByteBoolean((byte) 1, false));</span>
+<span class="fc" id="L180">        assertEquals(0, new BitField(2).setByteBoolean((byte) 2, false));</span>
+<span class="fc" id="L181">        assertEquals(0, new BitField(4).setByteBoolean((byte) 4, false));</span>
+<span class="fc" id="L182">        assertEquals(0, new BitField(8).setByteBoolean((byte) 8, false));</span>
+<span class="fc" id="L183">        assertEquals(0, new BitField(16).setByteBoolean((byte) 16, false));</span>
+<span class="fc" id="L184">        assertEquals(0, new BitField(32).setByteBoolean((byte) 32, false));</span>
+<span class="fc" id="L185">        assertEquals(0, new BitField(64).setByteBoolean((byte) 64, false));</span>
+<span class="fc" id="L186">        assertEquals(0, new BitField(128).setByteBoolean((byte) 128, false));</span>
+<span class="fc" id="L187">        assertEquals(-2, new BitField(1).setByteBoolean((byte) 255, false));</span>
+<span class="fc" id="L188">        final byte clearedBit = new BitField(0x40).setByteBoolean((byte) - 63, false);</span>
+
+<span class="fc" id="L190">        assertFalse(new BitField(0x40).isSet(clearedBit));</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * test the clear() method
+     */
+    @Test
+    public void testClear() {
+<span class="fc" id="L198">        assertEquals(bf_multi.clear(-1), 0xFFFFC07F);</span>
+<span class="fc" id="L199">        assertEquals(bf_single.clear(-1), 0xFFFFBFFF);</span>
+<span class="fc" id="L200">        assertEquals(bf_zero.clear(-1), 0xFFFFFFFF);</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * test the clearShort() method
+     */
+    @Test
+    public void testClearShort() {
+<span class="fc" id="L208">        assertEquals(bf_multi.clearShort((short) - 1), (short) 0xC07F);</span>
+<span class="fc" id="L209">        assertEquals(bf_single.clearShort((short) - 1), (short) 0xBFFF);</span>
+<span class="fc" id="L210">        assertEquals(bf_zero.clearShort((short) -1), (short) 0xFFFF);</span>
+<span class="fc" id="L211">    }</span>
+
+    /**
+     * test the set() method
+     */
+    @Test
+    public void testSet() {
+<span class="fc" id="L218">        assertEquals(bf_multi.set(0), 0x3F80);</span>
+<span class="fc" id="L219">        assertEquals(bf_single.set(0), 0x4000);</span>
+<span class="fc" id="L220">        assertEquals(bf_zero.set(0), 0);</span>
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * test the setShort() method
+     */
+    @Test
+    public void testSetShort() {
+<span class="fc" id="L228">        assertEquals(bf_multi.setShort((short) 0), (short) 0x3F80);</span>
+<span class="fc" id="L229">        assertEquals(bf_single.setShort((short) 0), (short) 0x4000);</span>
+<span class="fc" id="L230">        assertEquals(bf_zero.setShort((short) 0), (short) 0);</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * test the setBoolean() method
+     */
+    @Test
+    public void testSetBoolean() {
+<span class="fc" id="L238">        assertEquals(bf_multi.set(0), bf_multi.setBoolean(0, true));</span>
+<span class="fc" id="L239">        assertEquals(bf_single.set(0), bf_single.setBoolean(0, true));</span>
+<span class="fc" id="L240">        assertEquals(bf_zero.set(0), bf_zero.setBoolean(0, true));</span>
+<span class="fc" id="L241">        assertEquals(bf_multi.clear(-1), bf_multi.setBoolean(-1, false));</span>
+<span class="fc" id="L242">        assertEquals(bf_single.clear(-1), bf_single.setBoolean(-1, false));</span>
+<span class="fc" id="L243">        assertEquals(bf_zero.clear(-1), bf_zero.setBoolean(-1, false));</span>
+<span class="fc" id="L244">    }</span>
+
+    /**
+     * test the setShortBoolean() method
+     */
+    @Test
+    public void testSetShortBoolean() {
+<span class="fc" id="L251">        assertEquals(bf_multi.setShort((short) 0), bf_multi.setShortBoolean((short) 0, true));</span>
+<span class="fc" id="L252">        assertEquals(bf_single.setShort((short) 0), bf_single.setShortBoolean((short) 0, true));</span>
+<span class="fc" id="L253">        assertEquals(bf_zero.setShort((short) 0), bf_zero.setShortBoolean((short) 0, true));</span>
+<span class="fc" id="L254">        assertEquals(bf_multi.clearShort((short) - 1), bf_multi.setShortBoolean((short) - 1, false));</span>
+<span class="fc" id="L255">        assertEquals(bf_single.clearShort((short) - 1), bf_single.setShortBoolean((short) - 1, false));</span>
+<span class="fc" id="L256">        assertEquals(bf_zero.clearShort((short) -1), bf_zero.setShortBoolean((short) -1, false));</span>
+<span class="fc" id="L257">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

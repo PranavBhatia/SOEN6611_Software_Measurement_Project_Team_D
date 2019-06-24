@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestNodeNameMatchers.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestNodeNameMatchers.java</span></div><h1>TestNodeNameMatchers.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Locale;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code NodeNameMatchers}.
+ *
+ */
+<span class="fc" id="L31">public class TestNodeNameMatchers</span>
+{
+    /** Constant for a test node name. */
+    private static final String NODE_NAME = &quot;TestNodeName&quot;;
+
+    /** A node handler. */
+    private NodeHandler&lt;ImmutableNode&gt; handler;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L42">        final InMemoryNodeModel model = new InMemoryNodeModel();</span>
+<span class="fc" id="L43">        handler = model.getNodeHandler();</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Creates a node with the given name.
+     *
+     * @param name the name
+     * @return the newly created node
+     */
+    private static ImmutableNode createNode(final String name)
+    {
+<span class="fc" id="L54">        return new ImmutableNode.Builder().name(name).create();</span>
+    }
+
+    /**
+     * Tests the equals matcher if the expected result is true.
+     */
+    @Test
+    public void testEqualsMatch()
+    {
+<span class="fc" id="L63">        final ImmutableNode node = createNode(NODE_NAME);</span>
+<span class="fc" id="L64">        assertTrue(&quot;No match&quot;,</span>
+<span class="fc" id="L65">                NodeNameMatchers.EQUALS.matches(node, handler, NODE_NAME));</span>
+<span class="fc" id="L66">    }</span>
+
+    /**
+     * Tests the equals matcher for a non matching name.
+     */
+    @Test
+    public void testEqualsNoMatch()
+    {
+<span class="fc" id="L74">        final ImmutableNode node = createNode(NODE_NAME);</span>
+<span class="fc" id="L75">        assertFalse(</span>
+                &quot;Match (1)&quot;,
+<span class="fc" id="L77">                NodeNameMatchers.EQUALS.matches(node, handler, NODE_NAME</span>
+                        + &quot;_other&quot;));
+<span class="fc" id="L79">        assertFalse(</span>
+                &quot;Match (2)&quot;,
+<span class="fc" id="L81">                NodeNameMatchers.EQUALS.matches(node, handler,</span>
+<span class="fc" id="L82">                        NODE_NAME.toLowerCase(Locale.ENGLISH)));</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Tests whether a matcher can handle null input safely.
+     *
+     * @param matcher the matcher to be tested
+     */
+    private void checkMatcherWithNullInput(final NodeMatcher&lt;String&gt; matcher)
+    {
+<span class="fc" id="L92">        assertFalse(&quot;Match (1)&quot;,</span>
+<span class="fc" id="L93">                matcher.matches(createNode(NODE_NAME), handler, null));</span>
+<span class="fc" id="L94">        assertFalse(&quot;Match (2)&quot;,</span>
+<span class="fc" id="L95">                matcher.matches(createNode(null), handler, NODE_NAME));</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Tests whether the equals matcher can handle a null criterion.
+     */
+    @Test
+    public void testEqualsNullCriterion()
+    {
+<span class="fc" id="L104">        checkMatcherWithNullInput(NodeNameMatchers.EQUALS);</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Tests the equalsIgnoreCase mather if the expected result is true.
+     */
+    @Test
+    public void testEqualsIgnoreCaseMatch()
+    {
+<span class="fc" id="L113">        final ImmutableNode node = createNode(NODE_NAME);</span>
+<span class="fc" id="L114">        assertTrue(&quot;No match (1)&quot;, NodeNameMatchers.EQUALS_IGNORE_CASE.matches(</span>
+                node, handler, NODE_NAME));
+<span class="fc" id="L116">        assertTrue(&quot;No match (2)&quot;, NodeNameMatchers.EQUALS_IGNORE_CASE.matches(</span>
+<span class="fc" id="L117">                node, handler, NODE_NAME.toLowerCase(Locale.ENGLISH)));</span>
+<span class="fc" id="L118">        assertTrue(&quot;No match (3)&quot;, NodeNameMatchers.EQUALS_IGNORE_CASE.matches(</span>
+<span class="fc" id="L119">                node, handler, NODE_NAME.toUpperCase(Locale.ENGLISH)));</span>
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Tests the equalsIgnoreCase matcher if the expected result is false.
+     */
+    @Test
+    public void testEqualsIgnoreCaseNoMatch()
+    {
+<span class="fc" id="L128">        final ImmutableNode node = createNode(NODE_NAME);</span>
+<span class="fc" id="L129">        assertFalse(&quot;Match&quot;, NodeNameMatchers.EQUALS_IGNORE_CASE.matches(node,</span>
+                handler, NODE_NAME + &quot;_other&quot;));
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests whether the equalsIgnoreCase matcher is null-safe.
+     */
+    @Test
+    public void testEqualsIgnoreCaseNullCriterion()
+    {
+<span class="fc" id="L139">        checkMatcherWithNullInput(NodeNameMatchers.EQUALS_IGNORE_CASE);</span>
+<span class="fc" id="L140">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

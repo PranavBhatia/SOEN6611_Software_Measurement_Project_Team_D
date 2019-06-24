@@ -1,0 +1,1656 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">DateUtilsTest.java</span></div><h1>DateUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.TimeZone;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.DefaultLocale;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.time.DateUtils}.
+ */
+<span class="fc" id="L47">public class DateUtilsTest {</span>
+
+    private static Date BASE_DATE;
+
+    @BeforeAll
+    public static void classSetup() {
+<span class="fc" id="L53">        final GregorianCalendar cal = new GregorianCalendar(2000, 6, 5, 4, 3, 2);</span>
+<span class="fc" id="L54">        cal.set(Calendar.MILLISECOND, 1);</span>
+<span class="fc" id="L55">        BASE_DATE = cal.getTime();</span>
+<span class="fc" id="L56">    }</span>
+
+<span class="fc" id="L58">    private DateFormat dateParser = null;</span>
+<span class="fc" id="L59">    private DateFormat dateTimeParser = null;</span>
+<span class="fc" id="L60">    private Date dateAmPm1 = null;</span>
+<span class="fc" id="L61">    private Date dateAmPm2 = null;</span>
+<span class="fc" id="L62">    private Date dateAmPm3 = null;</span>
+<span class="fc" id="L63">    private Date dateAmPm4 = null;</span>
+<span class="fc" id="L64">    private Date date0 = null;</span>
+<span class="fc" id="L65">    private Date date1 = null;</span>
+<span class="fc" id="L66">    private Date date2 = null;</span>
+<span class="fc" id="L67">    private Date date3 = null;</span>
+<span class="fc" id="L68">    private Date date4 = null;</span>
+<span class="fc" id="L69">    private Date date5 = null;</span>
+<span class="fc" id="L70">    private Date date6 = null;</span>
+<span class="fc" id="L71">    private Date date7 = null;</span>
+<span class="fc" id="L72">    private Date date8 = null;</span>
+<span class="fc" id="L73">    private Calendar calAmPm1 = null;</span>
+<span class="fc" id="L74">    private Calendar calAmPm2 = null;</span>
+<span class="fc" id="L75">    private Calendar calAmPm3 = null;</span>
+<span class="fc" id="L76">    private Calendar calAmPm4 = null;</span>
+<span class="fc" id="L77">    private Calendar cal1 = null;</span>
+<span class="fc" id="L78">    private Calendar cal2 = null;</span>
+<span class="fc" id="L79">    private Calendar cal3 = null;</span>
+<span class="fc" id="L80">    private Calendar cal4 = null;</span>
+<span class="fc" id="L81">    private Calendar cal5 = null;</span>
+<span class="fc" id="L82">    private Calendar cal6 = null;</span>
+<span class="fc" id="L83">    private Calendar cal7 = null;</span>
+<span class="fc" id="L84">    private Calendar cal8 = null;</span>
+<span class="fc" id="L85">    private TimeZone zone = null;</span>
+<span class="fc" id="L86">    private TimeZone defaultZone = null;</span>
+
+    @BeforeEach
+    public void setUp() throws Exception {
+<span class="fc" id="L90">        dateParser = new SimpleDateFormat(&quot;MMM dd, yyyy&quot;, Locale.ENGLISH);</span>
+<span class="fc" id="L91">        dateTimeParser = new SimpleDateFormat(&quot;MMM dd, yyyy H:mm:ss.SSS&quot;, Locale.ENGLISH);</span>
+
+<span class="fc" id="L93">        dateAmPm1 = dateTimeParser.parse(&quot;February 3, 2002 01:10:00.000&quot;);</span>
+<span class="fc" id="L94">        dateAmPm2 = dateTimeParser.parse(&quot;February 3, 2002 11:10:00.000&quot;);</span>
+<span class="fc" id="L95">        dateAmPm3 = dateTimeParser.parse(&quot;February 3, 2002 13:10:00.000&quot;);</span>
+<span class="fc" id="L96">        dateAmPm4 = dateTimeParser.parse(&quot;February 3, 2002 19:10:00.000&quot;);</span>
+<span class="fc" id="L97">        date0 = dateTimeParser.parse(&quot;February 3, 2002 12:34:56.789&quot;);</span>
+<span class="fc" id="L98">        date1 = dateTimeParser.parse(&quot;February 12, 2002 12:34:56.789&quot;);</span>
+<span class="fc" id="L99">        date2 = dateTimeParser.parse(&quot;November 18, 2001 1:23:11.321&quot;);</span>
+<span class="fc" id="L100">        defaultZone = TimeZone.getDefault();</span>
+<span class="fc" id="L101">        zone = TimeZone.getTimeZone(&quot;MET&quot;);</span>
+        try {
+<span class="fc" id="L103">            TimeZone.setDefault(zone);</span>
+<span class="fc" id="L104">            dateTimeParser.setTimeZone(zone);</span>
+<span class="fc" id="L105">            date3 = dateTimeParser.parse(&quot;March 30, 2003 05:30:45.000&quot;);</span>
+<span class="fc" id="L106">            date4 = dateTimeParser.parse(&quot;March 30, 2003 01:10:00.000&quot;);</span>
+<span class="fc" id="L107">            date5 = dateTimeParser.parse(&quot;March 30, 2003 01:40:00.000&quot;);</span>
+<span class="fc" id="L108">            date6 = dateTimeParser.parse(&quot;March 30, 2003 02:10:00.000&quot;);</span>
+<span class="fc" id="L109">            date7 = dateTimeParser.parse(&quot;March 30, 2003 02:40:00.000&quot;);</span>
+<span class="fc" id="L110">            date8 = dateTimeParser.parse(&quot;October 26, 2003 05:30:45.000&quot;);</span>
+        } finally {
+<span class="fc" id="L112">            dateTimeParser.setTimeZone(defaultZone);</span>
+<span class="fc" id="L113">            TimeZone.setDefault(defaultZone);</span>
+        }
+<span class="fc" id="L115">        calAmPm1 = Calendar.getInstance();</span>
+<span class="fc" id="L116">        calAmPm1.setTime(dateAmPm1);</span>
+<span class="fc" id="L117">        calAmPm2 = Calendar.getInstance();</span>
+<span class="fc" id="L118">        calAmPm2.setTime(dateAmPm2);</span>
+<span class="fc" id="L119">        calAmPm3 = Calendar.getInstance();</span>
+<span class="fc" id="L120">        calAmPm3.setTime(dateAmPm3);</span>
+<span class="fc" id="L121">        calAmPm4 = Calendar.getInstance();</span>
+<span class="fc" id="L122">        calAmPm4.setTime(dateAmPm4);</span>
+<span class="fc" id="L123">        cal1 = Calendar.getInstance();</span>
+<span class="fc" id="L124">        cal1.setTime(date1);</span>
+<span class="fc" id="L125">        cal2 = Calendar.getInstance();</span>
+<span class="fc" id="L126">        cal2.setTime(date2);</span>
+        try {
+<span class="fc" id="L128">            TimeZone.setDefault(zone);</span>
+<span class="fc" id="L129">            cal3 = Calendar.getInstance();</span>
+<span class="fc" id="L130">            cal3.setTime(date3);</span>
+<span class="fc" id="L131">            cal4 = Calendar.getInstance();</span>
+<span class="fc" id="L132">            cal4.setTime(date4);</span>
+<span class="fc" id="L133">            cal5 = Calendar.getInstance();</span>
+<span class="fc" id="L134">            cal5.setTime(date5);</span>
+<span class="fc" id="L135">            cal6 = Calendar.getInstance();</span>
+<span class="fc" id="L136">            cal6.setTime(date6);</span>
+<span class="fc" id="L137">            cal7 = Calendar.getInstance();</span>
+<span class="fc" id="L138">            cal7.setTime(date7);</span>
+<span class="fc" id="L139">            cal8 = Calendar.getInstance();</span>
+<span class="fc" id="L140">            cal8.setTime(date8);</span>
+        } finally {
+<span class="fc" id="L142">            TimeZone.setDefault(defaultZone);</span>
+        }
+<span class="fc" id="L144">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L149">        assertNotNull(new DateUtils());</span>
+<span class="fc" id="L150">        final Constructor&lt;?&gt;[] cons = DateUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L151">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L152">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L153">        assertTrue(Modifier.isPublic(DateUtils.class.getModifiers()));</span>
+<span class="fc" id="L154">        assertFalse(Modifier.isFinal(DateUtils.class.getModifiers()));</span>
+<span class="fc" id="L155">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIsSameDay_Date() {
+<span class="fc" id="L160">        Date datea = new GregorianCalendar(2004, 6, 9, 13, 45).getTime();</span>
+<span class="fc" id="L161">        Date dateb = new GregorianCalendar(2004, 6, 9, 13, 45).getTime();</span>
+<span class="fc" id="L162">        assertTrue(DateUtils.isSameDay(datea, dateb));</span>
+<span class="fc" id="L163">        dateb = new GregorianCalendar(2004, 6, 10, 13, 45).getTime();</span>
+<span class="fc" id="L164">        assertFalse(DateUtils.isSameDay(datea, dateb));</span>
+<span class="fc" id="L165">        datea = new GregorianCalendar(2004, 6, 10, 13, 45).getTime();</span>
+<span class="fc" id="L166">        assertTrue(DateUtils.isSameDay(datea, dateb));</span>
+<span class="fc" id="L167">        dateb = new GregorianCalendar(2005, 6, 10, 13, 45).getTime();</span>
+<span class="fc" id="L168">        assertFalse(DateUtils.isSameDay(datea, dateb));</span>
+<span class="fc" id="L169">    }</span>
+
+    @Test
+    public void testIsSameDay_DateNullNull() {
+<span class="pc" id="L173">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameDay((Date) null, null));</span>
+<span class="fc" id="L174">    }</span>
+
+    @Test
+    public void testIsSameDay_DateNullNotNull() {
+<span class="pc" id="L178">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameDay(null, new Date()));</span>
+<span class="fc" id="L179">    }</span>
+
+    @Test
+    public void testIsSameDay_DateNotNullNull() {
+<span class="pc" id="L183">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameDay(new Date(), null));</span>
+<span class="fc" id="L184">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIsSameDay_Cal() {
+<span class="fc" id="L189">        final GregorianCalendar cala = new GregorianCalendar(2004, 6, 9, 13, 45);</span>
+<span class="fc" id="L190">        final GregorianCalendar calb = new GregorianCalendar(2004, 6, 9, 13, 45);</span>
+<span class="fc" id="L191">        assertTrue(DateUtils.isSameDay(cala, calb));</span>
+<span class="fc" id="L192">        calb.add(Calendar.DAY_OF_YEAR, 1);</span>
+<span class="fc" id="L193">        assertFalse(DateUtils.isSameDay(cala, calb));</span>
+<span class="fc" id="L194">        cala.add(Calendar.DAY_OF_YEAR, 1);</span>
+<span class="fc" id="L195">        assertTrue(DateUtils.isSameDay(cala, calb));</span>
+<span class="fc" id="L196">        calb.add(Calendar.YEAR, 1);</span>
+<span class="fc" id="L197">        assertFalse(DateUtils.isSameDay(cala, calb));</span>
+<span class="fc" id="L198">    }</span>
+
+    @Test
+    public void testIsSameDay_CalNullNull() {
+<span class="pc" id="L202">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameDay((Calendar) null, null));</span>
+<span class="fc" id="L203">    }</span>
+
+    @Test
+    public void testIsSameDay_CalNullNotNull() {
+<span class="pc" id="L207">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameDay(null, Calendar.getInstance()));</span>
+<span class="fc" id="L208">    }</span>
+
+    @Test
+    public void testIsSameDay_CalNotNullNull() {
+<span class="pc" id="L212">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameDay(Calendar.getInstance(), null));</span>
+<span class="fc" id="L213">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIsSameInstant_Date() {
+<span class="fc" id="L218">        Date datea = new GregorianCalendar(2004, 6, 9, 13, 45).getTime();</span>
+<span class="fc" id="L219">        Date dateb = new GregorianCalendar(2004, 6, 9, 13, 45).getTime();</span>
+<span class="fc" id="L220">        assertTrue(DateUtils.isSameInstant(datea, dateb));</span>
+<span class="fc" id="L221">        dateb = new GregorianCalendar(2004, 6, 10, 13, 45).getTime();</span>
+<span class="fc" id="L222">        assertFalse(DateUtils.isSameInstant(datea, dateb));</span>
+<span class="fc" id="L223">        datea = new GregorianCalendar(2004, 6, 10, 13, 45).getTime();</span>
+<span class="fc" id="L224">        assertTrue(DateUtils.isSameInstant(datea, dateb));</span>
+<span class="fc" id="L225">        dateb = new GregorianCalendar(2005, 6, 10, 13, 45).getTime();</span>
+<span class="fc" id="L226">        assertFalse(DateUtils.isSameInstant(datea, dateb));</span>
+<span class="fc" id="L227">    }</span>
+
+    @Test
+    public void testIsSameInstant_DateNullNull() {
+<span class="pc" id="L231">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameInstant((Date) null, null));</span>
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testIsSameInstant_DateNullNotNull() {
+<span class="pc" id="L236">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameInstant(null, new Date()));</span>
+<span class="fc" id="L237">    }</span>
+
+    @Test
+    public void testIsSameInstant_DateNotNullNull() {
+<span class="pc" id="L241">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameInstant(new Date(), null));</span>
+<span class="fc" id="L242">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIsSameInstant_Cal() {
+<span class="fc" id="L247">        final GregorianCalendar cala = new GregorianCalendar(TimeZone.getTimeZone(&quot;GMT+1&quot;));</span>
+<span class="fc" id="L248">        final GregorianCalendar calb = new GregorianCalendar(TimeZone.getTimeZone(&quot;GMT-1&quot;));</span>
+<span class="fc" id="L249">        cala.set(2004, Calendar.JULY, 9, 13, 45, 0);</span>
+<span class="fc" id="L250">        cala.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L251">        calb.set(2004, Calendar.JULY, 9, 13, 45, 0);</span>
+<span class="fc" id="L252">        calb.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L253">        assertFalse(DateUtils.isSameInstant(cala, calb));</span>
+
+<span class="fc" id="L255">        calb.set(2004, Calendar.JULY, 9, 11, 45, 0);</span>
+<span class="fc" id="L256">        assertTrue(DateUtils.isSameInstant(cala, calb));</span>
+<span class="fc" id="L257">    }</span>
+
+    @Test
+    public void testIsSameInstant_CalNullNull() {
+<span class="pc" id="L261">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameInstant((Calendar) null, null));</span>
+<span class="fc" id="L262">    }</span>
+
+    @Test
+    public void testIsSameInstant_CalNullNotNull() {
+<span class="pc" id="L266">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameInstant(null, Calendar.getInstance()));</span>
+<span class="fc" id="L267">    }</span>
+
+    @Test
+    public void testIsSameInstant_CalNotNullNull() {
+<span class="pc" id="L271">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameInstant(Calendar.getInstance(), null));</span>
+<span class="fc" id="L272">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIsSameLocalTime_Cal() {
+<span class="fc" id="L277">        final GregorianCalendar cala = new GregorianCalendar(TimeZone.getTimeZone(&quot;GMT+1&quot;));</span>
+<span class="fc" id="L278">        final GregorianCalendar calb = new GregorianCalendar(TimeZone.getTimeZone(&quot;GMT-1&quot;));</span>
+<span class="fc" id="L279">        cala.set(2004, Calendar.JULY, 9, 13, 45, 0);</span>
+<span class="fc" id="L280">        cala.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L281">        calb.set(2004, Calendar.JULY, 9, 13, 45, 0);</span>
+<span class="fc" id="L282">        calb.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L283">        assertTrue(DateUtils.isSameLocalTime(cala, calb));</span>
+
+<span class="fc" id="L285">        final Calendar calc = Calendar.getInstance();</span>
+<span class="fc" id="L286">        final Calendar cald = Calendar.getInstance();</span>
+<span class="fc" id="L287">        calc.set(2004, Calendar.JULY, 9, 4,  0, 0);</span>
+<span class="fc" id="L288">        cald.set(2004, Calendar.JULY, 9, 16, 0, 0);</span>
+<span class="fc" id="L289">        calc.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L290">        cald.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L291">        assertFalse(DateUtils.isSameLocalTime(calc, cald), &quot;LANG-677&quot;);</span>
+
+<span class="fc" id="L293">        calb.set(2004, Calendar.JULY, 9, 11, 45, 0);</span>
+<span class="fc" id="L294">        assertFalse(DateUtils.isSameLocalTime(cala, calb));</span>
+<span class="fc" id="L295">    }</span>
+
+    @Test
+    public void testIsSameLocalTime_CalNullNull() {
+<span class="pc" id="L299">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameLocalTime(null, null));</span>
+<span class="fc" id="L300">    }</span>
+
+    @Test
+    public void testIsSameLocalTime_CalNullNotNull() {
+<span class="pc" id="L304">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameLocalTime(null, Calendar.getInstance()));</span>
+<span class="fc" id="L305">    }</span>
+
+    @Test
+    public void testIsSameLocalTime_CalNotNullNull() {
+<span class="pc" id="L309">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.isSameLocalTime(Calendar.getInstance(), null));</span>
+<span class="fc" id="L310">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testParseDate() throws Exception {
+<span class="fc" id="L315">        final GregorianCalendar cal = new GregorianCalendar(1972, 11, 3);</span>
+<span class="fc" id="L316">        String dateStr = &quot;1972-12-03&quot;;</span>
+<span class="fc" id="L317">        final String[] parsers = new String[] {&quot;yyyy'-'DDD&quot;, &quot;yyyy'-'MM'-'dd&quot;, &quot;yyyyMMdd&quot;};</span>
+<span class="fc" id="L318">        Date date = DateUtils.parseDate(dateStr, parsers);</span>
+<span class="fc" id="L319">        assertEquals(cal.getTime(), date);</span>
+
+<span class="fc" id="L321">        dateStr = &quot;1972-338&quot;;</span>
+<span class="fc" id="L322">        date = DateUtils.parseDate(dateStr, parsers);</span>
+<span class="fc" id="L323">        assertEquals(cal.getTime(), date);</span>
+
+<span class="fc" id="L325">        dateStr = &quot;19721203&quot;;</span>
+<span class="fc" id="L326">        date = DateUtils.parseDate(dateStr, parsers);</span>
+<span class="fc" id="L327">        assertEquals(cal.getTime(), date);</span>
+<span class="fc" id="L328">    }</span>
+
+    @Test
+    public void testParseDate_NoDateString() {
+<span class="fc" id="L332">        final String[] parsers = new String[] {&quot;yyyy'-'DDD&quot;, &quot;yyyy'-'MM'-'dd&quot;, &quot;yyyyMMdd&quot;};</span>
+<span class="pc" id="L333">        assertThrows(ParseException.class, () -&gt; DateUtils.parseDate(&quot;PURPLE&quot;, parsers));</span>
+<span class="fc" id="L334">    }</span>
+
+    @Test
+    public void testParseDate_InvalidDateString() {
+<span class="fc" id="L338">        final String[] parsers = new String[] {&quot;yyyy'-'DDD&quot;, &quot;yyyy'-'MM'-'dd&quot;, &quot;yyyyMMdd&quot;};</span>
+<span class="pc" id="L339">        assertThrows(ParseException.class, () -&gt; DateUtils.parseDate(&quot;197212AB&quot;, parsers));</span>
+<span class="fc" id="L340">    }</span>
+
+    @Test
+    public void testParseDate_Null() {
+<span class="fc" id="L344">        final String[] parsers = new String[] {&quot;yyyy'-'DDD&quot;, &quot;yyyy'-'MM'-'dd&quot;, &quot;yyyyMMdd&quot;};</span>
+<span class="pc" id="L345">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.parseDate(null, parsers));</span>
+<span class="fc" id="L346">    }</span>
+
+    @Test
+    public void testParse_NullParsers() {
+<span class="pc" id="L350">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.parseDate(&quot;19721203&quot;, (String[]) null));</span>
+<span class="fc" id="L351">    }</span>
+
+    @Test
+    public void testParse_EmptyParsers() {
+<span class="pc" id="L355">        assertThrows(ParseException.class, () -&gt; DateUtils.parseDate(&quot;19721203&quot;));</span>
+<span class="fc" id="L356">    }</span>
+
+    // LANG-486
+    @Test
+    public void testParseDateWithLeniency() throws Exception {
+<span class="fc" id="L361">        final GregorianCalendar cal = new GregorianCalendar(1998, 6, 30);</span>
+<span class="fc" id="L362">        final String dateStr = &quot;02 942, 1996&quot;;</span>
+<span class="fc" id="L363">        final String[] parsers = new String[] {&quot;MM DDD, yyyy&quot;};</span>
+
+<span class="fc" id="L365">        final Date date = DateUtils.parseDate(dateStr, parsers);</span>
+<span class="fc" id="L366">        assertEquals(cal.getTime(), date);</span>
+
+<span class="pc" id="L368">        assertThrows(ParseException.class, () -&gt; DateUtils.parseDateStrictly(dateStr, parsers));</span>
+<span class="fc" id="L369">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddYears() throws Exception {
+<span class="fc" id="L374">        Date result = DateUtils.addYears(BASE_DATE, 0);</span>
+<span class="fc" id="L375">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L376">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L377">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L379">        result = DateUtils.addYears(BASE_DATE, 1);</span>
+<span class="fc" id="L380">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L381">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L382">        assertDate(result, 2001, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L384">        result = DateUtils.addYears(BASE_DATE, -1);</span>
+<span class="fc" id="L385">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L386">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L387">        assertDate(result, 1999, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L388">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddMonths() throws Exception {
+<span class="fc" id="L393">        Date result = DateUtils.addMonths(BASE_DATE, 0);</span>
+<span class="fc" id="L394">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L395">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L396">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L398">        result = DateUtils.addMonths(BASE_DATE, 1);</span>
+<span class="fc" id="L399">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L400">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L401">        assertDate(result, 2000, 7, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L403">        result = DateUtils.addMonths(BASE_DATE, -1);</span>
+<span class="fc" id="L404">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L405">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L406">        assertDate(result, 2000, 5, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L407">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddWeeks() throws Exception {
+<span class="fc" id="L412">        Date result = DateUtils.addWeeks(BASE_DATE, 0);</span>
+<span class="fc" id="L413">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L414">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L415">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L417">        result = DateUtils.addWeeks(BASE_DATE, 1);</span>
+<span class="fc" id="L418">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L419">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L420">        assertDate(result, 2000, 6, 12, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L422">        result = DateUtils.addWeeks(BASE_DATE, -1);</span>
+<span class="fc" id="L423">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L424">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);      // july</span>
+<span class="fc" id="L425">        assertDate(result, 2000, 5, 28, 4, 3, 2, 1);   // june</span>
+<span class="fc" id="L426">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddDays() throws Exception {
+<span class="fc" id="L431">        Date result = DateUtils.addDays(BASE_DATE, 0);</span>
+<span class="fc" id="L432">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L433">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L434">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L436">        result = DateUtils.addDays(BASE_DATE, 1);</span>
+<span class="fc" id="L437">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L438">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L439">        assertDate(result, 2000, 6, 6, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L441">        result = DateUtils.addDays(BASE_DATE, -1);</span>
+<span class="fc" id="L442">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L443">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L444">        assertDate(result, 2000, 6, 4, 4, 3, 2, 1);</span>
+<span class="fc" id="L445">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddHours() throws Exception {
+<span class="fc" id="L450">        Date result = DateUtils.addHours(BASE_DATE, 0);</span>
+<span class="fc" id="L451">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L452">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L453">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L455">        result = DateUtils.addHours(BASE_DATE, 1);</span>
+<span class="fc" id="L456">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L457">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L458">        assertDate(result, 2000, 6, 5, 5, 3, 2, 1);</span>
+
+<span class="fc" id="L460">        result = DateUtils.addHours(BASE_DATE, -1);</span>
+<span class="fc" id="L461">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L462">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L463">        assertDate(result, 2000, 6, 5, 3, 3, 2, 1);</span>
+<span class="fc" id="L464">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddMinutes() throws Exception {
+<span class="fc" id="L469">        Date result = DateUtils.addMinutes(BASE_DATE, 0);</span>
+<span class="fc" id="L470">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L471">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L472">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L474">        result = DateUtils.addMinutes(BASE_DATE, 1);</span>
+<span class="fc" id="L475">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L476">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L477">        assertDate(result, 2000, 6, 5, 4, 4, 2, 1);</span>
+
+<span class="fc" id="L479">        result = DateUtils.addMinutes(BASE_DATE, -1);</span>
+<span class="fc" id="L480">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L481">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L482">        assertDate(result, 2000, 6, 5, 4, 2, 2, 1);</span>
+<span class="fc" id="L483">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddSeconds() throws Exception {
+<span class="fc" id="L488">        Date result = DateUtils.addSeconds(BASE_DATE, 0);</span>
+<span class="fc" id="L489">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L490">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L491">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L493">        result = DateUtils.addSeconds(BASE_DATE, 1);</span>
+<span class="fc" id="L494">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L495">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L496">        assertDate(result, 2000, 6, 5, 4, 3, 3, 1);</span>
+
+<span class="fc" id="L498">        result = DateUtils.addSeconds(BASE_DATE, -1);</span>
+<span class="fc" id="L499">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L500">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L501">        assertDate(result, 2000, 6, 5, 4, 3, 1, 1);</span>
+<span class="fc" id="L502">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAddMilliseconds() throws Exception {
+<span class="fc" id="L507">        Date result = DateUtils.addMilliseconds(BASE_DATE, 0);</span>
+<span class="fc" id="L508">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L509">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L510">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L512">        result = DateUtils.addMilliseconds(BASE_DATE, 1);</span>
+<span class="fc" id="L513">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L514">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L515">        assertDate(result, 2000, 6, 5, 4, 3, 2, 2);</span>
+
+<span class="fc" id="L517">        result = DateUtils.addMilliseconds(BASE_DATE, -1);</span>
+<span class="fc" id="L518">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L519">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L520">        assertDate(result, 2000, 6, 5, 4, 3, 2, 0);</span>
+<span class="fc" id="L521">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetYears() throws Exception {
+<span class="fc" id="L526">        Date result = DateUtils.setYears(BASE_DATE, 2000);</span>
+<span class="fc" id="L527">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L528">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L529">        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L531">        result = DateUtils.setYears(BASE_DATE, 2008);</span>
+<span class="fc" id="L532">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L533">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L534">        assertDate(result, 2008, 6, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L536">        result = DateUtils.setYears(BASE_DATE, 2005);</span>
+<span class="fc" id="L537">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L538">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L539">        assertDate(result, 2005, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L540">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetMonths() throws Exception {
+<span class="fc" id="L545">        Date result = DateUtils.setMonths(BASE_DATE, 5);</span>
+<span class="fc" id="L546">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L547">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L548">        assertDate(result, 2000, 5, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L550">        result = DateUtils.setMonths(BASE_DATE, 1);</span>
+<span class="fc" id="L551">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L552">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L553">        assertDate(result, 2000, 1, 5, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L555">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L557">                () -&gt; DateUtils.setMonths(BASE_DATE, 12),</span>
+                &quot;DateUtils.setMonths did not throw an expected IllegalArgumentException.&quot;);
+<span class="fc" id="L559">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetDays() throws Exception {
+<span class="fc" id="L564">        Date result = DateUtils.setDays(BASE_DATE, 1);</span>
+<span class="fc" id="L565">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L566">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L567">        assertDate(result, 2000, 6, 1, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L569">        result = DateUtils.setDays(BASE_DATE, 29);</span>
+<span class="fc" id="L570">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L571">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L572">        assertDate(result, 2000, 6, 29, 4, 3, 2, 1);</span>
+
+<span class="fc" id="L574">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L576">                () -&gt; DateUtils.setDays(BASE_DATE, 32),</span>
+                &quot;DateUtils.setDays did not throw an expected IllegalArgumentException.&quot;);
+<span class="fc" id="L578">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetHours() throws Exception {
+<span class="fc" id="L583">        Date result = DateUtils.setHours(BASE_DATE, 0);</span>
+<span class="fc" id="L584">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L585">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L586">        assertDate(result, 2000, 6, 5, 0, 3, 2, 1);</span>
+
+<span class="fc" id="L588">        result = DateUtils.setHours(BASE_DATE, 23);</span>
+<span class="fc" id="L589">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L590">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L591">        assertDate(result, 2000, 6, 5, 23, 3, 2, 1);</span>
+
+<span class="fc" id="L593">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L595">                () -&gt; DateUtils.setHours(BASE_DATE, 24),</span>
+                &quot;DateUtils.setHours did not throw an expected IllegalArgumentException.&quot;);
+<span class="fc" id="L597">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetMinutes() throws Exception {
+<span class="fc" id="L602">        Date result = DateUtils.setMinutes(BASE_DATE, 0);</span>
+<span class="fc" id="L603">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L604">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L605">        assertDate(result, 2000, 6, 5, 4, 0, 2, 1);</span>
+
+<span class="fc" id="L607">        result = DateUtils.setMinutes(BASE_DATE, 59);</span>
+<span class="fc" id="L608">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L609">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L610">        assertDate(result, 2000, 6, 5, 4, 59, 2, 1);</span>
+
+<span class="fc" id="L612">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L614">                () -&gt; DateUtils.setMinutes(BASE_DATE, 60),</span>
+                &quot;DateUtils.setMinutes did not throw an expected IllegalArgumentException.&quot;);
+<span class="fc" id="L616">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetSeconds() throws Exception {
+<span class="fc" id="L621">        Date result = DateUtils.setSeconds(BASE_DATE, 0);</span>
+<span class="fc" id="L622">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L623">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L624">        assertDate(result, 2000, 6, 5, 4, 3, 0, 1);</span>
+
+<span class="fc" id="L626">        result = DateUtils.setSeconds(BASE_DATE, 59);</span>
+<span class="fc" id="L627">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L628">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L629">        assertDate(result, 2000, 6, 5, 4, 3, 59, 1);</span>
+
+<span class="fc" id="L631">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L633">                () -&gt; DateUtils.setSeconds(BASE_DATE, 60),</span>
+                &quot;DateUtils.setSeconds did not throw an expected IllegalArgumentException.&quot;);
+<span class="fc" id="L635">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSetMilliseconds() throws Exception {
+<span class="fc" id="L640">        Date result = DateUtils.setMilliseconds(BASE_DATE, 0);</span>
+<span class="fc" id="L641">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L642">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L643">        assertDate(result, 2000, 6, 5, 4, 3, 2, 0);</span>
+
+<span class="fc" id="L645">        result = DateUtils.setMilliseconds(BASE_DATE, 999);</span>
+<span class="fc" id="L646">        assertNotSame(BASE_DATE, result);</span>
+<span class="fc" id="L647">        assertDate(BASE_DATE, 2000, 6, 5, 4, 3, 2, 1);</span>
+<span class="fc" id="L648">        assertDate(result, 2000, 6, 5, 4, 3, 2, 999);</span>
+
+<span class="fc" id="L650">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L652">                () -&gt; DateUtils.setMilliseconds(BASE_DATE, 1000),</span>
+                &quot;DateUtils.setMilliseconds did not throw an expected IllegalArgumentException.&quot;);
+<span class="fc" id="L654">    }</span>
+
+    //-----------------------------------------------------------------------
+    private void assertDate(final Date date, final int year, final int month, final int day, final int hour, final int min, final int sec, final int mil) {
+<span class="fc" id="L658">        final GregorianCalendar cal = new GregorianCalendar();</span>
+<span class="fc" id="L659">        cal.setTime(date);</span>
+<span class="fc" id="L660">        assertEquals(year, cal.get(Calendar.YEAR));</span>
+<span class="fc" id="L661">        assertEquals(month, cal.get(Calendar.MONTH));</span>
+<span class="fc" id="L662">        assertEquals(day, cal.get(Calendar.DAY_OF_MONTH));</span>
+<span class="fc" id="L663">        assertEquals(hour, cal.get(Calendar.HOUR_OF_DAY));</span>
+<span class="fc" id="L664">        assertEquals(min, cal.get(Calendar.MINUTE));</span>
+<span class="fc" id="L665">        assertEquals(sec, cal.get(Calendar.SECOND));</span>
+<span class="fc" id="L666">        assertEquals(mil, cal.get(Calendar.MILLISECOND));</span>
+<span class="fc" id="L667">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToCalendar() {
+<span class="fc" id="L672">        assertEquals(date1, DateUtils.toCalendar(date1).getTime(), &quot;Failed to convert to a Calendar and back&quot;);</span>
+<span class="pc" id="L673">        assertThrows(NullPointerException.class, () -&gt; DateUtils.toCalendar(null));</span>
+<span class="fc" id="L674">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToCalendarWithDateNull() {
+<span class="pc" id="L679">        assertThrows(NullPointerException.class, () -&gt; DateUtils.toCalendar(null, zone));</span>
+<span class="fc" id="L680">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToCalendarWithTimeZoneNull() {
+<span class="pc" id="L685">        assertThrows(NullPointerException.class, () -&gt; DateUtils.toCalendar(date1, null));</span>
+<span class="fc" id="L686">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToCalendarWithDateAndTimeZoneNotNull() {
+<span class="fc" id="L691">        final Calendar c = DateUtils.toCalendar(date2, defaultZone);</span>
+<span class="fc" id="L692">        assertEquals(date2, c.getTime(), &quot;Convert Date and TimeZone to a Calendar, but failed to get the Date back&quot;);</span>
+<span class="fc" id="L693">        assertEquals(defaultZone, c.getTimeZone(), &quot;Convert Date and TimeZone to a Calendar, but failed to get the TimeZone back&quot;);</span>
+<span class="fc" id="L694">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToCalendarWithDateAndTimeZoneNull() {
+<span class="pc" id="L699">        assertThrows(NullPointerException.class, () -&gt; DateUtils.toCalendar(null, null));</span>
+<span class="fc" id="L700">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests various values with the round method
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testRound() throws Exception {
+        // tests for public static Date round(Date date, int field)
+<span class="fc" id="L711">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L712">                DateUtils.round(date1, Calendar.YEAR),</span>
+                &quot;round year-1 failed&quot;);
+<span class="fc" id="L714">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L715">                DateUtils.round(date2, Calendar.YEAR),</span>
+                &quot;round year-2 failed&quot;);
+<span class="fc" id="L717">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L718">                DateUtils.round(date1, Calendar.MONTH),</span>
+                &quot;round month-1 failed&quot;);
+<span class="fc" id="L720">        assertEquals(dateParser.parse(&quot;December 1, 2001&quot;),</span>
+<span class="fc" id="L721">                DateUtils.round(date2, Calendar.MONTH),</span>
+                &quot;round month-2 failed&quot;);
+<span class="fc" id="L723">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L724">                DateUtils.round(date0, DateUtils.SEMI_MONTH),</span>
+                &quot;round semimonth-0 failed&quot;);
+<span class="fc" id="L726">        assertEquals(dateParser.parse(&quot;February 16, 2002&quot;),</span>
+<span class="fc" id="L727">                DateUtils.round(date1, DateUtils.SEMI_MONTH),</span>
+                &quot;round semimonth-1 failed&quot;);
+<span class="fc" id="L729">        assertEquals(dateParser.parse(&quot;November 16, 2001&quot;),</span>
+<span class="fc" id="L730">                DateUtils.round(date2, DateUtils.SEMI_MONTH),</span>
+                &quot;round semimonth-2 failed&quot;);
+
+
+<span class="fc" id="L734">        assertEquals(dateParser.parse(&quot;February 13, 2002&quot;),</span>
+<span class="fc" id="L735">                DateUtils.round(date1, Calendar.DATE),</span>
+                &quot;round date-1 failed&quot;);
+<span class="fc" id="L737">        assertEquals(dateParser.parse(&quot;November 18, 2001&quot;),</span>
+<span class="fc" id="L738">                DateUtils.round(date2, Calendar.DATE),</span>
+                &quot;round date-2 failed&quot;);
+<span class="fc" id="L740">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 13:00:00.000&quot;),</span>
+<span class="fc" id="L741">                DateUtils.round(date1, Calendar.HOUR),</span>
+                &quot;round hour-1 failed&quot;);
+<span class="fc" id="L743">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:00:00.000&quot;),</span>
+<span class="fc" id="L744">                DateUtils.round(date2, Calendar.HOUR),</span>
+                &quot;round hour-2 failed&quot;);
+<span class="fc" id="L746">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:35:00.000&quot;),</span>
+<span class="fc" id="L747">                DateUtils.round(date1, Calendar.MINUTE),</span>
+                &quot;round minute-1 failed&quot;);
+<span class="fc" id="L749">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:00.000&quot;),</span>
+<span class="fc" id="L750">                DateUtils.round(date2, Calendar.MINUTE),</span>
+                &quot;round minute-2 failed&quot;);
+<span class="fc" id="L752">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:57.000&quot;),</span>
+<span class="fc" id="L753">                DateUtils.round(date1, Calendar.SECOND),</span>
+                &quot;round second-1 failed&quot;);
+<span class="fc" id="L755">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:11.000&quot;),</span>
+<span class="fc" id="L756">                DateUtils.round(date2, Calendar.SECOND),</span>
+                &quot;round second-2 failed&quot;);
+<span class="fc" id="L758">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L759">                DateUtils.round(dateAmPm1, Calendar.AM_PM),</span>
+                &quot;round ampm-1 failed&quot;);
+<span class="fc" id="L761">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L762">                DateUtils.round(dateAmPm2, Calendar.AM_PM),</span>
+                &quot;round ampm-2 failed&quot;);
+<span class="fc" id="L764">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L765">                DateUtils.round(dateAmPm3, Calendar.AM_PM),</span>
+                &quot;round ampm-3 failed&quot;);
+<span class="fc" id="L767">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L768">                DateUtils.round(dateAmPm4, Calendar.AM_PM),</span>
+                &quot;round ampm-4 failed&quot;);
+
+        // tests for public static Date round(Object date, int field)
+<span class="fc" id="L772">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L773">                DateUtils.round((Object) date1, Calendar.YEAR),</span>
+                &quot;round year-1 failed&quot;);
+<span class="fc" id="L775">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L776">                DateUtils.round((Object) date2, Calendar.YEAR),</span>
+                &quot;round year-2 failed&quot;);
+<span class="fc" id="L778">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L779">                DateUtils.round((Object) date1, Calendar.MONTH),</span>
+                &quot;round month-1 failed&quot;);
+<span class="fc" id="L781">        assertEquals(dateParser.parse(&quot;December 1, 2001&quot;),</span>
+<span class="fc" id="L782">                DateUtils.round((Object) date2, Calendar.MONTH),</span>
+                &quot;round month-2 failed&quot;);
+<span class="fc" id="L784">        assertEquals(dateParser.parse(&quot;February 16, 2002&quot;),</span>
+<span class="fc" id="L785">                DateUtils.round((Object) date1, DateUtils.SEMI_MONTH),</span>
+                &quot;round semimonth-1 failed&quot;);
+<span class="fc" id="L787">        assertEquals(dateParser.parse(&quot;November 16, 2001&quot;),</span>
+<span class="fc" id="L788">                DateUtils.round((Object) date2, DateUtils.SEMI_MONTH),</span>
+                &quot;round semimonth-2 failed&quot;);
+<span class="fc" id="L790">        assertEquals(dateParser.parse(&quot;February 13, 2002&quot;),</span>
+<span class="fc" id="L791">                DateUtils.round((Object) date1, Calendar.DATE),</span>
+                &quot;round date-1 failed&quot;);
+<span class="fc" id="L793">        assertEquals(dateParser.parse(&quot;November 18, 2001&quot;),</span>
+<span class="fc" id="L794">                DateUtils.round((Object) date2, Calendar.DATE),</span>
+                &quot;round date-2 failed&quot;);
+<span class="fc" id="L796">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 13:00:00.000&quot;),</span>
+<span class="fc" id="L797">                DateUtils.round((Object) date1, Calendar.HOUR),</span>
+                &quot;round hour-1 failed&quot;);
+<span class="fc" id="L799">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:00:00.000&quot;),</span>
+<span class="fc" id="L800">                DateUtils.round((Object) date2, Calendar.HOUR),</span>
+                &quot;round hour-2 failed&quot;);
+<span class="fc" id="L802">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:35:00.000&quot;),</span>
+<span class="fc" id="L803">                DateUtils.round((Object) date1, Calendar.MINUTE),</span>
+                &quot;round minute-1 failed&quot;);
+<span class="fc" id="L805">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:00.000&quot;),</span>
+<span class="fc" id="L806">                DateUtils.round((Object) date2, Calendar.MINUTE),</span>
+                &quot;round minute-2 failed&quot;);
+<span class="fc" id="L808">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:57.000&quot;),</span>
+<span class="fc" id="L809">                DateUtils.round((Object) date1, Calendar.SECOND),</span>
+                &quot;round second-1 failed&quot;);
+<span class="fc" id="L811">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:11.000&quot;),</span>
+<span class="fc" id="L812">                DateUtils.round((Object) date2, Calendar.SECOND),</span>
+                &quot;round second-2 failed&quot;);
+<span class="fc" id="L814">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:57.000&quot;),</span>
+<span class="fc" id="L815">                DateUtils.round((Object) cal1, Calendar.SECOND),</span>
+                &quot;round calendar second-1 failed&quot;);
+<span class="fc" id="L817">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:11.000&quot;),</span>
+<span class="fc" id="L818">                DateUtils.round((Object) cal2, Calendar.SECOND),</span>
+                &quot;round calendar second-2 failed&quot;);
+<span class="fc" id="L820">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L821">                DateUtils.round((Object) dateAmPm1, Calendar.AM_PM),</span>
+                &quot;round ampm-1 failed&quot;);
+<span class="fc" id="L823">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L824">                DateUtils.round((Object) dateAmPm2, Calendar.AM_PM),</span>
+                &quot;round ampm-2 failed&quot;);
+<span class="fc" id="L826">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L827">                DateUtils.round((Object) dateAmPm3, Calendar.AM_PM),</span>
+                &quot;round ampm-3 failed&quot;);
+<span class="fc" id="L829">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L830">                DateUtils.round((Object) dateAmPm4, Calendar.AM_PM),</span>
+                &quot;round ampm-4 failed&quot;);
+
+<span class="pc" id="L833">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.round((Date) null, Calendar.SECOND));</span>
+<span class="pc" id="L834">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.round((Calendar) null, Calendar.SECOND));</span>
+<span class="pc" id="L835">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.round((Object) null, Calendar.SECOND));</span>
+<span class="pc" id="L836">        assertThrows(ClassCastException.class, () -&gt; DateUtils.round(&quot;&quot;, Calendar.SECOND));</span>
+<span class="pc" id="L837">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.round(date1, -9999));</span>
+
+<span class="fc" id="L839">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L840">                DateUtils.round((Object) calAmPm1, Calendar.AM_PM),</span>
+                &quot;round ampm-1 failed&quot;);
+<span class="fc" id="L842">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L843">                DateUtils.round((Object) calAmPm2, Calendar.AM_PM),</span>
+                &quot;round ampm-2 failed&quot;);
+<span class="fc" id="L845">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L846">                DateUtils.round((Object) calAmPm3, Calendar.AM_PM),</span>
+                &quot;round ampm-3 failed&quot;);
+<span class="fc" id="L848">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L849">                DateUtils.round((Object) calAmPm4, Calendar.AM_PM),</span>
+                &quot;round ampm-4 failed&quot;);
+
+        // Fix for http://issues.apache.org/bugzilla/show_bug.cgi?id=25560 / LANG-13
+        // Test rounding across the beginning of daylight saving time
+        try {
+<span class="fc" id="L855">            TimeZone.setDefault(zone);</span>
+<span class="fc" id="L856">            dateTimeParser.setTimeZone(zone);</span>
+<span class="fc" id="L857">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L858">                    DateUtils.round(date4, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L860">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L861">                    DateUtils.round((Object) cal4, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L863">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L864">                    DateUtils.round(date5, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L866">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L867">                    DateUtils.round((Object) cal5, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L869">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L870">                    DateUtils.round(date6, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L872">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L873">                    DateUtils.round((Object) cal6, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L875">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L876">                    DateUtils.round(date7, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L878">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L879">                    DateUtils.round((Object) cal7, Calendar.DATE),</span>
+                    &quot;round MET date across DST change-over&quot;);
+
+<span class="fc" id="L882">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 01:00:00.000&quot;),</span>
+<span class="fc" id="L883">                    DateUtils.round(date4, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L885">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 01:00:00.000&quot;),</span>
+<span class="fc" id="L886">                    DateUtils.round((Object) cal4, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L888">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L889">                    DateUtils.round(date5, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L891">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L892">                    DateUtils.round((Object) cal5, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L894">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L895">                    DateUtils.round(date6, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L897">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L898">                    DateUtils.round((Object) cal6, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L900">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 04:00:00.000&quot;),</span>
+<span class="fc" id="L901">                    DateUtils.round(date7, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+<span class="fc" id="L903">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 04:00:00.000&quot;),</span>
+<span class="fc" id="L904">                    DateUtils.round((Object) cal7, Calendar.HOUR_OF_DAY),</span>
+                    &quot;round MET date across DST change-over&quot;);
+        } finally {
+<span class="fc" id="L907">            TimeZone.setDefault(defaultZone);</span>
+<span class="fc" id="L908">            dateTimeParser.setTimeZone(defaultZone);</span>
+        }
+<span class="fc" id="L910">    }</span>
+
+    /**
+     * Tests the Changes Made by LANG-346 to the DateUtils.modify() private method invoked
+     * by DateUtils.round().
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testRoundLang346() throws Exception {
+<span class="fc" id="L920">        final Calendar testCalendar = Calendar.getInstance();</span>
+<span class="fc" id="L921">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 50);</span>
+<span class="fc" id="L922">        Date date = testCalendar.getTime();</span>
+<span class="fc" id="L923">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:09:00.000&quot;),</span>
+<span class="fc" id="L924">                DateUtils.round(date, Calendar.MINUTE),</span>
+                &quot;Minute Round Up Failed&quot;);
+
+<span class="fc" id="L927">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 20);</span>
+<span class="fc" id="L928">        date = testCalendar.getTime();</span>
+<span class="fc" id="L929">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:08:00.000&quot;),</span>
+<span class="fc" id="L930">                DateUtils.round(date, Calendar.MINUTE),</span>
+                &quot;Minute No Round Failed&quot;);
+
+<span class="fc" id="L933">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 50);</span>
+<span class="fc" id="L934">        testCalendar.set(Calendar.MILLISECOND, 600);</span>
+<span class="fc" id="L935">        date = testCalendar.getTime();</span>
+
+<span class="fc" id="L937">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:08:51.000&quot;),</span>
+<span class="fc" id="L938">                DateUtils.round(date, Calendar.SECOND),</span>
+                &quot;Second Round Up with 600 Milli Seconds Failed&quot;);
+
+<span class="fc" id="L941">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 50);</span>
+<span class="fc" id="L942">        testCalendar.set(Calendar.MILLISECOND, 200);</span>
+<span class="fc" id="L943">        date = testCalendar.getTime();</span>
+<span class="fc" id="L944">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:08:50.000&quot;),</span>
+<span class="fc" id="L945">                DateUtils.round(date, Calendar.SECOND),</span>
+                &quot;Second Round Down with 200 Milli Seconds Failed&quot;);
+
+<span class="fc" id="L948">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 20);</span>
+<span class="fc" id="L949">        testCalendar.set(Calendar.MILLISECOND, 600);</span>
+<span class="fc" id="L950">        date = testCalendar.getTime();</span>
+<span class="fc" id="L951">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:08:21.000&quot;),</span>
+<span class="fc" id="L952">                DateUtils.round(date, Calendar.SECOND),</span>
+                &quot;Second Round Up with 200 Milli Seconds Failed&quot;);
+
+<span class="fc" id="L955">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 20);</span>
+<span class="fc" id="L956">        testCalendar.set(Calendar.MILLISECOND, 200);</span>
+<span class="fc" id="L957">        date = testCalendar.getTime();</span>
+<span class="fc" id="L958">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:08:20.000&quot;),</span>
+<span class="fc" id="L959">                DateUtils.round(date, Calendar.SECOND),</span>
+                &quot;Second Round Down with 200 Milli Seconds Failed&quot;);
+
+<span class="fc" id="L962">        testCalendar.set(2007, Calendar.JULY, 2, 8, 8, 50);</span>
+<span class="fc" id="L963">        date = testCalendar.getTime();</span>
+<span class="fc" id="L964">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 08:00:00.000&quot;),</span>
+<span class="fc" id="L965">                DateUtils.round(date, Calendar.HOUR),</span>
+                &quot;Hour Round Down Failed&quot;);
+
+<span class="fc" id="L968">        testCalendar.set(2007, Calendar.JULY, 2, 8, 31, 50);</span>
+<span class="fc" id="L969">        date = testCalendar.getTime();</span>
+<span class="fc" id="L970">        assertEquals(dateTimeParser.parse(&quot;July 2, 2007 09:00:00.000&quot;),</span>
+<span class="fc" id="L971">                DateUtils.round(date, Calendar.HOUR),</span>
+                &quot;Hour Round Up Failed&quot;);
+<span class="fc" id="L973">    }</span>
+
+    /**
+     * Tests various values with the trunc method
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testTruncate() throws Exception {
+        // tests public static Date truncate(Date date, int field)
+<span class="fc" id="L983">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L984">                DateUtils.truncate(date1, Calendar.YEAR),</span>
+                &quot;truncate year-1 failed&quot;);
+<span class="fc" id="L986">        assertEquals(dateParser.parse(&quot;January 1, 2001&quot;),</span>
+<span class="fc" id="L987">                DateUtils.truncate(date2, Calendar.YEAR),</span>
+                &quot;truncate year-2 failed&quot;);
+<span class="fc" id="L989">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L990">                DateUtils.truncate(date1, Calendar.MONTH),</span>
+                &quot;truncate month-1 failed&quot;);
+<span class="fc" id="L992">        assertEquals(dateParser.parse(&quot;November 1, 2001&quot;),</span>
+<span class="fc" id="L993">                DateUtils.truncate(date2, Calendar.MONTH),</span>
+                &quot;truncate month-2 failed&quot;);
+<span class="fc" id="L995">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L996">                DateUtils.truncate(date1, DateUtils.SEMI_MONTH),</span>
+                &quot;truncate semimonth-1 failed&quot;);
+<span class="fc" id="L998">        assertEquals(dateParser.parse(&quot;November 16, 2001&quot;),</span>
+<span class="fc" id="L999">                DateUtils.truncate(date2, DateUtils.SEMI_MONTH),</span>
+                &quot;truncate semimonth-2 failed&quot;);
+<span class="fc" id="L1001">        assertEquals(dateParser.parse(&quot;February 12, 2002&quot;),</span>
+<span class="fc" id="L1002">                DateUtils.truncate(date1, Calendar.DATE),</span>
+                &quot;truncate date-1 failed&quot;);
+<span class="fc" id="L1004">        assertEquals(dateParser.parse(&quot;November 18, 2001&quot;),</span>
+<span class="fc" id="L1005">                DateUtils.truncate(date2, Calendar.DATE),</span>
+                &quot;truncate date-2 failed&quot;);
+<span class="fc" id="L1007">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1008">                DateUtils.truncate(date1, Calendar.HOUR),</span>
+                &quot;truncate hour-1 failed&quot;);
+<span class="fc" id="L1010">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:00:00.000&quot;),</span>
+<span class="fc" id="L1011">                DateUtils.truncate(date2, Calendar.HOUR),</span>
+                &quot;truncate hour-2 failed&quot;);
+<span class="fc" id="L1013">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:00.000&quot;),</span>
+<span class="fc" id="L1014">                DateUtils.truncate(date1, Calendar.MINUTE),</span>
+                &quot;truncate minute-1 failed&quot;);
+<span class="fc" id="L1016">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:00.000&quot;),</span>
+<span class="fc" id="L1017">                DateUtils.truncate(date2, Calendar.MINUTE),</span>
+                &quot;truncate minute-2 failed&quot;);
+<span class="fc" id="L1019">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:56.000&quot;),</span>
+<span class="fc" id="L1020">                DateUtils.truncate(date1, Calendar.SECOND),</span>
+                &quot;truncate second-1 failed&quot;);
+<span class="fc" id="L1022">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:11.000&quot;),</span>
+<span class="fc" id="L1023">                DateUtils.truncate(date2, Calendar.SECOND),</span>
+                &quot;truncate second-2 failed&quot;);
+<span class="fc" id="L1025">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1026">                DateUtils.truncate(dateAmPm1, Calendar.AM_PM),</span>
+                &quot;truncate ampm-1 failed&quot;);
+<span class="fc" id="L1028">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1029">                DateUtils.truncate(dateAmPm2, Calendar.AM_PM),</span>
+                &quot;truncate ampm-2 failed&quot;);
+<span class="fc" id="L1031">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1032">                DateUtils.truncate(dateAmPm3, Calendar.AM_PM),</span>
+                &quot;truncate ampm-3 failed&quot;);
+<span class="fc" id="L1034">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1035">                DateUtils.truncate(dateAmPm4, Calendar.AM_PM),</span>
+                &quot;truncate ampm-4 failed&quot;);
+
+        // tests public static Date truncate(Object date, int field)
+<span class="fc" id="L1039">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L1040">                DateUtils.truncate((Object) date1, Calendar.YEAR),</span>
+                &quot;truncate year-1 failed&quot;);
+<span class="fc" id="L1042">        assertEquals(dateParser.parse(&quot;January 1, 2001&quot;),</span>
+<span class="fc" id="L1043">                DateUtils.truncate((Object) date2, Calendar.YEAR),</span>
+                &quot;truncate year-2 failed&quot;);
+<span class="fc" id="L1045">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L1046">                DateUtils.truncate((Object) date1, Calendar.MONTH),</span>
+                &quot;truncate month-1 failed&quot;);
+<span class="fc" id="L1048">        assertEquals(dateParser.parse(&quot;November 1, 2001&quot;),</span>
+<span class="fc" id="L1049">                DateUtils.truncate((Object) date2, Calendar.MONTH),</span>
+                &quot;truncate month-2 failed&quot;);
+<span class="fc" id="L1051">        assertEquals(dateParser.parse(&quot;February 1, 2002&quot;),</span>
+<span class="fc" id="L1052">                DateUtils.truncate((Object) date1, DateUtils.SEMI_MONTH),</span>
+                &quot;truncate semimonth-1 failed&quot;);
+<span class="fc" id="L1054">        assertEquals(dateParser.parse(&quot;November 16, 2001&quot;),</span>
+<span class="fc" id="L1055">                DateUtils.truncate((Object) date2, DateUtils.SEMI_MONTH),</span>
+                &quot;truncate semimonth-2 failed&quot;);
+<span class="fc" id="L1057">        assertEquals(dateParser.parse(&quot;February 12, 2002&quot;),</span>
+<span class="fc" id="L1058">                DateUtils.truncate((Object) date1, Calendar.DATE),</span>
+                &quot;truncate date-1 failed&quot;);
+<span class="fc" id="L1060">        assertEquals(dateParser.parse(&quot;November 18, 2001&quot;),</span>
+<span class="fc" id="L1061">                DateUtils.truncate((Object) date2, Calendar.DATE),</span>
+                &quot;truncate date-2 failed&quot;);
+<span class="fc" id="L1063">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1064">                DateUtils.truncate((Object) date1, Calendar.HOUR),</span>
+                &quot;truncate hour-1 failed&quot;);
+<span class="fc" id="L1066">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:00:00.000&quot;),</span>
+<span class="fc" id="L1067">                DateUtils.truncate((Object) date2, Calendar.HOUR),</span>
+                &quot;truncate hour-2 failed&quot;);
+<span class="fc" id="L1069">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:00.000&quot;),</span>
+<span class="fc" id="L1070">                DateUtils.truncate((Object) date1, Calendar.MINUTE),</span>
+                &quot;truncate minute-1 failed&quot;);
+<span class="fc" id="L1072">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:00.000&quot;),</span>
+<span class="fc" id="L1073">                DateUtils.truncate((Object) date2, Calendar.MINUTE),</span>
+                &quot;truncate minute-2 failed&quot;);
+<span class="fc" id="L1075">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:56.000&quot;),</span>
+<span class="fc" id="L1076">                DateUtils.truncate((Object) date1, Calendar.SECOND),</span>
+                &quot;truncate second-1 failed&quot;);
+<span class="fc" id="L1078">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:11.000&quot;),</span>
+<span class="fc" id="L1079">                DateUtils.truncate((Object) date2, Calendar.SECOND),</span>
+                &quot;truncate second-2 failed&quot;);
+<span class="fc" id="L1081">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1082">                DateUtils.truncate((Object) dateAmPm1, Calendar.AM_PM),</span>
+                &quot;truncate ampm-1 failed&quot;);
+<span class="fc" id="L1084">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1085">                DateUtils.truncate((Object) dateAmPm2, Calendar.AM_PM),</span>
+                &quot;truncate ampm-2 failed&quot;);
+<span class="fc" id="L1087">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1088">                DateUtils.truncate((Object) dateAmPm3, Calendar.AM_PM),</span>
+                &quot;truncate ampm-3 failed&quot;);
+<span class="fc" id="L1090">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1091">                DateUtils.truncate((Object) dateAmPm4, Calendar.AM_PM),</span>
+                &quot;truncate ampm-4 failed&quot;);
+
+<span class="fc" id="L1094">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:56.000&quot;),</span>
+<span class="fc" id="L1095">                DateUtils.truncate((Object) cal1, Calendar.SECOND),</span>
+                &quot;truncate calendar second-1 failed&quot;);
+<span class="fc" id="L1097">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:11.000&quot;),</span>
+<span class="fc" id="L1098">                DateUtils.truncate((Object) cal2, Calendar.SECOND),</span>
+                &quot;truncate calendar second-2 failed&quot;);
+
+<span class="fc" id="L1101">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1102">                DateUtils.truncate((Object) calAmPm1, Calendar.AM_PM),</span>
+                &quot;truncate ampm-1 failed&quot;);
+<span class="fc" id="L1104">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1105">                DateUtils.truncate((Object) calAmPm2, Calendar.AM_PM),</span>
+                &quot;truncate ampm-2 failed&quot;);
+<span class="fc" id="L1107">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1108">                DateUtils.truncate((Object) calAmPm3, Calendar.AM_PM),</span>
+                &quot;truncate ampm-3 failed&quot;);
+<span class="fc" id="L1110">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1111">                DateUtils.truncate((Object) calAmPm4, Calendar.AM_PM),</span>
+                &quot;truncate ampm-4 failed&quot;);
+
+<span class="pc" id="L1114">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.truncate((Date) null, Calendar.SECOND));</span>
+<span class="pc" id="L1115">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.truncate((Calendar) null, Calendar.SECOND));</span>
+<span class="pc" id="L1116">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.truncate((Object) null, Calendar.SECOND));</span>
+<span class="pc" id="L1117">        assertThrows(ClassCastException.class, () -&gt; DateUtils.truncate(&quot;&quot;, Calendar.SECOND));</span>
+
+        // Fix for http://issues.apache.org/bugzilla/show_bug.cgi?id=25560
+        // Test truncate across beginning of daylight saving time
+        try {
+<span class="fc" id="L1122">            TimeZone.setDefault(zone);</span>
+<span class="fc" id="L1123">            dateTimeParser.setTimeZone(zone);</span>
+<span class="fc" id="L1124">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1125">                    DateUtils.truncate(date3, Calendar.DATE),</span>
+                    &quot;truncate MET date across DST change-over&quot;);
+<span class="fc" id="L1127">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1128">                    DateUtils.truncate((Object) cal3, Calendar.DATE),</span>
+                    &quot;truncate MET date across DST change-over&quot;);
+            // Test truncate across end of daylight saving time
+<span class="fc" id="L1131">            assertEquals(dateTimeParser.parse(&quot;October 26, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1132">                    DateUtils.truncate(date8, Calendar.DATE),</span>
+                    &quot;truncate MET date across DST change-over&quot;);
+<span class="fc" id="L1134">            assertEquals(dateTimeParser.parse(&quot;October 26, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1135">                    DateUtils.truncate((Object) cal8, Calendar.DATE),</span>
+                    &quot;truncate MET date across DST change-over&quot;);
+        } finally {
+<span class="fc" id="L1138">            TimeZone.setDefault(defaultZone);</span>
+<span class="fc" id="L1139">            dateTimeParser.setTimeZone(defaultZone);</span>
+        }
+
+        // Bug 31395, large dates
+<span class="fc" id="L1143">        final Date endOfTime = new Date(Long.MAX_VALUE); // fyi: Sun Aug 17 07:12:55 CET 292278994 -- 807 millis</span>
+<span class="fc" id="L1144">        final GregorianCalendar endCal = new GregorianCalendar();</span>
+<span class="fc" id="L1145">        endCal.setTime(endOfTime);</span>
+<span class="pc" id="L1146">        assertThrows(ArithmeticException.class, () -&gt; DateUtils.truncate(endCal, Calendar.DATE));</span>
+<span class="fc" id="L1147">        endCal.set(Calendar.YEAR, 280000001);</span>
+<span class="pc" id="L1148">        assertThrows(ArithmeticException.class, () -&gt; DateUtils.truncate(endCal, Calendar.DATE));</span>
+<span class="fc" id="L1149">        endCal.set(Calendar.YEAR, 280000000);</span>
+<span class="fc" id="L1150">        final Calendar cal = DateUtils.truncate(endCal, Calendar.DATE);</span>
+<span class="fc" id="L1151">        assertEquals(0, cal.get(Calendar.HOUR));</span>
+<span class="fc" id="L1152">    }</span>
+
+    /**
+     * Tests for LANG-59
+     *
+     * see http://issues.apache.org/jira/browse/LANG-59
+     */
+    @Test
+    public void testTruncateLang59() {
+        try {
+            // Set TimeZone to Mountain Time
+<span class="fc" id="L1163">            final TimeZone denverZone = TimeZone.getTimeZone(&quot;America/Denver&quot;);</span>
+<span class="fc" id="L1164">            TimeZone.setDefault(denverZone);</span>
+<span class="fc" id="L1165">            final DateFormat format = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss.SSS XXX&quot;);</span>
+<span class="fc" id="L1166">            format.setTimeZone(denverZone);</span>
+
+<span class="fc" id="L1168">            final Date oct31_01MDT = new Date(1099206000000L);</span>
+
+<span class="fc" id="L1170">            final Date oct31MDT = new Date(oct31_01MDT.getTime() - 3600000L); // - 1 hour</span>
+<span class="fc" id="L1171">            final Date oct31_01_02MDT = new Date(oct31_01MDT.getTime() + 120000L);  // + 2 minutes</span>
+<span class="fc" id="L1172">            final Date oct31_01_02_03MDT = new Date(oct31_01_02MDT.getTime() + 3000L);    // + 3 seconds</span>
+<span class="fc" id="L1173">            final Date oct31_01_02_03_04MDT = new Date(oct31_01_02_03MDT.getTime() + 4L);       // + 4 milliseconds</span>
+
+<span class="fc" id="L1175">            assertEquals(&quot;2004-10-31 00:00:00.000 -06:00&quot;, format.format(oct31MDT), &quot;Check 00:00:00.000&quot;);</span>
+<span class="fc" id="L1176">            assertEquals(&quot;2004-10-31 01:00:00.000 -06:00&quot;, format.format(oct31_01MDT), &quot;Check 01:00:00.000&quot;);</span>
+<span class="fc" id="L1177">            assertEquals(&quot;2004-10-31 01:02:00.000 -06:00&quot;, format.format(oct31_01_02MDT), &quot;Check 01:02:00.000&quot;);</span>
+<span class="fc" id="L1178">            assertEquals(&quot;2004-10-31 01:02:03.000 -06:00&quot;, format.format(oct31_01_02_03MDT), &quot;Check 01:02:03.000&quot;);</span>
+<span class="fc" id="L1179">            assertEquals(&quot;2004-10-31 01:02:03.004 -06:00&quot;, format.format(oct31_01_02_03_04MDT), &quot;Check 01:02:03.004&quot;);</span>
+
+            // ------- Demonstrate Problem -------
+<span class="fc" id="L1182">            final Calendar gval = Calendar.getInstance();</span>
+<span class="fc" id="L1183">            gval.setTime(new Date(oct31_01MDT.getTime()));</span>
+<span class="fc" id="L1184">            gval.set(Calendar.MINUTE, gval.get(Calendar.MINUTE)); // set minutes to the same value</span>
+<span class="fc" id="L1185">            assertEquals(gval.getTime().getTime(), oct31_01MDT.getTime() + 3600000L, &quot;Demonstrate Problem&quot;);</span>
+
+            // ---------- Test Truncate ----------
+<span class="fc" id="L1188">            assertEquals(oct31_01_02_03_04MDT, DateUtils.truncate(oct31_01_02_03_04MDT, Calendar.MILLISECOND),</span>
+                    &quot;Truncate Calendar.MILLISECOND&quot;);
+
+<span class="fc" id="L1191">            assertEquals(oct31_01_02_03MDT, DateUtils.truncate(oct31_01_02_03_04MDT, Calendar.SECOND),</span>
+                    &quot;Truncate Calendar.SECOND&quot;);
+
+<span class="fc" id="L1194">            assertEquals(oct31_01_02MDT, DateUtils.truncate(oct31_01_02_03_04MDT, Calendar.MINUTE),</span>
+                    &quot;Truncate Calendar.MINUTE&quot;);
+
+<span class="fc" id="L1197">            assertEquals(oct31_01MDT, DateUtils.truncate(oct31_01_02_03_04MDT, Calendar.HOUR_OF_DAY),</span>
+                    &quot;Truncate Calendar.HOUR_OF_DAY&quot;);
+
+<span class="fc" id="L1200">            assertEquals(oct31_01MDT, DateUtils.truncate(oct31_01_02_03_04MDT, Calendar.HOUR),</span>
+                    &quot;Truncate Calendar.HOUR&quot;);
+
+<span class="fc" id="L1203">            assertEquals(oct31MDT, DateUtils.truncate(oct31_01_02_03_04MDT, Calendar.DATE),</span>
+                    &quot;Truncate Calendar.DATE&quot;);
+
+            // ---------- Test Round (down) ----------
+<span class="fc" id="L1207">            assertEquals(oct31_01_02_03_04MDT, DateUtils.round(oct31_01_02_03_04MDT, Calendar.MILLISECOND),</span>
+                    &quot;Round Calendar.MILLISECOND&quot;);
+
+<span class="fc" id="L1210">            assertEquals(oct31_01_02_03MDT, DateUtils.round(oct31_01_02_03_04MDT, Calendar.SECOND),</span>
+                    &quot;Round Calendar.SECOND&quot;);
+
+<span class="fc" id="L1213">            assertEquals(oct31_01_02MDT, DateUtils.round(oct31_01_02_03_04MDT, Calendar.MINUTE),</span>
+                    &quot;Round Calendar.MINUTE&quot;);
+
+<span class="fc" id="L1216">            assertEquals(oct31_01MDT, DateUtils.round(oct31_01_02_03_04MDT, Calendar.HOUR_OF_DAY),</span>
+                    &quot;Round Calendar.HOUR_OF_DAY&quot;);
+
+<span class="fc" id="L1219">            assertEquals(oct31_01MDT, DateUtils.round(oct31_01_02_03_04MDT, Calendar.HOUR),</span>
+                    &quot;Round Calendar.HOUR&quot;);
+
+<span class="fc" id="L1222">            assertEquals(oct31MDT, DateUtils.round(oct31_01_02_03_04MDT, Calendar.DATE),</span>
+                    &quot;Round Calendar.DATE&quot;);
+        } finally {
+            // restore default time zone
+<span class="fc" id="L1226">            TimeZone.setDefault(defaultZone);</span>
+        }
+<span class="fc" id="L1228">    }</span>
+
+    // http://issues.apache.org/jira/browse/LANG-530
+    @SuppressWarnings(&quot;deprecation&quot;)
+    @Test
+    public void testLang530() throws ParseException {
+<span class="fc" id="L1234">        final Date d = new Date();</span>
+<span class="fc" id="L1235">        final String isoDateStr = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(d);</span>
+<span class="fc" id="L1236">        final Date d2 = DateUtils.parseDate(isoDateStr, DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern());</span>
+        // the format loses milliseconds so have to reintroduce them
+<span class="fc" id="L1238">        assertEquals(d.getTime(), d2.getTime() + d.getTime() % 1000, &quot;Date not equal to itself ISO formatted and parsed&quot;);</span>
+<span class="fc" id="L1239">    }</span>
+
+    /**
+     * Tests various values with the ceiling method
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testCeil() throws Exception {
+        // test javadoc
+<span class="fc" id="L1249">        assertEquals(dateTimeParser.parse(&quot;March 28, 2002 14:00:00.000&quot;),</span>
+<span class="fc" id="L1250">                DateUtils.ceiling(</span>
+<span class="fc" id="L1251">                            dateTimeParser.parse(&quot;March 28, 2002 13:45:01.231&quot;),</span>
+                        Calendar.HOUR),
+                &quot;ceiling javadoc-1 failed&quot;);
+<span class="fc" id="L1254">        assertEquals(dateTimeParser.parse(&quot;April 1, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1255">                DateUtils.ceiling(</span>
+<span class="fc" id="L1256">                            dateTimeParser.parse(&quot;March 28, 2002 13:45:01.231&quot;),</span>
+                        Calendar.MONTH),
+                &quot;ceiling javadoc-2 failed&quot;);
+
+        // tests public static Date ceiling(Date date, int field)
+<span class="fc" id="L1261">        assertEquals(dateParser.parse(&quot;January 1, 2003&quot;),</span>
+<span class="fc" id="L1262">                DateUtils.ceiling(date1, Calendar.YEAR),</span>
+                &quot;ceiling year-1 failed&quot;);
+<span class="fc" id="L1264">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L1265">                DateUtils.ceiling(date2, Calendar.YEAR),</span>
+                &quot;ceiling year-2 failed&quot;);
+<span class="fc" id="L1267">        assertEquals(dateParser.parse(&quot;March 1, 2002&quot;),</span>
+<span class="fc" id="L1268">                DateUtils.ceiling(date1, Calendar.MONTH),</span>
+                &quot;ceiling month-1 failed&quot;);
+<span class="fc" id="L1270">        assertEquals(dateParser.parse(&quot;December 1, 2001&quot;),</span>
+<span class="fc" id="L1271">                DateUtils.ceiling(date2, Calendar.MONTH),</span>
+                &quot;ceiling month-2 failed&quot;);
+<span class="fc" id="L1273">        assertEquals(dateParser.parse(&quot;February 16, 2002&quot;),</span>
+<span class="fc" id="L1274">                DateUtils.ceiling(date1, DateUtils.SEMI_MONTH),</span>
+                &quot;ceiling semimonth-1 failed&quot;);
+<span class="fc" id="L1276">        assertEquals(dateParser.parse(&quot;December 1, 2001&quot;),</span>
+<span class="fc" id="L1277">                DateUtils.ceiling(date2, DateUtils.SEMI_MONTH),</span>
+                &quot;ceiling semimonth-2 failed&quot;);
+<span class="fc" id="L1279">        assertEquals(dateParser.parse(&quot;February 13, 2002&quot;),</span>
+<span class="fc" id="L1280">                DateUtils.ceiling(date1, Calendar.DATE),</span>
+                &quot;ceiling date-1 failed&quot;);
+<span class="fc" id="L1282">        assertEquals(dateParser.parse(&quot;November 19, 2001&quot;),</span>
+<span class="fc" id="L1283">                DateUtils.ceiling(date2, Calendar.DATE),</span>
+                &quot;ceiling date-2 failed&quot;);
+<span class="fc" id="L1285">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 13:00:00.000&quot;),</span>
+<span class="fc" id="L1286">                DateUtils.ceiling(date1, Calendar.HOUR),</span>
+                &quot;ceiling hour-1 failed&quot;);
+<span class="fc" id="L1288">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 2:00:00.000&quot;),</span>
+<span class="fc" id="L1289">                DateUtils.ceiling(date2, Calendar.HOUR),</span>
+                &quot;ceiling hour-2 failed&quot;);
+<span class="fc" id="L1291">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:35:00.000&quot;),</span>
+<span class="fc" id="L1292">                DateUtils.ceiling(date1, Calendar.MINUTE),</span>
+                &quot;ceiling minute-1 failed&quot;);
+<span class="fc" id="L1294">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:24:00.000&quot;),</span>
+<span class="fc" id="L1295">                DateUtils.ceiling(date2, Calendar.MINUTE),</span>
+                &quot;ceiling minute-2 failed&quot;);
+<span class="fc" id="L1297">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:57.000&quot;),</span>
+<span class="fc" id="L1298">                DateUtils.ceiling(date1, Calendar.SECOND),</span>
+                &quot;ceiling second-1 failed&quot;);
+<span class="fc" id="L1300">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:12.000&quot;),</span>
+<span class="fc" id="L1301">                DateUtils.ceiling(date2, Calendar.SECOND),</span>
+                &quot;ceiling second-2 failed&quot;);
+<span class="fc" id="L1303">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1304">                DateUtils.ceiling(dateAmPm1, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-1 failed&quot;);
+<span class="fc" id="L1306">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1307">                DateUtils.ceiling(dateAmPm2, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-2 failed&quot;);
+<span class="fc" id="L1309">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1310">                DateUtils.ceiling(dateAmPm3, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-3 failed&quot;);
+<span class="fc" id="L1312">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1313">                DateUtils.ceiling(dateAmPm4, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-4 failed&quot;);
+
+     // tests public static Date ceiling(Object date, int field)
+<span class="fc" id="L1317">        assertEquals(dateParser.parse(&quot;January 1, 2003&quot;),</span>
+<span class="fc" id="L1318">                DateUtils.ceiling((Object) date1, Calendar.YEAR),</span>
+                &quot;ceiling year-1 failed&quot;);
+<span class="fc" id="L1320">        assertEquals(dateParser.parse(&quot;January 1, 2002&quot;),</span>
+<span class="fc" id="L1321">                DateUtils.ceiling((Object) date2, Calendar.YEAR),</span>
+                &quot;ceiling year-2 failed&quot;);
+<span class="fc" id="L1323">        assertEquals(dateParser.parse(&quot;March 1, 2002&quot;),</span>
+<span class="fc" id="L1324">                DateUtils.ceiling((Object) date1, Calendar.MONTH),</span>
+                &quot;ceiling month-1 failed&quot;);
+<span class="fc" id="L1326">        assertEquals(dateParser.parse(&quot;December 1, 2001&quot;),</span>
+<span class="fc" id="L1327">                DateUtils.ceiling((Object) date2, Calendar.MONTH),</span>
+                &quot;ceiling month-2 failed&quot;);
+<span class="fc" id="L1329">        assertEquals(dateParser.parse(&quot;February 16, 2002&quot;),</span>
+<span class="fc" id="L1330">                DateUtils.ceiling((Object) date1, DateUtils.SEMI_MONTH),</span>
+                &quot;ceiling semimonth-1 failed&quot;);
+<span class="fc" id="L1332">        assertEquals(dateParser.parse(&quot;December 1, 2001&quot;),</span>
+<span class="fc" id="L1333">                DateUtils.ceiling((Object) date2, DateUtils.SEMI_MONTH),</span>
+                &quot;ceiling semimonth-2 failed&quot;);
+<span class="fc" id="L1335">        assertEquals(dateParser.parse(&quot;February 13, 2002&quot;),</span>
+<span class="fc" id="L1336">                DateUtils.ceiling((Object) date1, Calendar.DATE),</span>
+                &quot;ceiling date-1 failed&quot;);
+<span class="fc" id="L1338">        assertEquals(dateParser.parse(&quot;November 19, 2001&quot;),</span>
+<span class="fc" id="L1339">                DateUtils.ceiling((Object) date2, Calendar.DATE),</span>
+                &quot;ceiling date-2 failed&quot;);
+<span class="fc" id="L1341">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 13:00:00.000&quot;),</span>
+<span class="fc" id="L1342">                DateUtils.ceiling((Object) date1, Calendar.HOUR),</span>
+                &quot;ceiling hour-1 failed&quot;);
+<span class="fc" id="L1344">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 2:00:00.000&quot;),</span>
+<span class="fc" id="L1345">                DateUtils.ceiling((Object) date2, Calendar.HOUR),</span>
+                &quot;ceiling hour-2 failed&quot;);
+<span class="fc" id="L1347">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:35:00.000&quot;),</span>
+<span class="fc" id="L1348">                DateUtils.ceiling((Object) date1, Calendar.MINUTE),</span>
+                &quot;ceiling minute-1 failed&quot;);
+<span class="fc" id="L1350">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:24:00.000&quot;),</span>
+<span class="fc" id="L1351">                DateUtils.ceiling((Object) date2, Calendar.MINUTE),</span>
+                &quot;ceiling minute-2 failed&quot;);
+<span class="fc" id="L1353">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:57.000&quot;),</span>
+<span class="fc" id="L1354">                DateUtils.ceiling((Object) date1, Calendar.SECOND),</span>
+                &quot;ceiling second-1 failed&quot;);
+<span class="fc" id="L1356">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:12.000&quot;),</span>
+<span class="fc" id="L1357">                DateUtils.ceiling((Object) date2, Calendar.SECOND),</span>
+                &quot;ceiling second-2 failed&quot;);
+<span class="fc" id="L1359">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1360">                DateUtils.ceiling((Object) dateAmPm1, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-1 failed&quot;);
+<span class="fc" id="L1362">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1363">                DateUtils.ceiling((Object) dateAmPm2, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-2 failed&quot;);
+<span class="fc" id="L1365">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1366">                DateUtils.ceiling((Object) dateAmPm3, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-3 failed&quot;);
+<span class="fc" id="L1368">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1369">                DateUtils.ceiling((Object) dateAmPm4, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-4 failed&quot;);
+
+<span class="fc" id="L1372">        assertEquals(dateTimeParser.parse(&quot;February 12, 2002 12:34:57.000&quot;),</span>
+<span class="fc" id="L1373">                DateUtils.ceiling((Object) cal1, Calendar.SECOND),</span>
+                &quot;ceiling calendar second-1 failed&quot;);
+<span class="fc" id="L1375">        assertEquals(dateTimeParser.parse(&quot;November 18, 2001 1:23:12.000&quot;),</span>
+<span class="fc" id="L1376">                DateUtils.ceiling((Object) cal2, Calendar.SECOND),</span>
+                &quot;ceiling calendar second-2 failed&quot;);
+
+<span class="fc" id="L1379">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1380">                DateUtils.ceiling((Object) calAmPm1, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-1 failed&quot;);
+<span class="fc" id="L1382">        assertEquals(dateTimeParser.parse(&quot;February 3, 2002 12:00:00.000&quot;),</span>
+<span class="fc" id="L1383">                DateUtils.ceiling((Object) calAmPm2, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-2 failed&quot;);
+<span class="fc" id="L1385">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1386">                DateUtils.ceiling((Object) calAmPm3, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-3 failed&quot;);
+<span class="fc" id="L1388">        assertEquals(dateTimeParser.parse(&quot;February 4, 2002 00:00:00.000&quot;),</span>
+<span class="fc" id="L1389">                DateUtils.ceiling((Object) calAmPm4, Calendar.AM_PM),</span>
+                &quot;ceiling ampm-4 failed&quot;);
+
+<span class="pc" id="L1392">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.ceiling((Date) null, Calendar.SECOND));</span>
+<span class="pc" id="L1393">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.ceiling((Calendar) null, Calendar.SECOND));</span>
+<span class="pc" id="L1394">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.ceiling((Object) null, Calendar.SECOND));</span>
+<span class="pc" id="L1395">        assertThrows(ClassCastException.class, () -&gt; DateUtils.ceiling(&quot;&quot;, Calendar.SECOND));</span>
+<span class="pc" id="L1396">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.ceiling(date1, -9999));</span>
+
+        // Fix for http://issues.apache.org/bugzilla/show_bug.cgi?id=25560
+        // Test ceiling across the beginning of daylight saving time
+        try {
+<span class="fc" id="L1401">            TimeZone.setDefault(zone);</span>
+<span class="fc" id="L1402">            dateTimeParser.setTimeZone(zone);</span>
+
+<span class="fc" id="L1404">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1405">                    DateUtils.ceiling(date4, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1407">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1408">                    DateUtils.ceiling((Object) cal4, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1410">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1411">                    DateUtils.ceiling(date5, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1413">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1414">                    DateUtils.ceiling((Object) cal5, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1416">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1417">                    DateUtils.ceiling(date6, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1419">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1420">                    DateUtils.ceiling((Object) cal6, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1422">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1423">                    DateUtils.ceiling(date7, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1425">            assertEquals(dateTimeParser.parse(&quot;March 31, 2003 00:00:00.000&quot;),</span>
+<span class="fc" id="L1426">                    DateUtils.ceiling((Object) cal7, Calendar.DATE),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+
+<span class="fc" id="L1429">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L1430">                    DateUtils.ceiling(date4, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1432">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L1433">                    DateUtils.ceiling((Object) cal4, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1435">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L1436">                    DateUtils.ceiling(date5, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1438">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 03:00:00.000&quot;),</span>
+<span class="fc" id="L1439">                    DateUtils.ceiling((Object) cal5, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1441">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 04:00:00.000&quot;),</span>
+<span class="fc" id="L1442">                    DateUtils.ceiling(date6, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1444">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 04:00:00.000&quot;),</span>
+<span class="fc" id="L1445">                    DateUtils.ceiling((Object) cal6, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1447">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 04:00:00.000&quot;),</span>
+<span class="fc" id="L1448">                    DateUtils.ceiling(date7, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+<span class="fc" id="L1450">            assertEquals(dateTimeParser.parse(&quot;March 30, 2003 04:00:00.000&quot;),</span>
+<span class="fc" id="L1451">                    DateUtils.ceiling((Object) cal7, Calendar.HOUR_OF_DAY),</span>
+                    &quot;ceiling MET date across DST change-over&quot;);
+
+        } finally {
+<span class="fc" id="L1455">            TimeZone.setDefault(defaultZone);</span>
+<span class="fc" id="L1456">            dateTimeParser.setTimeZone(defaultZone);</span>
+        }
+
+     // Bug 31395, large dates
+<span class="fc" id="L1460">        final Date endOfTime = new Date(Long.MAX_VALUE); // fyi: Sun Aug 17 07:12:55 CET 292278994 -- 807 millis</span>
+<span class="fc" id="L1461">        final GregorianCalendar endCal = new GregorianCalendar();</span>
+<span class="fc" id="L1462">        endCal.setTime(endOfTime);</span>
+<span class="pc" id="L1463">        assertThrows(ArithmeticException.class, () -&gt; DateUtils.ceiling(endCal, Calendar.DATE));</span>
+<span class="fc" id="L1464">        endCal.set(Calendar.YEAR, 280000001);</span>
+<span class="pc" id="L1465">        assertThrows(ArithmeticException.class, () -&gt; DateUtils.ceiling(endCal, Calendar.DATE));</span>
+<span class="fc" id="L1466">        endCal.set(Calendar.YEAR, 280000000);</span>
+<span class="fc" id="L1467">        final Calendar cal = DateUtils.ceiling(endCal, Calendar.DATE);</span>
+<span class="fc" id="L1468">        assertEquals(0, cal.get(Calendar.HOUR));</span>
+<span class="fc" id="L1469">    }</span>
+
+    /**
+     * Tests the iterator exceptions
+     */
+    @Test
+    public void testIteratorEx() {
+<span class="pc" id="L1476">        assertThrows(IllegalArgumentException.class, () -&gt; DateUtils.iterator(Calendar.getInstance(), -9999));</span>
+<span class="fc" id="L1477">        assertThrows</span>
+<span class="pc" id="L1478">                (IllegalArgumentException.class, () -&gt; DateUtils.iterator((Date) null, DateUtils.RANGE_WEEK_CENTER));</span>
+<span class="fc" id="L1479">        assertThrows</span>
+<span class="pc" id="L1480">                (IllegalArgumentException.class, () -&gt; DateUtils.iterator((Calendar) null, DateUtils.RANGE_WEEK_CENTER));</span>
+<span class="fc" id="L1481">        assertThrows</span>
+<span class="pc" id="L1482">                (IllegalArgumentException.class, () -&gt; DateUtils.iterator((Object) null, DateUtils.RANGE_WEEK_CENTER));</span>
+<span class="pc" id="L1483">        assertThrows(ClassCastException.class, () -&gt; DateUtils.iterator(&quot;&quot;, DateUtils.RANGE_WEEK_CENTER));</span>
+<span class="fc" id="L1484">    }</span>
+
+    /**
+     * Tests the calendar iterator for week ranges
+     */
+    @Test
+    public void testWeekIterator() {
+<span class="fc" id="L1491">        final Calendar now = Calendar.getInstance();</span>
+<span class="fc bfc" id="L1492" title="All 2 branches covered.">        for (int i = 0; i&lt; 7; i++) {</span>
+<span class="fc" id="L1493">            final Calendar today = DateUtils.truncate(now, Calendar.DATE);</span>
+<span class="fc" id="L1494">            final Calendar sunday = DateUtils.truncate(now, Calendar.DATE);</span>
+<span class="fc" id="L1495">            sunday.add(Calendar.DATE, 1 - sunday.get(Calendar.DAY_OF_WEEK));</span>
+<span class="fc" id="L1496">            final Calendar monday = DateUtils.truncate(now, Calendar.DATE);</span>
+<span class="fc bfc" id="L1497" title="All 2 branches covered.">            if (monday.get(Calendar.DAY_OF_WEEK) == 1) {</span>
+                //This is sunday... roll back 6 days
+<span class="fc" id="L1499">                monday.add(Calendar.DATE, -6);</span>
+            } else {
+<span class="fc" id="L1501">                monday.add(Calendar.DATE, 2 - monday.get(Calendar.DAY_OF_WEEK));</span>
+            }
+<span class="fc" id="L1503">            final Calendar centered = DateUtils.truncate(now, Calendar.DATE);</span>
+<span class="fc" id="L1504">            centered.add(Calendar.DATE, -3);</span>
+
+<span class="fc" id="L1506">            Iterator&lt;?&gt; it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_SUNDAY);</span>
+<span class="fc" id="L1507">            assertWeekIterator(it, sunday);</span>
+<span class="fc" id="L1508">            it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_MONDAY);</span>
+<span class="fc" id="L1509">            assertWeekIterator(it, monday);</span>
+<span class="fc" id="L1510">            it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_RELATIVE);</span>
+<span class="fc" id="L1511">            assertWeekIterator(it, today);</span>
+<span class="fc" id="L1512">            it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_CENTER);</span>
+<span class="fc" id="L1513">            assertWeekIterator(it, centered);</span>
+
+<span class="fc" id="L1515">            it = DateUtils.iterator((Object) now, DateUtils.RANGE_WEEK_CENTER);</span>
+<span class="fc" id="L1516">            assertWeekIterator(it, centered);</span>
+<span class="fc" id="L1517">            Iterator&lt;?&gt; it2 = DateUtils.iterator((Object) now.getTime(), DateUtils.RANGE_WEEK_CENTER);</span>
+<span class="fc" id="L1518">            assertWeekIterator(it2, centered);</span>
+<span class="fc" id="L1519">            assertThrows(NoSuchElementException.class, it2::next);</span>
+<span class="fc" id="L1520">            Iterator&lt;?&gt; it3 = DateUtils.iterator(now, DateUtils.RANGE_WEEK_CENTER);</span>
+<span class="fc" id="L1521">            it3.next();</span>
+<span class="fc" id="L1522">            assertThrows(UnsupportedOperationException.class, it3::remove);</span>
+
+<span class="fc" id="L1524">            now.add(Calendar.DATE, 1);</span>
+        }
+<span class="fc" id="L1526">    }</span>
+
+    /**
+     * Tests the calendar iterator for month-based ranges
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testMonthIterator() throws Exception {
+<span class="fc" id="L1535">        Iterator&lt;?&gt; it = DateUtils.iterator(date1, DateUtils.RANGE_MONTH_SUNDAY);</span>
+<span class="fc" id="L1536">        assertWeekIterator(it,</span>
+<span class="fc" id="L1537">                dateParser.parse(&quot;January 27, 2002&quot;),</span>
+<span class="fc" id="L1538">                dateParser.parse(&quot;March 2, 2002&quot;));</span>
+
+<span class="fc" id="L1540">        it = DateUtils.iterator(date1, DateUtils.RANGE_MONTH_MONDAY);</span>
+<span class="fc" id="L1541">        assertWeekIterator(it,</span>
+<span class="fc" id="L1542">                dateParser.parse(&quot;January 28, 2002&quot;),</span>
+<span class="fc" id="L1543">                dateParser.parse(&quot;March 3, 2002&quot;));</span>
+
+<span class="fc" id="L1545">        it = DateUtils.iterator(date2, DateUtils.RANGE_MONTH_SUNDAY);</span>
+<span class="fc" id="L1546">        assertWeekIterator(it,</span>
+<span class="fc" id="L1547">                dateParser.parse(&quot;October 28, 2001&quot;),</span>
+<span class="fc" id="L1548">                dateParser.parse(&quot;December 1, 2001&quot;));</span>
+
+<span class="fc" id="L1550">        it = DateUtils.iterator(date2, DateUtils.RANGE_MONTH_MONDAY);</span>
+<span class="fc" id="L1551">        assertWeekIterator(it,</span>
+<span class="fc" id="L1552">                dateParser.parse(&quot;October 29, 2001&quot;),</span>
+<span class="fc" id="L1553">                dateParser.parse(&quot;December 2, 2001&quot;));</span>
+<span class="fc" id="L1554">    }</span>
+
+    @DefaultLocale(language = &quot;en&quot;)
+    @Test
+    public void testLANG799_EN_OK() throws ParseException {
+<span class="fc" id="L1559">        DateUtils.parseDate(&quot;Wed, 09 Apr 2008 23:55:38 GMT&quot;, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;);</span>
+<span class="fc" id="L1560">        DateUtils.parseDateStrictly(&quot;Wed, 09 Apr 2008 23:55:38 GMT&quot;, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;);</span>
+<span class="fc" id="L1561">    }</span>
+
+    // Parse German date with English Locale
+    @DefaultLocale(language = &quot;en&quot;)
+    @Test
+    public void testLANG799_EN_FAIL() {
+<span class="pc" id="L1567">        assertThrows(ParseException.class, () -&gt; DateUtils.parseDate(&quot;Mi, 09 Apr 2008 23:55:38 GMT&quot;, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;));</span>
+<span class="fc" id="L1568">    }</span>
+
+    @DefaultLocale(language = &quot;de&quot;)
+    @Test
+    public void testLANG799_DE_OK() throws ParseException {
+<span class="fc" id="L1573">        DateUtils.parseDate(&quot;Mi, 09 Apr 2008 23:55:38 GMT&quot;, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;);</span>
+<span class="fc" id="L1574">        DateUtils.parseDateStrictly(&quot;Mi, 09 Apr 2008 23:55:38 GMT&quot;, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;);</span>
+<span class="fc" id="L1575">    }</span>
+
+    // Parse English date with German Locale
+    @DefaultLocale(language = &quot;de&quot;)
+    @Test
+    public void testLANG799_DE_FAIL() {
+<span class="pc" id="L1581">        assertThrows(ParseException.class, () -&gt; DateUtils.parseDate(&quot;Wed, 09 Apr 2008 23:55:38 GMT&quot;, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;));</span>
+<span class="fc" id="L1582">    }</span>
+
+    // Parse German date with English Locale, specifying German Locale override
+    @DefaultLocale(language = &quot;en&quot;)
+    @Test
+    public void testLANG799_EN_WITH_DE_LOCALE() throws ParseException {
+<span class="fc" id="L1588">        DateUtils.parseDate(&quot;Mi, 09 Apr 2008 23:55:38 GMT&quot;, Locale.GERMAN, &quot;EEE, dd MMM yyyy HH:mm:ss zzz&quot;);</span>
+<span class="fc" id="L1589">    }</span>
+
+    /**
+     * This checks that this is a 7 element iterator of Calendar objects
+     * that are dates (no time), and exactly 1 day spaced after each other.
+     */
+    private static void assertWeekIterator(final Iterator&lt;?&gt; it, final Calendar start) {
+<span class="fc" id="L1596">        final Calendar end = (Calendar) start.clone();</span>
+<span class="fc" id="L1597">        end.add(Calendar.DATE, 6);</span>
+
+<span class="fc" id="L1599">        assertWeekIterator(it, start, end);</span>
+<span class="fc" id="L1600">    }</span>
+
+    /**
+     * Convenience method for when working with Date objects
+     */
+    private static void assertWeekIterator(final Iterator&lt;?&gt; it, final Date start, final Date end) {
+<span class="fc" id="L1606">        final Calendar calStart = Calendar.getInstance();</span>
+<span class="fc" id="L1607">        calStart.setTime(start);</span>
+<span class="fc" id="L1608">        final Calendar calEnd = Calendar.getInstance();</span>
+<span class="fc" id="L1609">        calEnd.setTime(end);</span>
+
+<span class="fc" id="L1611">        assertWeekIterator(it, calStart, calEnd);</span>
+<span class="fc" id="L1612">    }</span>
+
+    /**
+     * This checks that this is a 7 divisble iterator of Calendar objects
+     * that are dates (no time), and exactly 1 day spaced after each other
+     * (in addition to the proper start and stop dates)
+     */
+    private static void assertWeekIterator(final Iterator&lt;?&gt; it, final Calendar start, final Calendar end) {
+<span class="fc" id="L1620">        Calendar cal = (Calendar) it.next();</span>
+<span class="fc" id="L1621">        assertCalendarsEquals(&quot;&quot;, start, cal, 0);</span>
+<span class="fc" id="L1622">        Calendar last = null;</span>
+<span class="fc" id="L1623">        int count = 1;</span>
+<span class="fc bfc" id="L1624" title="All 2 branches covered.">        while (it.hasNext()) {</span>
+            //Check this is just a date (no time component)
+<span class="fc" id="L1626">            assertCalendarsEquals(&quot;&quot;, cal, DateUtils.truncate(cal, Calendar.DATE), 0);</span>
+
+<span class="fc" id="L1628">            last = cal;</span>
+<span class="fc" id="L1629">            cal = (Calendar) it.next();</span>
+<span class="fc" id="L1630">            count++;</span>
+
+            //Check that this is one day more than the last date
+<span class="fc" id="L1633">            last.add(Calendar.DATE, 1);</span>
+<span class="fc" id="L1634">            assertCalendarsEquals(&quot;&quot;, last, cal, 0);</span>
+        }
+
+<span class="pc bpc" id="L1637" title="1 of 2 branches missed.">        assertFalse(count % 7 != 0, &quot;There were &quot; + count + &quot; days in this iterator&quot;);</span>
+<span class="fc" id="L1638">        assertCalendarsEquals(&quot;&quot;, end, cal, 0);</span>
+<span class="fc" id="L1639">    }</span>
+
+    /**
+     * Used to check that Calendar objects are close enough
+     * delta is in milliseconds
+     */
+    private static void assertCalendarsEquals(final String message, final Calendar cal1, final Calendar cal2, final long delta) {
+<span class="pc bpc" id="L1646" title="1 of 2 branches missed.">        assertFalse(Math.abs(cal1.getTime().getTime() - cal2.getTime().getTime()) &gt; delta,</span>
+<span class="fc" id="L1647">                message + &quot; expected &quot; + cal1.getTime() + &quot; but got &quot; + cal2.getTime());</span>
+<span class="fc" id="L1648">    }</span>
+
+    @Test
+    public void testLANG799() throws ParseException {
+<span class="fc" id="L1652">        DateUtils.parseDateStrictly(&quot;09 abril 2008 23:55:38 GMT&quot;, new Locale(&quot;es&quot;), &quot;dd MMM yyyy HH:mm:ss zzz&quot;);</span>
+<span class="fc" id="L1653">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

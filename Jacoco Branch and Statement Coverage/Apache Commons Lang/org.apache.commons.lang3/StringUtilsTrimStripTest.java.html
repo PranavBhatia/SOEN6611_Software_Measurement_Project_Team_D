@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringUtilsTrimStripTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">StringUtilsTrimStripTest.java</span></div><h1>StringUtilsTrimStripTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.StringUtils} - Trim/Strip methods
+ */
+<span class="fc" id="L28">public class StringUtilsTrimStripTest  {</span>
+    private static final String FOO = &quot;foo&quot;;
+
+    @Test
+    public void testTrim() {
+<span class="fc" id="L33">        assertEquals(FOO, StringUtils.trim(FOO + &quot;  &quot;));</span>
+<span class="fc" id="L34">        assertEquals(FOO, StringUtils.trim(&quot; &quot; + FOO + &quot;  &quot;));</span>
+<span class="fc" id="L35">        assertEquals(FOO, StringUtils.trim(&quot; &quot; + FOO));</span>
+<span class="fc" id="L36">        assertEquals(FOO, StringUtils.trim(FOO + &quot;&quot;));</span>
+<span class="fc" id="L37">        assertEquals(&quot;&quot;, StringUtils.trim(&quot; \t\r\n\b &quot;));</span>
+<span class="fc" id="L38">        assertEquals(&quot;&quot;, StringUtils.trim(StringUtilsTest.TRIMMABLE));</span>
+<span class="fc" id="L39">        assertEquals(StringUtilsTest.NON_TRIMMABLE, StringUtils.trim(StringUtilsTest.NON_TRIMMABLE));</span>
+<span class="fc" id="L40">        assertEquals(&quot;&quot;, StringUtils.trim(&quot;&quot;));</span>
+<span class="fc" id="L41">        assertNull(StringUtils.trim(null));</span>
+<span class="fc" id="L42">    }</span>
+
+    @Test
+    public void testTrimToNull() {
+<span class="fc" id="L46">        assertEquals(FOO, StringUtils.trimToNull(FOO + &quot;  &quot;));</span>
+<span class="fc" id="L47">        assertEquals(FOO, StringUtils.trimToNull(&quot; &quot; + FOO + &quot;  &quot;));</span>
+<span class="fc" id="L48">        assertEquals(FOO, StringUtils.trimToNull(&quot; &quot; + FOO));</span>
+<span class="fc" id="L49">        assertEquals(FOO, StringUtils.trimToNull(FOO + &quot;&quot;));</span>
+<span class="fc" id="L50">        assertNull(StringUtils.trimToNull(&quot; \t\r\n\b &quot;));</span>
+<span class="fc" id="L51">        assertNull(StringUtils.trimToNull(StringUtilsTest.TRIMMABLE));</span>
+<span class="fc" id="L52">        assertEquals(StringUtilsTest.NON_TRIMMABLE, StringUtils.trimToNull(StringUtilsTest.NON_TRIMMABLE));</span>
+<span class="fc" id="L53">        assertNull(StringUtils.trimToNull(&quot;&quot;));</span>
+<span class="fc" id="L54">        assertNull(StringUtils.trimToNull(null));</span>
+<span class="fc" id="L55">    }</span>
+
+    @Test
+    public void testTrimToEmpty() {
+<span class="fc" id="L59">        assertEquals(FOO, StringUtils.trimToEmpty(FOO + &quot;  &quot;));</span>
+<span class="fc" id="L60">        assertEquals(FOO, StringUtils.trimToEmpty(&quot; &quot; + FOO + &quot;  &quot;));</span>
+<span class="fc" id="L61">        assertEquals(FOO, StringUtils.trimToEmpty(&quot; &quot; + FOO));</span>
+<span class="fc" id="L62">        assertEquals(FOO, StringUtils.trimToEmpty(FOO + &quot;&quot;));</span>
+<span class="fc" id="L63">        assertEquals(&quot;&quot;, StringUtils.trimToEmpty(&quot; \t\r\n\b &quot;));</span>
+<span class="fc" id="L64">        assertEquals(&quot;&quot;, StringUtils.trimToEmpty(StringUtilsTest.TRIMMABLE));</span>
+<span class="fc" id="L65">        assertEquals(StringUtilsTest.NON_TRIMMABLE, StringUtils.trimToEmpty(StringUtilsTest.NON_TRIMMABLE));</span>
+<span class="fc" id="L66">        assertEquals(&quot;&quot;, StringUtils.trimToEmpty(&quot;&quot;));</span>
+<span class="fc" id="L67">        assertEquals(&quot;&quot;, StringUtils.trimToEmpty(null));</span>
+<span class="fc" id="L68">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testStrip_String() {
+<span class="fc" id="L73">        assertNull(StringUtils.strip(null));</span>
+<span class="fc" id="L74">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;&quot;));</span>
+<span class="fc" id="L75">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;        &quot;));</span>
+<span class="fc" id="L76">        assertEquals(&quot;abc&quot;, StringUtils.strip(&quot;  abc  &quot;));</span>
+<span class="fc" id="L77">        assertEquals(StringUtilsTest.NON_WHITESPACE,</span>
+<span class="fc" id="L78">            StringUtils.strip(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE));</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void testStripToNull_String() {
+<span class="fc" id="L83">        assertNull(StringUtils.stripToNull(null));</span>
+<span class="fc" id="L84">        assertNull(StringUtils.stripToNull(&quot;&quot;));</span>
+<span class="fc" id="L85">        assertNull(StringUtils.stripToNull(&quot;        &quot;));</span>
+<span class="fc" id="L86">        assertNull(StringUtils.stripToNull(StringUtilsTest.WHITESPACE));</span>
+<span class="fc" id="L87">        assertEquals(&quot;ab c&quot;, StringUtils.stripToNull(&quot;  ab c  &quot;));</span>
+<span class="fc" id="L88">        assertEquals(StringUtilsTest.NON_WHITESPACE,</span>
+<span class="fc" id="L89">            StringUtils.stripToNull(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE));</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testStripToEmpty_String() {
+<span class="fc" id="L94">        assertEquals(&quot;&quot;, StringUtils.stripToEmpty(null));</span>
+<span class="fc" id="L95">        assertEquals(&quot;&quot;, StringUtils.stripToEmpty(&quot;&quot;));</span>
+<span class="fc" id="L96">        assertEquals(&quot;&quot;, StringUtils.stripToEmpty(&quot;        &quot;));</span>
+<span class="fc" id="L97">        assertEquals(&quot;&quot;, StringUtils.stripToEmpty(StringUtilsTest.WHITESPACE));</span>
+<span class="fc" id="L98">        assertEquals(&quot;ab c&quot;, StringUtils.stripToEmpty(&quot;  ab c  &quot;));</span>
+<span class="fc" id="L99">        assertEquals(StringUtilsTest.NON_WHITESPACE,</span>
+<span class="fc" id="L100">            StringUtils.stripToEmpty(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE));</span>
+<span class="fc" id="L101">    }</span>
+
+    @Test
+    public void testStrip_StringString() {
+        // null strip
+<span class="fc" id="L106">        assertNull(StringUtils.strip(null, null));</span>
+<span class="fc" id="L107">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;&quot;, null));</span>
+<span class="fc" id="L108">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;        &quot;, null));</span>
+<span class="fc" id="L109">        assertEquals(&quot;abc&quot;, StringUtils.strip(&quot;  abc  &quot;, null));</span>
+<span class="fc" id="L110">        assertEquals(StringUtilsTest.NON_WHITESPACE,</span>
+<span class="fc" id="L111">            StringUtils.strip(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE, null));</span>
+
+        // &quot;&quot; strip
+<span class="fc" id="L114">        assertNull(StringUtils.strip(null, &quot;&quot;));</span>
+<span class="fc" id="L115">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L116">        assertEquals(&quot;        &quot;, StringUtils.strip(&quot;        &quot;, &quot;&quot;));</span>
+<span class="fc" id="L117">        assertEquals(&quot;  abc  &quot;, StringUtils.strip(&quot;  abc  &quot;, &quot;&quot;));</span>
+<span class="fc" id="L118">        assertEquals(StringUtilsTest.WHITESPACE, StringUtils.strip(StringUtilsTest.WHITESPACE, &quot;&quot;));</span>
+
+        // &quot; &quot; strip
+<span class="fc" id="L121">        assertNull(StringUtils.strip(null, &quot; &quot;));</span>
+<span class="fc" id="L122">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;&quot;, &quot; &quot;));</span>
+<span class="fc" id="L123">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;        &quot;, &quot; &quot;));</span>
+<span class="fc" id="L124">        assertEquals(&quot;abc&quot;, StringUtils.strip(&quot;  abc  &quot;, &quot; &quot;));</span>
+
+        // &quot;ab&quot; strip
+<span class="fc" id="L127">        assertNull(StringUtils.strip(null, &quot;ab&quot;));</span>
+<span class="fc" id="L128">        assertEquals(&quot;&quot;, StringUtils.strip(&quot;&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L129">        assertEquals(&quot;        &quot;, StringUtils.strip(&quot;        &quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L130">        assertEquals(&quot;  abc  &quot;, StringUtils.strip(&quot;  abc  &quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L131">        assertEquals(&quot;c&quot;, StringUtils.strip(&quot;abcabab&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L132">        assertEquals(StringUtilsTest.WHITESPACE, StringUtils.strip(StringUtilsTest.WHITESPACE, &quot;&quot;));</span>
+<span class="fc" id="L133">    }</span>
+
+    @Test
+    public void testStripStart_StringString() {
+        // null stripStart
+<span class="fc" id="L138">        assertNull(StringUtils.stripStart(null, null));</span>
+<span class="fc" id="L139">        assertEquals(&quot;&quot;, StringUtils.stripStart(&quot;&quot;, null));</span>
+<span class="fc" id="L140">        assertEquals(&quot;&quot;, StringUtils.stripStart(&quot;        &quot;, null));</span>
+<span class="fc" id="L141">        assertEquals(&quot;abc  &quot;, StringUtils.stripStart(&quot;  abc  &quot;, null));</span>
+<span class="fc" id="L142">        assertEquals(StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE,</span>
+<span class="fc" id="L143">            StringUtils.stripStart(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE, null));</span>
+
+        // &quot;&quot; stripStart
+<span class="fc" id="L146">        assertNull(StringUtils.stripStart(null, &quot;&quot;));</span>
+<span class="fc" id="L147">        assertEquals(&quot;&quot;, StringUtils.stripStart(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L148">        assertEquals(&quot;        &quot;, StringUtils.stripStart(&quot;        &quot;, &quot;&quot;));</span>
+<span class="fc" id="L149">        assertEquals(&quot;  abc  &quot;, StringUtils.stripStart(&quot;  abc  &quot;, &quot;&quot;));</span>
+<span class="fc" id="L150">        assertEquals(StringUtilsTest.WHITESPACE, StringUtils.stripStart(StringUtilsTest.WHITESPACE, &quot;&quot;));</span>
+
+        // &quot; &quot; stripStart
+<span class="fc" id="L153">        assertNull(StringUtils.stripStart(null, &quot; &quot;));</span>
+<span class="fc" id="L154">        assertEquals(&quot;&quot;, StringUtils.stripStart(&quot;&quot;, &quot; &quot;));</span>
+<span class="fc" id="L155">        assertEquals(&quot;&quot;, StringUtils.stripStart(&quot;        &quot;, &quot; &quot;));</span>
+<span class="fc" id="L156">        assertEquals(&quot;abc  &quot;, StringUtils.stripStart(&quot;  abc  &quot;, &quot; &quot;));</span>
+
+        // &quot;ab&quot; stripStart
+<span class="fc" id="L159">        assertNull(StringUtils.stripStart(null, &quot;ab&quot;));</span>
+<span class="fc" id="L160">        assertEquals(&quot;&quot;, StringUtils.stripStart(&quot;&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L161">        assertEquals(&quot;        &quot;, StringUtils.stripStart(&quot;        &quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L162">        assertEquals(&quot;  abc  &quot;, StringUtils.stripStart(&quot;  abc  &quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L163">        assertEquals(&quot;cabab&quot;, StringUtils.stripStart(&quot;abcabab&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L164">        assertEquals(StringUtilsTest.WHITESPACE, StringUtils.stripStart(StringUtilsTest.WHITESPACE, &quot;&quot;));</span>
+<span class="fc" id="L165">    }</span>
+
+    @Test
+    public void testStripEnd_StringString() {
+        // null stripEnd
+<span class="fc" id="L170">        assertNull(StringUtils.stripEnd(null, null));</span>
+<span class="fc" id="L171">        assertEquals(&quot;&quot;, StringUtils.stripEnd(&quot;&quot;, null));</span>
+<span class="fc" id="L172">        assertEquals(&quot;&quot;, StringUtils.stripEnd(&quot;        &quot;, null));</span>
+<span class="fc" id="L173">        assertEquals(&quot;  abc&quot;, StringUtils.stripEnd(&quot;  abc  &quot;, null));</span>
+<span class="fc" id="L174">        assertEquals(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE,</span>
+<span class="fc" id="L175">            StringUtils.stripEnd(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE, null));</span>
+
+        // &quot;&quot; stripEnd
+<span class="fc" id="L178">        assertNull(StringUtils.stripEnd(null, &quot;&quot;));</span>
+<span class="fc" id="L179">        assertEquals(&quot;&quot;, StringUtils.stripEnd(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L180">        assertEquals(&quot;        &quot;, StringUtils.stripEnd(&quot;        &quot;, &quot;&quot;));</span>
+<span class="fc" id="L181">        assertEquals(&quot;  abc  &quot;, StringUtils.stripEnd(&quot;  abc  &quot;, &quot;&quot;));</span>
+<span class="fc" id="L182">        assertEquals(StringUtilsTest.WHITESPACE, StringUtils.stripEnd(StringUtilsTest.WHITESPACE, &quot;&quot;));</span>
+
+        // &quot; &quot; stripEnd
+<span class="fc" id="L185">        assertNull(StringUtils.stripEnd(null, &quot; &quot;));</span>
+<span class="fc" id="L186">        assertEquals(&quot;&quot;, StringUtils.stripEnd(&quot;&quot;, &quot; &quot;));</span>
+<span class="fc" id="L187">        assertEquals(&quot;&quot;, StringUtils.stripEnd(&quot;        &quot;, &quot; &quot;));</span>
+<span class="fc" id="L188">        assertEquals(&quot;  abc&quot;, StringUtils.stripEnd(&quot;  abc  &quot;, &quot; &quot;));</span>
+
+        // &quot;ab&quot; stripEnd
+<span class="fc" id="L191">        assertNull(StringUtils.stripEnd(null, &quot;ab&quot;));</span>
+<span class="fc" id="L192">        assertEquals(&quot;&quot;, StringUtils.stripEnd(&quot;&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L193">        assertEquals(&quot;        &quot;, StringUtils.stripEnd(&quot;        &quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L194">        assertEquals(&quot;  abc  &quot;, StringUtils.stripEnd(&quot;  abc  &quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L195">        assertEquals(&quot;abc&quot;, StringUtils.stripEnd(&quot;abcabab&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L196">        assertEquals(StringUtilsTest.WHITESPACE, StringUtils.stripEnd(StringUtilsTest.WHITESPACE, &quot;&quot;));</span>
+<span class="fc" id="L197">    }</span>
+
+    @Test
+    public void testStripAll() {
+        // test stripAll method, merely an array version of the above strip
+<span class="fc" id="L202">        final String[] empty = new String[0];</span>
+<span class="fc" id="L203">        final String[] fooSpace = new String[] { &quot;  &quot;+FOO+&quot;  &quot;, &quot;  &quot;+FOO, FOO+&quot;  &quot; };</span>
+<span class="fc" id="L204">        final String[] fooDots = new String[] { &quot;..&quot;+FOO+&quot;..&quot;, &quot;..&quot;+FOO, FOO+&quot;..&quot; };</span>
+<span class="fc" id="L205">        final String[] foo = new String[] { FOO, FOO, FOO };</span>
+
+<span class="fc" id="L207">        assertNull(StringUtils.stripAll((String[]) null));</span>
+        // Additional varargs tests
+<span class="fc" id="L209">        assertArrayEquals(empty, StringUtils.stripAll()); // empty array</span>
+<span class="fc" id="L210">        assertArrayEquals(new String[]{null}, StringUtils.stripAll((String) null)); // == new String[]{null}</span>
+
+<span class="fc" id="L212">        assertArrayEquals(empty, StringUtils.stripAll(empty));</span>
+<span class="fc" id="L213">        assertArrayEquals(foo, StringUtils.stripAll(fooSpace));</span>
+
+<span class="fc" id="L215">        assertNull(StringUtils.stripAll(null, null));</span>
+<span class="fc" id="L216">        assertArrayEquals(foo, StringUtils.stripAll(fooSpace, null));</span>
+<span class="fc" id="L217">        assertArrayEquals(foo, StringUtils.stripAll(fooDots, &quot;.&quot;));</span>
+<span class="fc" id="L218">    }</span>
+
+    @Test
+    public void testStripAccents() {
+<span class="fc" id="L222">        final String cue = &quot;\u00C7\u00FA\u00EA&quot;;</span>
+<span class="fc" id="L223">        assertEquals(&quot;Cue&quot;, StringUtils.stripAccents(cue), &quot;Failed to strip accents from &quot; + cue);</span>
+
+<span class="fc" id="L225">        final String lots = &quot;\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5\u00C7\u00C8\u00C9&quot; +</span>
+                      &quot;\u00CA\u00CB\u00CC\u00CD\u00CE\u00CF\u00D1\u00D2\u00D3&quot; +
+                      &quot;\u00D4\u00D5\u00D6\u00D9\u00DA\u00DB\u00DC\u00DD&quot;;
+<span class="fc" id="L228">        assertEquals(&quot;AAAAAACEEEEIIIINOOOOOUUUUY&quot;,</span>
+<span class="fc" id="L229">                StringUtils.stripAccents(lots),</span>
+                &quot;Failed to strip accents from &quot; + lots);
+
+<span class="fc" id="L232">        assertNull(StringUtils.stripAccents(null), &quot;Failed null safety&quot;);</span>
+<span class="fc" id="L233">        assertEquals(&quot;&quot;, StringUtils.stripAccents(&quot;&quot;), &quot;Failed empty String&quot;);</span>
+<span class="fc" id="L234">        assertEquals(&quot;control&quot;, StringUtils.stripAccents(&quot;control&quot;), &quot;Failed to handle non-accented text&quot;);</span>
+<span class="fc" id="L235">        assertEquals(&quot;eclair&quot;, StringUtils.stripAccents(&quot;\u00E9clair&quot;), &quot;Failed to handle easy example&quot;);</span>
+<span class="fc" id="L236">        assertEquals(&quot;ALOSZZCN aloszzcn&quot;, StringUtils.stripAccents(&quot;\u0104\u0141\u00D3\u015A\u017B\u0179\u0106\u0143 &quot;</span>
+                + &quot;\u0105\u0142\u00F3\u015B\u017C\u017A\u0107\u0144&quot;));
+<span class="fc" id="L238">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

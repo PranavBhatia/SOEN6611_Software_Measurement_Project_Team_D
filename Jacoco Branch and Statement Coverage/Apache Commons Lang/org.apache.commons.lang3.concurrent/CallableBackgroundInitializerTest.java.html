@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CallableBackgroundInitializerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">CallableBackgroundInitializerTest.java</span></div><h1>CallableBackgroundInitializerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for {@code CallableBackgroundInitializer}
+ */
+<span class="fc" id="L32">public class CallableBackgroundInitializerTest  {</span>
+    /** Constant for the result of the call() invocation. */
+<span class="fc" id="L34">    private static final Integer RESULT = Integer.valueOf(42);</span>
+
+    /**
+     * Tries to create an instance without a Callable. This should cause an
+     * exception.
+     */
+    @Test()
+    public void testInitNullCallable() {
+<span class="pc" id="L42">        assertThrows(IllegalArgumentException.class, () -&gt; new CallableBackgroundInitializer&lt;&gt;(null));</span>
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Tests whether the executor service is correctly passed to the super
+     * class.
+     */
+    @Test
+    public void testInitExecutor() throws InterruptedException {
+<span class="fc" id="L51">        final ExecutorService exec = Executors.newSingleThreadExecutor();</span>
+<span class="fc" id="L52">        final CallableBackgroundInitializer&lt;Integer&gt; init = new CallableBackgroundInitializer&lt;&gt;(</span>
+                new TestCallable(), exec);
+<span class="fc" id="L54">        assertEquals(exec, init.getExternalExecutor(), &quot;Executor not set&quot;);</span>
+<span class="fc" id="L55">        exec.shutdown();</span>
+<span class="fc" id="L56">        exec.awaitTermination(1, TimeUnit.SECONDS);</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Tries to pass a null Callable to the constructor that takes an executor.
+     * This should cause an exception.
+     */
+    @Test
+    public void testInitExecutorNullCallable() throws InterruptedException {
+<span class="fc" id="L65">        final ExecutorService exec = Executors.newSingleThreadExecutor();</span>
+        try {
+<span class="pc" id="L67">            assertThrows(IllegalArgumentException.class, () -&gt; new CallableBackgroundInitializer&lt;Integer&gt;(null, exec));</span>
+        } finally {
+<span class="fc" id="L69">            exec.shutdown();</span>
+<span class="fc" id="L70">            exec.awaitTermination(1, TimeUnit.SECONDS);</span>
+        }
+
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Tests the implementation of initialize().
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testInitialize() throws Exception {
+<span class="fc" id="L82">        final TestCallable call = new TestCallable();</span>
+<span class="fc" id="L83">        final CallableBackgroundInitializer&lt;Integer&gt; init = new CallableBackgroundInitializer&lt;&gt;(</span>
+                call);
+<span class="fc" id="L85">        assertEquals(RESULT, init.initialize(), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L86">        assertEquals(1, call.callCount, &quot;Wrong number of invocations&quot;);</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * A test Callable implementation for checking the initializer's
+     * implementation of the initialize() method.
+     */
+    private static class TestCallable implements Callable&lt;Integer&gt; {
+        /** A counter for the number of call() invocations. */
+        int callCount;
+
+        /**
+         * Records this invocation and returns the test result.
+         */
+        @Override
+        public Integer call() {
+<span class="fc" id="L102">            callCount++;</span>
+<span class="fc" id="L103">            return RESULT;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SynchronizerTestImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">SynchronizerTestImpl.java</span></div><h1>SynchronizerTestImpl.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.configuration2.sync.Synchronizer;
+
+/**
+ * A test implementation of Synchronizer which allows keeping track about
+ * the methods called by the configuration.
+ *
+ */
+<span class="fc" id="L29">public class SynchronizerTestImpl implements Synchronizer</span>
+{
+    /** A buffer for registering the methods invoked by clients. */
+<span class="fc" id="L32">    private final StringBuilder methods = new StringBuilder();</span>
+
+    /**
+     * {@inheritDoc} Registers this invocation.
+     */
+    @Override
+    public void beginRead()
+    {
+<span class="fc" id="L40">        append(Methods.BEGIN_READ);</span>
+<span class="fc" id="L41">    }</span>
+
+    /**
+     * {@inheritDoc} Registers this invocation.
+     */
+    @Override
+    public void endRead()
+    {
+<span class="fc" id="L49">        append(Methods.END_READ);</span>
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * {@inheritDoc} Registers this invocation.
+     */
+    @Override
+    public void beginWrite()
+    {
+<span class="fc" id="L58">        append(Methods.BEGIN_WRITE);</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * {@inheritDoc} Registers this invocation.
+     */
+    @Override
+    public void endWrite()
+    {
+<span class="fc" id="L67">        append(Methods.END_WRITE);</span>
+<span class="fc" id="L68">    }</span>
+
+    /**
+     * Verifies that the passed in methods were called in this order.
+     *
+     * @param expMethods the expected methods
+     */
+    public void verify(final Methods... expMethods)
+    {
+<span class="fc" id="L77">        assertEquals(&quot;Wrong methods invoked&quot;,</span>
+<span class="fc" id="L78">                constructExpectedMethods(expMethods), methods.toString());</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Verifies that the specified methods were called at the beginning of
+     * the interaction with the synchronizer.
+     *
+     * @param expMethods the expected methods
+     */
+    public void verifyStart(final Methods... expMethods)
+    {
+<span class="fc" id="L89">        assertTrue(&quot;Wrong methods at start: &quot; + methods, methods.toString()</span>
+<span class="fc" id="L90">                .startsWith(constructExpectedMethods(expMethods)));</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Verifies that the specified methods were called at the end of the
+     * interaction with the synchronizer.
+     *
+     * @param expMethods the expected methods
+     */
+    public void verifyEnd(final Methods... expMethods)
+    {
+<span class="fc" id="L101">        assertTrue(&quot;Wrong methods at start: &quot; + methods, methods.toString()</span>
+<span class="fc" id="L102">                .endsWith(constructExpectedMethods(expMethods)));</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Verifies that the specified sequence of methods was called somewhere in
+     * the interaction with the synchronizer.
+     *
+     * @param expMethods the expected methods
+     */
+    public void verifyContains(final Methods... expMethods)
+    {
+<span class="fc" id="L113">        assertTrue(&quot;Expected methods not found: &quot; + methods, methods.toString()</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">                .indexOf(constructExpectedMethods(expMethods)) &gt;= 0);</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Clears the methods recorded so far.
+     */
+    public void clear()
+    {
+<span class="fc" id="L122">        methods.setLength(0);</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Generates a string with expected methods from the given array.
+     *
+     * @param expMethods the array with expected methods
+     * @return a corresponding string representation
+     */
+    private String constructExpectedMethods(final Methods... expMethods)
+    {
+<span class="fc" id="L133">        final StringBuilder buf = new StringBuilder();</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        for (final Methods m : expMethods)</span>
+        {
+<span class="fc" id="L136">            buf.append(m);</span>
+        }
+<span class="fc" id="L138">        return buf.toString();</span>
+    }
+
+    /**
+     * Adds a method name to the internal buffer. Called by all interface
+     * methods.
+     *
+     * @param m the method that was invoked
+     */
+    private void append(final Methods m)
+    {
+<span class="fc" id="L149">        methods.append(m);</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * An enumeration with the methods of the Synchronizer which can be called.
+     */
+<span class="fc" id="L155">    public static enum Methods</span>
+    {
+<span class="fc" id="L157">        BEGIN_READ, END_READ, BEGIN_WRITE, END_WRITE</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

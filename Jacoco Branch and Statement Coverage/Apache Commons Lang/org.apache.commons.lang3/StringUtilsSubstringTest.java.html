@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringUtilsSubstringTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">StringUtilsSubstringTest.java</span></div><h1>StringUtilsSubstringTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.StringUtils} - Substring methods
+ */
+<span class="fc" id="L28">public class StringUtilsSubstringTest  {</span>
+    private static final String FOO = &quot;foo&quot;;
+    private static final String BAR = &quot;bar&quot;;
+    private static final String BAZ = &quot;baz&quot;;
+    private static final String FOOBAR = &quot;foobar&quot;;
+    private static final String SENTENCE = &quot;foo bar baz&quot;;
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testSubstring_StringInt() {
+<span class="fc" id="L39">        assertNull(StringUtils.substring(null, 0));</span>
+<span class="fc" id="L40">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;&quot;, 0));</span>
+<span class="fc" id="L41">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;&quot;, 2));</span>
+
+<span class="fc" id="L43">        assertEquals(&quot;&quot;, StringUtils.substring(SENTENCE, 80));</span>
+<span class="fc" id="L44">        assertEquals(BAZ, StringUtils.substring(SENTENCE, 8));</span>
+<span class="fc" id="L45">        assertEquals(BAZ, StringUtils.substring(SENTENCE, -3));</span>
+<span class="fc" id="L46">        assertEquals(SENTENCE, StringUtils.substring(SENTENCE, 0));</span>
+<span class="fc" id="L47">        assertEquals(&quot;abc&quot;, StringUtils.substring(&quot;abc&quot;, -4));</span>
+<span class="fc" id="L48">        assertEquals(&quot;abc&quot;, StringUtils.substring(&quot;abc&quot;, -3));</span>
+<span class="fc" id="L49">        assertEquals(&quot;bc&quot;, StringUtils.substring(&quot;abc&quot;, -2));</span>
+<span class="fc" id="L50">        assertEquals(&quot;c&quot;, StringUtils.substring(&quot;abc&quot;, -1));</span>
+<span class="fc" id="L51">        assertEquals(&quot;abc&quot;, StringUtils.substring(&quot;abc&quot;, 0));</span>
+<span class="fc" id="L52">        assertEquals(&quot;bc&quot;, StringUtils.substring(&quot;abc&quot;, 1));</span>
+<span class="fc" id="L53">        assertEquals(&quot;c&quot;, StringUtils.substring(&quot;abc&quot;, 2));</span>
+<span class="fc" id="L54">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;abc&quot;, 3));</span>
+<span class="fc" id="L55">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;abc&quot;, 4));</span>
+<span class="fc" id="L56">    }</span>
+
+    @Test
+    public void testSubstring_StringIntInt() {
+<span class="fc" id="L60">        assertNull(StringUtils.substring(null, 0, 0));</span>
+<span class="fc" id="L61">        assertNull(StringUtils.substring(null, 1, 2));</span>
+<span class="fc" id="L62">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;&quot;, 0, 0));</span>
+<span class="fc" id="L63">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;&quot;, 1, 2));</span>
+<span class="fc" id="L64">        assertEquals(&quot;&quot;, StringUtils.substring(&quot;&quot;, -2, -1));</span>
+
+<span class="fc" id="L66">        assertEquals(&quot;&quot;, StringUtils.substring(SENTENCE, 8, 6));</span>
+<span class="fc" id="L67">        assertEquals(FOO, StringUtils.substring(SENTENCE, 0, 3));</span>
+<span class="fc" id="L68">        assertEquals(&quot;o&quot;, StringUtils.substring(SENTENCE, -9, 3));</span>
+<span class="fc" id="L69">        assertEquals(FOO, StringUtils.substring(SENTENCE, 0, -8));</span>
+<span class="fc" id="L70">        assertEquals(&quot;o&quot;, StringUtils.substring(SENTENCE, -9, -8));</span>
+<span class="fc" id="L71">        assertEquals(SENTENCE, StringUtils.substring(SENTENCE, 0, 80));</span>
+<span class="fc" id="L72">        assertEquals(&quot;&quot;, StringUtils.substring(SENTENCE, 2, 2));</span>
+<span class="fc" id="L73">        assertEquals(&quot;b&quot;, StringUtils.substring(&quot;abc&quot;, -2, -1));</span>
+<span class="fc" id="L74">    }</span>
+
+    @Test
+    public void testLeft_String() {
+<span class="fc" id="L78">        assertSame(null, StringUtils.left(null, -1));</span>
+<span class="fc" id="L79">        assertSame(null, StringUtils.left(null, 0));</span>
+<span class="fc" id="L80">        assertSame(null, StringUtils.left(null, 2));</span>
+
+<span class="fc" id="L82">        assertEquals(&quot;&quot;, StringUtils.left(&quot;&quot;, -1));</span>
+<span class="fc" id="L83">        assertEquals(&quot;&quot;, StringUtils.left(&quot;&quot;, 0));</span>
+<span class="fc" id="L84">        assertEquals(&quot;&quot;, StringUtils.left(&quot;&quot;, 2));</span>
+
+<span class="fc" id="L86">        assertEquals(&quot;&quot;, StringUtils.left(FOOBAR, -1));</span>
+<span class="fc" id="L87">        assertEquals(&quot;&quot;, StringUtils.left(FOOBAR, 0));</span>
+<span class="fc" id="L88">        assertEquals(FOO, StringUtils.left(FOOBAR, 3));</span>
+<span class="fc" id="L89">        assertSame(FOOBAR, StringUtils.left(FOOBAR, 80));</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testRight_String() {
+<span class="fc" id="L94">        assertSame(null, StringUtils.right(null, -1));</span>
+<span class="fc" id="L95">        assertSame(null, StringUtils.right(null, 0));</span>
+<span class="fc" id="L96">        assertSame(null, StringUtils.right(null, 2));</span>
+
+<span class="fc" id="L98">        assertEquals(&quot;&quot;, StringUtils.right(&quot;&quot;, -1));</span>
+<span class="fc" id="L99">        assertEquals(&quot;&quot;, StringUtils.right(&quot;&quot;, 0));</span>
+<span class="fc" id="L100">        assertEquals(&quot;&quot;, StringUtils.right(&quot;&quot;, 2));</span>
+
+<span class="fc" id="L102">        assertEquals(&quot;&quot;, StringUtils.right(FOOBAR, -1));</span>
+<span class="fc" id="L103">        assertEquals(&quot;&quot;, StringUtils.right(FOOBAR, 0));</span>
+<span class="fc" id="L104">        assertEquals(BAR, StringUtils.right(FOOBAR, 3));</span>
+<span class="fc" id="L105">        assertSame(FOOBAR, StringUtils.right(FOOBAR, 80));</span>
+<span class="fc" id="L106">    }</span>
+
+    @Test
+    public void testMid_String() {
+<span class="fc" id="L110">        assertSame(null, StringUtils.mid(null, -1, 0));</span>
+<span class="fc" id="L111">        assertSame(null, StringUtils.mid(null, 0, -1));</span>
+<span class="fc" id="L112">        assertSame(null, StringUtils.mid(null, 3, 0));</span>
+<span class="fc" id="L113">        assertSame(null, StringUtils.mid(null, 3, 2));</span>
+
+<span class="fc" id="L115">        assertEquals(&quot;&quot;, StringUtils.mid(&quot;&quot;, 0, -1));</span>
+<span class="fc" id="L116">        assertEquals(&quot;&quot;, StringUtils.mid(&quot;&quot;, 0, 0));</span>
+<span class="fc" id="L117">        assertEquals(&quot;&quot;, StringUtils.mid(&quot;&quot;, 0, 2));</span>
+
+<span class="fc" id="L119">        assertEquals(&quot;&quot;, StringUtils.mid(FOOBAR, 3, -1));</span>
+<span class="fc" id="L120">        assertEquals(&quot;&quot;, StringUtils.mid(FOOBAR, 3, 0));</span>
+<span class="fc" id="L121">        assertEquals(&quot;b&quot;, StringUtils.mid(FOOBAR, 3, 1));</span>
+<span class="fc" id="L122">        assertEquals(FOO, StringUtils.mid(FOOBAR, 0, 3));</span>
+<span class="fc" id="L123">        assertEquals(BAR, StringUtils.mid(FOOBAR, 3, 3));</span>
+<span class="fc" id="L124">        assertEquals(FOOBAR, StringUtils.mid(FOOBAR, 0, 80));</span>
+<span class="fc" id="L125">        assertEquals(BAR, StringUtils.mid(FOOBAR, 3, 80));</span>
+<span class="fc" id="L126">        assertEquals(&quot;&quot;, StringUtils.mid(FOOBAR, 9, 3));</span>
+<span class="fc" id="L127">        assertEquals(FOO, StringUtils.mid(FOOBAR, -1, 3));</span>
+<span class="fc" id="L128">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSubstringBefore_StringString() {
+<span class="fc" id="L133">        assertEquals(&quot;foo&quot;, StringUtils.substringBefore(&quot;fooXXbarXXbaz&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L135">        assertNull(StringUtils.substringBefore(null, null));</span>
+<span class="fc" id="L136">        assertNull(StringUtils.substringBefore(null, &quot;&quot;));</span>
+<span class="fc" id="L137">        assertNull(StringUtils.substringBefore(null, &quot;XX&quot;));</span>
+<span class="fc" id="L138">        assertEquals(&quot;&quot;, StringUtils.substringBefore(&quot;&quot;, null));</span>
+<span class="fc" id="L139">        assertEquals(&quot;&quot;, StringUtils.substringBefore(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L140">        assertEquals(&quot;&quot;, StringUtils.substringBefore(&quot;&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L142">        assertEquals(&quot;foo&quot;, StringUtils.substringBefore(&quot;foo&quot;, null));</span>
+<span class="fc" id="L143">        assertEquals(&quot;foo&quot;, StringUtils.substringBefore(&quot;foo&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L144">        assertEquals(&quot;f&quot;, StringUtils.substringBefore(&quot;foot&quot;, &quot;o&quot;));</span>
+<span class="fc" id="L145">        assertEquals(&quot;&quot;, StringUtils.substringBefore(&quot;abc&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L146">        assertEquals(&quot;a&quot;, StringUtils.substringBefore(&quot;abcba&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L147">        assertEquals(&quot;ab&quot;, StringUtils.substringBefore(&quot;abc&quot;, &quot;c&quot;));</span>
+<span class="fc" id="L148">        assertEquals(&quot;&quot;, StringUtils.substringBefore(&quot;abc&quot;, &quot;&quot;));</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    public void testSubstringAfter_StringString() {
+<span class="fc" id="L153">        assertEquals(&quot;barXXbaz&quot;, StringUtils.substringAfter(&quot;fooXXbarXXbaz&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L155">        assertNull(StringUtils.substringAfter(null, null));</span>
+<span class="fc" id="L156">        assertNull(StringUtils.substringAfter(null, &quot;&quot;));</span>
+<span class="fc" id="L157">        assertNull(StringUtils.substringAfter(null, &quot;XX&quot;));</span>
+<span class="fc" id="L158">        assertEquals(&quot;&quot;, StringUtils.substringAfter(&quot;&quot;, null));</span>
+<span class="fc" id="L159">        assertEquals(&quot;&quot;, StringUtils.substringAfter(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L160">        assertEquals(&quot;&quot;, StringUtils.substringAfter(&quot;&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L162">        assertEquals(&quot;&quot;, StringUtils.substringAfter(&quot;foo&quot;, null));</span>
+<span class="fc" id="L163">        assertEquals(&quot;ot&quot;, StringUtils.substringAfter(&quot;foot&quot;, &quot;o&quot;));</span>
+<span class="fc" id="L164">        assertEquals(&quot;bc&quot;, StringUtils.substringAfter(&quot;abc&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L165">        assertEquals(&quot;cba&quot;, StringUtils.substringAfter(&quot;abcba&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L166">        assertEquals(&quot;&quot;, StringUtils.substringAfter(&quot;abc&quot;, &quot;c&quot;));</span>
+<span class="fc" id="L167">        assertEquals(&quot;abc&quot;, StringUtils.substringAfter(&quot;abc&quot;, &quot;&quot;));</span>
+<span class="fc" id="L168">        assertEquals(&quot;&quot;, StringUtils.substringAfter(&quot;abc&quot;, &quot;d&quot;));</span>
+<span class="fc" id="L169">    }</span>
+
+    @Test
+    public void testSubstringBeforeLast_StringString() {
+<span class="fc" id="L173">        assertEquals(&quot;fooXXbar&quot;, StringUtils.substringBeforeLast(&quot;fooXXbarXXbaz&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L175">        assertNull(StringUtils.substringBeforeLast(null, null));</span>
+<span class="fc" id="L176">        assertNull(StringUtils.substringBeforeLast(null, &quot;&quot;));</span>
+<span class="fc" id="L177">        assertNull(StringUtils.substringBeforeLast(null, &quot;XX&quot;));</span>
+<span class="fc" id="L178">        assertEquals(&quot;&quot;, StringUtils.substringBeforeLast(&quot;&quot;, null));</span>
+<span class="fc" id="L179">        assertEquals(&quot;&quot;, StringUtils.substringBeforeLast(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L180">        assertEquals(&quot;&quot;, StringUtils.substringBeforeLast(&quot;&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L182">        assertEquals(&quot;foo&quot;, StringUtils.substringBeforeLast(&quot;foo&quot;, null));</span>
+<span class="fc" id="L183">        assertEquals(&quot;foo&quot;, StringUtils.substringBeforeLast(&quot;foo&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L184">        assertEquals(&quot;fo&quot;, StringUtils.substringBeforeLast(&quot;foo&quot;, &quot;o&quot;));</span>
+<span class="fc" id="L185">        assertEquals(&quot;abc\r\n&quot;, StringUtils.substringBeforeLast(&quot;abc\r\n&quot;, &quot;d&quot;));</span>
+<span class="fc" id="L186">        assertEquals(&quot;abc&quot;, StringUtils.substringBeforeLast(&quot;abcdabc&quot;, &quot;d&quot;));</span>
+<span class="fc" id="L187">        assertEquals(&quot;abcdabc&quot;, StringUtils.substringBeforeLast(&quot;abcdabcd&quot;, &quot;d&quot;));</span>
+<span class="fc" id="L188">        assertEquals(&quot;a&quot;, StringUtils.substringBeforeLast(&quot;abc&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L189">        assertEquals(&quot;abc &quot;, StringUtils.substringBeforeLast(&quot;abc \n&quot;, &quot;\n&quot;));</span>
+<span class="fc" id="L190">        assertEquals(&quot;a&quot;, StringUtils.substringBeforeLast(&quot;a&quot;, null));</span>
+<span class="fc" id="L191">        assertEquals(&quot;a&quot;, StringUtils.substringBeforeLast(&quot;a&quot;, &quot;&quot;));</span>
+<span class="fc" id="L192">        assertEquals(&quot;&quot;, StringUtils.substringBeforeLast(&quot;a&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L193">    }</span>
+
+    @Test
+    public void testSubstringAfterLast_StringString() {
+<span class="fc" id="L197">        assertEquals(&quot;baz&quot;, StringUtils.substringAfterLast(&quot;fooXXbarXXbaz&quot;, &quot;XX&quot;));</span>
+
+<span class="fc" id="L199">        assertNull(StringUtils.substringAfterLast(null, null));</span>
+<span class="fc" id="L200">        assertNull(StringUtils.substringAfterLast(null, &quot;&quot;));</span>
+<span class="fc" id="L201">        assertNull(StringUtils.substringAfterLast(null, &quot;XX&quot;));</span>
+<span class="fc" id="L202">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;&quot;, null));</span>
+<span class="fc" id="L203">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L204">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;&quot;, &quot;a&quot;));</span>
+
+<span class="fc" id="L206">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;foo&quot;, null));</span>
+<span class="fc" id="L207">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;foo&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L208">        assertEquals(&quot;t&quot;, StringUtils.substringAfterLast(&quot;foot&quot;, &quot;o&quot;));</span>
+<span class="fc" id="L209">        assertEquals(&quot;bc&quot;, StringUtils.substringAfterLast(&quot;abc&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L210">        assertEquals(&quot;a&quot;, StringUtils.substringAfterLast(&quot;abcba&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L211">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;abc&quot;, &quot;c&quot;));</span>
+<span class="fc" id="L212">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;&quot;, &quot;d&quot;));</span>
+<span class="fc" id="L213">        assertEquals(&quot;&quot;, StringUtils.substringAfterLast(&quot;abc&quot;, &quot;&quot;));</span>
+<span class="fc" id="L214">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSubstringBetween_StringString() {
+<span class="fc" id="L219">        assertNull(StringUtils.substringBetween(null, &quot;tag&quot;));</span>
+<span class="fc" id="L220">        assertEquals(&quot;&quot;, StringUtils.substringBetween(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L221">        assertNull(StringUtils.substringBetween(&quot;&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L222">        assertEquals(&quot;&quot;, StringUtils.substringBetween(&quot;    &quot;, &quot; &quot;));</span>
+<span class="fc" id="L223">        assertNull(StringUtils.substringBetween(&quot;abc&quot;, null));</span>
+<span class="fc" id="L224">        assertEquals(&quot;&quot;, StringUtils.substringBetween(&quot;abc&quot;, &quot;&quot;));</span>
+<span class="fc" id="L225">        assertNull(StringUtils.substringBetween(&quot;abc&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L226">        assertEquals(&quot;bc&quot;, StringUtils.substringBetween(&quot;abca&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L227">        assertEquals(&quot;bc&quot;, StringUtils.substringBetween(&quot;abcabca&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L228">        assertEquals(&quot;bar&quot;, StringUtils.substringBetween(&quot;\nbar\n&quot;, &quot;\n&quot;));</span>
+<span class="fc" id="L229">    }</span>
+
+    @Test
+    public void testSubstringBetween_StringStringString() {
+<span class="fc" id="L233">        assertNull(StringUtils.substringBetween(null, &quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L234">        assertNull(StringUtils.substringBetween(&quot;&quot;, null, &quot;&quot;));</span>
+<span class="fc" id="L235">        assertNull(StringUtils.substringBetween(&quot;&quot;, &quot;&quot;, null));</span>
+<span class="fc" id="L236">        assertEquals(&quot;&quot;, StringUtils.substringBetween(&quot;&quot;, &quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L237">        assertEquals(&quot;&quot;, StringUtils.substringBetween(&quot;foo&quot;, &quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L238">        assertNull(StringUtils.substringBetween(&quot;foo&quot;, &quot;&quot;, &quot;]&quot;));</span>
+<span class="fc" id="L239">        assertNull(StringUtils.substringBetween(&quot;foo&quot;, &quot;[&quot;, &quot;]&quot;));</span>
+<span class="fc" id="L240">        assertEquals(&quot;&quot;, StringUtils.substringBetween(&quot;    &quot;, &quot; &quot;, &quot;  &quot;));</span>
+<span class="fc" id="L241">        assertEquals(&quot;bar&quot;, StringUtils.substringBetween(&quot;&lt;foo&gt;bar&lt;/foo&gt;&quot;, &quot;&lt;foo&gt;&quot;, &quot;&lt;/foo&gt;&quot;) );</span>
+<span class="fc" id="L242">    }</span>
+
+   /**
+     * Tests the substringsBetween method that returns an String Array of substrings.
+     */
+    @Test
+    public void testSubstringsBetween_StringStringString() {
+
+<span class="fc" id="L250">        String[] results = StringUtils.substringsBetween(&quot;[one], [two], [three]&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L251">        assertEquals(3, results.length);</span>
+<span class="fc" id="L252">        assertEquals(&quot;one&quot;, results[0]);</span>
+<span class="fc" id="L253">        assertEquals(&quot;two&quot;, results[1]);</span>
+<span class="fc" id="L254">        assertEquals(&quot;three&quot;, results[2]);</span>
+
+<span class="fc" id="L256">        results = StringUtils.substringsBetween(&quot;[one], [two], three&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L257">        assertEquals(2, results.length);</span>
+<span class="fc" id="L258">        assertEquals(&quot;one&quot;, results[0]);</span>
+<span class="fc" id="L259">        assertEquals(&quot;two&quot;, results[1]);</span>
+
+<span class="fc" id="L261">        results = StringUtils.substringsBetween(&quot;[one], [two], three]&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L262">        assertEquals(2, results.length);</span>
+<span class="fc" id="L263">        assertEquals(&quot;one&quot;, results[0]);</span>
+<span class="fc" id="L264">        assertEquals(&quot;two&quot;, results[1]);</span>
+
+<span class="fc" id="L266">        results = StringUtils.substringsBetween(&quot;[one], two], three]&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L267">        assertEquals(1, results.length);</span>
+<span class="fc" id="L268">        assertEquals(&quot;one&quot;, results[0]);</span>
+
+<span class="fc" id="L270">        results = StringUtils.substringsBetween(&quot;one], two], [three]&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L271">        assertEquals(1, results.length);</span>
+<span class="fc" id="L272">        assertEquals(&quot;three&quot;, results[0]);</span>
+
+        // 'ab hello ba' will match, but 'ab non ba' won't
+        // this is because the 'a' is shared between the two and can't be matched twice
+<span class="fc" id="L276">        results = StringUtils.substringsBetween(&quot;aabhellobabnonba&quot;, &quot;ab&quot;, &quot;ba&quot;);</span>
+<span class="fc" id="L277">        assertEquals(1, results.length);</span>
+<span class="fc" id="L278">        assertEquals(&quot;hello&quot;, results[0]);</span>
+
+<span class="fc" id="L280">        results = StringUtils.substringsBetween(&quot;one, two, three&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L281">        assertNull(results);</span>
+
+<span class="fc" id="L283">        results = StringUtils.substringsBetween(&quot;[one, two, three&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L284">        assertNull(results);</span>
+
+<span class="fc" id="L286">        results = StringUtils.substringsBetween(&quot;one, two, three]&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L287">        assertNull(results);</span>
+
+<span class="fc" id="L289">        results = StringUtils.substringsBetween(&quot;[one], [two], [three]&quot;, &quot;[&quot;, null);</span>
+<span class="fc" id="L290">        assertNull(results);</span>
+
+<span class="fc" id="L292">        results = StringUtils.substringsBetween(&quot;[one], [two], [three]&quot;, null, &quot;]&quot;);</span>
+<span class="fc" id="L293">        assertNull(results);</span>
+
+<span class="fc" id="L295">        results = StringUtils.substringsBetween(&quot;[one], [two], [three]&quot;, &quot;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L296">        assertNull(results);</span>
+
+<span class="fc" id="L298">        results = StringUtils.substringsBetween(null, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L299">        assertNull(results);</span>
+
+<span class="fc" id="L301">        results = StringUtils.substringsBetween(&quot;&quot;, &quot;[&quot;, &quot;]&quot;);</span>
+<span class="fc" id="L302">        assertEquals(0, results.length);</span>
+<span class="fc" id="L303">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testCountMatches_String() {
+<span class="fc" id="L308">        assertEquals(0, StringUtils.countMatches(null, null));</span>
+<span class="fc" id="L309">        assertEquals(0, StringUtils.countMatches(&quot;blah&quot;, null));</span>
+<span class="fc" id="L310">        assertEquals(0, StringUtils.countMatches(null, &quot;DD&quot;));</span>
+
+<span class="fc" id="L312">        assertEquals(0, StringUtils.countMatches(&quot;x&quot;, &quot;&quot;));</span>
+<span class="fc" id="L313">        assertEquals(0, StringUtils.countMatches(&quot;&quot;, &quot;&quot;));</span>
+
+<span class="fc" id="L315">        assertEquals(3,</span>
+<span class="fc" id="L316">             StringUtils.countMatches(&quot;one long someone sentence of one&quot;, &quot;one&quot;));</span>
+<span class="fc" id="L317">        assertEquals(0,</span>
+<span class="fc" id="L318">             StringUtils.countMatches(&quot;one long someone sentence of one&quot;, &quot;two&quot;));</span>
+<span class="fc" id="L319">        assertEquals(4,</span>
+<span class="fc" id="L320">             StringUtils.countMatches(&quot;oooooooooooo&quot;, &quot;ooo&quot;));</span>
+<span class="fc" id="L321">    }</span>
+
+    @Test
+    public void testCountMatches_char() {
+<span class="fc" id="L325">        assertEquals(0, StringUtils.countMatches(null, 'D'));</span>
+<span class="fc" id="L326">        assertEquals(5, StringUtils.countMatches(&quot;one long someone sentence of one&quot;, ' '));</span>
+<span class="fc" id="L327">        assertEquals(6, StringUtils.countMatches(&quot;one long someone sentence of one&quot;, 'o'));</span>
+<span class="fc" id="L328">        assertEquals(4, StringUtils.countMatches(&quot;oooooooooooo&quot;, &quot;ooo&quot;));</span>
+<span class="fc" id="L329">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

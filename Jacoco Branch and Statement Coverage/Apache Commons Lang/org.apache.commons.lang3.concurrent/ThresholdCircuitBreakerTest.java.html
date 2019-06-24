@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ThresholdCircuitBreakerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">ThresholdCircuitBreakerTest.java</span></div><h1>ThresholdCircuitBreakerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for {@code ThresholdCircuitBreaker}.
+ */
+<span class="fc" id="L28">public class ThresholdCircuitBreakerTest {</span>
+
+    /**
+     * Threshold used in tests.
+     */
+    private static final long threshold = 10L;
+
+    private static final long zeroThreshold = 0L;
+
+    /**
+     * Tests that the threshold is working as expected when incremented and no exception is thrown.
+     */
+    @Test
+    public void testThreshold() {
+<span class="fc" id="L42">        final ThresholdCircuitBreaker circuit = new ThresholdCircuitBreaker(threshold);</span>
+<span class="fc" id="L43">        circuit.incrementAndCheckState(9L);</span>
+<span class="fc" id="L44">        assertFalse(circuit.incrementAndCheckState(1L), &quot;Circuit opened before reaching the threshold&quot;);</span>
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Tests that exceeding the threshold raises an exception.
+     */
+    @Test
+    public void testThresholdCircuitBreakingException() {
+<span class="fc" id="L52">        final ThresholdCircuitBreaker circuit = new ThresholdCircuitBreaker(threshold);</span>
+<span class="fc" id="L53">        circuit.incrementAndCheckState(9L);</span>
+<span class="fc" id="L54">        assertTrue(circuit.incrementAndCheckState(2L), &quot;The circuit was supposed to be open after increment above the threshold&quot;);</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Test that when threshold is zero, the circuit breaker is always open.
+     */
+    @Test
+    public void testThresholdEqualsZero() {
+<span class="fc" id="L62">        final ThresholdCircuitBreaker circuit = new ThresholdCircuitBreaker(zeroThreshold);</span>
+<span class="fc" id="L63">        assertTrue(circuit.incrementAndCheckState(0L), &quot;When the threshold is zero, the circuit is supposed to be always open&quot;);</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Tests that closing a {@code ThresholdCircuitBreaker} resets the internal counter.
+     */
+    @Test
+    public void testClosingThresholdCircuitBreaker() {
+<span class="fc" id="L71">        final ThresholdCircuitBreaker circuit = new ThresholdCircuitBreaker(threshold);</span>
+<span class="fc" id="L72">        circuit.incrementAndCheckState(9L);</span>
+<span class="fc" id="L73">        circuit.close();</span>
+        // now the internal counter is back at zero, not 9 anymore. So it is safe to increment 9 again
+<span class="fc" id="L75">        assertFalse(circuit.incrementAndCheckState(9L), &quot;Internal counter was not reset back to zero&quot;);</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Tests that we can get the threshold value correctly.
+     */
+    @Test
+    public void testGettingThreshold() {
+<span class="fc" id="L83">        final ThresholdCircuitBreaker circuit = new ThresholdCircuitBreaker(threshold);</span>
+<span class="fc" id="L84">        assertEquals(Long.valueOf(threshold), Long.valueOf(circuit.getThreshold()), &quot;Wrong value of threshold&quot;);</span>
+<span class="fc" id="L85">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

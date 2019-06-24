@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PairTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.tuple</a> &gt; <span class="el_source">PairTest.java</span></div><h1>PairTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.tuple;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test the Pair class.
+ */
+<span class="fc" id="L34">public class PairTest {</span>
+
+    @Test
+    public void testEmptyArrayLength() {
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L39">        final Pair&lt;Integer, String&gt;[] empty = (Pair&lt;Integer, String&gt;[]) Pair.EMPTY_ARRAY;</span>
+<span class="fc" id="L40">        assertEquals(0, empty.length);</span>
+<span class="fc" id="L41">    }</span>
+
+    @Test
+    public void testEmptyArrayGenerics() {
+<span class="fc" id="L45">        final Pair&lt;Integer, String&gt;[] empty = Pair.emptyArray();</span>
+<span class="fc" id="L46">        assertEquals(0, empty.length);</span>
+<span class="fc" id="L47">    }</span>
+
+    @Test
+    public void testComparable1() {
+<span class="fc" id="L51">        final Pair&lt;String, String&gt; pair1 = Pair.of(&quot;A&quot;, &quot;D&quot;);</span>
+<span class="fc" id="L52">        final Pair&lt;String, String&gt; pair2 = Pair.of(&quot;B&quot;, &quot;C&quot;);</span>
+<span class="fc" id="L53">        assertEquals(0, pair1.compareTo(pair1));</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        assertTrue(pair1.compareTo(pair2) &lt; 0);</span>
+<span class="fc" id="L55">        assertEquals(0, pair2.compareTo(pair2));</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        assertTrue(pair2.compareTo(pair1) &gt; 0);</span>
+<span class="fc" id="L57">    }</span>
+
+    @Test
+    public void testComparable2() {
+<span class="fc" id="L61">        final Pair&lt;String, String&gt; pair1 = Pair.of(&quot;A&quot;, &quot;C&quot;);</span>
+<span class="fc" id="L62">        final Pair&lt;String, String&gt; pair2 = Pair.of(&quot;A&quot;, &quot;D&quot;);</span>
+<span class="fc" id="L63">        assertEquals(0, pair1.compareTo(pair1));</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        assertTrue(pair1.compareTo(pair2) &lt; 0);</span>
+<span class="fc" id="L65">        assertEquals(0, pair2.compareTo(pair2));</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        assertTrue(pair2.compareTo(pair1) &gt; 0);</span>
+<span class="fc" id="L67">    }</span>
+
+    @Test
+    public void testCompatibilityBetweenPairs() {
+<span class="fc" id="L71">        final Pair&lt;Integer, String&gt; pair = ImmutablePair.of(0, &quot;foo&quot;);</span>
+<span class="fc" id="L72">        final Pair&lt;Integer, String&gt; pair2 = MutablePair.of(0, &quot;foo&quot;);</span>
+<span class="fc" id="L73">        assertEquals(pair, pair2);</span>
+<span class="fc" id="L74">        assertEquals(pair.hashCode(), pair2.hashCode());</span>
+<span class="fc" id="L75">        final HashSet&lt;Pair&lt;Integer, String&gt;&gt; set = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L76">        set.add(pair);</span>
+<span class="fc" id="L77">        assertTrue(set.contains(pair2));</span>
+
+<span class="fc" id="L79">        pair2.setValue(&quot;bar&quot;);</span>
+<span class="fc" id="L80">        assertNotEquals(pair, pair2);</span>
+<span class="fc" id="L81">        assertNotEquals(pair.hashCode(), pair2.hashCode());</span>
+<span class="fc" id="L82">    }</span>
+
+    @Test
+    public void testFormattable_padded() {
+<span class="fc" id="L86">        final Pair&lt;String, String&gt; pair = Pair.of(&quot;Key&quot;, &quot;Value&quot;);</span>
+<span class="fc" id="L87">        assertEquals(&quot;         (Key,Value)&quot;, String.format(&quot;%1$20s&quot;, pair));</span>
+<span class="fc" id="L88">    }</span>
+
+    @Test
+    public void testFormattable_simple() {
+<span class="fc" id="L92">        final Pair&lt;String, String&gt; pair = Pair.of(&quot;Key&quot;, &quot;Value&quot;);</span>
+<span class="fc" id="L93">        assertEquals(&quot;(Key,Value)&quot;, String.format(&quot;%1$s&quot;, pair));</span>
+<span class="fc" id="L94">    }</span>
+
+    @Test
+    public void testMapEntry() {
+<span class="fc" id="L98">        final Pair&lt;Integer, String&gt; pair = ImmutablePair.of(0, &quot;foo&quot;);</span>
+<span class="fc" id="L99">        final HashMap&lt;Integer, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L100">        map.put(0, &quot;foo&quot;);</span>
+<span class="fc" id="L101">        final Entry&lt;Integer, String&gt; entry = map.entrySet().iterator().next();</span>
+<span class="fc" id="L102">        assertEquals(pair, entry);</span>
+<span class="fc" id="L103">        assertEquals(pair.hashCode(), entry.hashCode());</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testPairOf() {
+<span class="fc" id="L108">        final Pair&lt;Integer, String&gt; pair = Pair.of(0, &quot;foo&quot;);</span>
+<span class="fc" id="L109">        assertTrue(pair instanceof ImmutablePair&lt;?, ?&gt;);</span>
+<span class="fc" id="L110">        assertEquals(0, ((ImmutablePair&lt;Integer, String&gt;) pair).left.intValue());</span>
+<span class="fc" id="L111">        assertEquals(&quot;foo&quot;, ((ImmutablePair&lt;Integer, String&gt;) pair).right);</span>
+<span class="fc" id="L112">        final Pair&lt;Object, String&gt; pair2 = Pair.of(null, &quot;bar&quot;);</span>
+<span class="fc" id="L113">        assertTrue(pair2 instanceof ImmutablePair&lt;?, ?&gt;);</span>
+<span class="fc" id="L114">        assertNull(((ImmutablePair&lt;Object, String&gt;) pair2).left);</span>
+<span class="fc" id="L115">        assertEquals(&quot;bar&quot;, ((ImmutablePair&lt;Object, String&gt;) pair2).right);</span>
+<span class="fc" id="L116">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L120">        final Pair&lt;String, String&gt; pair = Pair.of(&quot;Key&quot;, &quot;Value&quot;);</span>
+<span class="fc" id="L121">        assertEquals(&quot;(Key,Value)&quot;, pair.toString());</span>
+<span class="fc" id="L122">    }</span>
+
+    @Test
+    public void testToStringCustom() {
+<span class="fc" id="L126">        final Calendar date = Calendar.getInstance();</span>
+<span class="fc" id="L127">        date.set(2011, Calendar.APRIL, 25);</span>
+<span class="fc" id="L128">        final Pair&lt;String, Calendar&gt; pair = Pair.of(&quot;DOB&quot;, date);</span>
+<span class="fc" id="L129">        assertEquals(&quot;Test created on &quot; + &quot;04-25-2011&quot;, pair.toString(&quot;Test created on %2$tm-%2$td-%2$tY&quot;));</span>
+<span class="fc" id="L130">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

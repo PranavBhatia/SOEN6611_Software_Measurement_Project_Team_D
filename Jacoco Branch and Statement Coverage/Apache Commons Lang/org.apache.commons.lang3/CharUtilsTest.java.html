@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CharUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">CharUtilsTest.java</span></div><h1>CharUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.CharUtils}.
+ */
+<span class="fc" id="L36">public class CharUtilsTest {</span>
+
+    private static final char CHAR_COPY = '\u00a9';
+<span class="fc" id="L39">    private static final Character CHARACTER_A = new Character('A');</span>
+<span class="fc" id="L40">    private static final Character CHARACTER_B = new Character('B');</span>
+
+    @Test
+    public void testCompare() {
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        assertTrue(CharUtils.compare('a', 'b') &lt; 0);</span>
+<span class="fc" id="L45">        assertEquals(0, CharUtils.compare('c', 'c'));</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">        assertTrue(CharUtils.compare('c', 'a') &gt; 0);</span>
+<span class="fc" id="L47">    }</span>
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L51">        assertNotNull(new CharUtils());</span>
+<span class="fc" id="L52">        final Constructor&lt;?&gt;[] cons = CharUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L53">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L54">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L55">        assertTrue(Modifier.isPublic(BooleanUtils.class.getModifiers()));</span>
+<span class="fc" id="L56">        assertFalse(Modifier.isFinal(BooleanUtils.class.getModifiers()));</span>
+<span class="fc" id="L57">    }</span>
+
+    @Test
+    public void testIsAscii_char() {
+<span class="fc" id="L61">        assertTrue(CharUtils.isAscii('a'));</span>
+<span class="fc" id="L62">        assertTrue(CharUtils.isAscii('A'));</span>
+<span class="fc" id="L63">        assertTrue(CharUtils.isAscii('3'));</span>
+<span class="fc" id="L64">        assertTrue(CharUtils.isAscii('-'));</span>
+<span class="fc" id="L65">        assertTrue(CharUtils.isAscii('\n'));</span>
+<span class="fc" id="L66">        assertFalse(CharUtils.isAscii(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        for (int i = 0; i &lt; 255; i++) {</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            assertEquals(i &lt; 128, CharUtils.isAscii((char) i));</span>
+        }
+<span class="fc" id="L71">    }</span>
+
+    @Test
+    public void testIsAsciiAlpha_char() {
+<span class="fc" id="L75">        assertTrue(CharUtils.isAsciiAlpha('a'));</span>
+<span class="fc" id="L76">        assertTrue(CharUtils.isAsciiAlpha('A'));</span>
+<span class="fc" id="L77">        assertFalse(CharUtils.isAsciiAlpha('3'));</span>
+<span class="fc" id="L78">        assertFalse(CharUtils.isAsciiAlpha('-'));</span>
+<span class="fc" id="L79">        assertFalse(CharUtils.isAsciiAlpha('\n'));</span>
+<span class="fc" id="L80">        assertFalse(CharUtils.isAsciiAlpha(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L83" title="All 8 branches covered.">            if ((i &gt;= 'A' &amp;&amp; i &lt;= 'Z') || (i &gt;= 'a' &amp;&amp; i &lt;= 'z')) {</span>
+<span class="fc" id="L84">                assertTrue(CharUtils.isAsciiAlpha((char) i));</span>
+            } else {
+<span class="fc" id="L86">                assertFalse(CharUtils.isAsciiAlpha((char) i));</span>
+            }
+        }
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testIsAsciiAlphaLower_char() {
+<span class="fc" id="L93">        assertTrue(CharUtils.isAsciiAlphaLower('a'));</span>
+<span class="fc" id="L94">        assertFalse(CharUtils.isAsciiAlphaLower('A'));</span>
+<span class="fc" id="L95">        assertFalse(CharUtils.isAsciiAlphaLower('3'));</span>
+<span class="fc" id="L96">        assertFalse(CharUtils.isAsciiAlphaLower('-'));</span>
+<span class="fc" id="L97">        assertFalse(CharUtils.isAsciiAlphaLower('\n'));</span>
+<span class="fc" id="L98">        assertFalse(CharUtils.isAsciiAlphaLower(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L101" title="All 4 branches covered.">            if (i &gt;= 'a' &amp;&amp; i &lt;= 'z') {</span>
+<span class="fc" id="L102">                assertTrue(CharUtils.isAsciiAlphaLower((char) i));</span>
+            } else {
+<span class="fc" id="L104">                assertFalse(CharUtils.isAsciiAlphaLower((char) i));</span>
+            }
+        }
+<span class="fc" id="L107">    }</span>
+
+    @Test
+    public void testIsAsciiAlphanumeric_char() {
+<span class="fc" id="L111">        assertTrue(CharUtils.isAsciiAlphanumeric('a'));</span>
+<span class="fc" id="L112">        assertTrue(CharUtils.isAsciiAlphanumeric('A'));</span>
+<span class="fc" id="L113">        assertTrue(CharUtils.isAsciiAlphanumeric('3'));</span>
+<span class="fc" id="L114">        assertFalse(CharUtils.isAsciiAlphanumeric('-'));</span>
+<span class="fc" id="L115">        assertFalse(CharUtils.isAsciiAlphanumeric('\n'));</span>
+<span class="fc" id="L116">        assertFalse(CharUtils.isAsciiAlphanumeric(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L119" title="All 12 branches covered.">            if ((i &gt;= 'A' &amp;&amp; i &lt;= 'Z') || (i &gt;= 'a' &amp;&amp; i &lt;= 'z') || (i &gt;= '0' &amp;&amp; i &lt;= '9')) {</span>
+<span class="fc" id="L120">                assertTrue(CharUtils.isAsciiAlphanumeric((char) i));</span>
+            } else {
+<span class="fc" id="L122">                assertFalse(CharUtils.isAsciiAlphanumeric((char) i));</span>
+            }
+        }
+<span class="fc" id="L125">    }</span>
+
+    @Test
+    public void testIsAsciiAlphaUpper_char() {
+<span class="fc" id="L129">        assertFalse(CharUtils.isAsciiAlphaUpper('a'));</span>
+<span class="fc" id="L130">        assertTrue(CharUtils.isAsciiAlphaUpper('A'));</span>
+<span class="fc" id="L131">        assertFalse(CharUtils.isAsciiAlphaUpper('3'));</span>
+<span class="fc" id="L132">        assertFalse(CharUtils.isAsciiAlphaUpper('-'));</span>
+<span class="fc" id="L133">        assertFalse(CharUtils.isAsciiAlphaUpper('\n'));</span>
+<span class="fc" id="L134">        assertFalse(CharUtils.isAsciiAlphaUpper(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L137" title="All 4 branches covered.">            if (i &gt;= 'A' &amp;&amp; i &lt;= 'Z') {</span>
+<span class="fc" id="L138">                assertTrue(CharUtils.isAsciiAlphaUpper((char) i));</span>
+            } else {
+<span class="fc" id="L140">                assertFalse(CharUtils.isAsciiAlphaUpper((char) i));</span>
+            }
+        }
+<span class="fc" id="L143">    }</span>
+
+    @Test
+    public void testIsAsciiControl_char() {
+<span class="fc" id="L147">        assertFalse(CharUtils.isAsciiControl('a'));</span>
+<span class="fc" id="L148">        assertFalse(CharUtils.isAsciiControl('A'));</span>
+<span class="fc" id="L149">        assertFalse(CharUtils.isAsciiControl('3'));</span>
+<span class="fc" id="L150">        assertFalse(CharUtils.isAsciiControl('-'));</span>
+<span class="fc" id="L151">        assertTrue(CharUtils.isAsciiControl('\n'));</span>
+<span class="fc" id="L152">        assertFalse(CharUtils.isAsciiControl(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L155" title="All 4 branches covered.">            if (i &lt; 32 || i == 127) {</span>
+<span class="fc" id="L156">                assertTrue(CharUtils.isAsciiControl((char) i));</span>
+            } else {
+<span class="fc" id="L158">                assertFalse(CharUtils.isAsciiControl((char) i));</span>
+            }
+        }
+<span class="fc" id="L161">    }</span>
+
+    @Test
+    public void testIsAsciiNumeric_char() {
+<span class="fc" id="L165">        assertFalse(CharUtils.isAsciiNumeric('a'));</span>
+<span class="fc" id="L166">        assertFalse(CharUtils.isAsciiNumeric('A'));</span>
+<span class="fc" id="L167">        assertTrue(CharUtils.isAsciiNumeric('3'));</span>
+<span class="fc" id="L168">        assertFalse(CharUtils.isAsciiNumeric('-'));</span>
+<span class="fc" id="L169">        assertFalse(CharUtils.isAsciiNumeric('\n'));</span>
+<span class="fc" id="L170">        assertFalse(CharUtils.isAsciiNumeric(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L173" title="All 4 branches covered.">            if (i &gt;= '0' &amp;&amp; i &lt;= '9') {</span>
+<span class="fc" id="L174">                assertTrue(CharUtils.isAsciiNumeric((char) i));</span>
+            } else {
+<span class="fc" id="L176">                assertFalse(CharUtils.isAsciiNumeric((char) i));</span>
+            }
+        }
+<span class="fc" id="L179">    }</span>
+
+    @Test
+    public void testIsAsciiPrintable_char() {
+<span class="fc" id="L183">        assertTrue(CharUtils.isAsciiPrintable('a'));</span>
+<span class="fc" id="L184">        assertTrue(CharUtils.isAsciiPrintable('A'));</span>
+<span class="fc" id="L185">        assertTrue(CharUtils.isAsciiPrintable('3'));</span>
+<span class="fc" id="L186">        assertTrue(CharUtils.isAsciiPrintable('-'));</span>
+<span class="fc" id="L187">        assertFalse(CharUtils.isAsciiPrintable('\n'));</span>
+<span class="fc" id="L188">        assertFalse(CharUtils.isAsciiPrintable(CHAR_COPY));</span>
+
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc bfc" id="L191" title="All 4 branches covered.">            if (i &gt;= 32 &amp;&amp; i &lt;= 126) {</span>
+<span class="fc" id="L192">                assertTrue(CharUtils.isAsciiPrintable((char) i));</span>
+            } else {
+<span class="fc" id="L194">                assertFalse(CharUtils.isAsciiPrintable((char) i));</span>
+            }
+        }
+<span class="fc" id="L197">    }</span>
+
+    @Test
+    public void testToChar_Character() {
+<span class="fc" id="L201">        assertEquals('A', CharUtils.toChar(CHARACTER_A));</span>
+<span class="fc" id="L202">        assertEquals('B', CharUtils.toChar(CHARACTER_B));</span>
+<span class="pc" id="L203">        assertThrows(IllegalArgumentException.class, () -&gt; CharUtils.toChar((Character) null));</span>
+<span class="fc" id="L204">    }</span>
+
+    @Test
+    public void testToChar_Character_char() {
+<span class="fc" id="L208">        assertEquals('A', CharUtils.toChar(CHARACTER_A, 'X'));</span>
+<span class="fc" id="L209">        assertEquals('B', CharUtils.toChar(CHARACTER_B, 'X'));</span>
+<span class="fc" id="L210">        assertEquals('X', CharUtils.toChar((Character) null, 'X'));</span>
+<span class="fc" id="L211">    }</span>
+
+    @Test
+    public void testToChar_String() {
+<span class="fc" id="L215">        assertEquals('A', CharUtils.toChar(&quot;A&quot;));</span>
+<span class="fc" id="L216">        assertEquals('B', CharUtils.toChar(&quot;BA&quot;));</span>
+<span class="pc" id="L217">        assertThrows(IllegalArgumentException.class, () -&gt; CharUtils.toChar((String) null));</span>
+<span class="pc" id="L218">        assertThrows(IllegalArgumentException.class, () -&gt; CharUtils.toChar(&quot;&quot;));</span>
+<span class="fc" id="L219">    }</span>
+
+    @Test
+    public void testToChar_String_char() {
+<span class="fc" id="L223">        assertEquals('A', CharUtils.toChar(&quot;A&quot;, 'X'));</span>
+<span class="fc" id="L224">        assertEquals('B', CharUtils.toChar(&quot;BA&quot;, 'X'));</span>
+<span class="fc" id="L225">        assertEquals('X', CharUtils.toChar(&quot;&quot;, 'X'));</span>
+<span class="fc" id="L226">        assertEquals('X', CharUtils.toChar((String) null, 'X'));</span>
+<span class="fc" id="L227">    }</span>
+
+    @SuppressWarnings(&quot;deprecation&quot;) // intentional test of deprecated method
+    @Test
+    public void testToCharacterObject_char() {
+<span class="fc" id="L232">        assertEquals(new Character('a'), CharUtils.toCharacterObject('a'));</span>
+<span class="fc" id="L233">        assertSame(CharUtils.toCharacterObject('a'), CharUtils.toCharacterObject('a'));</span>
+
+<span class="fc bfc" id="L235" title="All 2 branches covered.">        for (int i = 0; i &lt; 128; i++) {</span>
+<span class="fc" id="L236">            final Character ch = CharUtils.toCharacterObject((char) i);</span>
+<span class="fc" id="L237">            final Character ch2 = CharUtils.toCharacterObject((char) i);</span>
+<span class="fc" id="L238">            assertSame(ch, ch2);</span>
+<span class="fc" id="L239">            assertEquals(i, ch.charValue());</span>
+        }
+<span class="fc bfc" id="L241" title="All 2 branches covered.">        for (int i = 128; i &lt; 196; i++) {</span>
+<span class="fc" id="L242">            final Character ch = CharUtils.toCharacterObject((char) i);</span>
+<span class="fc" id="L243">            final Character ch2 = CharUtils.toCharacterObject((char) i);</span>
+<span class="fc" id="L244">            assertEquals(ch, ch2);</span>
+<span class="fc" id="L245">            assertNotSame(ch, ch2);</span>
+<span class="fc" id="L246">            assertEquals(i, ch.charValue());</span>
+<span class="fc" id="L247">            assertEquals(i, ch2.charValue());</span>
+        }
+<span class="fc" id="L249">        assertSame(CharUtils.toCharacterObject(&quot;a&quot;), CharUtils.toCharacterObject('a'));</span>
+<span class="fc" id="L250">    }</span>
+
+    @Test
+    public void testToCharacterObject_String() {
+<span class="fc" id="L254">        assertNull(CharUtils.toCharacterObject(null));</span>
+<span class="fc" id="L255">        assertNull(CharUtils.toCharacterObject(&quot;&quot;));</span>
+<span class="fc" id="L256">        assertEquals(new Character('a'), CharUtils.toCharacterObject(&quot;a&quot;));</span>
+<span class="fc" id="L257">        assertEquals(new Character('a'), CharUtils.toCharacterObject(&quot;abc&quot;));</span>
+<span class="fc" id="L258">        assertSame(CharUtils.toCharacterObject(&quot;a&quot;), CharUtils.toCharacterObject(&quot;a&quot;));</span>
+<span class="fc" id="L259">    }</span>
+
+    @Test
+    public void testToIntValue_char() {
+<span class="fc" id="L263">        assertEquals(0, CharUtils.toIntValue('0'));</span>
+<span class="fc" id="L264">        assertEquals(1, CharUtils.toIntValue('1'));</span>
+<span class="fc" id="L265">        assertEquals(2, CharUtils.toIntValue('2'));</span>
+<span class="fc" id="L266">        assertEquals(3, CharUtils.toIntValue('3'));</span>
+<span class="fc" id="L267">        assertEquals(4, CharUtils.toIntValue('4'));</span>
+<span class="fc" id="L268">        assertEquals(5, CharUtils.toIntValue('5'));</span>
+<span class="fc" id="L269">        assertEquals(6, CharUtils.toIntValue('6'));</span>
+<span class="fc" id="L270">        assertEquals(7, CharUtils.toIntValue('7'));</span>
+<span class="fc" id="L271">        assertEquals(8, CharUtils.toIntValue('8'));</span>
+<span class="fc" id="L272">        assertEquals(9, CharUtils.toIntValue('9'));</span>
+<span class="pc" id="L273">        assertThrows(IllegalArgumentException.class, () -&gt; CharUtils.toIntValue('a'));</span>
+<span class="fc" id="L274">    }</span>
+
+    @Test
+    public void testToIntValue_char_int() {
+<span class="fc" id="L278">        assertEquals(0, CharUtils.toIntValue('0', -1));</span>
+<span class="fc" id="L279">        assertEquals(3, CharUtils.toIntValue('3', -1));</span>
+<span class="fc" id="L280">        assertEquals(-1, CharUtils.toIntValue('a', -1));</span>
+<span class="fc" id="L281">    }</span>
+
+    @Test
+    public void testToIntValue_Character() {
+<span class="fc" id="L285">        assertEquals(0, CharUtils.toIntValue(new Character('0')));</span>
+<span class="fc" id="L286">        assertEquals(3, CharUtils.toIntValue(new Character('3')));</span>
+<span class="pc" id="L287">        assertThrows(IllegalArgumentException.class, () -&gt; CharUtils.toIntValue(null));</span>
+<span class="pc" id="L288">        assertThrows(IllegalArgumentException.class, () -&gt; CharUtils.toIntValue(CHARACTER_A));</span>
+<span class="fc" id="L289">    }</span>
+
+    @Test
+    public void testToIntValue_Character_int() {
+<span class="fc" id="L293">        assertEquals(0, CharUtils.toIntValue(new Character('0'), -1));</span>
+<span class="fc" id="L294">        assertEquals(3, CharUtils.toIntValue(new Character('3'), -1));</span>
+<span class="fc" id="L295">        assertEquals(-1, CharUtils.toIntValue(new Character('A'), -1));</span>
+<span class="fc" id="L296">        assertEquals(-1, CharUtils.toIntValue(null, -1));</span>
+<span class="fc" id="L297">    }</span>
+
+    @Test
+    public void testToString_char() {
+<span class="fc" id="L301">        assertEquals(&quot;a&quot;, CharUtils.toString('a'));</span>
+<span class="fc" id="L302">        assertSame(CharUtils.toString('a'), CharUtils.toString('a'));</span>
+
+<span class="fc bfc" id="L304" title="All 2 branches covered.">        for (int i = 0; i &lt; 128; i++) {</span>
+<span class="fc" id="L305">            final String str = CharUtils.toString((char) i);</span>
+<span class="fc" id="L306">            final String str2 = CharUtils.toString((char) i);</span>
+<span class="fc" id="L307">            assertSame(str, str2);</span>
+<span class="fc" id="L308">            assertEquals(1, str.length());</span>
+<span class="fc" id="L309">            assertEquals(i, str.charAt(0));</span>
+        }
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        for (int i = 128; i &lt; 196; i++) {</span>
+<span class="fc" id="L312">            final String str = CharUtils.toString((char) i);</span>
+<span class="fc" id="L313">            final String str2 = CharUtils.toString((char) i);</span>
+<span class="fc" id="L314">            assertEquals(str, str2);</span>
+<span class="fc" id="L315">            assertNotSame(str, str2);</span>
+<span class="fc" id="L316">            assertEquals(1, str.length());</span>
+<span class="fc" id="L317">            assertEquals(i, str.charAt(0));</span>
+<span class="fc" id="L318">            assertEquals(1, str2.length());</span>
+<span class="fc" id="L319">            assertEquals(i, str2.charAt(0));</span>
+        }
+<span class="fc" id="L321">    }</span>
+
+    @Test
+    public void testToString_Character() {
+<span class="fc" id="L325">        assertNull(CharUtils.toString(null));</span>
+<span class="fc" id="L326">        assertEquals(&quot;A&quot;, CharUtils.toString(CHARACTER_A));</span>
+<span class="fc" id="L327">        assertSame(CharUtils.toString(CHARACTER_A), CharUtils.toString(CHARACTER_A));</span>
+<span class="fc" id="L328">    }</span>
+
+    @Test
+    public void testToUnicodeEscaped_char() {
+<span class="fc" id="L332">        assertEquals(&quot;\\u0041&quot;, CharUtils.unicodeEscaped('A'));</span>
+<span class="fc" id="L333">        assertEquals(&quot;\\u004c&quot;, CharUtils.unicodeEscaped('L'));</span>
+
+<span class="fc bfc" id="L335" title="All 2 branches covered.">        for (int i = 0; i &lt; 196; i++) {</span>
+<span class="fc" id="L336">            final String str = CharUtils.unicodeEscaped((char) i);</span>
+<span class="fc" id="L337">            assertEquals(6, str.length());</span>
+<span class="fc" id="L338">            final int val = Integer.parseInt(str.substring(2), 16);</span>
+<span class="fc" id="L339">            assertEquals(i, val);</span>
+        }
+<span class="fc" id="L341">        assertEquals(&quot;\\u0999&quot;, CharUtils.unicodeEscaped((char) 0x999));</span>
+<span class="fc" id="L342">        assertEquals(&quot;\\u1001&quot;, CharUtils.unicodeEscaped((char) 0x1001));</span>
+<span class="fc" id="L343">    }</span>
+
+    @Test
+    public void testToUnicodeEscaped_Character() {
+<span class="fc" id="L347">        assertNull(CharUtils.unicodeEscaped(null));</span>
+<span class="fc" id="L348">        assertEquals(&quot;\\u0041&quot;, CharUtils.unicodeEscaped(CHARACTER_A));</span>
+<span class="fc" id="L349">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

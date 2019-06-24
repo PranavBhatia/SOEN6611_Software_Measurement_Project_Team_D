@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventCountCircuitBreakerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">EventCountCircuitBreakerTest.java</span></div><h1>EventCountCircuitBreakerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for {@code EventCountCircuitBreaker}.
+ */
+<span class="fc" id="L37">public class EventCountCircuitBreakerTest {</span>
+    /** Constant for the opening threshold. */
+    private static final int OPENING_THRESHOLD = 10;
+
+    /** Constant for the closing threshold. */
+    private static final int CLOSING_THRESHOLD = 5;
+
+    /** Constant for the factor for converting nanoseconds. */
+    private static final long NANO_FACTOR = 1000L * 1000L * 1000L;
+
+    /**
+     * Tests that time units are correctly taken into account by constructors.
+     */
+    @Test
+    public void testIntervalCalculation() {
+<span class="fc" id="L52">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 2, TimeUnit.MILLISECONDS);
+<span class="fc" id="L54">        assertEquals(NANO_FACTOR, breaker.getOpeningInterval(), &quot;Wrong opening interval&quot;);</span>
+<span class="fc" id="L55">        assertEquals(2 * NANO_FACTOR / 1000, breaker.getClosingInterval(), &quot;Wrong closing interval&quot;);</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Tests that the closing interval is the same as the opening interval if it is not
+     * specified.
+     */
+    @Test
+    public void testDefaultClosingInterval() {
+<span class="fc" id="L64">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD);
+<span class="fc" id="L66">        assertEquals(NANO_FACTOR, breaker.getClosingInterval(), &quot;Wrong closing interval&quot;);</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Tests that the closing threshold is the same as the opening threshold if not
+     * specified otherwise.
+     */
+    @Test
+    public void testDefaultClosingThreshold() {
+<span class="fc" id="L75">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS);
+<span class="fc" id="L77">        assertEquals(NANO_FACTOR, breaker.getClosingInterval(), &quot;Wrong closing interval&quot;);</span>
+<span class="fc" id="L78">        assertEquals(OPENING_THRESHOLD, breaker.getClosingThreshold(), &quot;Wrong closing threshold&quot;);</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Tests that a circuit breaker is closed after its creation.
+     */
+    @Test
+    public void testInitiallyClosed() {
+<span class="fc" id="L86">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS);
+<span class="fc" id="L88">        assertFalse(breaker.isOpen(), &quot;Open&quot;);</span>
+<span class="fc" id="L89">        assertTrue(breaker.isClosed(), &quot;Not closed&quot;);</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Tests whether the current time is correctly determined.
+     */
+    @Test
+    public void testNow() {
+<span class="fc" id="L97">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS);
+<span class="fc" id="L99">        final long now = breaker.now();</span>
+<span class="fc" id="L100">        final long delta = Math.abs(System.nanoTime() - now);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        assertTrue(delta &lt; 100000, String.format(&quot;Delta %d ns to current time too large&quot;, delta));</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Tests that the circuit breaker stays closed if the number of received events stays
+     * below the threshold.
+     */
+    @Test
+    public void testNotOpeningUnderThreshold() {
+<span class="fc" id="L110">        long startTime = 1000;</span>
+<span class="fc" id="L111">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        for (int i = 0; i &lt; OPENING_THRESHOLD - 1; i++) {</span>
+<span class="fc" id="L114">            assertTrue(breaker.at(startTime).incrementAndCheckState(), &quot;In open state&quot;);</span>
+<span class="fc" id="L115">            startTime++;</span>
+        }
+<span class="fc" id="L117">        assertTrue(breaker.isClosed(), &quot;Not closed&quot;);</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Tests that the circuit breaker stays closed if there are a number of received
+     * events, but not in a single check interval.
+     */
+    @Test
+    public void testNotOpeningCheckIntervalExceeded() {
+<span class="fc" id="L126">        long startTime = 0L;</span>
+<span class="fc" id="L127">        final long timeIncrement = 3 * NANO_FACTOR / (2 * OPENING_THRESHOLD);</span>
+<span class="fc" id="L128">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        for (int i = 0; i &lt; 5 * OPENING_THRESHOLD; i++) {</span>
+<span class="fc" id="L131">            assertTrue(breaker.at(startTime).incrementAndCheckState(), &quot;In open state&quot;);</span>
+<span class="fc" id="L132">            startTime += timeIncrement;</span>
+        }
+<span class="fc" id="L134">        assertTrue(breaker.isClosed(), &quot;Not closed&quot;);</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Tests that the circuit breaker opens if all conditions are met.
+     */
+    @Test
+    public void testOpeningWhenThresholdReached() {
+<span class="fc" id="L142">        long startTime = 0;</span>
+<span class="fc" id="L143">        final long timeIncrement = NANO_FACTOR / OPENING_THRESHOLD - 1;</span>
+<span class="fc" id="L144">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L146">        boolean open = false;</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        for (int i = 0; i &lt; OPENING_THRESHOLD + 1; i++) {</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            open = !breaker.at(startTime).incrementAndCheckState();</span>
+<span class="fc" id="L149">            startTime += timeIncrement;</span>
+        }
+<span class="fc" id="L151">        assertTrue(open, &quot;Not open&quot;);</span>
+<span class="fc" id="L152">        assertFalse(breaker.isClosed(), &quot;Closed&quot;);</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * Tests that the circuit breaker opens if all conditions are met when using
+     * {@link EventCountCircuitBreaker#incrementAndCheckState(Integer increment)}.
+     */
+    @Test
+    public void testOpeningWhenThresholdReachedThroughBatch() {
+<span class="fc" id="L161">        final long timeIncrement = NANO_FACTOR / OPENING_THRESHOLD - 1;</span>
+<span class="fc" id="L162">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 1,</span>
+            TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L164">        long startTime = timeIncrement * (OPENING_THRESHOLD + 1);</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        boolean open = !breaker.at(startTime).incrementAndCheckState(OPENING_THRESHOLD + 1);</span>
+<span class="fc" id="L166">        assertTrue(open, &quot;Not open&quot;);</span>
+<span class="fc" id="L167">        assertFalse(breaker.isClosed(), &quot;Closed&quot;);</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * Tests that an open circuit breaker does not close itself when the number of events
+     * received is over the threshold.
+     */
+    @Test
+    public void testNotClosingOverThreshold() {
+<span class="fc" id="L176">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD,</span>
+                10, TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L178">        long startTime = 0;</span>
+<span class="fc" id="L179">        breaker.open();</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        for (int i = 0; i &lt;= CLOSING_THRESHOLD; i++) {</span>
+<span class="fc" id="L181">            assertFalse(breaker.at(startTime).incrementAndCheckState(), &quot;Not open&quot;);</span>
+<span class="fc" id="L182">            startTime += 1000;</span>
+        }
+<span class="fc" id="L184">        assertFalse(breaker.at(startTime + NANO_FACTOR).incrementAndCheckState(), &quot;Closed in new interval&quot;);</span>
+<span class="fc" id="L185">        assertTrue(breaker.isOpen(), &quot;Not open at end&quot;);</span>
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Tests that the circuit breaker closes automatically if the number of events
+     * received goes under the closing threshold.
+     */
+    @Test
+    public void testClosingWhenThresholdReached() {
+<span class="fc" id="L194">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD,</span>
+                10, TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L196">        breaker.open();</span>
+<span class="fc" id="L197">        breaker.at(1000).incrementAndCheckState();</span>
+<span class="fc" id="L198">        assertFalse(breaker.at(2000).checkState(), &quot;Already closed&quot;);</span>
+<span class="fc" id="L199">        assertFalse(breaker.at(NANO_FACTOR).checkState(), &quot;Closed at interval end&quot;);</span>
+<span class="fc" id="L200">        assertTrue(breaker.at(NANO_FACTOR + 1).checkState(), &quot;Not closed after interval end&quot;);</span>
+<span class="fc" id="L201">        assertTrue(breaker.isClosed(), &quot;Not closed at end&quot;);</span>
+<span class="fc" id="L202">    }</span>
+
+    /**
+     * Tests whether an explicit open operation fully initializes the internal check data
+     * object. Otherwise, the circuit breaker may close itself directly afterwards.
+     */
+    @Test
+    public void testOpenStartsNewCheckInterval() {
+<span class="fc" id="L210">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 2,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L212">        breaker.at(NANO_FACTOR - 1000).open();</span>
+<span class="fc" id="L213">        assertTrue(breaker.isOpen(), &quot;Not open&quot;);</span>
+<span class="fc" id="L214">        assertFalse(breaker.at(NANO_FACTOR + 100).checkState(), &quot;Already closed&quot;);</span>
+<span class="fc" id="L215">    }</span>
+
+    /**
+     * Tests whether a new check interval is started if the circuit breaker has a
+     * transition to open state.
+     */
+    @Test
+    public void testAutomaticOpenStartsNewCheckInterval() {
+<span class="fc" id="L223">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 2,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L225">        long time = 10 * NANO_FACTOR;</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        for (int i = 0; i &lt;= OPENING_THRESHOLD; i++) {</span>
+<span class="fc" id="L227">            breaker.at(time++).incrementAndCheckState();</span>
+        }
+<span class="fc" id="L229">        assertTrue(breaker.isOpen(), &quot;Not open&quot;);</span>
+<span class="fc" id="L230">        time += NANO_FACTOR - 1000;</span>
+<span class="fc" id="L231">        assertFalse(breaker.at(time).incrementAndCheckState(), &quot;Already closed&quot;);</span>
+<span class="fc" id="L232">        time += 1001;</span>
+<span class="fc" id="L233">        assertTrue(breaker.at(time).checkState(), &quot;Not closed in time interval&quot;);</span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * Tests whether the circuit breaker can be closed explicitly.
+     */
+    @Test
+    public void testClose() {
+<span class="fc" id="L241">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 2,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L243">        long time = 0;</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        for (int i = 0; i &lt;= OPENING_THRESHOLD; i++, time += 1000) {</span>
+<span class="fc" id="L245">            breaker.at(time).incrementAndCheckState();</span>
+        }
+<span class="fc" id="L247">        assertTrue(breaker.isOpen(), &quot;Not open&quot;);</span>
+<span class="fc" id="L248">        breaker.close();</span>
+<span class="fc" id="L249">        assertTrue(breaker.isClosed(), &quot;Not closed&quot;);</span>
+<span class="fc" id="L250">        assertTrue(breaker.at(time + 1000).incrementAndCheckState(), &quot;Open again&quot;);</span>
+<span class="fc" id="L251">    }</span>
+
+    /**
+     * Tests whether events are generated when the state is changed.
+     */
+    @Test
+    public void testChangeEvents() {
+<span class="fc" id="L258">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS);
+<span class="fc" id="L260">        final ChangeListener listener = new ChangeListener(breaker);</span>
+<span class="fc" id="L261">        breaker.addChangeListener(listener);</span>
+<span class="fc" id="L262">        breaker.open();</span>
+<span class="fc" id="L263">        breaker.close();</span>
+<span class="fc" id="L264">        listener.verify(Boolean.TRUE, Boolean.FALSE);</span>
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Tests whether a change listener can be removed.
+     */
+    @Test
+    public void testRemoveChangeListener() {
+<span class="fc" id="L272">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS);
+<span class="fc" id="L274">        final ChangeListener listener = new ChangeListener(breaker);</span>
+<span class="fc" id="L275">        breaker.addChangeListener(listener);</span>
+<span class="fc" id="L276">        breaker.open();</span>
+<span class="fc" id="L277">        breaker.removeChangeListener(listener);</span>
+<span class="fc" id="L278">        breaker.close();</span>
+<span class="fc" id="L279">        listener.verify(Boolean.TRUE);</span>
+<span class="fc" id="L280">    }</span>
+
+    /**
+     * Tests that a state transition triggered by multiple threads is handled correctly.
+     * Only the first transition should cause an event to be sent.
+     */
+    @Test
+    public void testStateTransitionGuarded() throws InterruptedException {
+<span class="fc" id="L288">        final EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(OPENING_THRESHOLD, 1,</span>
+                TimeUnit.SECONDS);
+<span class="fc" id="L290">        final ChangeListener listener = new ChangeListener(breaker);</span>
+<span class="fc" id="L291">        breaker.addChangeListener(listener);</span>
+
+<span class="fc" id="L293">        final int threadCount = 128;</span>
+<span class="fc" id="L294">        final CountDownLatch latch = new CountDownLatch(1);</span>
+<span class="fc" id="L295">        final Thread[] threads = new Thread[threadCount];</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">        for (int i = 0; i &lt; threadCount; i++) {</span>
+<span class="fc" id="L297">            threads[i] = new Thread() {</span>
+                @Override
+                public void run() {
+                    try {
+<span class="fc" id="L301">                        latch.await();</span>
+<span class="nc" id="L302">                    } catch (final InterruptedException iex) {</span>
+                        // ignore
+<span class="fc" id="L304">                    }</span>
+<span class="fc" id="L305">                    breaker.open();</span>
+<span class="fc" id="L306">                }</span>
+            };
+<span class="fc" id="L308">            threads[i].start();</span>
+        }
+<span class="fc" id="L310">        latch.countDown();</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        for (final Thread thread : threads) {</span>
+<span class="fc" id="L312">            thread.join();</span>
+        }
+<span class="fc" id="L314">        listener.verify(Boolean.TRUE);</span>
+<span class="fc" id="L315">    }</span>
+
+    /**
+     * Tests that automatic state transitions generate change events as well.
+     */
+    @Test
+    public void testChangeEventsGeneratedByAutomaticTransitions() {
+<span class="fc" id="L322">        final EventCountCircuitBreakerTestImpl breaker = new EventCountCircuitBreakerTestImpl(OPENING_THRESHOLD, 2,</span>
+                TimeUnit.SECONDS, CLOSING_THRESHOLD, 1, TimeUnit.SECONDS);
+<span class="fc" id="L324">        final ChangeListener listener = new ChangeListener(breaker);</span>
+<span class="fc" id="L325">        breaker.addChangeListener(listener);</span>
+<span class="fc" id="L326">        long time = 0;</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">        for (int i = 0; i &lt;= OPENING_THRESHOLD; i++, time += 1000) {</span>
+<span class="fc" id="L328">            breaker.at(time).incrementAndCheckState();</span>
+        }
+<span class="fc" id="L330">        breaker.at(NANO_FACTOR + 1).checkState();</span>
+<span class="fc" id="L331">        breaker.at(3 * NANO_FACTOR).checkState();</span>
+<span class="fc" id="L332">        listener.verify(Boolean.TRUE, Boolean.FALSE);</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * A test implementation of {@code EventCountCircuitBreaker} which supports mocking the timer.
+     * This is useful for the creation of deterministic tests for switching the circuit
+     * breaker's state.
+     */
+    private static class EventCountCircuitBreakerTestImpl extends EventCountCircuitBreaker {
+        /** The current time in nanoseconds. */
+        private long currentTime;
+
+        EventCountCircuitBreakerTestImpl(final int openingThreshold, final long openingInterval,
+                                                final TimeUnit openingUnit, final int closingThreshold, final long closingInterval,
+                                                final TimeUnit closingUnit) {
+<span class="fc" id="L347">            super(openingThreshold, openingInterval, openingUnit, closingThreshold,</span>
+                    closingInterval, closingUnit);
+<span class="fc" id="L349">        }</span>
+
+        /**
+         * Sets the current time to be used by this test object for the next operation.
+         *
+         * @param time the time to set
+         * @return a reference to this object
+         */
+        public EventCountCircuitBreakerTestImpl at(final long time) {
+<span class="fc" id="L358">            currentTime = time;</span>
+<span class="fc" id="L359">            return this;</span>
+        }
+
+        /**
+         * {@inheritDoc} This implementation returns the value passed to the {@code at()}
+         * method.
+         */
+        @Override
+        long now() {
+<span class="fc" id="L368">            return currentTime;</span>
+        }
+    }
+
+    /**
+     * A test change listener for checking whether correct change events are generated.
+     */
+    private static class ChangeListener implements PropertyChangeListener {
+        /** The expected event source. */
+        private final Object expectedSource;
+
+        /** A list with the updated values extracted from received change events. */
+        private final List&lt;Boolean&gt; changedValues;
+
+        /**
+         * Creates a new instance of {@code ChangeListener} and sets the expected event
+         * source.
+         *
+         * @param source the expected event source
+         */
+<span class="fc" id="L388">        ChangeListener(final Object source) {</span>
+<span class="fc" id="L389">            expectedSource = source;</span>
+<span class="fc" id="L390">            changedValues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L391">        }</span>
+
+        @Override
+        public void propertyChange(final PropertyChangeEvent evt) {
+<span class="fc" id="L395">            assertEquals(expectedSource, evt.getSource(), &quot;Wrong event source&quot;);</span>
+<span class="fc" id="L396">            assertEquals(&quot;open&quot;, evt.getPropertyName(), &quot;Wrong property name&quot;);</span>
+<span class="fc" id="L397">            final Boolean newValue = (Boolean) evt.getNewValue();</span>
+<span class="fc" id="L398">            final Boolean oldValue = (Boolean) evt.getOldValue();</span>
+<span class="fc" id="L399">            assertNotEquals(newValue, oldValue, &quot;Old and new value are equal&quot;);</span>
+<span class="fc" id="L400">            changedValues.add(newValue);</span>
+<span class="fc" id="L401">        }</span>
+
+        /**
+         * Verifies that change events for the expected values have been received.
+         *
+         * @param values the expected values
+         */
+        public void verify(final Boolean... values) {
+<span class="fc" id="L409">            assertArrayEquals(values,</span>
+<span class="fc" id="L410">                    changedValues.toArray(new Boolean[changedValues.size()]));</span>
+<span class="fc" id="L411">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

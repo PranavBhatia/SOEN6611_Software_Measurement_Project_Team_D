@@ -1,0 +1,988 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MethodUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.reflect</a> &gt; <span class="el_source">MethodUtilsTest.java</span></div><h1>MethodUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.reflect;
+
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ClassUtils.Interfaces;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.commons.lang3.reflect.testbed.Annotated;
+import org.apache.commons.lang3.reflect.testbed.GenericConsumer;
+import org.apache.commons.lang3.reflect.testbed.GenericParent;
+import org.apache.commons.lang3.reflect.testbed.PublicChild;
+import org.apache.commons.lang3.reflect.testbed.StringParameterizedChild;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests MethodUtils
+ */
+<span class="fc" id="L59">public class MethodUtilsTest {</span>
+
+    private interface PrivateInterface {
+    }
+
+<span class="nc" id="L64">    static class TestBeanWithInterfaces implements PrivateInterface {</span>
+        public String foo() {
+<span class="nc" id="L66">            return &quot;foo()&quot;;</span>
+        }
+    }
+
+<span class="fc" id="L70">    public static class TestBean {</span>
+
+        public static String bar() {
+<span class="fc" id="L73">            return &quot;bar()&quot;;</span>
+        }
+
+        public static String bar(final int i) {
+<span class="fc" id="L77">            return &quot;bar(int)&quot;;</span>
+        }
+
+        public static String bar(final Integer i) {
+<span class="fc" id="L81">            return &quot;bar(Integer)&quot;;</span>
+        }
+
+        public static String bar(final double d) {
+<span class="fc" id="L85">            return &quot;bar(double)&quot;;</span>
+        }
+
+        public static String bar(final String s) {
+<span class="fc" id="L89">            return &quot;bar(String)&quot;;</span>
+        }
+
+        public static String bar(final Object o) {
+<span class="fc" id="L93">            return &quot;bar(Object)&quot;;</span>
+        }
+
+        public static String bar(final String... s) {
+<span class="fc" id="L97">            return &quot;bar(String...)&quot;;</span>
+        }
+
+        public static String bar(final long... s) {
+<span class="fc" id="L101">            return &quot;bar(long...)&quot;;</span>
+        }
+
+        public static String bar(final Integer i, final String... s) {
+<span class="fc" id="L105">            return &quot;bar(int, String...)&quot;;</span>
+        }
+
+        public static void oneParameterStatic(final String s) {
+            // empty
+<span class="nc" id="L110">        }</span>
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private void privateStuff() {
+<span class="nc" id="L114">        }</span>
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private String privateStringStuff() {
+<span class="fc" id="L118">            return &quot;privateStringStuff()&quot;;</span>
+        }
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private String privateStringStuff(final int i) {
+<span class="nc" id="L123">            return &quot;privateStringStuff(int)&quot;;</span>
+        }
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private String privateStringStuff(final Integer i) {
+<span class="fc" id="L128">            return &quot;privateStringStuff(Integer)&quot;;</span>
+        }
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private String privateStringStuff(final double d) {
+<span class="fc" id="L133">            return &quot;privateStringStuff(double)&quot;;</span>
+        }
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private String privateStringStuff(final String s) {
+<span class="fc" id="L138">            return &quot;privateStringStuff(String)&quot;;</span>
+        }
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private String privateStringStuff(final Object s) {
+<span class="fc" id="L143">            return &quot;privateStringStuff(Object)&quot;;</span>
+        }
+
+        public String foo() {
+<span class="fc" id="L147">            return &quot;foo()&quot;;</span>
+        }
+
+        public String foo(final int i) {
+<span class="fc" id="L151">            return &quot;foo(int)&quot;;</span>
+        }
+
+        public String foo(final Integer i) {
+<span class="fc" id="L155">            return &quot;foo(Integer)&quot;;</span>
+        }
+
+        public String foo(final double d) {
+<span class="fc" id="L159">            return &quot;foo(double)&quot;;</span>
+        }
+
+        public String foo(final long l) {
+<span class="fc" id="L163">            return &quot;foo(long)&quot;;</span>
+        }
+
+        public String foo(final String s) {
+<span class="fc" id="L167">            return &quot;foo(String)&quot;;</span>
+        }
+
+        public String foo(final Object o) {
+<span class="fc" id="L171">            return &quot;foo(Object)&quot;;</span>
+        }
+
+        public String foo(final String... s) {
+<span class="fc" id="L175">            return &quot;foo(String...)&quot;;</span>
+        }
+
+        public String foo(final long... l) {
+<span class="fc" id="L179">            return &quot;foo(long...)&quot;;</span>
+        }
+
+        public String foo(final Integer i, final String... s) {
+<span class="fc" id="L183">            return &quot;foo(int, String...)&quot;;</span>
+        }
+
+        public void oneParameter(final String s) {
+            // empty
+<span class="nc" id="L188">        }</span>
+
+        public String foo(final Object... s) {
+<span class="nc" id="L191">            return &quot;foo(Object...)&quot;;</span>
+        }
+
+        public int[] unboxing(final int... values) {
+<span class="fc" id="L195">            return values;</span>
+        }
+
+        // This method is overloaded for the wrapper class for every primitive type, plus the common supertypes
+        // Number and Object. This is an acid test since it easily leads to ambiguous methods.
+        public static String varOverload(final Byte... args) {
+<span class="fc" id="L201">            return &quot;Byte...&quot;;</span>
+        }
+
+        public static String varOverload(final Character... args) {
+<span class="fc" id="L205">            return &quot;Character...&quot;;</span>
+        }
+
+        public static String varOverload(final Short... args) {
+<span class="fc" id="L209">            return &quot;Short...&quot;;</span>
+        }
+
+        public static String varOverload(final Boolean... args) {
+<span class="fc" id="L213">            return &quot;Boolean...&quot;;</span>
+        }
+
+        public static String varOverload(final Float... args) {
+<span class="fc" id="L217">            return &quot;Float...&quot;;</span>
+        }
+
+        public static String varOverload(final Double... args) {
+<span class="fc" id="L221">            return &quot;Double...&quot;;</span>
+        }
+
+        public static String varOverload(final Integer... args) {
+<span class="fc" id="L225">            return &quot;Integer...&quot;;</span>
+        }
+
+        public static String varOverload(final Long... args) {
+<span class="fc" id="L229">            return &quot;Long...&quot;;</span>
+        }
+
+        public static String varOverload(final Number... args) {
+<span class="fc" id="L233">            return &quot;Number...&quot;;</span>
+        }
+
+        public static String varOverload(final Object... args) {
+<span class="fc" id="L237">            return &quot;Object...&quot;;</span>
+        }
+
+        public static String varOverload(final String... args) {
+<span class="fc" id="L241">            return &quot;String...&quot;;</span>
+        }
+
+        // This method is overloaded for the wrapper class for every numeric primitive type, plus the common
+        // supertype Number
+        public static String numOverload(final Byte... args) {
+<span class="nc" id="L247">            return &quot;Byte...&quot;;</span>
+        }
+
+        public static String numOverload(final Short... args) {
+<span class="nc" id="L251">            return &quot;Short...&quot;;</span>
+        }
+
+        public static String numOverload(final Float... args) {
+<span class="nc" id="L255">            return &quot;Float...&quot;;</span>
+        }
+
+        public static String numOverload(final Double... args) {
+<span class="nc" id="L259">            return &quot;Double...&quot;;</span>
+        }
+
+        public static String numOverload(final Integer... args) {
+<span class="nc" id="L263">            return &quot;Integer...&quot;;</span>
+        }
+
+        public static String numOverload(final Long... args) {
+<span class="nc" id="L267">            return &quot;Long...&quot;;</span>
+        }
+
+        public static String numOverload(final Number... args) {
+<span class="fc" id="L271">            return &quot;Number...&quot;;</span>
+        }
+
+        // These varOverloadEcho and varOverloadEchoStatic methods are designed to verify that
+        // not only is the correct overloaded variant invoked, but that the varags arguments
+        // are also delivered correctly to the method.
+        public ImmutablePair&lt;String, Object[]&gt; varOverloadEcho(final String... args) {
+<span class="fc" id="L278">            return new ImmutablePair&lt;&gt;(&quot;String...&quot;, args);</span>
+        }
+
+        public ImmutablePair&lt;String, Object[]&gt; varOverloadEcho(final Number... args) {
+<span class="fc" id="L282">            return new ImmutablePair&lt;&gt;(&quot;Number...&quot;, args);</span>
+        }
+
+        public static ImmutablePair&lt;String, Object[]&gt; varOverloadEchoStatic(final String... args) {
+<span class="fc" id="L286">            return new ImmutablePair&lt;&gt;(&quot;String...&quot;, args);</span>
+        }
+
+        public static ImmutablePair&lt;String, Object[]&gt; varOverloadEchoStatic(final Number... args) {
+<span class="fc" id="L290">            return new ImmutablePair&lt;&gt;(&quot;Number...&quot;, args);</span>
+        }
+
+        static void verify(final ImmutablePair&lt;String, Object[]&gt; a, final ImmutablePair&lt;String, Object[]&gt; b) {
+<span class="fc" id="L294">            assertEquals(a.getLeft(), b.getLeft());</span>
+<span class="fc" id="L295">            assertArrayEquals(a.getRight(), b.getRight());</span>
+<span class="fc" id="L296">        }</span>
+
+        static void verify(final ImmutablePair&lt;String, Object[]&gt; a, final Object _b) {
+<span class="fc" id="L299">            @SuppressWarnings(&quot;unchecked&quot;) final ImmutablePair&lt;String, Object[]&gt; b = (ImmutablePair&lt;String, Object[]&gt;) _b;</span>
+<span class="fc" id="L300">            verify(a, b);</span>
+<span class="fc" id="L301">        }</span>
+
+    }
+
+    private static class TestMutable implements Mutable&lt;Object&gt; {
+        @Override
+        public Object getValue() {
+<span class="nc" id="L308">            return null;</span>
+        }
+
+        @Override
+        public void setValue(final Object value) {
+<span class="nc" id="L313">        }</span>
+    }
+
+    private TestBean testBean;
+<span class="fc" id="L317">    private final Map&lt;Class&lt;?&gt;, Class&lt;?&gt;[]&gt; classCache = new HashMap&lt;&gt;();</span>
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L321">        testBean = new TestBean();</span>
+<span class="fc" id="L322">        classCache.clear();</span>
+<span class="fc" id="L323">    }</span>
+
+    @Test
+    public void testConstructor() throws Exception {
+<span class="fc" id="L327">        assertNotNull(MethodUtils.class.newInstance());</span>
+<span class="fc" id="L328">    }</span>
+
+    @Test
+    public void verifyJavaVarargsOverloadingResolution() {
+        // This code is not a test of MethodUtils.
+        // Rather it makes explicit the behavior of the Java specification for
+        // various cases of overload resolution.
+<span class="fc" id="L335">        assertEquals(&quot;Byte...&quot;, TestBean.varOverload((byte) 1, (byte) 2));</span>
+<span class="fc" id="L336">        assertEquals(&quot;Short...&quot;, TestBean.varOverload((short) 1, (short) 2));</span>
+<span class="fc" id="L337">        assertEquals(&quot;Integer...&quot;, TestBean.varOverload(1, 2));</span>
+<span class="fc" id="L338">        assertEquals(&quot;Long...&quot;, TestBean.varOverload(1L, 2L));</span>
+<span class="fc" id="L339">        assertEquals(&quot;Float...&quot;, TestBean.varOverload(1f, 2f));</span>
+<span class="fc" id="L340">        assertEquals(&quot;Double...&quot;, TestBean.varOverload(1d, 2d));</span>
+<span class="fc" id="L341">        assertEquals(&quot;Character...&quot;, TestBean.varOverload('a', 'b'));</span>
+<span class="fc" id="L342">        assertEquals(&quot;String...&quot;, TestBean.varOverload(&quot;a&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L343">        assertEquals(&quot;Boolean...&quot;, TestBean.varOverload(true, false));</span>
+
+<span class="fc" id="L345">        assertEquals(&quot;Object...&quot;, TestBean.varOverload(1, &quot;s&quot;));</span>
+<span class="fc" id="L346">        assertEquals(&quot;Object...&quot;, TestBean.varOverload(1, true));</span>
+<span class="fc" id="L347">        assertEquals(&quot;Object...&quot;, TestBean.varOverload(1.1, true));</span>
+<span class="fc" id="L348">        assertEquals(&quot;Object...&quot;, TestBean.varOverload('c', true));</span>
+<span class="fc" id="L349">        assertEquals(&quot;Number...&quot;, TestBean.varOverload(1, 1.1));</span>
+<span class="fc" id="L350">        assertEquals(&quot;Number...&quot;, TestBean.varOverload(1, 1L));</span>
+<span class="fc" id="L351">        assertEquals(&quot;Number...&quot;, TestBean.varOverload(1d, 1f));</span>
+<span class="fc" id="L352">        assertEquals(&quot;Number...&quot;, TestBean.varOverload((short) 1, (byte) 1));</span>
+<span class="fc" id="L353">        assertEquals(&quot;Object...&quot;, TestBean.varOverload(1, 'c'));</span>
+<span class="fc" id="L354">        assertEquals(&quot;Object...&quot;, TestBean.varOverload('c', &quot;s&quot;));</span>
+<span class="fc" id="L355">    }</span>
+
+    @Test
+    public void testInvokeJavaVarargsOverloadingResolution() throws Exception {
+<span class="fc" id="L359">        assertEquals(&quot;Byte...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L360">                &quot;varOverload&quot;, (byte) 1, (byte) 2));</span>
+<span class="fc" id="L361">        assertEquals(&quot;Short...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L362">                &quot;varOverload&quot;, (short) 1, (short) 2));</span>
+<span class="fc" id="L363">        assertEquals(&quot;Integer...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L364">                &quot;varOverload&quot;, 1, 2));</span>
+<span class="fc" id="L365">        assertEquals(&quot;Long...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L366">                &quot;varOverload&quot;, 1L, 2L));</span>
+<span class="fc" id="L367">        assertEquals(&quot;Float...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L368">                &quot;varOverload&quot;, 1f, 2f));</span>
+<span class="fc" id="L369">        assertEquals(&quot;Double...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L370">                &quot;varOverload&quot;, 1d, 2d));</span>
+<span class="fc" id="L371">        assertEquals(&quot;Character...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L372">                &quot;varOverload&quot;, 'a', 'b'));</span>
+<span class="fc" id="L373">        assertEquals(&quot;String...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+                &quot;varOverload&quot;, &quot;a&quot;, &quot;b&quot;));
+<span class="fc" id="L375">        assertEquals(&quot;Boolean...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L376">                &quot;varOverload&quot;, true, false));</span>
+
+<span class="fc" id="L378">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L379">                &quot;varOverload&quot;, 1, &quot;s&quot;));</span>
+<span class="fc" id="L380">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L381">                &quot;varOverload&quot;, 1, true));</span>
+<span class="fc" id="L382">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L383">                &quot;varOverload&quot;, 1.1, true));</span>
+<span class="fc" id="L384">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L385">                &quot;varOverload&quot;, 'c', true));</span>
+<span class="fc" id="L386">        assertEquals(&quot;Number...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L387">                &quot;varOverload&quot;, 1, 1.1));</span>
+<span class="fc" id="L388">        assertEquals(&quot;Number...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L389">                &quot;varOverload&quot;, 1, 1L));</span>
+<span class="fc" id="L390">        assertEquals(&quot;Number...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L391">                &quot;varOverload&quot;, 1d, 1f));</span>
+<span class="fc" id="L392">        assertEquals(&quot;Number...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L393">                &quot;varOverload&quot;, (short) 1, (byte) 1));</span>
+<span class="fc" id="L394">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L395">                &quot;varOverload&quot;, 1, 'c'));</span>
+<span class="fc" id="L396">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+<span class="fc" id="L397">                &quot;varOverload&quot;, 'c', &quot;s&quot;));</span>
+
+<span class="fc" id="L399">        assertEquals(&quot;Object...&quot;, MethodUtils.invokeStaticMethod(TestBean.class, &quot;varOverload&quot;,</span>
+                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+<span class="fc" id="L401">        assertEquals(&quot;Number...&quot;, MethodUtils.invokeStaticMethod(TestBean.class, &quot;numOverload&quot;,</span>
+                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+<span class="fc" id="L403">    }</span>
+
+    @Test
+    public void testInvokeMethod() throws Exception {
+<span class="fc" id="L407">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+<span class="fc" id="L409">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;));</span>
+<span class="fc" id="L410">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                (Object[]) null));
+<span class="fc" id="L412">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                null, null));
+<span class="fc" id="L414">        assertEquals(&quot;foo(String)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                &quot;&quot;));
+<span class="fc" id="L416">        assertEquals(&quot;foo(Object)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                new Object()));
+<span class="fc" id="L418">        assertEquals(&quot;foo(Object)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                Boolean.TRUE));
+<span class="fc" id="L420">        assertEquals(&quot;foo(Integer)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                NumberUtils.INTEGER_ONE));
+<span class="fc" id="L422">        assertEquals(&quot;foo(int)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                NumberUtils.BYTE_ONE));
+<span class="fc" id="L424">        assertEquals(&quot;foo(long)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                NumberUtils.LONG_ONE));
+<span class="fc" id="L426">        assertEquals(&quot;foo(double)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                NumberUtils.DOUBLE_ONE));
+<span class="fc" id="L428">        assertEquals(&quot;foo(String...)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                &quot;a&quot;, &quot;b&quot;, &quot;c&quot;));
+<span class="fc" id="L430">        assertEquals(&quot;foo(String...)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+                &quot;a&quot;, &quot;b&quot;, &quot;c&quot;));
+<span class="fc" id="L432">        assertEquals(&quot;foo(int, String...)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+<span class="fc" id="L433">                5, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;));</span>
+<span class="fc" id="L434">        assertEquals(&quot;foo(long...)&quot;, MethodUtils.invokeMethod(testBean, &quot;foo&quot;,</span>
+<span class="fc" id="L435">                1L, 2L));</span>
+
+<span class="pc" id="L437">        assertThrows(NoSuchMethodException.class, () -&gt; MethodUtils.invokeMethod(testBean, &quot;foo&quot;, 1, 2));</span>
+
+<span class="fc" id="L439">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;String...&quot;, new String[]{&quot;x&quot;, &quot;y&quot;}),</span>
+<span class="fc" id="L440">                MethodUtils.invokeMethod(testBean, &quot;varOverloadEcho&quot;, &quot;x&quot;, &quot;y&quot;));</span>
+<span class="fc" id="L441">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;Number...&quot;, new Number[]{17, 23, 42}),</span>
+<span class="fc" id="L442">                MethodUtils.invokeMethod(testBean, &quot;varOverloadEcho&quot;, 17, 23, 42));</span>
+<span class="fc" id="L443">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;String...&quot;, new String[]{&quot;x&quot;, &quot;y&quot;}),</span>
+<span class="fc" id="L444">                MethodUtils.invokeMethod(testBean, &quot;varOverloadEcho&quot;, &quot;x&quot;, &quot;y&quot;));</span>
+<span class="fc" id="L445">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;Number...&quot;, new Number[]{17, 23, 42}),</span>
+<span class="fc" id="L446">                MethodUtils.invokeMethod(testBean, &quot;varOverloadEcho&quot;, 17, 23, 42));</span>
+<span class="fc" id="L447">    }</span>
+
+    @Test
+    public void testInvokeExactMethod() throws Exception {
+<span class="fc" id="L451">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;,</span>
+                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+<span class="fc" id="L453">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;));</span>
+<span class="fc" id="L454">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;,</span>
+                (Object[]) null));
+<span class="fc" id="L456">        assertEquals(&quot;foo()&quot;, MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;,</span>
+                null, null));
+<span class="fc" id="L458">        assertEquals(&quot;foo(String)&quot;, MethodUtils.invokeExactMethod(testBean,</span>
+                &quot;foo&quot;, &quot;&quot;));
+<span class="fc" id="L460">        assertEquals(&quot;foo(Object)&quot;, MethodUtils.invokeExactMethod(testBean,</span>
+                &quot;foo&quot;, new Object()));
+<span class="fc" id="L462">        assertEquals(&quot;foo(Integer)&quot;, MethodUtils.invokeExactMethod(testBean,</span>
+                &quot;foo&quot;, NumberUtils.INTEGER_ONE));
+<span class="fc" id="L464">        assertEquals(&quot;foo(double)&quot;, MethodUtils.invokeExactMethod(testBean,</span>
+                &quot;foo&quot;, new Object[]{NumberUtils.DOUBLE_ONE},
+                new Class[]{Double.TYPE}));
+
+<span class="fc" id="L468">        assertThrows(</span>
+                NoSuchMethodException.class,
+<span class="nc" id="L470">                () -&gt; MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;, NumberUtils.BYTE_ONE));</span>
+
+<span class="fc" id="L472">        assertThrows(</span>
+                NoSuchMethodException.class,
+<span class="nc" id="L474">                () -&gt; MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;, NumberUtils.LONG_ONE));</span>
+<span class="pc" id="L475">        assertThrows(NoSuchMethodException.class, () -&gt; MethodUtils.invokeExactMethod(testBean, &quot;foo&quot;, Boolean.TRUE));</span>
+<span class="fc" id="L476">    }</span>
+
+    @Test
+    public void testInvokeStaticMethod() throws Exception {
+<span class="fc" id="L480">        assertEquals(&quot;bar()&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+<span class="fc" id="L482">        assertEquals(&quot;bar()&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, (Object[]) null));
+<span class="fc" id="L484">        assertEquals(&quot;bar()&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, null, null));
+<span class="fc" id="L486">        assertEquals(&quot;bar(String)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, &quot;&quot;));
+<span class="fc" id="L488">        assertEquals(&quot;bar(Object)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, new Object()));
+<span class="fc" id="L490">        assertEquals(&quot;bar(Object)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, Boolean.TRUE));
+<span class="fc" id="L492">        assertEquals(&quot;bar(Integer)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, NumberUtils.INTEGER_ONE));
+<span class="fc" id="L494">        assertEquals(&quot;bar(int)&quot;, MethodUtils.invokeStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, NumberUtils.BYTE_ONE));
+<span class="fc" id="L496">        assertEquals(&quot;bar(double)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, NumberUtils.DOUBLE_ONE));
+<span class="fc" id="L498">        assertEquals(&quot;bar(String...)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, &quot;a&quot;, &quot;b&quot;));
+<span class="fc" id="L500">        assertEquals(&quot;bar(long...)&quot;, MethodUtils.invokeStaticMethod(</span>
+<span class="fc" id="L501">                TestBean.class, &quot;bar&quot;, 1L, 2L));</span>
+<span class="fc" id="L502">        assertEquals(&quot;bar(int, String...)&quot;, MethodUtils.invokeStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, NumberUtils.INTEGER_ONE, &quot;a&quot;, &quot;b&quot;));
+
+<span class="fc" id="L505">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;String...&quot;, new String[]{&quot;x&quot;, &quot;y&quot;}),</span>
+<span class="fc" id="L506">                MethodUtils.invokeStaticMethod(TestBean.class, &quot;varOverloadEchoStatic&quot;, &quot;x&quot;, &quot;y&quot;));</span>
+<span class="fc" id="L507">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;Number...&quot;, new Number[]{17, 23, 42}),</span>
+<span class="fc" id="L508">                MethodUtils.invokeStaticMethod(TestBean.class, &quot;varOverloadEchoStatic&quot;, 17, 23, 42));</span>
+<span class="fc" id="L509">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;String...&quot;, new String[]{&quot;x&quot;, &quot;y&quot;}),</span>
+<span class="fc" id="L510">                MethodUtils.invokeStaticMethod(TestBean.class, &quot;varOverloadEchoStatic&quot;, &quot;x&quot;, &quot;y&quot;));</span>
+<span class="fc" id="L511">        TestBean.verify(new ImmutablePair&lt;&gt;(&quot;Number...&quot;, new Number[]{17, 23, 42}),</span>
+<span class="fc" id="L512">                MethodUtils.invokeStaticMethod(TestBean.class, &quot;varOverloadEchoStatic&quot;, 17, 23, 42));</span>
+
+<span class="fc" id="L514">        assertThrows(</span>
+<span class="nc" id="L515">                NoSuchMethodException.class, () -&gt; MethodUtils.invokeStaticMethod(TestBean.class, &quot;does_not_exist&quot;));</span>
+<span class="fc" id="L516">    }</span>
+
+    @Test
+    public void testInvokeExactStaticMethod() throws Exception {
+<span class="fc" id="L520">        assertEquals(&quot;bar()&quot;, MethodUtils.invokeExactStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+<span class="fc" id="L522">        assertEquals(&quot;bar()&quot;, MethodUtils.invokeExactStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, (Object[]) null));
+<span class="fc" id="L524">        assertEquals(&quot;bar()&quot;, MethodUtils.invokeExactStaticMethod(TestBean.class,</span>
+                &quot;bar&quot;, null, null));
+<span class="fc" id="L526">        assertEquals(&quot;bar(String)&quot;, MethodUtils.invokeExactStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, &quot;&quot;));
+<span class="fc" id="L528">        assertEquals(&quot;bar(Object)&quot;, MethodUtils.invokeExactStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, new Object()));
+<span class="fc" id="L530">        assertEquals(&quot;bar(Integer)&quot;, MethodUtils.invokeExactStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, NumberUtils.INTEGER_ONE));
+<span class="fc" id="L532">        assertEquals(&quot;bar(double)&quot;, MethodUtils.invokeExactStaticMethod(</span>
+                TestBean.class, &quot;bar&quot;, new Object[]{NumberUtils.DOUBLE_ONE},
+                new Class[]{Double.TYPE}));
+
+<span class="fc" id="L536">        assertThrows(</span>
+                NoSuchMethodException.class,
+<span class="nc" id="L538">                () -&gt; MethodUtils.invokeExactStaticMethod(TestBean.class, &quot;bar&quot;, NumberUtils.BYTE_ONE));</span>
+<span class="fc" id="L539">        assertThrows(</span>
+                NoSuchMethodException.class,
+<span class="nc" id="L541">                () -&gt; MethodUtils.invokeExactStaticMethod(TestBean.class, &quot;bar&quot;, NumberUtils.LONG_ONE));</span>
+<span class="fc" id="L542">        assertThrows(</span>
+                NoSuchMethodException.class,
+<span class="nc" id="L544">                () -&gt; MethodUtils.invokeExactStaticMethod(TestBean.class, &quot;bar&quot;, Boolean.TRUE));</span>
+<span class="fc" id="L545">    }</span>
+
+    @Test
+    public void testGetAccessibleInterfaceMethod() throws Exception {
+<span class="fc" id="L549">        final Class&lt;?&gt;[][] p = {ArrayUtils.EMPTY_CLASS_ARRAY, null};</span>
+<span class="fc bfc" id="L550" title="All 2 branches covered.">        for (final Class&lt;?&gt;[] element : p) {</span>
+<span class="fc" id="L551">            final Method method = TestMutable.class.getMethod(&quot;getValue&quot;, element);</span>
+<span class="fc" id="L552">            final Method accessibleMethod = MethodUtils.getAccessibleMethod(method);</span>
+<span class="fc" id="L553">            assertNotSame(accessibleMethod, method);</span>
+<span class="fc" id="L554">            assertSame(Mutable.class, accessibleMethod.getDeclaringClass());</span>
+        }
+<span class="fc" id="L556">    }</span>
+
+    @Test
+    public void testGetAccessibleMethodPrivateInterface() throws Exception {
+<span class="fc" id="L560">        final Method expected = TestBeanWithInterfaces.class.getMethod(&quot;foo&quot;);</span>
+<span class="fc" id="L561">        assertNotNull(expected);</span>
+<span class="fc" id="L562">        final Method actual = MethodUtils.getAccessibleMethod(TestBeanWithInterfaces.class, &quot;foo&quot;);</span>
+<span class="fc" id="L563">        assertNull(actual);</span>
+<span class="fc" id="L564">    }</span>
+
+    @Test
+    public void testGetAccessibleInterfaceMethodFromDescription() {
+<span class="fc" id="L568">        final Class&lt;?&gt;[][] p = {ArrayUtils.EMPTY_CLASS_ARRAY, null};</span>
+<span class="fc bfc" id="L569" title="All 2 branches covered.">        for (final Class&lt;?&gt;[] element : p) {</span>
+<span class="fc" id="L570">            final Method accessibleMethod = MethodUtils.getAccessibleMethod(</span>
+                    TestMutable.class, &quot;getValue&quot;, element);
+<span class="fc" id="L572">            assertSame(Mutable.class, accessibleMethod.getDeclaringClass());</span>
+        }
+<span class="fc" id="L574">    }</span>
+
+    @Test
+    public void testGetAccessiblePublicMethod() throws Exception {
+<span class="fc" id="L578">        assertSame(MutableObject.class, MethodUtils.getAccessibleMethod(</span>
+<span class="fc" id="L579">                MutableObject.class.getMethod(&quot;getValue&quot;,</span>
+<span class="fc" id="L580">                        ArrayUtils.EMPTY_CLASS_ARRAY)).getDeclaringClass());</span>
+<span class="fc" id="L581">    }</span>
+
+    @Test
+    public void testGetAccessiblePublicMethodFromDescription() {
+<span class="fc" id="L585">        assertSame(MutableObject.class, MethodUtils.getAccessibleMethod(</span>
+                MutableObject.class, &quot;getValue&quot;, ArrayUtils.EMPTY_CLASS_ARRAY)
+<span class="fc" id="L587">                .getDeclaringClass());</span>
+<span class="fc" id="L588">    }</span>
+
+    @Test
+    public void testGetAccessibleMethodInaccessible() throws Exception {
+<span class="fc" id="L592">        final Method expected = TestBean.class.getDeclaredMethod(&quot;privateStuff&quot;);</span>
+<span class="fc" id="L593">        final Method actual = MethodUtils.getAccessibleMethod(expected);</span>
+<span class="fc" id="L594">        assertNull(actual);</span>
+<span class="fc" id="L595">    }</span>
+
+    @Test
+    public void testGetMatchingAccessibleMethod() {
+<span class="fc" id="L599">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+                ArrayUtils.EMPTY_CLASS_ARRAY, ArrayUtils.EMPTY_CLASS_ARRAY);
+<span class="fc" id="L601">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+                null, ArrayUtils.EMPTY_CLASS_ARRAY);
+<span class="fc" id="L603">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L604">                singletonArray(String.class), singletonArray(String.class));</span>
+<span class="fc" id="L605">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L606">                singletonArray(Object.class), singletonArray(Object.class));</span>
+<span class="fc" id="L607">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L608">                singletonArray(Boolean.class), singletonArray(Object.class));</span>
+<span class="fc" id="L609">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L610">                singletonArray(Byte.class), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L611">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L612">                singletonArray(Byte.TYPE), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L613">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L614">                singletonArray(Short.class), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L615">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L616">                singletonArray(Short.TYPE), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L617">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L618">                singletonArray(Character.class), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L619">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L620">                singletonArray(Character.TYPE), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L621">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L622">                singletonArray(Integer.class), singletonArray(Integer.class));</span>
+<span class="fc" id="L623">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L624">                singletonArray(Integer.TYPE), singletonArray(Integer.TYPE));</span>
+<span class="fc" id="L625">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L626">                singletonArray(Long.class), singletonArray(Long.TYPE));</span>
+<span class="fc" id="L627">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L628">                singletonArray(Long.TYPE), singletonArray(Long.TYPE));</span>
+<span class="fc" id="L629">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L630">                singletonArray(Float.class), singletonArray(Double.TYPE));</span>
+<span class="fc" id="L631">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L632">                singletonArray(Float.TYPE), singletonArray(Double.TYPE));</span>
+<span class="fc" id="L633">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L634">                singletonArray(Double.class), singletonArray(Double.TYPE));</span>
+<span class="fc" id="L635">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L636">                singletonArray(Double.TYPE), singletonArray(Double.TYPE));</span>
+<span class="fc" id="L637">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+<span class="fc" id="L638">                singletonArray(Double.TYPE), singletonArray(Double.TYPE));</span>
+<span class="fc" id="L639">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+                new Class[]{String.class, String.class}, new Class[]{String[].class});
+<span class="fc" id="L641">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;foo&quot;,</span>
+                new Class[]{Integer.TYPE, String.class, String.class}, new Class[]{Integer.class, String[].class});
+<span class="fc" id="L643">        expectMatchingAccessibleMethodParameterTypes(InheritanceBean.class, &quot;testOne&quot;,</span>
+<span class="fc" id="L644">                singletonArray(ParentObject.class), singletonArray(ParentObject.class));</span>
+<span class="fc" id="L645">        expectMatchingAccessibleMethodParameterTypes(InheritanceBean.class, &quot;testOne&quot;,</span>
+<span class="fc" id="L646">                singletonArray(ChildObject.class), singletonArray(ParentObject.class));</span>
+<span class="fc" id="L647">        expectMatchingAccessibleMethodParameterTypes(InheritanceBean.class, &quot;testTwo&quot;,</span>
+<span class="fc" id="L648">                singletonArray(ParentObject.class), singletonArray(GrandParentObject.class));</span>
+<span class="fc" id="L649">        expectMatchingAccessibleMethodParameterTypes(InheritanceBean.class, &quot;testTwo&quot;,</span>
+<span class="fc" id="L650">                singletonArray(ChildObject.class), singletonArray(ChildInterface.class));</span>
+<span class="fc" id="L651">    }</span>
+
+    @Test
+    public void testNullArgument() {
+<span class="fc" id="L655">        expectMatchingAccessibleMethodParameterTypes(TestBean.class, &quot;oneParameter&quot;,</span>
+<span class="fc" id="L656">                singletonArray(null), singletonArray(String.class));</span>
+<span class="fc" id="L657">    }</span>
+
+    @Test
+    public void testGetOverrideHierarchyIncludingInterfaces() {
+<span class="fc" id="L661">        final Method method = MethodUtils.getAccessibleMethod(StringParameterizedChild.class, &quot;consume&quot;, String.class);</span>
+<span class="fc" id="L662">        final Iterator&lt;MethodDescriptor&gt; expected =</span>
+<span class="fc" id="L663">                Arrays.asList(new MethodDescriptor(StringParameterizedChild.class, &quot;consume&quot;, String.class),</span>
+<span class="fc" id="L664">                        new MethodDescriptor(GenericParent.class, &quot;consume&quot;, GenericParent.class.getTypeParameters()[0]),</span>
+<span class="fc" id="L665">                        new MethodDescriptor(GenericConsumer.class, &quot;consume&quot;, GenericConsumer.class.getTypeParameters()[0]))</span>
+<span class="fc" id="L666">                        .iterator();</span>
+<span class="fc bfc" id="L667" title="All 2 branches covered.">        for (final Method m : MethodUtils.getOverrideHierarchy(method, Interfaces.INCLUDE)) {</span>
+<span class="fc" id="L668">            assertTrue(expected.hasNext());</span>
+<span class="fc" id="L669">            final MethodDescriptor md = expected.next();</span>
+<span class="fc" id="L670">            assertEquals(md.declaringClass, m.getDeclaringClass());</span>
+<span class="fc" id="L671">            assertEquals(md.name, m.getName());</span>
+<span class="fc" id="L672">            assertEquals(md.parameterTypes.length, m.getParameterTypes().length);</span>
+<span class="fc bfc" id="L673" title="All 2 branches covered.">            for (int i = 0; i &lt; md.parameterTypes.length; i++) {</span>
+<span class="fc" id="L674">                assertTrue(TypeUtils.equals(md.parameterTypes[i], m.getGenericParameterTypes()[i]));</span>
+            }
+<span class="fc" id="L676">        }</span>
+<span class="fc" id="L677">        assertFalse(expected.hasNext());</span>
+<span class="fc" id="L678">    }</span>
+
+    @Test
+    public void testGetOverrideHierarchyExcludingInterfaces() {
+<span class="fc" id="L682">        final Method method = MethodUtils.getAccessibleMethod(StringParameterizedChild.class, &quot;consume&quot;, String.class);</span>
+<span class="fc" id="L683">        final Iterator&lt;MethodDescriptor&gt; expected =</span>
+<span class="fc" id="L684">                Arrays.asList(new MethodDescriptor(StringParameterizedChild.class, &quot;consume&quot;, String.class),</span>
+<span class="fc" id="L685">                        new MethodDescriptor(GenericParent.class, &quot;consume&quot;, GenericParent.class.getTypeParameters()[0]))</span>
+<span class="fc" id="L686">                        .iterator();</span>
+<span class="fc bfc" id="L687" title="All 2 branches covered.">        for (final Method m : MethodUtils.getOverrideHierarchy(method, Interfaces.EXCLUDE)) {</span>
+<span class="fc" id="L688">            assertTrue(expected.hasNext());</span>
+<span class="fc" id="L689">            final MethodDescriptor md = expected.next();</span>
+<span class="fc" id="L690">            assertEquals(md.declaringClass, m.getDeclaringClass());</span>
+<span class="fc" id="L691">            assertEquals(md.name, m.getName());</span>
+<span class="fc" id="L692">            assertEquals(md.parameterTypes.length, m.getParameterTypes().length);</span>
+<span class="fc bfc" id="L693" title="All 2 branches covered.">            for (int i = 0; i &lt; md.parameterTypes.length; i++) {</span>
+<span class="fc" id="L694">                assertTrue(TypeUtils.equals(md.parameterTypes[i], m.getGenericParameterTypes()[i]));</span>
+            }
+<span class="fc" id="L696">        }</span>
+<span class="fc" id="L697">        assertFalse(expected.hasNext());</span>
+<span class="fc" id="L698">    }</span>
+
+    @Test
+    @Annotated
+    public void testGetMethodsWithAnnotation() throws NoSuchMethodException {
+<span class="fc" id="L703">        assertArrayEquals(new Method[0], MethodUtils.getMethodsWithAnnotation(Object.class, Annotated.class));</span>
+
+<span class="fc" id="L705">        final Method[] methodsWithAnnotation = MethodUtils.getMethodsWithAnnotation(MethodUtilsTest.class, Annotated.class);</span>
+<span class="fc" id="L706">        assertEquals(2, methodsWithAnnotation.length);</span>
+<span class="fc" id="L707">        assertThat(methodsWithAnnotation, hasItemInArray(MethodUtilsTest.class.getMethod(&quot;testGetMethodsWithAnnotation&quot;)));</span>
+<span class="fc" id="L708">        assertThat(methodsWithAnnotation, hasItemInArray(MethodUtilsTest.class.getMethod(&quot;testGetMethodsListWithAnnotation&quot;)));</span>
+<span class="fc" id="L709">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationSearchSupersAndIgnoreAccess() {
+<span class="fc" id="L713">        assertArrayEquals(new Method[0], MethodUtils.getMethodsWithAnnotation(Object.class, Annotated.class,</span>
+                true, true));
+
+<span class="fc" id="L716">        final Method[] methodsWithAnnotation = MethodUtils.getMethodsWithAnnotation(PublicChild.class, Annotated.class,</span>
+                true, true);
+<span class="fc" id="L718">        assertEquals(4, methodsWithAnnotation.length);</span>
+<span class="fc" id="L719">        assertEquals(&quot;PublicChild&quot;, methodsWithAnnotation[0].getDeclaringClass().getSimpleName());</span>
+<span class="fc" id="L720">        assertEquals(&quot;PublicChild&quot;, methodsWithAnnotation[1].getDeclaringClass().getSimpleName());</span>
+<span class="fc" id="L721">        assertTrue(methodsWithAnnotation[0].getName().endsWith(&quot;AnnotatedMethod&quot;));</span>
+<span class="fc" id="L722">        assertTrue(methodsWithAnnotation[1].getName().endsWith(&quot;AnnotatedMethod&quot;));</span>
+<span class="fc" id="L723">        assertEquals(&quot;Foo.doIt&quot;,</span>
+<span class="fc" id="L724">                methodsWithAnnotation[2].getDeclaringClass().getSimpleName() + '.' +</span>
+<span class="fc" id="L725">                        methodsWithAnnotation[2].getName());</span>
+<span class="fc" id="L726">        assertEquals(&quot;Parent.parentProtectedAnnotatedMethod&quot;,</span>
+<span class="fc" id="L727">                methodsWithAnnotation[3].getDeclaringClass().getSimpleName() + '.' +</span>
+<span class="fc" id="L728">                        methodsWithAnnotation[3].getName());</span>
+<span class="fc" id="L729">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationNotSearchSupersButIgnoreAccess() {
+<span class="fc" id="L733">        assertArrayEquals(new Method[0], MethodUtils.getMethodsWithAnnotation(Object.class, Annotated.class,</span>
+                false, true));
+
+<span class="fc" id="L736">        final Method[] methodsWithAnnotation = MethodUtils.getMethodsWithAnnotation(PublicChild.class, Annotated.class,</span>
+                false, true);
+<span class="fc" id="L738">        assertEquals(2, methodsWithAnnotation.length);</span>
+<span class="fc" id="L739">        assertEquals(&quot;PublicChild&quot;, methodsWithAnnotation[0].getDeclaringClass().getSimpleName());</span>
+<span class="fc" id="L740">        assertEquals(&quot;PublicChild&quot;, methodsWithAnnotation[1].getDeclaringClass().getSimpleName());</span>
+<span class="fc" id="L741">        assertTrue(methodsWithAnnotation[0].getName().endsWith(&quot;AnnotatedMethod&quot;));</span>
+<span class="fc" id="L742">        assertTrue(methodsWithAnnotation[1].getName().endsWith(&quot;AnnotatedMethod&quot;));</span>
+<span class="fc" id="L743">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationSearchSupersButNotIgnoreAccess() {
+<span class="fc" id="L747">        assertArrayEquals(new Method[0], MethodUtils.getMethodsWithAnnotation(Object.class, Annotated.class,</span>
+                true, false));
+
+<span class="fc" id="L750">        final Method[] methodsWithAnnotation = MethodUtils.getMethodsWithAnnotation(PublicChild.class, Annotated.class,</span>
+                true, false);
+<span class="fc" id="L752">        assertEquals(2, methodsWithAnnotation.length);</span>
+<span class="fc" id="L753">        assertEquals(&quot;PublicChild.publicAnnotatedMethod&quot;,</span>
+<span class="fc" id="L754">                methodsWithAnnotation[0].getDeclaringClass().getSimpleName() + '.' +</span>
+<span class="fc" id="L755">                        methodsWithAnnotation[0].getName());</span>
+<span class="fc" id="L756">        assertEquals(&quot;Foo.doIt&quot;,</span>
+<span class="fc" id="L757">                methodsWithAnnotation[1].getDeclaringClass().getSimpleName() + '.' +</span>
+<span class="fc" id="L758">                        methodsWithAnnotation[1].getName());</span>
+<span class="fc" id="L759">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationNotSearchSupersAndNotIgnoreAccess() {
+<span class="fc" id="L763">        assertArrayEquals(new Method[0], MethodUtils.getMethodsWithAnnotation(Object.class, Annotated.class,</span>
+                false, false));
+
+<span class="fc" id="L766">        final Method[] methodsWithAnnotation = MethodUtils.getMethodsWithAnnotation(PublicChild.class, Annotated.class,</span>
+                false, false);
+<span class="fc" id="L768">        assertEquals(1, methodsWithAnnotation.length);</span>
+<span class="fc" id="L769">        assertEquals(&quot;PublicChild.publicAnnotatedMethod&quot;,</span>
+<span class="fc" id="L770">                methodsWithAnnotation[0].getDeclaringClass().getSimpleName() + '.' +</span>
+<span class="fc" id="L771">                        methodsWithAnnotation[0].getName());</span>
+<span class="fc" id="L772">    }</span>
+
+    @Test
+    public void testGetAnnotationSearchSupersAndIgnoreAccess() throws NoSuchMethodException {
+<span class="fc" id="L776">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentNotAnnotatedMethod&quot;),</span>
+                Annotated.class, true, true));
+<span class="fc" id="L778">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;doIt&quot;), Annotated.class,</span>
+                true, true));
+<span class="fc" id="L780">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentProtectedAnnotatedMethod&quot;),</span>
+                Annotated.class, true, true));
+<span class="fc" id="L782">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getDeclaredMethod(&quot;privateAnnotatedMethod&quot;),</span>
+                Annotated.class, true, true));
+<span class="fc" id="L784">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;publicAnnotatedMethod&quot;),</span>
+                Annotated.class, true, true));
+<span class="fc" id="L786">    }</span>
+
+    @Test
+    public void testGetAnnotationNotSearchSupersButIgnoreAccess() throws NoSuchMethodException {
+<span class="fc" id="L790">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentNotAnnotatedMethod&quot;),</span>
+                Annotated.class, false, true));
+<span class="fc" id="L792">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;doIt&quot;), Annotated.class,</span>
+                false, true));
+<span class="fc" id="L794">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentProtectedAnnotatedMethod&quot;),</span>
+                Annotated.class, false, true));
+<span class="fc" id="L796">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getDeclaredMethod(&quot;privateAnnotatedMethod&quot;),</span>
+                Annotated.class, false, true));
+<span class="fc" id="L798">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;publicAnnotatedMethod&quot;),</span>
+                Annotated.class, false, true));
+<span class="fc" id="L800">    }</span>
+
+    @Test
+    public void testGetAnnotationSearchSupersButNotIgnoreAccess() throws NoSuchMethodException {
+<span class="fc" id="L804">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentNotAnnotatedMethod&quot;),</span>
+                Annotated.class, true, false));
+<span class="fc" id="L806">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;doIt&quot;), Annotated.class,</span>
+                true, false));
+<span class="fc" id="L808">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentProtectedAnnotatedMethod&quot;),</span>
+                Annotated.class, true, false));
+<span class="fc" id="L810">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getDeclaredMethod(&quot;privateAnnotatedMethod&quot;),</span>
+                Annotated.class, true, false));
+<span class="fc" id="L812">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;publicAnnotatedMethod&quot;),</span>
+                Annotated.class, true, false));
+<span class="fc" id="L814">    }</span>
+
+    @Test
+    public void testGetAnnotationNotSearchSupersAndNotIgnoreAccess() throws NoSuchMethodException {
+<span class="fc" id="L818">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentNotAnnotatedMethod&quot;),</span>
+                Annotated.class, false, false));
+<span class="fc" id="L820">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;doIt&quot;), Annotated.class,</span>
+                false, false));
+<span class="fc" id="L822">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;parentProtectedAnnotatedMethod&quot;),</span>
+                Annotated.class, false, false));
+<span class="fc" id="L824">        assertNull(MethodUtils.getAnnotation(PublicChild.class.getDeclaredMethod(&quot;privateAnnotatedMethod&quot;),</span>
+                Annotated.class, false, false));
+<span class="fc" id="L826">        assertNotNull(MethodUtils.getAnnotation(PublicChild.class.getMethod(&quot;publicAnnotatedMethod&quot;),</span>
+                Annotated.class, false, false));
+<span class="fc" id="L828">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationIllegalArgumentException1() {
+<span class="pc" id="L832">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getMethodsWithAnnotation(FieldUtilsTest.class, null));</span>
+<span class="fc" id="L833">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationIllegalArgumentException2() {
+<span class="pc" id="L837">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getMethodsWithAnnotation(null, Annotated.class));</span>
+<span class="fc" id="L838">    }</span>
+
+    @Test
+    public void testGetMethodsWithAnnotationIllegalArgumentException3() {
+<span class="pc" id="L842">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getMethodsWithAnnotation(null, null));</span>
+<span class="fc" id="L843">    }</span>
+
+    @Test
+    @Annotated
+    public void testGetMethodsListWithAnnotation() throws NoSuchMethodException {
+<span class="fc" id="L848">        assertEquals(0, MethodUtils.getMethodsListWithAnnotation(Object.class, Annotated.class).size());</span>
+
+<span class="fc" id="L850">        final List&lt;Method&gt; methodWithAnnotation = MethodUtils.getMethodsListWithAnnotation(MethodUtilsTest.class, Annotated.class);</span>
+<span class="fc" id="L851">        assertEquals(2, methodWithAnnotation.size());</span>
+<span class="fc" id="L852">        assertThat(methodWithAnnotation, hasItems(</span>
+<span class="fc" id="L853">                MethodUtilsTest.class.getMethod(&quot;testGetMethodsWithAnnotation&quot;),</span>
+<span class="fc" id="L854">                MethodUtilsTest.class.getMethod(&quot;testGetMethodsListWithAnnotation&quot;)</span>
+        ));
+<span class="fc" id="L856">    }</span>
+
+    @Test
+    public void testGetMethodsListWithAnnotationIllegalArgumentException1() {
+<span class="pc" id="L860">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getMethodsListWithAnnotation(FieldUtilsTest.class, null));</span>
+<span class="fc" id="L861">    }</span>
+
+    @Test
+    public void testGetMethodsListWithAnnotationIllegalArgumentException2() {
+<span class="pc" id="L865">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getMethodsListWithAnnotation(null, Annotated.class));</span>
+<span class="fc" id="L866">    }</span>
+
+    @Test
+    public void testGetMethodsListWithAnnotationIllegalArgumentException3() {
+<span class="pc" id="L870">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getMethodsListWithAnnotation(null, null));</span>
+<span class="fc" id="L871">    }</span>
+
+    @Test
+    public void testGetAnnotationIllegalArgumentException1() {
+<span class="fc" id="L875">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L876">                () -&gt; MethodUtils.getAnnotation(FieldUtilsTest.class.getDeclaredMethods()[0], null, true, true));</span>
+<span class="fc" id="L877">    }</span>
+
+    @Test
+    public void testGetAnnotationIllegalArgumentException2() {
+<span class="pc" id="L881">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getAnnotation(null, Annotated.class, true, true));</span>
+<span class="fc" id="L882">    }</span>
+
+    @Test
+    public void testGetAnnotationIllegalArgumentException3() {
+<span class="pc" id="L886">        assertThrows(IllegalArgumentException.class, () -&gt; MethodUtils.getAnnotation(null, null, true, true));</span>
+<span class="fc" id="L887">    }</span>
+
+    private void expectMatchingAccessibleMethodParameterTypes(final Class&lt;?&gt; cls,
+                                                              final String methodName, final Class&lt;?&gt;[] requestTypes, final Class&lt;?&gt;[] actualTypes) {
+<span class="fc" id="L891">        final Method m = MethodUtils.getMatchingAccessibleMethod(cls, methodName,</span>
+                requestTypes);
+<span class="fc bfc" id="L893" title="All 2 branches covered.">        assertNotNull(m, &quot;could not find any matches for &quot; + methodName</span>
+<span class="fc" id="L894">                + &quot; (&quot; + (requestTypes == null ? null : toString(requestTypes)) + &quot;)&quot;);</span>
+<span class="fc" id="L895">        assertArrayEquals(actualTypes, m.getParameterTypes(), toString(m.getParameterTypes()) + &quot; not equals &quot; + toString(actualTypes));</span>
+<span class="fc" id="L896">    }</span>
+
+    private String toString(final Class&lt;?&gt;[] c) {
+<span class="fc" id="L899">        return Arrays.asList(c).toString();</span>
+    }
+
+    private Class&lt;?&gt;[] singletonArray(final Class&lt;?&gt; c) {
+<span class="fc" id="L903">        Class&lt;?&gt;[] result = classCache.get(c);</span>
+<span class="fc bfc" id="L904" title="All 2 branches covered.">        if (result == null) {</span>
+<span class="fc" id="L905">            result = new Class[]{c};</span>
+<span class="fc" id="L906">            classCache.put(c, result);</span>
+        }
+<span class="fc" id="L908">        return result;</span>
+    }
+
+<span class="nc" id="L911">    public static class InheritanceBean {</span>
+        public void testOne(final Object obj) {
+<span class="nc" id="L913">        }</span>
+
+        public void testOne(final GrandParentObject obj) {
+<span class="nc" id="L916">        }</span>
+
+        public void testOne(final ParentObject obj) {
+<span class="nc" id="L919">        }</span>
+
+        public void testTwo(final Object obj) {
+<span class="nc" id="L922">        }</span>
+
+        public void testTwo(final GrandParentObject obj) {
+<span class="nc" id="L925">        }</span>
+
+        public void testTwo(final ChildInterface obj) {
+<span class="nc" id="L928">        }</span>
+    }
+
+    interface ChildInterface {
+    }
+
+<span class="nc" id="L934">    public static class GrandParentObject {</span>
+    }
+
+<span class="nc" id="L937">    public static class ParentObject extends GrandParentObject {</span>
+    }
+
+<span class="nc" id="L940">    public static class ChildObject extends ParentObject implements ChildInterface {</span>
+    }
+
+    private static class MethodDescriptor {
+        final Class&lt;?&gt; declaringClass;
+        final String name;
+        final Type[] parameterTypes;
+
+<span class="fc" id="L948">        MethodDescriptor(final Class&lt;?&gt; declaringClass, final String name, final Type... parameterTypes) {</span>
+<span class="fc" id="L949">            this.declaringClass = declaringClass;</span>
+<span class="fc" id="L950">            this.name = name;</span>
+<span class="fc" id="L951">            this.parameterTypes = parameterTypes;</span>
+<span class="fc" id="L952">        }</span>
+    }
+
+    @Test
+    public void testVarArgsUnboxing() throws Exception {
+<span class="fc" id="L957">        final TestBean testBean = new TestBean();</span>
+<span class="fc" id="L958">        final int[] actual = (int[]) MethodUtils.invokeMethod(testBean, &quot;unboxing&quot;, Integer.valueOf(1), Integer.valueOf(2));</span>
+<span class="fc" id="L959">        assertArrayEquals(new int[]{1, 2}, actual);</span>
+<span class="fc" id="L960">    }</span>
+
+    @Test
+    public void testInvokeMethodForceAccessNoArgs() throws Exception {
+<span class="fc" id="L964">        assertEquals(&quot;privateStringStuff()&quot;, MethodUtils.invokeMethod(testBean, true, &quot;privateStringStuff&quot;));</span>
+<span class="fc" id="L965">    }</span>
+
+    @Test
+    public void testInvokeMethodForceAccessWithArgs() throws Exception {
+<span class="fc" id="L969">        assertEquals(&quot;privateStringStuff(Integer)&quot;, MethodUtils.invokeMethod(testBean, true, &quot;privateStringStuff&quot;, 5));</span>
+<span class="fc" id="L970">        assertEquals(&quot;privateStringStuff(double)&quot;, MethodUtils.invokeMethod(testBean, true, &quot;privateStringStuff&quot;, 5.0d));</span>
+<span class="fc" id="L971">        assertEquals(&quot;privateStringStuff(String)&quot;, MethodUtils.invokeMethod(testBean, true, &quot;privateStringStuff&quot;, &quot;Hi There&quot;));</span>
+<span class="fc" id="L972">        assertEquals(&quot;privateStringStuff(Object)&quot;, MethodUtils.invokeMethod(testBean, true, &quot;privateStringStuff&quot;, new Date()));</span>
+<span class="fc" id="L973">    }</span>
+
+    @Test
+    public void testDistance() throws Exception {
+<span class="fc" id="L977">        final Method distanceMethod = MethodUtils.getMatchingMethod(MethodUtils.class, &quot;distance&quot;, Class[].class, Class[].class);</span>
+<span class="fc" id="L978">        distanceMethod.setAccessible(true);</span>
+
+<span class="fc" id="L980">        assertEquals(-1, distanceMethod.invoke(null, new Class[]{String.class}, new Class[]{Date.class}));</span>
+<span class="fc" id="L981">        assertEquals(0, distanceMethod.invoke(null, new Class[]{Date.class}, new Class[]{Date.class}));</span>
+<span class="fc" id="L982">        assertEquals(1, distanceMethod.invoke(null, new Class[]{Integer.class}, new Class[]{ClassUtils.wrapperToPrimitive(Integer.class)}));</span>
+<span class="fc" id="L983">        assertEquals(2, distanceMethod.invoke(null, new Class[]{Integer.class}, new Class[]{Object.class}));</span>
+
+<span class="fc" id="L985">        distanceMethod.setAccessible(false);</span>
+<span class="fc" id="L986">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

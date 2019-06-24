@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationEventTypes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.event</a> &gt; <span class="el_source">TestConfigurationEventTypes.java</span></div><h1>TestConfigurationEventTypes.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.event;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Test;
+
+/**
+ * A test class which tests whether the types of basic configuration events are
+ * correctly defined.
+ *
+ */
+<span class="fc" id="L35">public class TestConfigurationEventTypes</span>
+{
+    /**
+     * Tests whether the set of super event types for null input can be
+     * obtained.
+     */
+    @Test
+    public void testFetchSuperEventTypesNull()
+    {
+<span class="fc" id="L44">        final Set&lt;EventType&lt;?&gt;&gt; superTypes = EventType.fetchSuperEventTypes(null);</span>
+<span class="fc" id="L45">        assertTrue(&quot;Got super types&quot;, superTypes.isEmpty());</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Tests whether the set of super event types for the base type can be
+     * obtained.
+     */
+    @Test
+    public void testFetchSuperEventTypesForBaseType()
+    {
+<span class="fc" id="L55">        final Set&lt;EventType&lt;?&gt;&gt; superTypes =</span>
+<span class="fc" id="L56">                EventType.fetchSuperEventTypes(Event.ANY);</span>
+<span class="fc" id="L57">        assertEquals(&quot;Wrong number of super types&quot;, 1, superTypes.size());</span>
+<span class="fc" id="L58">        assertTrue(&quot;Wrong super types&quot;, superTypes.contains(Event.ANY));</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * Tests whether the super event types of a specific type can be retrieved.
+     */
+    @Test
+    public void testFetchSuperEventTypesOfType()
+    {
+<span class="fc" id="L67">        final Set&lt;EventType&lt;?&gt;&gt; superTypes =</span>
+<span class="fc" id="L68">                EventType.fetchSuperEventTypes(ConfigurationEvent.ADD_NODES);</span>
+<span class="fc" id="L69">        final List&lt;EventType&lt;? extends Event&gt;&gt; expected =</span>
+                new LinkedList&lt;&gt;();
+<span class="fc" id="L71">        expected.add(ConfigurationEvent.ADD_NODES);</span>
+<span class="fc" id="L72">        expected.add(ConfigurationEvent.ANY_HIERARCHICAL);</span>
+<span class="fc" id="L73">        expected.add(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L74">        expected.add(Event.ANY);</span>
+<span class="fc" id="L75">        assertEquals(&quot;Wrong number of super types&quot;, expected.size(),</span>
+<span class="fc" id="L76">                superTypes.size());</span>
+<span class="fc" id="L77">        assertTrue(&quot;Wrong super types: &quot; + superTypes,</span>
+<span class="fc" id="L78">                superTypes.containsAll(expected));</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Tests isInstanceOf() if the derived type is null.
+     */
+    @Test
+    public void testIsInstanceOfDerivedNull()
+    {
+<span class="fc" id="L87">        assertFalse(&quot;Wrong result&quot;, EventType.isInstanceOf(null, Event.ANY));</span>
+<span class="fc" id="L88">    }</span>
+
+    /**
+     * Tests isInstanceOf() if the base type is null.
+     */
+    @Test
+    public void testIsInstanceOfBaseNull()
+    {
+<span class="fc" id="L96">        assertFalse(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L97">                EventType.isInstanceOf(ConfigurationEvent.ANY, null));</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Tests isInstanceOf() if there is no instanceof relationship.
+     */
+    @Test
+    public void testIsInstanceOfFalse()
+    {
+<span class="fc" id="L106">        assertFalse(&quot;Wrong result&quot;, EventType.isInstanceOf(</span>
+                ConfigurationErrorEvent.READ, ConfigurationEvent.ANY));
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Tests isInstanceOf() if the expected result is true.
+     */
+    @Test
+    public void testIsInstanceOfTrue()
+    {
+<span class="fc" id="L116">        assertTrue(&quot;Wrong result (1)&quot;, EventType.isInstanceOf(</span>
+                ConfigurationEvent.ADD_NODES,
+                ConfigurationEvent.ANY_HIERARCHICAL));
+<span class="fc" id="L119">        assertTrue(&quot;Wrong result (2)&quot;, EventType.isInstanceOf(</span>
+                ConfigurationEvent.ADD_NODES, ConfigurationEvent.ANY));
+<span class="fc" id="L121">        assertTrue(&quot;Wrong result (3)&quot;,</span>
+<span class="fc" id="L122">                EventType.isInstanceOf(ConfigurationEvent.ADD_NODES, Event.ANY));</span>
+<span class="fc" id="L123">        assertTrue(&quot;Wrong result (4)&quot;, EventType.isInstanceOf(</span>
+                ConfigurationEvent.ADD_NODES, ConfigurationEvent.ADD_NODES));
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Tests the base event type for configuration events.
+     */
+    @Test
+    public void testConfigurationEventType()
+    {
+<span class="fc" id="L133">        assertSame(&quot;Wrong super type&quot;, Event.ANY,</span>
+<span class="fc" id="L134">                ConfigurationEvent.ANY.getSuperType());</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Helper method for checking the relevant properties of a given event type
+     * representing a configuration update event.
+     *
+     * @param eventType the event type to check
+     */
+    private void checkUpdateEvent(final EventType&lt;ConfigurationEvent&gt; eventType)
+    {
+<span class="fc" id="L145">        assertSame(&quot;Wrong super type for &quot; + eventType, ConfigurationEvent.ANY,</span>
+<span class="fc" id="L146">                eventType.getSuperType());</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Tests the event type for adding a property.
+     */
+    @Test
+    public void testAddPropertyEventType()
+    {
+<span class="fc" id="L155">        checkUpdateEvent(ConfigurationEvent.ADD_PROPERTY);</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Tests the event type for setting a property.
+     */
+    @Test
+    public void testSetPropertyEventType()
+    {
+<span class="fc" id="L164">        checkUpdateEvent(ConfigurationEvent.SET_PROPERTY);</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Tests the event type for clearing a property.
+     */
+    @Test
+    public void testClearPropertyEventType()
+    {
+<span class="fc" id="L173">        checkUpdateEvent(ConfigurationEvent.CLEAR_PROPERTY);</span>
+<span class="fc" id="L174">    }</span>
+
+    /**
+     * Tests the event type for clearing a whole configuration.
+     */
+    @Test
+    public void testClearEventType()
+    {
+<span class="fc" id="L182">        checkUpdateEvent(ConfigurationEvent.CLEAR);</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Tests the common base event type for hierarchical update events.
+     */
+    @Test
+    public void testHierarchicalEventType()
+    {
+<span class="fc" id="L191">        checkUpdateEvent(ConfigurationEvent.ANY_HIERARCHICAL);</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * Helper method for checking the relevant properties of a given event type
+     * representing a hierarchical update event.
+     *
+     * @param eventType the event type to check
+     */
+    private void checkHierarchicalEvent(final EventType&lt;ConfigurationEvent&gt; eventType)
+    {
+<span class="fc" id="L202">        assertSame(&quot;Wrong super type for &quot; + eventType,</span>
+<span class="fc" id="L203">                ConfigurationEvent.ANY_HIERARCHICAL, eventType.getSuperType());</span>
+<span class="fc" id="L204">    }</span>
+
+    /**
+     * Tests the event type for an add nodes operation.
+     */
+    @Test
+    public void testAddNodesEventType()
+    {
+<span class="fc" id="L212">        checkHierarchicalEvent(ConfigurationEvent.ADD_NODES);</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * Tests the event type for a clear tree operation.
+     */
+    @Test
+    public void testClearTreeEventType()
+    {
+<span class="fc" id="L221">        checkHierarchicalEvent(ConfigurationEvent.CLEAR_TREE);</span>
+<span class="fc" id="L222">    }</span>
+
+    /**
+     * Tests the event type indicating a change on a sub configuration.
+     */
+    @Test
+    public void testSubnodeChangedEventType()
+    {
+<span class="fc" id="L230">        checkHierarchicalEvent(ConfigurationEvent.SUBNODE_CHANGED);</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * Tests the common base event type for error events.
+     */
+    @Test
+    public void testBaseErrorEventType()
+    {
+<span class="fc" id="L239">        assertEquals(&quot;Wrong super type&quot;, Event.ANY,</span>
+<span class="fc" id="L240">                ConfigurationErrorEvent.ANY.getSuperType());</span>
+<span class="fc" id="L241">    }</span>
+
+    /**
+     * Helper method for checking the relevant properties of an error event
+     * type.
+     *
+     * @param type the type to be checked
+     */
+    private void checkErrorEvent(final EventType&lt;ConfigurationErrorEvent&gt; type)
+    {
+<span class="fc" id="L251">        assertSame(&quot;Wrong super type for &quot; + type, ConfigurationErrorEvent.ANY,</span>
+<span class="fc" id="L252">                type.getSuperType());</span>
+<span class="fc" id="L253">    }</span>
+
+    /**
+     * Tests the event type indicating a read error.
+     */
+    @Test
+    public void testReadErrorEventType()
+    {
+<span class="fc" id="L261">        checkErrorEvent(ConfigurationErrorEvent.READ);</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Tests the event type indicating a write error.
+     */
+    @Test
+    public void testWriteErrorEventType()
+    {
+<span class="fc" id="L270">        checkErrorEvent(ConfigurationErrorEvent.WRITE);</span>
+<span class="fc" id="L271">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

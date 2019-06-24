@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImmutableTripleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.tuple</a> &gt; <span class="el_source">ImmutableTripleTest.java</span></div><h1>ImmutableTripleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.tuple;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.Map.Entry;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test the Triple class.
+ */
+<span class="fc" id="L40">public class ImmutableTripleTest {</span>
+
+    @Test
+    public void testEmptyArrayLength() {
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L45">        final ImmutableTriple&lt;Integer, String, Boolean&gt;[] empty = (ImmutableTriple&lt;Integer, String, Boolean&gt;[]) ImmutableTriple.EMPTY_ARRAY;</span>
+<span class="fc" id="L46">        assertEquals(0, empty.length);</span>
+<span class="fc" id="L47">    }</span>
+
+    @Test
+    public void testEmptyArrayGenerics() {
+<span class="fc" id="L51">        final ImmutableTriple&lt;Integer, String, Boolean&gt;[] empty = ImmutableTriple.emptyArray();</span>
+<span class="fc" id="L52">        assertEquals(0, empty.length);</span>
+<span class="fc" id="L53">    }</span>
+
+    @Test
+    public void testBasic() {
+<span class="fc" id="L57">        final ImmutableTriple&lt;Integer, String, Boolean&gt; triple = new ImmutableTriple&lt;&gt;(0, &quot;foo&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L58">        assertEquals(0, triple.left.intValue());</span>
+<span class="fc" id="L59">        assertEquals(0, triple.getLeft().intValue());</span>
+<span class="fc" id="L60">        assertEquals(&quot;foo&quot;, triple.middle);</span>
+<span class="fc" id="L61">        assertEquals(&quot;foo&quot;, triple.getMiddle());</span>
+<span class="fc" id="L62">        assertEquals(Boolean.TRUE, triple.right);</span>
+<span class="fc" id="L63">        assertEquals(Boolean.TRUE, triple.getRight());</span>
+<span class="fc" id="L64">        final ImmutableTriple&lt;Object, String, Integer&gt; triple2 = new ImmutableTriple&lt;&gt;(null, &quot;bar&quot;, 42);</span>
+<span class="fc" id="L65">        assertNull(triple2.left);</span>
+<span class="fc" id="L66">        assertNull(triple2.getLeft());</span>
+<span class="fc" id="L67">        assertEquals(&quot;bar&quot;, triple2.middle);</span>
+<span class="fc" id="L68">        assertEquals(&quot;bar&quot;, triple2.getMiddle());</span>
+<span class="fc" id="L69">        assertEquals(new Integer(42), triple2.right);</span>
+<span class="fc" id="L70">        assertEquals(new Integer(42), triple2.getRight());</span>
+<span class="fc" id="L71">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L75">        assertEquals(ImmutableTriple.of(null, &quot;foo&quot;, 42), ImmutableTriple.of(null, &quot;foo&quot;, 42));</span>
+<span class="fc" id="L76">        assertNotEquals(ImmutableTriple.of(&quot;foo&quot;, 0, Boolean.TRUE), ImmutableTriple.of(&quot;foo&quot;, null, null));</span>
+<span class="fc" id="L77">        assertNotEquals(ImmutableTriple.of(&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;), ImmutableTriple.of(&quot;xyz&quot;, &quot;bar&quot;, &quot;blo&quot;));</span>
+
+<span class="fc" id="L79">        final ImmutableTriple&lt;String, String, String&gt; p = ImmutableTriple.of(&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;);</span>
+<span class="fc" id="L80">        assertEquals(p, p);</span>
+<span class="fc" id="L81">        assertNotEquals(p, new Object());</span>
+<span class="fc" id="L82">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L86">        assertEquals(ImmutableTriple.of(null, &quot;foo&quot;, Boolean.TRUE).hashCode(), ImmutableTriple.of(null, &quot;foo&quot;, Boolean.TRUE).hashCode());</span>
+<span class="fc" id="L87">    }</span>
+
+    @Test
+    public void testNullTripleEquals() {
+<span class="fc" id="L91">        assertEquals(ImmutableTriple.nullTriple(), ImmutableTriple.nullTriple());</span>
+<span class="fc" id="L92">    }</span>
+
+    @Test
+    public void testNullTripleLeft() {
+<span class="fc" id="L96">        assertNull(ImmutableTriple.nullTriple().getLeft());</span>
+<span class="fc" id="L97">    }</span>
+
+    @Test
+    public void testNullTripleMiddle() {
+<span class="fc" id="L101">        assertNull(ImmutableTriple.nullTriple().getMiddle());</span>
+<span class="fc" id="L102">    }</span>
+
+    @Test
+    public void testNullTripleRight() {
+<span class="fc" id="L106">        assertNull(ImmutableTriple.nullTriple().getRight());</span>
+<span class="fc" id="L107">    }</span>
+
+    @Test
+    public void testNullTripleSame() {
+<span class="fc" id="L111">        assertSame(ImmutableTriple.nullTriple(), ImmutableTriple.nullTriple());</span>
+<span class="fc" id="L112">    }</span>
+
+    @Test
+    public void testNullTripleTyped() {
+        // No compiler warnings
+        // How do we assert that?
+<span class="fc" id="L118">        final ImmutableTriple&lt;String, String, String&gt; triple = ImmutableTriple.nullTriple();</span>
+<span class="fc" id="L119">        assertNotNull(triple);</span>
+<span class="fc" id="L120">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testSerialization() throws Exception {
+<span class="fc" id="L125">        final ImmutableTriple&lt;Integer, String, Boolean&gt; origTriple = ImmutableTriple.of(0, &quot;foo&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L126">        final ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L127">        final ObjectOutputStream out = new ObjectOutputStream(baos);</span>
+<span class="fc" id="L128">        out.writeObject(origTriple);</span>
+<span class="fc" id="L129">        final ImmutableTriple&lt;Integer, String, Boolean&gt; deserializedTriple = (ImmutableTriple&lt;Integer, String, Boolean&gt;) new ObjectInputStream(</span>
+<span class="fc" id="L130">                new ByteArrayInputStream(baos.toByteArray())).readObject();</span>
+<span class="fc" id="L131">        assertEquals(origTriple, deserializedTriple);</span>
+<span class="fc" id="L132">        assertEquals(origTriple.hashCode(), deserializedTriple.hashCode());</span>
+<span class="fc" id="L133">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L137">        assertEquals(&quot;(null,null,null)&quot;, ImmutableTriple.of(null, null, null).toString());</span>
+<span class="fc" id="L138">        assertEquals(&quot;(null,two,null)&quot;, ImmutableTriple.of(null, &quot;two&quot;, null).toString());</span>
+<span class="fc" id="L139">        assertEquals(&quot;(one,null,null)&quot;, ImmutableTriple.of(&quot;one&quot;, null, null).toString());</span>
+<span class="fc" id="L140">        assertEquals(&quot;(one,two,null)&quot;, ImmutableTriple.of(&quot;one&quot;, &quot;two&quot;, null).toString());</span>
+<span class="fc" id="L141">        assertEquals(&quot;(null,two,three)&quot;, ImmutableTriple.of(null, &quot;two&quot;, &quot;three&quot;).toString());</span>
+<span class="fc" id="L142">        assertEquals(&quot;(one,null,three)&quot;, ImmutableTriple.of(&quot;one&quot;, null, &quot;three&quot;).toString());</span>
+<span class="fc" id="L143">        assertEquals(&quot;(one,two,three)&quot;, MutableTriple.of(&quot;one&quot;, &quot;two&quot;, &quot;three&quot;).toString());</span>
+<span class="fc" id="L144">    }</span>
+
+    @Test
+    public void testTripleOf() {
+<span class="fc" id="L148">        final ImmutableTriple&lt;Integer, String, Boolean&gt; triple = ImmutableTriple.of(0, &quot;foo&quot;, Boolean.FALSE);</span>
+<span class="fc" id="L149">        assertEquals(0, triple.left.intValue());</span>
+<span class="fc" id="L150">        assertEquals(0, triple.getLeft().intValue());</span>
+<span class="fc" id="L151">        assertEquals(&quot;foo&quot;, triple.middle);</span>
+<span class="fc" id="L152">        assertEquals(&quot;foo&quot;, triple.getMiddle());</span>
+<span class="fc" id="L153">        assertEquals(Boolean.FALSE, triple.right);</span>
+<span class="fc" id="L154">        assertEquals(Boolean.FALSE, triple.getRight());</span>
+<span class="fc" id="L155">        final ImmutableTriple&lt;Object, String, Boolean&gt; triple2 = ImmutableTriple.of(null, &quot;bar&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L156">        assertNull(triple2.left);</span>
+<span class="fc" id="L157">        assertNull(triple2.getLeft());</span>
+<span class="fc" id="L158">        assertEquals(&quot;bar&quot;, triple2.middle);</span>
+<span class="fc" id="L159">        assertEquals(&quot;bar&quot;, triple2.getMiddle());</span>
+<span class="fc" id="L160">        assertEquals(Boolean.TRUE, triple2.right);</span>
+<span class="fc" id="L161">        assertEquals(Boolean.TRUE, triple2.getRight());</span>
+<span class="fc" id="L162">    }</span>
+
+    @Test
+    public void testUseAsKeyOfHashMap() {
+<span class="fc" id="L166">        HashMap&lt;ImmutableTriple&lt;Object, Object, Object&gt;, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L167">        Object o1 = new Object();</span>
+<span class="fc" id="L168">        Object o2 = new Object();</span>
+<span class="fc" id="L169">        Object o3 = new Object();</span>
+<span class="fc" id="L170">        ImmutableTriple&lt;Object, Object, Object&gt; key1 = ImmutableTriple.of(o1, o2, o3);</span>
+<span class="fc" id="L171">        String value1 = &quot;a1&quot;;</span>
+<span class="fc" id="L172">        map.put(key1, value1);</span>
+<span class="fc" id="L173">        assertEquals(value1, map.get(key1));</span>
+<span class="fc" id="L174">        assertEquals(value1, map.get(ImmutableTriple.of(o1, o2, o3)));</span>
+<span class="fc" id="L175">    }</span>
+
+    @Test
+    public void testUseAsKeyOfTreeMap() {
+<span class="fc" id="L179">        TreeMap&lt;ImmutableTriple&lt;Integer, Integer, Integer&gt;, String&gt; map = new TreeMap&lt;&gt;();</span>
+<span class="fc" id="L180">        map.put(ImmutableTriple.of(0, 1, 2), &quot;012&quot;);</span>
+<span class="fc" id="L181">        map.put(ImmutableTriple.of(0, 1, 1), &quot;011&quot;);</span>
+<span class="fc" id="L182">        map.put(ImmutableTriple.of(0, 0, 1), &quot;001&quot;);</span>
+<span class="fc" id="L183">        ArrayList&lt;ImmutableTriple&lt;Integer, Integer, Integer&gt;&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L184">        expected.add(ImmutableTriple.of(0, 0, 1));</span>
+<span class="fc" id="L185">        expected.add(ImmutableTriple.of(0, 1, 1));</span>
+<span class="fc" id="L186">        expected.add(ImmutableTriple.of(0, 1, 2));</span>
+<span class="fc" id="L187">        Iterator&lt;Entry&lt;ImmutableTriple&lt;Integer, Integer, Integer&gt;, String&gt;&gt; it = map.entrySet().iterator();</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        for (ImmutableTriple&lt;Integer, Integer, Integer&gt; item : expected) {</span>
+<span class="fc" id="L189">            Entry&lt;ImmutableTriple&lt;Integer, Integer, Integer&gt;, String&gt; entry = it.next();</span>
+<span class="fc" id="L190">            assertEquals(item, entry.getKey());</span>
+<span class="fc" id="L191">            assertEquals(item.getLeft() + &quot;&quot; + item.getMiddle() + &quot;&quot; + item.getRight(), entry.getValue());</span>
+<span class="fc" id="L192">        }</span>
+<span class="fc" id="L193">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

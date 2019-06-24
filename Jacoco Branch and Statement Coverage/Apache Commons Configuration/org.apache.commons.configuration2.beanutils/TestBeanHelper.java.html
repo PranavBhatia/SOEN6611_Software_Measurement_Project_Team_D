@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBeanHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.beanutils</a> &gt; <span class="el_source">TestBeanHelper.java</span></div><h1>TestBeanHelper.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.beanutils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.DynaBean;
+import org.apache.commons.beanutils.LazyDynaBean;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for BeanHelper.
+ *
+ * @since 1.3
+ * @author &lt;a
+ * href=&quot;http://commons.apache.org/configuration/team-list.html&quot;&gt;Commons
+ * Configuration team&lt;/a&gt;
+ */
+<span class="fc" id="L46">public class TestBeanHelper</span>
+{
+    /** Constant for the test value of the string property. */
+    private static final String TEST_STRING = &quot;testString&quot;;
+
+    /** Constant for the test value of the numeric property. */
+    private static final int TEST_INT = 42;
+
+    /** Constant for the name of the test bean factory. */
+    private static final String TEST_FACTORY = &quot;testFactory&quot;;
+
+    /** The test bean helper instance. */
+    private BeanHelper helper;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L63">        helper = new BeanHelper(new TestBeanFactory());</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Tests whether the correct default bean factory is set.
+     */
+    @Test
+    public void testDefaultBeanFactory()
+    {
+<span class="fc" id="L72">        helper = new BeanHelper();</span>
+<span class="fc" id="L73">        assertSame(&quot;Wrong default bean factory&quot;, DefaultBeanFactory.INSTANCE,</span>
+<span class="fc" id="L74">                helper.getDefaultBeanFactory());</span>
+<span class="fc" id="L75">    }</span>
+
+    /**
+     * Tests whether a specific default bean factory can be set when
+     * constructing an instance.
+     */
+    @Test
+    public void testInitWithBeanFactory()
+    {
+<span class="fc" id="L84">        final BeanFactory factory = EasyMock.createMock(BeanFactory.class);</span>
+<span class="fc" id="L85">        EasyMock.replay(factory);</span>
+<span class="fc" id="L86">        helper = new BeanHelper(factory);</span>
+<span class="fc" id="L87">        assertSame(&quot;Wrong default bean factory&quot;, factory,</span>
+<span class="fc" id="L88">                helper.getDefaultBeanFactory());</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Tests the default instance of BeanHelper.
+     */
+    @Test
+    public void testDefaultInstance()
+    {
+<span class="fc" id="L97">        assertSame(&quot;Wrong factory for default instance&quot;,</span>
+                DefaultBeanFactory.INSTANCE,
+<span class="fc" id="L99">                BeanHelper.INSTANCE.getDefaultBeanFactory());</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Tests that a newly created instance does not have any bean factories
+     * registered.
+     */
+    @Test
+    public void testRegisteredFactoriesEmptyForNewInstance()
+    {
+<span class="fc" id="L109">        assertTrue(&quot;List of registered factories is not empty&quot;, helper</span>
+<span class="fc" id="L110">                .registeredFactoryNames().isEmpty());</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Tests registering a new bean factory.
+     */
+    @Test
+    public void testRegisterBeanFactory()
+    {
+<span class="fc" id="L119">        helper.registerBeanFactory(TEST_FACTORY, new TestBeanFactory());</span>
+<span class="fc" id="L120">        assertEquals(&quot;Wrong number of registered factories&quot;, 1, helper</span>
+<span class="fc" id="L121">                .registeredFactoryNames().size());</span>
+<span class="fc" id="L122">        assertTrue(&quot;Test factory is not contained&quot;, helper</span>
+<span class="fc" id="L123">                .registeredFactoryNames().contains(TEST_FACTORY));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Tries to register a null factory. This should cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterBeanFactoryNull()
+    {
+<span class="nc" id="L132">        helper.registerBeanFactory(TEST_FACTORY, null);</span>
+<span class="nc" id="L133">    }</span>
+
+    /**
+     * Tries to register a bean factory with a null name. This should cause an
+     * exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterBeanFactoryNullName()
+    {
+<span class="nc" id="L142">        helper.registerBeanFactory(null, new TestBeanFactory());</span>
+<span class="nc" id="L143">    }</span>
+
+    /**
+     * Tests to deregister a bean factory.
+     */
+    @Test
+    public void testDeregisterBeanFactory()
+    {
+<span class="fc" id="L151">        final BeanFactory factory = new TestBeanFactory();</span>
+<span class="fc" id="L152">        helper.registerBeanFactory(TEST_FACTORY, factory);</span>
+<span class="fc" id="L153">        assertSame(&quot;Could not deregister factory&quot;, factory, helper</span>
+<span class="fc" id="L154">                .deregisterBeanFactory(TEST_FACTORY));</span>
+<span class="fc" id="L155">        assertTrue(&quot;List of factories is not empty&quot;, helper</span>
+<span class="fc" id="L156">                .registeredFactoryNames().isEmpty());</span>
+<span class="fc" id="L157">    }</span>
+
+    /**
+     * Tests deregisterBeanFactory() for a non-existing factory name.
+     */
+    @Test
+    public void testDeregisterBeanFactoryNonExisting()
+    {
+<span class="fc" id="L165">        assertNull(&quot;deregistering non existing factory&quot;,</span>
+<span class="fc" id="L166">                helper.deregisterBeanFactory(TEST_FACTORY));</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Tests deregisterBeanFactory() for a null factory name.
+     */
+    @Test
+    public void testDeregisterBeanFactoryNull() {
+<span class="fc" id="L174">        assertNull(&quot;deregistering null factory&quot;,</span>
+<span class="fc" id="L175">                helper.deregisterBeanFactory(null));</span>
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * Tests initializing a bean.
+     */
+    @Test
+    public void testInitBean()
+    {
+<span class="fc" id="L184">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L185">        final BeanCreationTestBean bean = new BeanCreationTestBean();</span>
+<span class="fc" id="L186">        helper.initBean(bean, data);</span>
+<span class="fc" id="L187">        checkBean(bean);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests initializing a bean when the bean declaration does not contain any
+     * data.
+     */
+    @Test
+    public void testInitBeanWithNoData()
+    {
+<span class="fc" id="L197">        final BeanDeclarationTestImpl data = new BeanDeclarationTestImpl();</span>
+<span class="fc" id="L198">        final BeanCreationTestBean bean = new BeanCreationTestBean();</span>
+<span class="fc" id="L199">        helper.initBean(bean, data);</span>
+<span class="fc" id="L200">        assertNull(&quot;Wrong string property&quot;, bean.getStringValue());</span>
+<span class="fc" id="L201">        assertEquals(&quot;Wrong int property&quot;, 0, bean.getIntValue());</span>
+<span class="fc" id="L202">        assertNull(&quot;Buddy was set&quot;, bean.getBuddy());</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * Tries to initialize a bean with a bean declaration that contains an
+     * invalid property value. This should cause an exception.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testInitBeanWithInvalidProperty()
+    {
+<span class="fc" id="L212">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L213">        data.getBeanProperties().put(&quot;nonExistingProperty&quot;, Boolean.TRUE);</span>
+<span class="nc" id="L214">        helper.initBean(new BeanCreationTestBean(), data);</span>
+<span class="nc" id="L215">    }</span>
+
+    /**
+     * Tests creating a bean. All necessary information is stored in the bean
+     * declaration.
+     */
+    @Test
+    public void testCreateBean()
+    {
+<span class="fc" id="L224">        final TestBeanFactory factory = new TestBeanFactory();</span>
+<span class="fc" id="L225">        helper.registerBeanFactory(TEST_FACTORY, factory);</span>
+<span class="fc" id="L226">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L227">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L228">        data.setBeanClassName(BeanCreationTestBean.class.getName());</span>
+<span class="fc" id="L229">        checkBean((BeanCreationTestBean) helper.createBean(data, null));</span>
+<span class="fc" id="L230">        assertNull(&quot;A parameter was passed&quot;, factory.parameter);</span>
+<span class="fc" id="L231">        assertEquals(&quot;Factory not called&quot;, 1, factory.getCreateBeanCount());</span>
+<span class="fc" id="L232">    }</span>
+
+    /**
+     * Tests whether a bean with a property of type collection can be created.
+     */
+    @Test
+    public void testCreateBeanWithListChildBean()
+    {
+<span class="fc" id="L240">        final TestBeanFactory factory = new TestBeanFactory();</span>
+<span class="fc" id="L241">        helper.registerBeanFactory(TEST_FACTORY, factory);</span>
+<span class="fc" id="L242">        final BeanDeclarationTestImpl data = setUpBeanDeclarationWithListChild();</span>
+<span class="fc" id="L243">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L244">        data.setBeanClassName(BeanCreationTestBeanWithListChild.class.getName());</span>
+<span class="fc" id="L245">        checkBean((BeanCreationTestBeanWithListChild) helper.createBean(data, null));</span>
+<span class="fc" id="L246">        assertNull(&quot;A parameter was passed&quot;, factory.parameter);</span>
+<span class="fc" id="L247">        assertEquals(&quot;Factory not called&quot;, 1, factory.getCreateBeanCount());</span>
+<span class="fc" id="L248">    }</span>
+
+    /**
+     * Tests creating a bean when no bean declaration is provided. This should
+     * cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateBeanWithNullDeclaration()
+    {
+<span class="nc" id="L257">        helper.createBean(null);</span>
+<span class="nc" id="L258">    }</span>
+
+    /**
+     * Tests creating a bean. The bean's class is specified as the default class
+     * argument.
+     */
+    @Test
+    public void testCreateBeanWithDefaultClass()
+    {
+<span class="fc" id="L267">        helper.registerBeanFactory(TEST_FACTORY, new TestBeanFactory());</span>
+<span class="fc" id="L268">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L269">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L270">        checkBean((BeanCreationTestBean) helper.createBean(data, BeanCreationTestBean.class));</span>
+<span class="fc" id="L271">    }</span>
+
+    /**
+     * Tests creating a bean when the bean's class is specified as the default
+     * class of the bean factory.
+     */
+    @Test
+    public void testCreateBeanWithFactoryDefaultClass()
+    {
+<span class="fc" id="L280">        final TestBeanFactory factory = new TestBeanFactory();</span>
+<span class="fc" id="L281">        factory.supportsDefaultClass = true;</span>
+<span class="fc" id="L282">        helper.registerBeanFactory(TEST_FACTORY, factory);</span>
+<span class="fc" id="L283">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L284">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L285">        checkBean((BeanCreationTestBean) helper.createBean(data, null));</span>
+<span class="fc" id="L286">        assertEquals(&quot;Factory not called&quot;, 1, factory.getCreateBeanCount());</span>
+<span class="fc" id="L287">    }</span>
+
+    /**
+     * Tries to create a bean if no class is provided. This should cause an
+     * exception.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testCreateBeanWithNoClass()
+    {
+<span class="fc" id="L296">        helper.registerBeanFactory(TEST_FACTORY, new TestBeanFactory());</span>
+<span class="fc" id="L297">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L298">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="nc" id="L299">        helper.createBean(data, null);</span>
+<span class="nc" id="L300">    }</span>
+
+    /**
+     * Tries to create a bean with a non existing class. This should cause an
+     * exception.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testCreateBeanWithInvalidClass()
+    {
+<span class="fc" id="L309">        helper.registerBeanFactory(TEST_FACTORY, new TestBeanFactory());</span>
+<span class="fc" id="L310">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L311">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L312">        data.setBeanClassName(&quot;non.existing.ClassName&quot;);</span>
+<span class="nc" id="L313">        helper.createBean(data, null);</span>
+<span class="nc" id="L314">    }</span>
+
+    /**
+     * Tests creating a bean using the default bean factory.
+     */
+    @Test
+    public void testCreateBeanWithDefaultFactory()
+    {
+<span class="fc" id="L322">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L323">        data.setBeanClassName(BeanCreationTestBean.class.getName());</span>
+<span class="fc" id="L324">        checkBean((BeanCreationTestBean) helper.createBean(data, null));</span>
+<span class="fc" id="L325">        final TestBeanFactory factory = (TestBeanFactory) helper.getDefaultBeanFactory();</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">        assertTrue(&quot;Factory not called&quot;, factory.getCreateBeanCount() &gt; 0);</span>
+<span class="fc" id="L327">    }</span>
+
+    /**
+     * Tests creating a bean using a non registered factory.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testCreateBeanWithUnknownFactory()
+    {
+<span class="fc" id="L335">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L336">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L337">        data.setBeanClassName(BeanCreationTestBean.class.getName());</span>
+<span class="nc" id="L338">        helper.createBean(data, null);</span>
+<span class="nc" id="L339">    }</span>
+
+    /**
+     * Tests creating a bean when the factory throws an exception.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testCreateBeanWithException()
+    {
+<span class="fc" id="L347">        helper.registerBeanFactory(TEST_FACTORY, new TestBeanFactory());</span>
+<span class="fc" id="L348">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L349">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L350">        data.setBeanClassName(getClass().getName());</span>
+<span class="nc" id="L351">        helper.createBean(data, null);</span>
+<span class="nc" id="L352">    }</span>
+
+    /**
+     * Tests if a parameter is correctly passed to the bean factory.
+     */
+    @Test
+    public void testCreateBeanWithParameter()
+    {
+<span class="fc" id="L360">        final Object param = new Integer(42);</span>
+<span class="fc" id="L361">        final TestBeanFactory factory = new TestBeanFactory();</span>
+<span class="fc" id="L362">        helper.registerBeanFactory(TEST_FACTORY, factory);</span>
+<span class="fc" id="L363">        final BeanDeclarationTestImpl data = setUpBeanDeclaration();</span>
+<span class="fc" id="L364">        data.setBeanFactoryName(TEST_FACTORY);</span>
+<span class="fc" id="L365">        data.setBeanClassName(BeanCreationTestBean.class.getName());</span>
+<span class="fc" id="L366">        checkBean((BeanCreationTestBean) helper.createBean(data, null, param));</span>
+<span class="fc" id="L367">        assertSame(&quot;Wrong parameter&quot;, param, factory.parameter);</span>
+<span class="fc" id="L368">    }</span>
+
+    /**
+     * Tests whether a wrapper DynaBean for a Java bean can be created.
+     */
+    @Test
+    public void testCreateWrapDynaBean()
+    {
+<span class="fc" id="L376">        final PropertiesConfiguration config = new PropertiesConfiguration();</span>
+<span class="fc" id="L377">        final DynaBean bean = BeanHelper.createWrapDynaBean(config);</span>
+<span class="fc" id="L378">        final String value = &quot;TestFooter&quot;;</span>
+<span class="fc" id="L379">        bean.set(&quot;footer&quot;, value);</span>
+<span class="fc" id="L380">        assertEquals(&quot;Property not set&quot;, value, config.getFooter());</span>
+<span class="fc" id="L381">    }</span>
+
+    /**
+     * Tries to create a wrapper DynaBean for a null bean.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateWrapDynaBeanNull()
+    {
+<span class="nc" id="L389">        BeanHelper.createWrapDynaBean(null);</span>
+<span class="nc" id="L390">    }</span>
+
+    /**
+     * Tests whether properties from one bean to another can be copied.
+     */
+    @Test
+    public void testCopyProperties() throws Exception
+    {
+<span class="fc" id="L398">        final PropertiesConfiguration src = new PropertiesConfiguration();</span>
+<span class="fc" id="L399">        src.setHeader(&quot;TestHeader&quot;);</span>
+<span class="fc" id="L400">        src.setFooter(&quot;TestFooter&quot;);</span>
+<span class="fc" id="L401">        final LazyDynaBean dest = new LazyDynaBean();</span>
+<span class="fc" id="L402">        BeanHelper.copyProperties(dest, src);</span>
+<span class="fc" id="L403">        assertEquals(&quot;Wrong footer property&quot;, &quot;TestFooter&quot;, dest.get(&quot;footer&quot;));</span>
+<span class="fc" id="L404">        assertEquals(&quot;Wrong header property&quot;, &quot;TestHeader&quot;, dest.get(&quot;header&quot;));</span>
+<span class="fc" id="L405">    }</span>
+
+    /**
+     * Returns an initialized bean declaration.
+     *
+     * @return the bean declaration
+     */
+    private BeanDeclarationTestImpl setUpBeanDeclaration()
+    {
+<span class="fc" id="L414">        final BeanDeclarationTestImpl data = new BeanDeclarationTestImpl();</span>
+<span class="fc" id="L415">        final Map&lt;String, Object&gt; properties = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L416">        properties.put(&quot;stringValue&quot;, TEST_STRING);</span>
+<span class="fc" id="L417">        properties.put(&quot;intValue&quot;, String.valueOf(TEST_INT));</span>
+<span class="fc" id="L418">        data.setBeanProperties(properties);</span>
+<span class="fc" id="L419">        final BeanDeclarationTestImpl buddyData = new BeanDeclarationTestImpl();</span>
+<span class="fc" id="L420">        final Map&lt;String, Object&gt; properties2 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L421">        properties2.put(&quot;stringValue&quot;, &quot;Another test string&quot;);</span>
+<span class="fc" id="L422">        properties2.put(&quot;intValue&quot;, new Integer(100));</span>
+<span class="fc" id="L423">        buddyData.setBeanProperties(properties2);</span>
+<span class="fc" id="L424">        buddyData.setBeanClassName(BeanCreationTestBean.class.getName());</span>
+
+<span class="fc" id="L426">        final Map&lt;String, Object&gt; nested = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L427">        nested.put(&quot;buddy&quot;, buddyData);</span>
+<span class="fc" id="L428">        data.setNestedBeanDeclarations(nested);</span>
+<span class="fc" id="L429">        return data;</span>
+    }
+
+    /**
+     * Same as setUpBeanDeclaration, but returns a nested array of beans
+     * as a single property. Tests multi-value (Collection&lt;BeanDeclaration&gt;)
+     * children construction.
+     *
+     * @return The bean declaration with a list child bean proerty
+     */
+    private BeanDeclarationTestImpl setUpBeanDeclarationWithListChild()
+    {
+<span class="fc" id="L441">        final BeanDeclarationTestImpl data = new BeanDeclarationTestImpl();</span>
+<span class="fc" id="L442">        final Map&lt;String, Object&gt; properties = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L443">        properties.put(&quot;stringValue&quot;, TEST_STRING);</span>
+<span class="fc" id="L444">        properties.put(&quot;intValue&quot;, String.valueOf(TEST_INT));</span>
+<span class="fc" id="L445">        data.setBeanProperties(properties);</span>
+
+<span class="fc" id="L447">        final List&lt;BeanDeclaration&gt; childData = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L448">        childData.add(createChildBean(&quot;child1&quot;));</span>
+<span class="fc" id="L449">        childData.add(createChildBean(&quot;child2&quot;));</span>
+<span class="fc" id="L450">        final Map&lt;String, Object&gt; nested = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L451">        nested.put(&quot;children&quot;, childData);</span>
+<span class="fc" id="L452">        data.setNestedBeanDeclarations(nested);</span>
+<span class="fc" id="L453">        return data;</span>
+    }
+
+    /**
+     * Create a simple bean declaration that has no children for testing
+     * of nested children bean declarations.
+     *
+     * @param name A name prefix that can be used to disambiguate the children
+     * @return A simple declaration
+     */
+    private BeanDeclarationTestImpl createChildBean(final String name)
+    {
+<span class="fc" id="L465">        final BeanDeclarationTestImpl childBean = new BeanDeclarationTestImpl();</span>
+<span class="fc" id="L466">        final Map&lt;String, Object&gt; properties2 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L467">        properties2.put(&quot;stringValue&quot;, name + &quot; Another test string&quot;);</span>
+<span class="fc" id="L468">        properties2.put(&quot;intValue&quot;, new Integer(100));</span>
+<span class="fc" id="L469">        childBean.setBeanProperties(properties2);</span>
+<span class="fc" id="L470">        childBean.setBeanClassName(BeanCreationTestBean.class.getName());</span>
+
+<span class="fc" id="L472">        return childBean;</span>
+    }
+
+    /**
+     * Tests if the bean was correctly initialized from the data of the test
+     * bean declaration.
+     *
+     * @param bean the bean to be checked
+     */
+    private void checkBean(final BeanCreationTestBean bean)
+    {
+<span class="fc" id="L483">        assertEquals(&quot;Wrong string property&quot;, TEST_STRING, bean</span>
+<span class="fc" id="L484">                .getStringValue());</span>
+<span class="fc" id="L485">        assertEquals(&quot;Wrong int property&quot;, TEST_INT, bean.getIntValue());</span>
+<span class="fc" id="L486">        final BeanCreationTestBean buddy = bean.getBuddy();</span>
+<span class="fc" id="L487">        assertNotNull(&quot;Buddy was not set&quot;, buddy);</span>
+<span class="fc" id="L488">        assertEquals(&quot;Wrong string property in buddy&quot;, &quot;Another test string&quot;,</span>
+<span class="fc" id="L489">                buddy.getStringValue());</span>
+<span class="fc" id="L490">        assertEquals(&quot;Wrong int property in buddy&quot;, 100, buddy.getIntValue());</span>
+<span class="fc" id="L491">    }</span>
+
+    /**
+     * Tests if the bean was correctly initialized from the data of the test
+     * bean declaration.
+     *
+     * @param bean the bean to be checked
+     */
+    private void checkBean(final BeanCreationTestBeanWithListChild bean)
+    {
+<span class="fc" id="L501">        assertEquals(&quot;Wrong string property&quot;, TEST_STRING, bean</span>
+<span class="fc" id="L502">                .getStringValue());</span>
+<span class="fc" id="L503">        assertEquals(&quot;Wrong int property&quot;, TEST_INT, bean.getIntValue());</span>
+<span class="fc" id="L504">        final List&lt;BeanCreationTestBean&gt; children = bean.getChildren();</span>
+<span class="fc" id="L505">        assertNotNull(&quot;Children were not set&quot;, children);</span>
+<span class="fc" id="L506">        assertEquals(&quot;Wrong number of children created&quot;, children.size(), 2);</span>
+<span class="fc" id="L507">        assertNotNull(&quot;First child was set as null&quot;, children.get(0));</span>
+<span class="fc" id="L508">        assertNotNull(&quot;Second child was set as null&quot;, children.get(1));</span>
+<span class="fc" id="L509">    }</span>
+
+    /**
+     * An implementation of the BeanFactory interface used for testing. This
+     * implementation is really simple: If the BeanCreationTestBean class is provided, a new
+     * instance will be created. Otherwise an exception is thrown.
+     */
+<span class="fc" id="L516">    private class TestBeanFactory implements BeanFactory</span>
+    {
+        Object parameter;
+
+        boolean supportsDefaultClass;
+
+        /** A counter for the created instances. */
+        private int createBeanCount;
+
+        @Override
+        public Object createBean(final BeanCreationContext bcc) throws Exception
+        {
+<span class="fc" id="L528">            createBeanCount++;</span>
+<span class="fc" id="L529">            parameter = bcc.getParameter();</span>
+<span class="fc bfc" id="L530" title="All 2 branches covered.">            if (BeanCreationTestBean.class.equals(bcc.getBeanClass()))</span>
+            {
+<span class="fc" id="L532">                final BeanCreationTestBean bean = new BeanCreationTestBean();</span>
+<span class="fc" id="L533">                helper.initBean(bean, bcc.getBeanDeclaration());</span>
+<span class="fc" id="L534">                return bean;</span>
+            }
+<span class="fc bfc" id="L536" title="All 2 branches covered.">            else if (BeanCreationTestBeanWithListChild.class.equals(bcc</span>
+<span class="fc" id="L537">                    .getBeanClass()))</span>
+            {
+<span class="fc" id="L539">                final BeanCreationTestBeanWithListChild bean =</span>
+                        new BeanCreationTestBeanWithListChild();
+<span class="fc" id="L541">                helper.initBean(bean, bcc.getBeanDeclaration());</span>
+<span class="fc" id="L542">                return bean;</span>
+            }
+            else
+            {
+<span class="fc" id="L546">                throw new IllegalArgumentException(&quot;Unsupported class: &quot;</span>
+<span class="fc" id="L547">                        + bcc.getBeanClass());</span>
+            }
+        }
+
+        /**
+         * Returns the default class, but only if the supportsDefaultClass flag
+         * is set.
+         */
+        @Override
+        public Class&lt;?&gt; getDefaultBeanClass()
+        {
+<span class="fc bfc" id="L558" title="All 2 branches covered.">            return supportsDefaultClass ? BeanCreationTestBean.class : null;</span>
+        }
+
+        /**
+         * Returns the number of beans created via this factory.
+         *
+         * @return the number of created beans
+         */
+        public int getCreateBeanCount()
+        {
+<span class="fc" id="L568">            return createBeanCount;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

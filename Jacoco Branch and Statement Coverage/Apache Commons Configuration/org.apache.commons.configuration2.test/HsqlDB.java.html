@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HsqlDB.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.test</a> &gt; <span class="el_source">HsqlDB.java</span></div><h1>HsqlDB.java</h1><pre class="source lang-java linenums">package org.apache.commons.configuration2.test;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+/**
+ * Stolen from Turbine
+ *
+ * @author &lt;a href=&quot;mailto:hps@intermeta.de&quot;&gt;Henning P. Schmiedehausen&lt;/a&gt;
+ */
+
+public class HsqlDB
+{
+<span class="fc" id="L38">    private Connection connection = null;</span>
+<span class="fc" id="L39">    private static Log log = LogFactory.getLog(HsqlDB.class);</span>
+
+    public HsqlDB(final String uri, final String databaseDriver, final String loadFile)
+            throws Exception
+<span class="fc" id="L43">    {</span>
+<span class="fc" id="L44">        Class.forName(databaseDriver);</span>
+
+<span class="fc" id="L46">        this.connection = DriverManager.getConnection(uri, &quot;sa&quot;, &quot;&quot;);</span>
+
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (StringUtils.isNotEmpty(loadFile))</span>
+            {
+<span class="fc" id="L50">                loadSqlFile(loadFile);</span>
+            }
+<span class="fc" id="L52">        this.connection.commit();</span>
+<span class="fc" id="L53">    }</span>
+
+    public Connection getConnection()
+    {
+<span class="nc" id="L57">        return connection;</span>
+    }
+
+    public void close()
+    {
+        try
+        {
+<span class="fc" id="L64">            connection.close();</span>
+        }
+<span class="nc" id="L66">        catch (final Exception e)</span>
+        {
+<span class="fc" id="L68">        }</span>
+<span class="fc" id="L69">    }</span>
+
+    private void loadSqlFile(final String fileName)
+            throws Exception
+    {
+<span class="fc" id="L74">        try (Statement statement = connection.createStatement())</span>
+        {
+<span class="fc" id="L76">            String commands = getFileContents(fileName);</span>
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            for (int targetPos = commands.indexOf(';'); targetPos &gt; -1; targetPos = commands.indexOf(';'))</span>
+            {
+<span class="fc" id="L80">                final String cmd = commands.substring(0, targetPos + 1);</span>
+                try
+                {
+<span class="fc" id="L83">                    statement.execute(cmd);</span>
+                }
+<span class="fc" id="L85">                catch (final SQLException sqle)</span>
+                {
+<span class="fc" id="L87">                    log.warn(&quot;Statement: &quot; + cmd + &quot;: &quot; + sqle.getMessage());</span>
+<span class="fc" id="L88">                }</span>
+
+<span class="fc" id="L90">                commands = commands.substring(targetPos + 2);</span>
+            }
+        }
+<span class="fc" id="L93">    }</span>
+
+    private String getFileContents(final String fileName)
+            throws Exception
+    {
+<span class="fc" id="L98">        try (final FileReader fr = new FileReader(fileName)) {</span>
+
+<span class="fc" id="L100">            final char fileBuf[]  = new char[1024];</span>
+<span class="fc" id="L101">            final StringBuffer sb = new StringBuffer(1000);</span>
+<span class="fc" id="L102">            int res = -1;</span>
+
+<span class="fc bfc" id="L104" title="All 2 branches covered.">            while ((res = fr.read(fileBuf, 0, 1024)) &gt; -1)</span>
+            {
+<span class="fc" id="L106">                sb.append(fileBuf, 0, res);</span>
+            }
+<span class="fc" id="L108">            return sb.toString();</span>
+            }
+        }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

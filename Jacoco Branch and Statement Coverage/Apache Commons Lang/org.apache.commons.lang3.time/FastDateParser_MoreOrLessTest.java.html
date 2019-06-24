@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FastDateParser_MoreOrLessTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">FastDateParser_MoreOrLessTest.java</span></div><h1>FastDateParser_MoreOrLessTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.text.ParsePosition;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import org.junit.jupiter.api.Test;
+
+<span class="fc" id="L31">public class FastDateParser_MoreOrLessTest {</span>
+
+<span class="fc" id="L33">    private static final TimeZone NEW_YORK = TimeZone.getTimeZone(&quot;America/New_York&quot;);</span>
+
+    @Test
+    public void testInputHasPrecedingCharacters() {
+<span class="fc" id="L37">        final FastDateParser parser = new FastDateParser(&quot;MM/dd&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+<span class="fc" id="L38">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L39">        final Date date = parser.parse(&quot;A 3/23/61&quot;, parsePosition);</span>
+<span class="fc" id="L40">        assertNull(date);</span>
+<span class="fc" id="L41">        assertEquals(0, parsePosition.getIndex());</span>
+<span class="fc" id="L42">        assertEquals(0, parsePosition.getErrorIndex());</span>
+<span class="fc" id="L43">    }</span>
+
+    @Test
+    public void testInputHasWhitespace() {
+<span class="fc" id="L47">        final FastDateParser parser = new FastDateParser(&quot;M/d/y&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+        //SimpleDateFormat parser = new SimpleDateFormat(&quot;M/d/y&quot;);
+<span class="fc" id="L49">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L50">        final Date date = parser.parse(&quot; 3/ 23/ 1961&quot;, parsePosition);</span>
+<span class="fc" id="L51">        assertEquals(12, parsePosition.getIndex());</span>
+
+<span class="fc" id="L53">        final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L54">        calendar.setTime(date);</span>
+<span class="fc" id="L55">        assertEquals(1961, calendar.get(Calendar.YEAR));</span>
+<span class="fc" id="L56">        assertEquals(2, calendar.get(Calendar.MONTH));</span>
+<span class="fc" id="L57">        assertEquals(23, calendar.get(Calendar.DATE));</span>
+<span class="fc" id="L58">    }</span>
+
+    @Test
+    public void testInputHasMoreCharacters() {
+<span class="fc" id="L62">        final FastDateParser parser = new FastDateParser(&quot;MM/dd&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+<span class="fc" id="L63">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L64">        final Date date = parser.parse(&quot;3/23/61&quot;, parsePosition);</span>
+<span class="fc" id="L65">        assertEquals(4, parsePosition.getIndex());</span>
+
+<span class="fc" id="L67">        final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L68">        calendar.setTime(date);</span>
+<span class="fc" id="L69">        assertEquals(2, calendar.get(Calendar.MONTH));</span>
+<span class="fc" id="L70">        assertEquals(23, calendar.get(Calendar.DATE));</span>
+<span class="fc" id="L71">    }</span>
+
+    @Test
+    public void testInputHasWrongCharacters() {
+<span class="fc" id="L75">        final FastDateParser parser = new FastDateParser(&quot;MM-dd-yyy&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+<span class="fc" id="L76">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L77">        assertNull(parser.parse(&quot;03/23/1961&quot;, parsePosition));</span>
+<span class="fc" id="L78">        assertEquals(2, parsePosition.getErrorIndex());</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void testInputHasLessCharacters() {
+<span class="fc" id="L83">        final FastDateParser parser = new FastDateParser(&quot;MM/dd/yyy&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+<span class="fc" id="L84">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L85">        assertNull(parser.parse(&quot;03/23&quot;, parsePosition));</span>
+<span class="fc" id="L86">        assertEquals(5, parsePosition.getErrorIndex());</span>
+<span class="fc" id="L87">    }</span>
+
+    @Test
+    public void testInputHasWrongTimeZone() {
+<span class="fc" id="L91">        final FastDateParser parser = new FastDateParser(&quot;mm:ss z&quot;, NEW_YORK, Locale.US);</span>
+
+<span class="fc" id="L93">        final String input = &quot;11:23 Pacific Standard Time&quot;;</span>
+<span class="fc" id="L94">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L95">        assertNotNull(parser.parse(input, parsePosition));</span>
+<span class="fc" id="L96">        assertEquals(input.length(), parsePosition.getIndex());</span>
+
+<span class="fc" id="L98">        parsePosition.setIndex(0);</span>
+<span class="fc" id="L99">        assertNull(parser.parse( &quot;11:23 Pacific Standard &quot;, parsePosition));</span>
+<span class="fc" id="L100">        assertEquals(6, parsePosition.getErrorIndex());</span>
+<span class="fc" id="L101">    }</span>
+
+    @Test
+    public void testInputHasWrongDay() {
+<span class="fc" id="L105">        final FastDateParser parser = new FastDateParser(&quot;EEEE, MM/dd/yyy&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L106">        final String input = &quot;Thursday, 03/23/61&quot;;</span>
+<span class="fc" id="L107">        final ParsePosition parsePosition = new ParsePosition(0);</span>
+<span class="fc" id="L108">        assertNotNull(parser.parse(input, parsePosition));</span>
+<span class="fc" id="L109">        assertEquals(input.length(), parsePosition.getIndex());</span>
+
+<span class="fc" id="L111">        parsePosition.setIndex(0);</span>
+<span class="fc" id="L112">        assertNull(parser.parse( &quot;Thorsday, 03/23/61&quot;, parsePosition));</span>
+<span class="fc" id="L113">        assertEquals(0, parsePosition.getErrorIndex());</span>
+<span class="fc" id="L114">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

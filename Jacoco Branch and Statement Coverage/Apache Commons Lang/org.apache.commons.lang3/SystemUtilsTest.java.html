@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">SystemUtilsTest.java</span></div><h1>SystemUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_1;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_2;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_3;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_5;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_6;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.JavaVersion.JAVA_10;
+import static org.apache.commons.lang3.JavaVersion.JAVA_11;
+import static org.apache.commons.lang3.JavaVersion.JAVA_12;
+import static org.apache.commons.lang3.JavaVersion.JAVA_13;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.Locale;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.SystemUtils}.
+ *
+ * Only limited testing can be performed.
+ */
+<span class="fc" id="L53">public class SystemUtilsTest {</span>
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L57">        assertNotNull(new SystemUtils());</span>
+<span class="fc" id="L58">        final Constructor&lt;?&gt;[] cons = SystemUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L59">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L60">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L61">        assertTrue(Modifier.isPublic(SystemUtils.class.getModifiers()));</span>
+<span class="fc" id="L62">        assertFalse(Modifier.isFinal(SystemUtils.class.getModifiers()));</span>
+<span class="fc" id="L63">    }</span>
+
+    @Test
+    public void testGetEnvironmentVariableAbsent() {
+<span class="fc" id="L67">        final String name = &quot;THIS_ENV_VAR_SHOULD_NOT_EXIST_FOR_THIS_TEST_TO_PASS&quot;;</span>
+<span class="fc" id="L68">        final String expected = System.getenv(name);</span>
+<span class="fc" id="L69">        assertNull(expected);</span>
+<span class="fc" id="L70">        final String value = SystemUtils.getEnvironmentVariable(name, &quot;DEFAULT&quot;);</span>
+<span class="fc" id="L71">        assertEquals(&quot;DEFAULT&quot;, value);</span>
+<span class="fc" id="L72">    }</span>
+
+    @Test
+    public void testGetEnvironmentVariablePresent() {
+<span class="fc" id="L76">        final String name = &quot;PATH&quot;;</span>
+<span class="fc" id="L77">        final String expected = System.getenv(name);</span>
+<span class="fc" id="L78">        final String value = SystemUtils.getEnvironmentVariable(name, null);</span>
+<span class="fc" id="L79">        assertEquals(expected, value);</span>
+<span class="fc" id="L80">    }</span>
+
+    @Test
+    public void testGetHostName() {
+<span class="fc" id="L84">        final String hostName = SystemUtils.getHostName();</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        final String expected = SystemUtils.IS_OS_WINDOWS ? System.getenv(&quot;COMPUTERNAME&quot;) : System.getenv(&quot;HOSTNAME&quot;);</span>
+<span class="fc" id="L86">        assertEquals(expected, hostName);</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Assumes no security manager exists.
+     */
+    @Test
+    public void testGetJavaHome() {
+<span class="fc" id="L94">        final File dir = SystemUtils.getJavaHome();</span>
+<span class="fc" id="L95">        assertNotNull(dir);</span>
+<span class="fc" id="L96">        assertTrue(dir.exists());</span>
+<span class="fc" id="L97">    }</span>
+
+    /**
+     * Assumes no security manager exists.
+     */
+    @Test
+    public void testGetJavaIoTmpDir() {
+<span class="fc" id="L104">        final File dir = SystemUtils.getJavaIoTmpDir();</span>
+<span class="fc" id="L105">        assertNotNull(dir);</span>
+<span class="fc" id="L106">        assertTrue(dir.exists());</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Assumes no security manager exists.
+     */
+    @Test
+    public void testGetUserDir() {
+<span class="fc" id="L114">        final File dir = SystemUtils.getUserDir();</span>
+<span class="fc" id="L115">        assertNotNull(dir);</span>
+<span class="fc" id="L116">        assertTrue(dir.exists());</span>
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * Assumes no security manager exists.
+     */
+    @Test
+    public void testGetUserHome() {
+<span class="fc" id="L124">        final File dir = SystemUtils.getUserHome();</span>
+<span class="fc" id="L125">        assertNotNull(dir);</span>
+<span class="fc" id="L126">        assertTrue(dir.exists());</span>
+<span class="fc" id="L127">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;deprecation&quot;)
+    public void testIS_JAVA() {
+<span class="fc" id="L132">        final String javaVersion = SystemUtils.JAVA_VERSION;</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        if (javaVersion == null) {</span>
+<span class="nc" id="L134">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="nc" id="L135">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="nc" id="L136">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="nc" id="L137">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="nc" id="L138">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="nc" id="L139">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="nc" id="L140">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="nc" id="L141">            assertFalse(SystemUtils.IS_JAVA_1_8);</span>
+<span class="nc" id="L142">            assertFalse(SystemUtils.IS_JAVA_1_9);</span>
+<span class="nc" id="L143">            assertFalse(SystemUtils.IS_JAVA_9);</span>
+<span class="nc" id="L144">            assertFalse(SystemUtils.IS_JAVA_10);</span>
+<span class="nc" id="L145">            assertFalse(SystemUtils.IS_JAVA_11);</span>
+<span class="nc" id="L146">            assertFalse(SystemUtils.IS_JAVA_12);</span>
+<span class="nc" id="L147">            assertFalse(SystemUtils.IS_JAVA_13);</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        } else if (javaVersion.startsWith(&quot;1.8&quot;)) {</span>
+<span class="fc" id="L149">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="fc" id="L150">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="fc" id="L151">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="fc" id="L152">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="fc" id="L153">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="fc" id="L154">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="fc" id="L155">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="fc" id="L156">            assertTrue(SystemUtils.IS_JAVA_1_8);</span>
+<span class="fc" id="L157">            assertFalse(SystemUtils.IS_JAVA_1_9);</span>
+<span class="fc" id="L158">            assertFalse(SystemUtils.IS_JAVA_9);</span>
+<span class="fc" id="L159">            assertFalse(SystemUtils.IS_JAVA_10);</span>
+<span class="fc" id="L160">            assertFalse(SystemUtils.IS_JAVA_11);</span>
+<span class="fc" id="L161">            assertFalse(SystemUtils.IS_JAVA_12);</span>
+<span class="fc" id="L162">            assertFalse(SystemUtils.IS_JAVA_13);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        } else if (javaVersion.startsWith(&quot;9&quot;)) {</span>
+<span class="nc" id="L164">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="nc" id="L165">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="nc" id="L166">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="nc" id="L167">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="nc" id="L168">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="nc" id="L169">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="nc" id="L170">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="nc" id="L171">            assertFalse(SystemUtils.IS_JAVA_1_8);</span>
+<span class="nc" id="L172">            assertTrue(SystemUtils.IS_JAVA_1_9);</span>
+<span class="nc" id="L173">            assertTrue(SystemUtils.IS_JAVA_9);</span>
+<span class="nc" id="L174">            assertFalse(SystemUtils.IS_JAVA_10);</span>
+<span class="nc" id="L175">            assertFalse(SystemUtils.IS_JAVA_11);</span>
+<span class="nc" id="L176">            assertFalse(SystemUtils.IS_JAVA_12);</span>
+<span class="nc" id="L177">            assertFalse(SystemUtils.IS_JAVA_13);</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        } else if (javaVersion.startsWith(&quot;10&quot;)) {</span>
+<span class="nc" id="L179">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="nc" id="L180">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="nc" id="L181">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="nc" id="L182">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="nc" id="L183">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="nc" id="L184">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="nc" id="L185">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="nc" id="L186">            assertFalse(SystemUtils.IS_JAVA_1_8);</span>
+<span class="nc" id="L187">            assertFalse(SystemUtils.IS_JAVA_1_9);</span>
+<span class="nc" id="L188">            assertFalse(SystemUtils.IS_JAVA_9);</span>
+<span class="nc" id="L189">            assertTrue(SystemUtils.IS_JAVA_10);</span>
+<span class="nc" id="L190">            assertFalse(SystemUtils.IS_JAVA_11);</span>
+<span class="nc" id="L191">            assertFalse(SystemUtils.IS_JAVA_12);</span>
+<span class="nc" id="L192">            assertFalse(SystemUtils.IS_JAVA_13);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        } else if (javaVersion.startsWith(&quot;11&quot;)) {</span>
+<span class="nc" id="L194">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="nc" id="L195">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="nc" id="L196">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="nc" id="L197">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="nc" id="L198">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="nc" id="L199">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="nc" id="L200">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="nc" id="L201">            assertFalse(SystemUtils.IS_JAVA_1_8);</span>
+<span class="nc" id="L202">            assertFalse(SystemUtils.IS_JAVA_1_9);</span>
+<span class="nc" id="L203">            assertFalse(SystemUtils.IS_JAVA_9);</span>
+<span class="nc" id="L204">            assertFalse(SystemUtils.IS_JAVA_10);</span>
+<span class="nc" id="L205">            assertTrue(SystemUtils.IS_JAVA_11);</span>
+<span class="nc" id="L206">            assertFalse(SystemUtils.IS_JAVA_12);</span>
+<span class="nc" id="L207">            assertFalse(SystemUtils.IS_JAVA_13);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        } else if (javaVersion.startsWith(&quot;12&quot;)) {</span>
+<span class="nc" id="L209">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="nc" id="L210">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="nc" id="L211">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="nc" id="L212">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="nc" id="L213">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="nc" id="L214">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="nc" id="L215">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="nc" id="L216">            assertFalse(SystemUtils.IS_JAVA_1_8);</span>
+<span class="nc" id="L217">            assertFalse(SystemUtils.IS_JAVA_1_9);</span>
+<span class="nc" id="L218">            assertFalse(SystemUtils.IS_JAVA_9);</span>
+<span class="nc" id="L219">            assertFalse(SystemUtils.IS_JAVA_10);</span>
+<span class="nc" id="L220">            assertFalse(SystemUtils.IS_JAVA_11);</span>
+<span class="nc" id="L221">            assertTrue(SystemUtils.IS_JAVA_12);</span>
+<span class="nc" id="L222">            assertFalse(SystemUtils.IS_JAVA_13);</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        } else if (javaVersion.startsWith(&quot;13&quot;)) {</span>
+<span class="nc" id="L224">            assertFalse(SystemUtils.IS_JAVA_1_1);</span>
+<span class="nc" id="L225">            assertFalse(SystemUtils.IS_JAVA_1_2);</span>
+<span class="nc" id="L226">            assertFalse(SystemUtils.IS_JAVA_1_3);</span>
+<span class="nc" id="L227">            assertFalse(SystemUtils.IS_JAVA_1_4);</span>
+<span class="nc" id="L228">            assertFalse(SystemUtils.IS_JAVA_1_5);</span>
+<span class="nc" id="L229">            assertFalse(SystemUtils.IS_JAVA_1_6);</span>
+<span class="nc" id="L230">            assertFalse(SystemUtils.IS_JAVA_1_7);</span>
+<span class="nc" id="L231">            assertFalse(SystemUtils.IS_JAVA_1_8);</span>
+<span class="nc" id="L232">            assertFalse(SystemUtils.IS_JAVA_1_9);</span>
+<span class="nc" id="L233">            assertFalse(SystemUtils.IS_JAVA_9);</span>
+<span class="nc" id="L234">            assertFalse(SystemUtils.IS_JAVA_10);</span>
+<span class="nc" id="L235">            assertFalse(SystemUtils.IS_JAVA_11);</span>
+<span class="nc" id="L236">            assertFalse(SystemUtils.IS_JAVA_12);</span>
+<span class="nc" id="L237">            assertTrue(SystemUtils.IS_JAVA_13);</span>
+        } else {
+<span class="nc" id="L239">            System.out.println(&quot;Can't test IS_JAVA value: &quot; + javaVersion);</span>
+        }
+<span class="fc" id="L241">    }</span>
+
+    @Test
+    public void testIS_OS() {
+<span class="fc" id="L245">        final String osName = System.getProperty(&quot;os.name&quot;);</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if (osName == null) {</span>
+<span class="nc" id="L247">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="nc" id="L248">            assertFalse(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L249">            assertFalse(SystemUtils.IS_OS_SOLARIS);</span>
+<span class="nc" id="L250">            assertFalse(SystemUtils.IS_OS_LINUX);</span>
+<span class="nc" id="L251">            assertFalse(SystemUtils.IS_OS_MAC_OSX);</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        } else if (osName.startsWith(&quot;Windows&quot;)) {</span>
+<span class="nc" id="L253">            assertFalse(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L254">            assertTrue(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        } else if (osName.startsWith(&quot;Solaris&quot;)) {</span>
+<span class="nc" id="L256">            assertTrue(SystemUtils.IS_OS_SOLARIS);</span>
+<span class="nc" id="L257">            assertTrue(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L258">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">        } else if (osName.toLowerCase(Locale.ENGLISH).startsWith(&quot;linux&quot;)) {</span>
+<span class="nc" id="L260">            assertTrue(SystemUtils.IS_OS_LINUX);</span>
+<span class="nc" id="L261">            assertTrue(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L262">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">        } else if (osName.startsWith(&quot;Mac OS X&quot;)) {</span>
+<span class="fc" id="L264">            assertTrue(SystemUtils.IS_OS_MAC_OSX);</span>
+<span class="fc" id="L265">            assertTrue(SystemUtils.IS_OS_UNIX);</span>
+<span class="fc" id="L266">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        } else if (osName.startsWith(&quot;OS/2&quot;)) {</span>
+<span class="nc" id="L268">            assertTrue(SystemUtils.IS_OS_OS2);</span>
+<span class="nc" id="L269">            assertFalse(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L270">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        } else if (osName.startsWith(&quot;SunOS&quot;)) {</span>
+<span class="nc" id="L272">            assertTrue(SystemUtils.IS_OS_SUN_OS);</span>
+<span class="nc" id="L273">            assertTrue(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L274">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        } else if (osName.startsWith(&quot;FreeBSD&quot;)) {</span>
+<span class="nc" id="L276">            assertTrue(SystemUtils.IS_OS_FREE_BSD);</span>
+<span class="nc" id="L277">            assertTrue(SystemUtils.IS_OS_UNIX);</span>
+<span class="nc" id="L278">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+        } else {
+<span class="nc" id="L280">            System.out.println(&quot;Can't test IS_OS value: &quot; + osName);</span>
+        }
+<span class="fc" id="L282">    }</span>
+
+    @Test
+    public void testIS_zOS() {
+<span class="fc" id="L286">        final String osName = System.getProperty(&quot;os.name&quot;);</span>
+<span class="pc bpc" id="L287" title="1 of 2 branches missed.">        if (osName == null) {</span>
+<span class="nc" id="L288">            assertFalse(SystemUtils.IS_OS_ZOS);</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">        } else if (osName.contains(&quot;z/OS&quot;)) {</span>
+<span class="nc" id="L290">            assertFalse(SystemUtils.IS_OS_WINDOWS);</span>
+<span class="nc" id="L291">            assertTrue(SystemUtils.IS_OS_ZOS);</span>
+        }
+<span class="fc" id="L293">    }</span>
+
+    @Test
+    public void testJavaVersionMatches() {
+<span class="fc" id="L297">        String javaVersion = null;</span>
+<span class="fc" id="L298">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L299">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L300">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L301">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L302">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L303">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L304">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L305">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L306">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L307">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L308">        javaVersion = &quot;&quot;;</span>
+<span class="fc" id="L309">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L310">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L311">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L312">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L313">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L314">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L315">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L316">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L317">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L318">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L319">        javaVersion = &quot;1.0&quot;;</span>
+<span class="fc" id="L320">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L321">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L322">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L323">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L324">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L325">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L326">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L327">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L328">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L329">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L330">        javaVersion = &quot;1.1&quot;;</span>
+<span class="fc" id="L331">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L332">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L333">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L334">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L335">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L336">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L337">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L338">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L339">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L340">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L341">        javaVersion = &quot;1.2&quot;;</span>
+<span class="fc" id="L342">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L343">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L344">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L345">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L346">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L347">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L348">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L349">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L350">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L351">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L352">        javaVersion = &quot;1.3.0&quot;;</span>
+<span class="fc" id="L353">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L354">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L355">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L356">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L357">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L358">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L359">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L360">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L361">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L362">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L363">        javaVersion = &quot;1.3.1&quot;;</span>
+<span class="fc" id="L364">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L365">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L366">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L367">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L368">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L369">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L370">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L371">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L372">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L373">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L374">        javaVersion = &quot;1.4.0&quot;;</span>
+<span class="fc" id="L375">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L376">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L377">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L378">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L379">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L380">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L381">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L382">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L383">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L384">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L385">        javaVersion = &quot;1.4.1&quot;;</span>
+<span class="fc" id="L386">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L387">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L388">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L389">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L390">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L391">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L392">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L393">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L394">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L395">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L396">        javaVersion = &quot;1.4.2&quot;;</span>
+<span class="fc" id="L397">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L398">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L399">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L400">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L401">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L402">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L403">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L404">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L405">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L406">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L407">        javaVersion = &quot;1.5.0&quot;;</span>
+<span class="fc" id="L408">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L409">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L410">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L411">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L412">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L413">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L414">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L415">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L416">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L417">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L418">        javaVersion = &quot;1.6.0&quot;;</span>
+<span class="fc" id="L419">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L420">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L421">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L422">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L423">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L424">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L425">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L426">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L427">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L428">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L429">        javaVersion = &quot;1.7.0&quot;;</span>
+<span class="fc" id="L430">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L431">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L432">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L433">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L434">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L435">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L436">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L437">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L438">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L439">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L440">        javaVersion = &quot;1.8.0&quot;;</span>
+<span class="fc" id="L441">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L442">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L443">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L444">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L445">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L446">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L447">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L448">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L449">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L450">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L451">        javaVersion = &quot;9&quot;;</span>
+<span class="fc" id="L452">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.0&quot;));</span>
+<span class="fc" id="L453">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.1&quot;));</span>
+<span class="fc" id="L454">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.2&quot;));</span>
+<span class="fc" id="L455">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.3&quot;));</span>
+<span class="fc" id="L456">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.4&quot;));</span>
+<span class="fc" id="L457">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.5&quot;));</span>
+<span class="fc" id="L458">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.6&quot;));</span>
+<span class="fc" id="L459">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.7&quot;));</span>
+<span class="fc" id="L460">        assertFalse(SystemUtils.isJavaVersionMatch(javaVersion, &quot;1.8&quot;));</span>
+<span class="fc" id="L461">        assertTrue(SystemUtils.isJavaVersionMatch(javaVersion, &quot;9&quot;));</span>
+<span class="fc" id="L462">    }</span>
+
+    @Test
+    public void testIsJavaVersionAtLeast() {
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">        if (SystemUtils.IS_JAVA_1_8) {</span>
+<span class="fc" id="L467">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_1));</span>
+<span class="fc" id="L468">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_2));</span>
+<span class="fc" id="L469">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_3));</span>
+<span class="fc" id="L470">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_4));</span>
+<span class="fc" id="L471">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_5));</span>
+<span class="fc" id="L472">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_6));</span>
+<span class="fc" id="L473">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_7));</span>
+<span class="fc" id="L474">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_8));</span>
+<span class="fc" id="L475">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_9));</span>
+<span class="fc" id="L476">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_10));</span>
+<span class="fc" id="L477">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_11));</span>
+<span class="fc" id="L478">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_12));</span>
+<span class="fc" id="L479">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_13));</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_9) {</span>
+<span class="nc" id="L481">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_1));</span>
+<span class="nc" id="L482">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_2));</span>
+<span class="nc" id="L483">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_3));</span>
+<span class="nc" id="L484">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_4));</span>
+<span class="nc" id="L485">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_5));</span>
+<span class="nc" id="L486">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_6));</span>
+<span class="nc" id="L487">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_7));</span>
+<span class="nc" id="L488">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_8));</span>
+<span class="nc" id="L489">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_9));</span>
+<span class="nc" id="L490">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_10));</span>
+<span class="nc" id="L491">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_11));</span>
+<span class="nc" id="L492">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_12));</span>
+<span class="nc" id="L493">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_13));</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_10) {</span>
+<span class="nc" id="L495">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_1));</span>
+<span class="nc" id="L496">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_2));</span>
+<span class="nc" id="L497">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_3));</span>
+<span class="nc" id="L498">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_4));</span>
+<span class="nc" id="L499">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_5));</span>
+<span class="nc" id="L500">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_6));</span>
+<span class="nc" id="L501">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_7));</span>
+<span class="nc" id="L502">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_8));</span>
+<span class="nc" id="L503">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_9));</span>
+<span class="nc" id="L504">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_10));</span>
+<span class="nc" id="L505">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_11));</span>
+<span class="nc" id="L506">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_12));</span>
+<span class="nc" id="L507">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_13));</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_11) {</span>
+<span class="nc" id="L509">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_1));</span>
+<span class="nc" id="L510">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_2));</span>
+<span class="nc" id="L511">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_3));</span>
+<span class="nc" id="L512">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_4));</span>
+<span class="nc" id="L513">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_5));</span>
+<span class="nc" id="L514">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_6));</span>
+<span class="nc" id="L515">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_7));</span>
+<span class="nc" id="L516">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_8));</span>
+<span class="nc" id="L517">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_9));</span>
+<span class="nc" id="L518">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_10));</span>
+<span class="nc" id="L519">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_11));</span>
+<span class="nc" id="L520">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_12));</span>
+<span class="nc" id="L521">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_13));</span>
+<span class="nc bnc" id="L522" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_12) {</span>
+<span class="nc" id="L523">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_1));</span>
+<span class="nc" id="L524">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_2));</span>
+<span class="nc" id="L525">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_3));</span>
+<span class="nc" id="L526">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_4));</span>
+<span class="nc" id="L527">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_5));</span>
+<span class="nc" id="L528">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_6));</span>
+<span class="nc" id="L529">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_7));</span>
+<span class="nc" id="L530">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_8));</span>
+<span class="nc" id="L531">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_9));</span>
+<span class="nc" id="L532">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_10));</span>
+<span class="nc" id="L533">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_11));</span>
+<span class="nc" id="L534">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_12));</span>
+<span class="nc" id="L535">            assertFalse(SystemUtils.isJavaVersionAtLeast(JAVA_13));</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_13) {</span>
+<span class="nc" id="L537">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_1));</span>
+<span class="nc" id="L538">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_2));</span>
+<span class="nc" id="L539">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_3));</span>
+<span class="nc" id="L540">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_4));</span>
+<span class="nc" id="L541">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_5));</span>
+<span class="nc" id="L542">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_6));</span>
+<span class="nc" id="L543">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_7));</span>
+<span class="nc" id="L544">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_1_8));</span>
+<span class="nc" id="L545">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_9));</span>
+<span class="nc" id="L546">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_10));</span>
+<span class="nc" id="L547">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_11));</span>
+<span class="nc" id="L548">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_12));</span>
+<span class="nc" id="L549">            assertTrue(SystemUtils.isJavaVersionAtLeast(JAVA_13));</span>
+        }
+<span class="fc" id="L551">    }</span>
+
+    @Test
+    public void testIsJavaVersionAtMost() {
+<span class="pc bpc" id="L555" title="1 of 2 branches missed.">        if (SystemUtils.IS_JAVA_1_8) {</span>
+<span class="fc" id="L556">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_1));</span>
+<span class="fc" id="L557">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_2));</span>
+<span class="fc" id="L558">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_3));</span>
+<span class="fc" id="L559">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_4));</span>
+<span class="fc" id="L560">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_5));</span>
+<span class="fc" id="L561">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_6));</span>
+<span class="fc" id="L562">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_7));</span>
+<span class="fc" id="L563">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_1_8));</span>
+<span class="fc" id="L564">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_9));</span>
+<span class="fc" id="L565">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_10));</span>
+<span class="fc" id="L566">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_11));</span>
+<span class="fc" id="L567">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_12));</span>
+<span class="fc" id="L568">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_13));</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_9) {</span>
+<span class="nc" id="L570">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_1));</span>
+<span class="nc" id="L571">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_2));</span>
+<span class="nc" id="L572">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_3));</span>
+<span class="nc" id="L573">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_4));</span>
+<span class="nc" id="L574">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_5));</span>
+<span class="nc" id="L575">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_6));</span>
+<span class="nc" id="L576">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_7));</span>
+<span class="nc" id="L577">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_8));</span>
+<span class="nc" id="L578">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_9));</span>
+<span class="nc" id="L579">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_10));</span>
+<span class="nc" id="L580">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_11));</span>
+<span class="nc" id="L581">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_12));</span>
+<span class="nc" id="L582">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_13));</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_10) {</span>
+<span class="nc" id="L584">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_1));</span>
+<span class="nc" id="L585">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_2));</span>
+<span class="nc" id="L586">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_3));</span>
+<span class="nc" id="L587">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_4));</span>
+<span class="nc" id="L588">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_5));</span>
+<span class="nc" id="L589">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_6));</span>
+<span class="nc" id="L590">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_7));</span>
+<span class="nc" id="L591">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_8));</span>
+<span class="nc" id="L592">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_9));</span>
+<span class="nc" id="L593">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_10));</span>
+<span class="nc" id="L594">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_11));</span>
+<span class="nc" id="L595">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_12));</span>
+<span class="nc" id="L596">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_13));</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_11) {</span>
+<span class="nc" id="L598">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_1));</span>
+<span class="nc" id="L599">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_2));</span>
+<span class="nc" id="L600">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_3));</span>
+<span class="nc" id="L601">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_4));</span>
+<span class="nc" id="L602">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_5));</span>
+<span class="nc" id="L603">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_6));</span>
+<span class="nc" id="L604">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_7));</span>
+<span class="nc" id="L605">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_8));</span>
+<span class="nc" id="L606">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_9));</span>
+<span class="nc" id="L607">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_10));</span>
+<span class="nc" id="L608">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_11));</span>
+<span class="nc" id="L609">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_12));</span>
+<span class="nc" id="L610">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_13));</span>
+<span class="nc bnc" id="L611" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_12) {</span>
+<span class="nc" id="L612">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_1));</span>
+<span class="nc" id="L613">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_2));</span>
+<span class="nc" id="L614">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_3));</span>
+<span class="nc" id="L615">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_4));</span>
+<span class="nc" id="L616">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_5));</span>
+<span class="nc" id="L617">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_6));</span>
+<span class="nc" id="L618">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_7));</span>
+<span class="nc" id="L619">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_8));</span>
+<span class="nc" id="L620">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_9));</span>
+<span class="nc" id="L621">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_10));</span>
+<span class="nc" id="L622">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_11));</span>
+<span class="nc" id="L623">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_12));</span>
+<span class="nc" id="L624">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_13));</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">        } else if (SystemUtils.IS_JAVA_13) {</span>
+<span class="nc" id="L626">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_1));</span>
+<span class="nc" id="L627">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_2));</span>
+<span class="nc" id="L628">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_3));</span>
+<span class="nc" id="L629">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_4));</span>
+<span class="nc" id="L630">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_5));</span>
+<span class="nc" id="L631">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_6));</span>
+<span class="nc" id="L632">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_7));</span>
+<span class="nc" id="L633">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_1_8));</span>
+<span class="nc" id="L634">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_9));</span>
+<span class="nc" id="L635">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_10));</span>
+<span class="nc" id="L636">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_11));</span>
+<span class="nc" id="L637">            assertFalse(SystemUtils.isJavaVersionAtMost(JAVA_12));</span>
+<span class="nc" id="L638">            assertTrue(SystemUtils.isJavaVersionAtMost(JAVA_13));</span>
+        }
+<span class="fc" id="L640">    }</span>
+
+    @Test
+    public void testOSMatchesName() {
+<span class="fc" id="L644">        String osName = null;</span>
+<span class="fc" id="L645">        assertFalse(SystemUtils.isOSNameMatch(osName, &quot;Windows&quot;));</span>
+<span class="fc" id="L646">        osName = &quot;&quot;;</span>
+<span class="fc" id="L647">        assertFalse(SystemUtils.isOSNameMatch(osName, &quot;Windows&quot;));</span>
+<span class="fc" id="L648">        osName = &quot;Windows 95&quot;;</span>
+<span class="fc" id="L649">        assertTrue(SystemUtils.isOSNameMatch(osName, &quot;Windows&quot;));</span>
+<span class="fc" id="L650">        osName = &quot;Windows NT&quot;;</span>
+<span class="fc" id="L651">        assertTrue(SystemUtils.isOSNameMatch(osName, &quot;Windows&quot;));</span>
+<span class="fc" id="L652">        osName = &quot;OS/2&quot;;</span>
+<span class="fc" id="L653">        assertFalse(SystemUtils.isOSNameMatch(osName, &quot;Windows&quot;));</span>
+<span class="fc" id="L654">    }</span>
+
+    @Test
+    public void testOSMatchesNameAndVersion() {
+<span class="fc" id="L658">        String osName = null;</span>
+<span class="fc" id="L659">        String osVersion = null;</span>
+<span class="fc" id="L660">        assertFalse(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L661">        osName = &quot;&quot;;</span>
+<span class="fc" id="L662">        osVersion = &quot;&quot;;</span>
+<span class="fc" id="L663">        assertFalse(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L664">        osName = &quot;Windows 95&quot;;</span>
+<span class="fc" id="L665">        osVersion = &quot;4.0&quot;;</span>
+<span class="fc" id="L666">        assertFalse(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L667">        osName = &quot;Windows 95&quot;;</span>
+<span class="fc" id="L668">        osVersion = &quot;4.1&quot;;</span>
+<span class="fc" id="L669">        assertTrue(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L670">        osName = &quot;Windows 98&quot;;</span>
+<span class="fc" id="L671">        osVersion = &quot;4.1&quot;;</span>
+<span class="fc" id="L672">        assertTrue(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L673">        osName = &quot;Windows NT&quot;;</span>
+<span class="fc" id="L674">        osVersion = &quot;4.0&quot;;</span>
+<span class="fc" id="L675">        assertFalse(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L676">        osName = &quot;OS/2&quot;;</span>
+<span class="fc" id="L677">        osVersion = &quot;4.0&quot;;</span>
+<span class="fc" id="L678">        assertFalse(SystemUtils.isOSMatch(osName, osVersion, &quot;Windows 9&quot;, &quot;4.1&quot;));</span>
+<span class="fc" id="L679">    }</span>
+
+    @Test
+    public void testOsVersionMatches() {
+<span class="fc" id="L683">        String osVersion = null;</span>
+<span class="fc" id="L684">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+
+<span class="fc" id="L686">        osVersion = &quot;&quot;;</span>
+<span class="fc" id="L687">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+
+<span class="fc" id="L689">        osVersion = &quot;10&quot;;</span>
+<span class="fc" id="L690">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+<span class="fc" id="L691">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1.1&quot;));</span>
+<span class="fc" id="L692">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10&quot;));</span>
+<span class="fc" id="L693">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10.1&quot;));</span>
+
+<span class="fc" id="L695">        osVersion = &quot;10.1&quot;;</span>
+<span class="fc" id="L696">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+<span class="fc" id="L697">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1.1&quot;));</span>
+<span class="fc" id="L698">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10&quot;));</span>
+<span class="fc" id="L699">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10.1&quot;));</span>
+
+<span class="fc" id="L701">        osVersion = &quot;10.1.1&quot;;</span>
+<span class="fc" id="L702">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+<span class="fc" id="L703">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1.1&quot;));</span>
+<span class="fc" id="L704">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10&quot;));</span>
+<span class="fc" id="L705">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10.1&quot;));</span>
+
+<span class="fc" id="L707">        osVersion = &quot;10.10&quot;;</span>
+<span class="fc" id="L708">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+<span class="fc" id="L709">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1.1&quot;));</span>
+<span class="fc" id="L710">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10&quot;));</span>
+<span class="fc" id="L711">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10.1&quot;));</span>
+
+<span class="fc" id="L713">        osVersion = &quot;10.10.1&quot;;</span>
+<span class="fc" id="L714">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1&quot;));</span>
+<span class="fc" id="L715">        assertFalse(SystemUtils.isOSVersionMatch(osVersion, &quot;10.1.1&quot;));</span>
+<span class="fc" id="L716">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10&quot;));</span>
+<span class="fc" id="L717">        assertTrue(SystemUtils.isOSVersionMatch(osVersion, &quot;10.10.1&quot;));</span>
+<span class="fc" id="L718">    }</span>
+
+    @Test
+    public void testJavaAwtHeadless() {
+<span class="fc" id="L722">        final String expectedStringValue = System.getProperty(&quot;java.awt.headless&quot;);</span>
+<span class="fc" id="L723">        final String expectedStringValueWithDefault = System.getProperty(&quot;java.awt.headless&quot;, &quot;false&quot;);</span>
+<span class="fc" id="L724">        assertNotNull(expectedStringValueWithDefault);</span>
+<span class="fc" id="L725">        final boolean expectedValue = Boolean.valueOf(expectedStringValue).booleanValue();</span>
+<span class="pc bpc" id="L726" title="1 of 2 branches missed.">        if (expectedStringValue != null) {</span>
+<span class="nc" id="L727">            assertEquals(expectedStringValue, SystemUtils.JAVA_AWT_HEADLESS);</span>
+        }
+<span class="fc" id="L729">        assertEquals(expectedValue, SystemUtils.isJavaAwtHeadless());</span>
+<span class="fc" id="L730">        assertEquals(expectedStringValueWithDefault, &quot;&quot; + SystemUtils.isJavaAwtHeadless());</span>
+<span class="fc" id="L731">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

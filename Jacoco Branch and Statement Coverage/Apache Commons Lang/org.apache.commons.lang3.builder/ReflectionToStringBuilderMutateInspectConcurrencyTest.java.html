@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReflectionToStringBuilderMutateInspectConcurrencyTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">ReflectionToStringBuilderMutateInspectConcurrencyTest.java</span></div><h1>ReflectionToStringBuilderMutateInspectConcurrencyTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.builder;
+
+import java.util.LinkedList;
+import java.util.Random;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests concurrent access for {@link ReflectionToStringBuilder}.
+ * &lt;p&gt;
+ * The {@link ToStringStyle} class includes a registry to avoid infinite loops for objects with circular references. We
+ * want to make sure that we do not get concurrency exceptions accessing this registry.
+ * &lt;/p&gt;
+ *
+ * @see &lt;a href=&quot;https://issues.apache.org/jira/browse/LANG-762&quot;&gt;[LANG-762] Handle or document ReflectionToStringBuilder
+ *      and ToStringBuilder for collections that are not thread safe&lt;/a&gt;
+ * @since 3.1
+ */
+<span class="fc" id="L37">public class ReflectionToStringBuilderMutateInspectConcurrencyTest {</span>
+
+    class TestFixture {
+<span class="nc" id="L40">        private final LinkedList&lt;Integer&gt; listField = new LinkedList&lt;&gt;();</span>
+<span class="nc" id="L41">        private final Random random = new Random();</span>
+<span class="nc" id="L42">        private final int N = 100;</span>
+
+<span class="nc" id="L44">        TestFixture() {</span>
+<span class="nc" id="L45">            synchronized (this) {</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">                for (int i = 0; i &lt; N; i++) {</span>
+<span class="nc" id="L47">                    listField.add(Integer.valueOf(i));</span>
+                }
+<span class="nc" id="L49">            }</span>
+<span class="nc" id="L50">        }</span>
+
+        public synchronized void add() {
+<span class="nc" id="L53">            listField.add(Integer.valueOf(random.nextInt(N)));</span>
+<span class="nc" id="L54">        }</span>
+
+        public synchronized void delete() {
+<span class="nc" id="L57">            listField.remove(Integer.valueOf(random.nextInt(N)));</span>
+<span class="nc" id="L58">        }</span>
+    }
+
+    class MutatingClient implements Runnable {
+        private final TestFixture testFixture;
+<span class="nc" id="L63">        private final Random random = new Random();</span>
+
+<span class="nc" id="L65">        MutatingClient(final TestFixture testFixture) {</span>
+<span class="nc" id="L66">            this.testFixture = testFixture;</span>
+<span class="nc" id="L67">        }</span>
+
+        @Override
+        public void run() {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (random.nextBoolean()) {</span>
+<span class="nc" id="L72">                testFixture.add();</span>
+            } else {
+<span class="nc" id="L74">                testFixture.delete();</span>
+            }
+<span class="nc" id="L76">        }</span>
+    }
+
+    class InspectingClient implements Runnable {
+        private final TestFixture testFixture;
+
+<span class="nc" id="L82">        InspectingClient(final TestFixture testFixture) {</span>
+<span class="nc" id="L83">            this.testFixture = testFixture;</span>
+<span class="nc" id="L84">        }</span>
+
+        @Override
+        public void run() {
+<span class="nc" id="L88">            ReflectionToStringBuilder.toString(testFixture);</span>
+<span class="nc" id="L89">        }</span>
+    }
+
+    @Test
+    @Disabled
+    public void testConcurrency() {
+<span class="nc" id="L95">        final TestFixture testFixture = new TestFixture();</span>
+<span class="nc" id="L96">        final int numMutators = 10;</span>
+<span class="nc" id="L97">        final int numIterations = 10;</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (int i = 0; i &lt; numIterations; i++) {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            for (int j = 0; j &lt; numMutators; j++) {</span>
+<span class="nc" id="L100">                final Thread t = new Thread(new MutatingClient(testFixture));</span>
+<span class="nc" id="L101">                t.start();</span>
+<span class="nc" id="L102">                final Thread s = new Thread(new InspectingClient(testFixture));</span>
+<span class="nc" id="L103">                s.start();</span>
+            }
+        }
+<span class="nc" id="L106">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

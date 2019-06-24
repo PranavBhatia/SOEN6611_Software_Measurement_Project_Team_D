@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractMultiFileConfigurationBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">AbstractMultiFileConfigurationBuilderTest.java</span></div><h1>AbstractMultiFileConfigurationBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.BuilderParameters;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.DefaultLookups;
+import org.junit.After;
+
+/**
+ * A base class for test classes for {@code MultiFileConfigurationBuilder} and
+ * derived classes. This class provides some common functionality related to
+ * file name pattern which can be used by concrete tests.
+ *
+ */
+<span class="fc" id="L31">public class AbstractMultiFileConfigurationBuilderTest</span>
+{
+    /** The system property which selects a sub configuration. */
+    private static final String PROP = &quot;Id&quot;;
+
+    /** The part of the pattern containing the variable. */
+<span class="fc" id="L37">    protected static String PATTERN_VAR = &quot;${sys:Id}&quot;;</span>
+
+    /** The pattern for file names. */
+<span class="fc" id="L40">    protected static String PATTERN =</span>
+            &quot;target/test-classes/testMultiConfiguration_&quot; + PATTERN_VAR
+                    + &quot;.xml&quot;;
+
+    /**
+     * Sets a system property for accessing a specific configuration file from
+     * the test builder. The passed in id can be null, then the system property
+     * is removed.
+     *
+     * @param id the ID of the managed configuration to load
+     */
+    protected static void switchToConfig(final String id)
+    {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (id != null)</span>
+        {
+<span class="fc" id="L55">            System.setProperty(PROP, id);</span>
+        }
+        else
+        {
+<span class="fc" id="L59">            System.getProperties().remove(PROP);</span>
+        }
+<span class="fc" id="L61">    }</span>
+
+    @After
+    public void tearDown() throws Exception
+    {
+<span class="fc" id="L66">        switchToConfig(null);</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Selects a specific configuration to be obtained from the builder.
+     *
+     * @param index the index of the configuration to be accessed (valid indices
+     *        are 1-3)
+     */
+    protected static void switchToConfig(final int index)
+    {
+<span class="fc" id="L77">        switchToConfig(&quot;100&quot; + index);</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Creates a {@code ConfigurationInterpolator} to be used by tests. This
+     * object contains a lookup for system properties.
+     *
+     * @return the new {@code ConfigurationInterpolator}
+     */
+    protected static ConfigurationInterpolator createInterpolator()
+    {
+<span class="fc" id="L88">        final ConfigurationInterpolator ci = new ConfigurationInterpolator();</span>
+<span class="fc" id="L89">        ci.registerLookup(DefaultLookups.SYSTEM_PROPERTIES.getPrefix(),</span>
+<span class="fc" id="L90">                DefaultLookups.SYSTEM_PROPERTIES.getLookup());</span>
+<span class="fc" id="L91">        return ci;</span>
+    }
+
+    /**
+     * Creates a parameters object with default settings for a test builder
+     * instance.
+     *
+     * @param managedParams the parameters for managed configurations
+     * @return the test parameters
+     */
+    protected static BasicBuilderParameters createTestBuilderParameters(
+            final BuilderParameters managedParams)
+    {
+<span class="fc" id="L104">        return new MultiFileBuilderParametersImpl().setFilePattern(PATTERN)</span>
+<span class="fc" id="L105">                .setManagedBuilderParameters(managedParams)</span>
+<span class="fc" id="L106">                .setInterpolator(createInterpolator());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

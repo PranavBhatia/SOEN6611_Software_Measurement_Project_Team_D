@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestPropertyConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.convert</a> &gt; <span class="el_source">TestPropertyConverter.java</span></div><h1>TestPropertyConverter.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2.convert;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+import java.io.File;
+import java.lang.annotation.ElementType;
+import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Pattern;
+
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.junit.Test;
+
+/**
+ * Test class for PropertyConverter.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L38">public class TestPropertyConverter</span>
+{
+    /** Constant for an enumeration class used by some tests. */
+<span class="fc" id="L41">    private static final Class&lt;ElementType&gt; ENUM_CLASS = ElementType.class;</span>
+
+    /**
+     * Tests conversion to files when the passed in objects are already
+     * files.
+     */
+    @Test
+    public void testToFileDirect()
+    {
+<span class="fc" id="L50">        final File f = new File(&quot;dir&quot;, &quot;file&quot;);</span>
+<span class="fc" id="L51">        assertSame(&quot;Wrong file&quot;, f, PropertyConverter.toFile(f));</span>
+<span class="fc" id="L52">    }</span>
+
+    /**
+     * Tests conversion to file when the passed in objects have a compatible
+     * string representation.
+     */
+    @Test
+    public void testToFileFromString()
+    {
+<span class="fc" id="L61">        assertEquals(&quot;Wrong conversion result&quot;, new File(&quot;dir&quot;, &quot;file&quot;), PropertyConverter.toFile(&quot;dir/file&quot;));</span>
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Tests conversion to file when the passed in objects are paths.
+     */
+    @Test
+    public void testToFileFromPath()
+    {
+<span class="fc" id="L70">        final Path p = Paths.get(&quot;dir&quot;, &quot;file&quot;);</span>
+<span class="fc" id="L71">        assertEquals(&quot;Wrong conversion result&quot;, new File(&quot;dir&quot;, &quot;file&quot;), PropertyConverter.toFile(p));</span>
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Tests conversion to paths when the passed in objects are already
+     * paths.
+     */
+    @Test
+    public void testToPathDirect()
+    {
+<span class="fc" id="L81">        final Path p = Paths.get(&quot;dir&quot;, &quot;file&quot;);</span>
+<span class="fc" id="L82">        assertSame(&quot;Wrong path&quot;, p, PropertyConverter.toPath(p));</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Tests conversion to file when the passed in objects have a compatible
+     * string representation.
+     */
+    @Test
+    public void testToPathFromString()
+    {
+<span class="fc" id="L92">        assertEquals(&quot;Wrong conversion result&quot;, Paths.get(&quot;dir&quot;, &quot;file&quot;), PropertyConverter.toPath(&quot;dir/file&quot;));</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Tests conversion to path when the passed in objects are files.
+     */
+    @Test
+    public void testToPathFromFile()
+    {
+<span class="fc" id="L101">        final File f =  new File(&quot;dir&quot;, &quot;file&quot;);</span>
+<span class="fc" id="L102">        assertEquals(&quot;Wrong conversion result&quot;, Paths.get(&quot;dir&quot;, &quot;file&quot;), PropertyConverter.toPath(f));</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Tests conversion to numbers when the passed in objects are already
+     * numbers.
+     */
+    @Test
+    public void testToNumberDirect()
+    {
+<span class="fc" id="L112">        final Integer i = new Integer(42);</span>
+<span class="fc" id="L113">        assertSame(&quot;Wrong integer&quot;, i, PropertyConverter.toNumber(i, Integer.class));</span>
+<span class="fc" id="L114">        final BigDecimal d = new BigDecimal(&quot;3.1415&quot;);</span>
+<span class="fc" id="L115">        assertSame(&quot;Wrong BigDecimal&quot;, d, PropertyConverter.toNumber(d, Integer.class));</span>
+<span class="fc" id="L116">    }</span>
+
+    /**
+     * Tests conversion to numbers when the passed in objects have a compatible
+     * string representation.
+     */
+    @Test
+    public void testToNumberFromString()
+    {
+<span class="fc" id="L125">        assertEquals(&quot;Incorrect Integer value&quot;, new Integer(42), PropertyConverter.toNumber(&quot;42&quot;, Integer.class));</span>
+<span class="fc" id="L126">        assertEquals(&quot;Incorrect Short value&quot;, new Short((short) 10), PropertyConverter.toNumber(new StringBuffer(&quot;10&quot;), Short.class));</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests conversion to numbers when the passed in objects are strings with
+     * prefixes for special radices.
+     */
+    @Test
+    public void testToNumberFromHexString()
+    {
+<span class="fc" id="L136">        final Number n = PropertyConverter.toNumber(&quot;0x10&quot;, Integer.class);</span>
+<span class="fc" id="L137">        assertEquals(&quot;Incorrect Integer value&quot;, 16, n.intValue());</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Tests conversion to numbers when an invalid Hex value is passed in.
+     * This should cause an exception.
+     */
+    @Test(expected = ConversionException.class)
+    public void testToNumberFromInvalidHexString()
+    {
+<span class="nc" id="L147">        PropertyConverter.toNumber(&quot;0xNotAHexValue&quot;, Integer.class);</span>
+<span class="nc" id="L148">    }</span>
+
+    /**
+     * Tests conversion to numbers when the passed in objects are strings with
+     * prefixes for special radices.
+     */
+    @Test
+    public void testToNumberFromBinaryString()
+    {
+<span class="fc" id="L157">        final Number n = PropertyConverter.toNumber(&quot;0b1111&quot;, Integer.class);</span>
+<span class="fc" id="L158">        assertEquals(&quot;Incorrect Integer value&quot;, 15, n.intValue());</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Tests conversion to numbers when an invalid binary value is passed in.
+     * This should cause an exception.
+     */
+    @Test(expected = ConversionException.class)
+    public void testToNumberFromInvalidBinaryString()
+    {
+<span class="nc" id="L168">        PropertyConverter.toNumber(&quot;0bNotABinValue&quot;, Integer.class);</span>
+<span class="nc" id="L169">    }</span>
+
+    /**
+     * Tests conversion to numbers when the passed in objects have no numeric
+     * String representation. This should cause an exception.
+     */
+    @Test(expected = ConversionException.class)
+    public void testToNumberFromInvalidString()
+    {
+<span class="nc" id="L178">        PropertyConverter.toNumber(&quot;Not a number&quot;, Byte.class);</span>
+<span class="nc" id="L179">    }</span>
+
+    /**
+     * Tests conversion to numbers when the passed in target class is invalid.
+     * This should cause an exception.
+     */
+    @Test(expected = ConversionException.class)
+    public void testToNumberWithInvalidClass()
+    {
+<span class="nc" id="L188">        PropertyConverter.toNumber(&quot;42&quot;, Object.class);</span>
+<span class="nc" id="L189">    }</span>
+
+    /**
+     * Tests conversion to patterns when the passed in objects are already
+     * patterns.
+     */
+    @Test
+    public void testToPatternDirect()
+    {
+<span class="fc" id="L198">        final Pattern p = Pattern.compile(&quot;.+&quot;);</span>
+<span class="fc" id="L199">        assertSame(&quot;Wrong pattern&quot;, p, PropertyConverter.toPattern(p));</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Tests conversion to patterns when the passed in objects have a compatible
+     * string representation.
+     */
+    @Test
+    public void testToPatternFromString()
+    {
+<span class="fc" id="L209">        final Pattern p = Pattern.compile(&quot;.+&quot;);</span>
+<span class="fc" id="L210">        assertEquals(&quot;Wrong conversion result&quot;, p.pattern(), PropertyConverter.toPattern(&quot;.+&quot;).pattern());</span>
+<span class="fc" id="L211">    }</span>
+
+    @Test
+    public void testToEnumFromEnum()
+    {
+<span class="fc" id="L216">        assertEquals(ElementType.METHOD, PropertyConverter.toEnum(ElementType.METHOD, ENUM_CLASS));</span>
+<span class="fc" id="L217">    }</span>
+
+    @Test
+    public void testToEnumFromString()
+    {
+<span class="fc" id="L222">        assertEquals(ElementType.METHOD, PropertyConverter.toEnum(&quot;METHOD&quot;, ENUM_CLASS));</span>
+<span class="fc" id="L223">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testToEnumFromInvalidString()
+    {
+<span class="nc" id="L228">        PropertyConverter.toEnum(&quot;FOO&quot;, ENUM_CLASS);</span>
+<span class="nc" id="L229">    }</span>
+
+    @Test
+    public void testToEnumFromNumber()
+    {
+<span class="fc" id="L234">        assertEquals(ElementType.METHOD, PropertyConverter.toEnum(</span>
+<span class="fc" id="L235">                Integer.valueOf(ElementType.METHOD.ordinal()),</span>
+                ENUM_CLASS));
+<span class="fc" id="L237">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testToEnumFromInvalidNumber()
+    {
+<span class="nc" id="L242">        PropertyConverter.toEnum(Integer.valueOf(-1), ENUM_CLASS);</span>
+<span class="nc" id="L243">    }</span>
+
+    /**
+     * Tests a trivial conversion: the value has already the desired type.
+     */
+    @Test
+    public void testToNoConversionNeeded()
+    {
+<span class="fc" id="L251">        final String value = &quot;testValue&quot;;</span>
+<span class="fc" id="L252">        assertEquals(&quot;Wrong conversion result&quot;, value, PropertyConverter.to(</span>
+                String.class, value, new DefaultConversionHandler()));
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Tests whether a conversion to character is possible.
+     */
+    @Test
+    public void testToCharSuccess()
+    {
+<span class="fc" id="L262">        assertEquals(&quot;Wrong conversion result&quot;, Character.valueOf('t'),</span>
+<span class="fc" id="L263">                PropertyConverter.to(Character.class, &quot;t&quot;,</span>
+                        new DefaultConversionHandler()));
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Tests whether other objects implementing a toString() method can be
+     * converted to character.
+     */
+    @Test
+    public void testToCharViaToString()
+    {
+<span class="fc" id="L274">        final Object value = new Object()</span>
+<span class="fc" id="L275">        {</span>
+            @Override
+            public String toString()
+            {
+<span class="fc" id="L279">                return &quot;X&quot;;</span>
+            }
+        };
+<span class="fc" id="L282">        assertEquals(&quot;Wrong conversion result&quot;, Character.valueOf('X'),</span>
+<span class="fc" id="L283">                PropertyConverter.to(Character.TYPE, value,</span>
+                        new DefaultConversionHandler()));
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Tests a failed conversion to character.
+     */
+    @Test(expected = ConversionException.class)
+    public void testToCharFailed()
+    {
+<span class="nc" id="L293">        PropertyConverter.to(Character.TYPE, &quot;FF&quot;,</span>
+                new DefaultConversionHandler());
+<span class="nc" id="L295">    }</span>
+
+    /**
+     * Tests a conversion to a string.
+     */
+    @Test
+    public void testToStringConversion()
+    {
+<span class="fc" id="L303">        final Integer src = 42;</span>
+<span class="fc" id="L304">        final Object result =</span>
+<span class="fc" id="L305">                PropertyConverter.to(String.class, src,</span>
+                        new DefaultConversionHandler());
+<span class="fc" id="L307">        assertEquals(&quot;Wrong resulting string&quot;, &quot;42&quot;, result);</span>
+<span class="fc" id="L308">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

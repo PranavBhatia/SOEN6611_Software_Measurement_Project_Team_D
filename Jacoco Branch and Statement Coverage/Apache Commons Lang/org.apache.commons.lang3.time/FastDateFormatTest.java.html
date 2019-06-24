@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FastDateFormatTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">FastDateFormatTest.java</span></div><h1>FastDateFormatTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLongArray;
+
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.DefaultLocale;
+import org.junitpioneer.jupiter.DefaultTimeZone;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.time.FastDateFormat}.
+ *
+ * @since 2.0
+ */
+<span class="fc" id="L47">public class FastDateFormatTest {</span>
+    /*
+     * Only the cache methods need to be tested here.
+     * The print methods are tested by {@link FastDateFormat_PrinterTest}
+     * and the parse methods are tested by {@link FastDateFormat_ParserTest}
+     */
+    @Test
+    public void test_getInstance() {
+<span class="fc" id="L55">        final FastDateFormat format1 = FastDateFormat.getInstance();</span>
+<span class="fc" id="L56">        final FastDateFormat format2 = FastDateFormat.getInstance();</span>
+<span class="fc" id="L57">        assertSame(format1, format2);</span>
+<span class="fc" id="L58">    }</span>
+
+    @Test
+    public void test_getInstance_String() {
+<span class="fc" id="L62">        final FastDateFormat format1 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;);</span>
+<span class="fc" id="L63">        final FastDateFormat format2 = FastDateFormat.getInstance(&quot;MM-DD-yyyy&quot;);</span>
+<span class="fc" id="L64">        final FastDateFormat format3 = FastDateFormat.getInstance(&quot;MM-DD-yyyy&quot;);</span>
+
+<span class="fc" id="L66">        assertNotSame(format1, format2);</span>
+<span class="fc" id="L67">        assertSame(format2, format3);</span>
+<span class="fc" id="L68">        assertEquals(&quot;MM/DD/yyyy&quot;, format1.getPattern());</span>
+<span class="fc" id="L69">        assertEquals(TimeZone.getDefault(), format1.getTimeZone());</span>
+<span class="fc" id="L70">        assertEquals(TimeZone.getDefault(), format2.getTimeZone());</span>
+<span class="fc" id="L71">    }</span>
+
+    @DefaultLocale(language = &quot;en&quot;, country = &quot;US&quot;)
+    @DefaultTimeZone(&quot;America/New_York&quot;)
+    @Test
+    public void test_getInstance_String_TimeZone() {
+
+<span class="fc" id="L78">        final FastDateFormat format1 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;,</span>
+<span class="fc" id="L79">                TimeZone.getTimeZone(&quot;Atlantic/Reykjavik&quot;));</span>
+<span class="fc" id="L80">        final FastDateFormat format2 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;);</span>
+<span class="fc" id="L81">        final FastDateFormat format3 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;, TimeZone.getDefault());</span>
+<span class="fc" id="L82">        final FastDateFormat format4 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;, TimeZone.getDefault());</span>
+<span class="fc" id="L83">        final FastDateFormat format5 = FastDateFormat.getInstance(&quot;MM-DD-yyyy&quot;, TimeZone.getDefault());</span>
+<span class="fc" id="L84">        final FastDateFormat format6 = FastDateFormat.getInstance(&quot;MM-DD-yyyy&quot;);</span>
+
+<span class="fc" id="L86">        assertNotSame(format1, format2);</span>
+<span class="fc" id="L87">        assertEquals(TimeZone.getTimeZone(&quot;Atlantic/Reykjavik&quot;), format1.getTimeZone());</span>
+<span class="fc" id="L88">        assertEquals(TimeZone.getDefault(), format2.getTimeZone());</span>
+<span class="fc" id="L89">        assertSame(format3, format4);</span>
+<span class="fc" id="L90">        assertNotSame(format3, format5);</span>
+<span class="fc" id="L91">        assertNotSame(format4, format6);</span>
+<span class="fc" id="L92">    }</span>
+
+    @DefaultLocale(language = &quot;en&quot;, country = &quot;US&quot;)
+    @Test
+    public void test_getInstance_String_Locale() {
+<span class="fc" id="L97">        final FastDateFormat format1 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;, Locale.GERMANY);</span>
+<span class="fc" id="L98">        final FastDateFormat format2 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;);</span>
+<span class="fc" id="L99">        final FastDateFormat format3 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;, Locale.GERMANY);</span>
+
+<span class="fc" id="L101">        assertNotSame(format1, format2);</span>
+<span class="fc" id="L102">        assertSame(format1, format3);</span>
+<span class="fc" id="L103">        assertEquals(Locale.GERMANY, format1.getLocale());</span>
+<span class="fc" id="L104">    }</span>
+
+    @DefaultLocale(language = &quot;en&quot;, country = &quot;US&quot;)
+    @Test
+    public void test_changeDefault_Locale_DateInstance() {
+<span class="fc" id="L109">        final FastDateFormat format1 = FastDateFormat.getDateInstance(FastDateFormat.FULL, Locale.GERMANY);</span>
+<span class="fc" id="L110">        final FastDateFormat format2 = FastDateFormat.getDateInstance(FastDateFormat.FULL);</span>
+<span class="fc" id="L111">        Locale.setDefault(Locale.GERMANY);</span>
+<span class="fc" id="L112">        final FastDateFormat format3 = FastDateFormat.getDateInstance(FastDateFormat.FULL);</span>
+
+<span class="fc" id="L114">        assertSame(Locale.GERMANY, format1.getLocale());</span>
+<span class="fc" id="L115">        assertEquals(Locale.US, format2.getLocale());</span>
+<span class="fc" id="L116">        assertSame(Locale.GERMANY, format3.getLocale());</span>
+<span class="fc" id="L117">        assertNotSame(format1, format2);</span>
+<span class="fc" id="L118">        assertNotSame(format2, format3);</span>
+<span class="fc" id="L119">    }</span>
+
+    @DefaultLocale(language = &quot;en&quot;, country = &quot;US&quot;)
+    @Test
+    public void test_changeDefault_Locale_DateTimeInstance() {
+<span class="fc" id="L124">        final FastDateFormat format1 = FastDateFormat.getDateTimeInstance(FastDateFormat.FULL, FastDateFormat.FULL, Locale.GERMANY);</span>
+<span class="fc" id="L125">        final FastDateFormat format2 = FastDateFormat.getDateTimeInstance(FastDateFormat.FULL, FastDateFormat.FULL);</span>
+<span class="fc" id="L126">        Locale.setDefault(Locale.GERMANY);</span>
+<span class="fc" id="L127">        final FastDateFormat format3 = FastDateFormat.getDateTimeInstance(FastDateFormat.FULL, FastDateFormat.FULL);</span>
+
+<span class="fc" id="L129">        assertSame(Locale.GERMANY, format1.getLocale());</span>
+<span class="fc" id="L130">        assertEquals(Locale.US, format2.getLocale());</span>
+<span class="fc" id="L131">        assertSame(Locale.GERMANY, format3.getLocale());</span>
+<span class="fc" id="L132">        assertNotSame(format1, format2);</span>
+<span class="fc" id="L133">        assertNotSame(format2, format3);</span>
+<span class="fc" id="L134">    }</span>
+
+    @DefaultLocale(language = &quot;en&quot;, country = &quot;US&quot;)
+    @DefaultTimeZone(&quot;America/New_York&quot;)
+    @Test
+    public void test_getInstance_String_TimeZone_Locale() {
+<span class="fc" id="L140">        final FastDateFormat format1 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;,</span>
+<span class="fc" id="L141">                TimeZone.getTimeZone(&quot;Atlantic/Reykjavik&quot;), Locale.GERMANY);</span>
+<span class="fc" id="L142">        final FastDateFormat format2 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;, Locale.GERMANY);</span>
+<span class="fc" id="L143">        final FastDateFormat format3 = FastDateFormat.getInstance(&quot;MM/DD/yyyy&quot;,</span>
+<span class="fc" id="L144">                TimeZone.getDefault(), Locale.GERMANY);</span>
+
+<span class="fc" id="L146">        assertNotSame(format1, format2);</span>
+<span class="fc" id="L147">        assertEquals(TimeZone.getTimeZone(&quot;Atlantic/Reykjavik&quot;), format1.getTimeZone());</span>
+<span class="fc" id="L148">        assertEquals(TimeZone.getDefault(), format2.getTimeZone());</span>
+<span class="fc" id="L149">        assertEquals(TimeZone.getDefault(), format3.getTimeZone());</span>
+<span class="fc" id="L150">        assertEquals(Locale.GERMANY, format1.getLocale());</span>
+<span class="fc" id="L151">        assertEquals(Locale.GERMANY, format2.getLocale());</span>
+<span class="fc" id="L152">        assertEquals(Locale.GERMANY, format3.getLocale());</span>
+<span class="fc" id="L153">    }</span>
+
+    @Test
+    public void testCheckDefaults() {
+<span class="fc" id="L157">        final FastDateFormat format = FastDateFormat.getInstance();</span>
+<span class="fc" id="L158">        final FastDateFormat medium = FastDateFormat.getDateTimeInstance(FastDateFormat.SHORT, FastDateFormat.SHORT);</span>
+<span class="fc" id="L159">        assertEquals(medium, format);</span>
+
+<span class="fc" id="L161">        final SimpleDateFormat sdf = new SimpleDateFormat();</span>
+<span class="fc" id="L162">        assertEquals(sdf.toPattern(), format.getPattern());</span>
+
+<span class="fc" id="L164">        assertEquals(Locale.getDefault(), format.getLocale());</span>
+<span class="fc" id="L165">        assertEquals(TimeZone.getDefault(), format.getTimeZone());</span>
+<span class="fc" id="L166">    }</span>
+
+    @Test
+    public void testCheckDifferingStyles() {
+<span class="fc" id="L170">        final FastDateFormat shortShort = FastDateFormat.getDateTimeInstance(FastDateFormat.SHORT, FastDateFormat.SHORT, Locale.US);</span>
+<span class="fc" id="L171">        final FastDateFormat shortLong = FastDateFormat.getDateTimeInstance(FastDateFormat.SHORT, FastDateFormat.LONG, Locale.US);</span>
+<span class="fc" id="L172">        final FastDateFormat longShort = FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.SHORT, Locale.US);</span>
+<span class="fc" id="L173">        final FastDateFormat longLong = FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.LONG, Locale.US);</span>
+
+<span class="fc" id="L175">        assertNotEquals(shortShort, shortLong);</span>
+<span class="fc" id="L176">        assertNotEquals(shortShort, longShort);</span>
+<span class="fc" id="L177">        assertNotEquals(shortShort, longLong);</span>
+<span class="fc" id="L178">        assertNotEquals(shortLong, longShort);</span>
+<span class="fc" id="L179">        assertNotEquals(shortLong, longLong);</span>
+<span class="fc" id="L180">        assertNotEquals(longShort, longLong);</span>
+<span class="fc" id="L181">    }</span>
+
+    @Test
+    public void testDateDefaults() {
+<span class="fc" id="L185">        assertEquals(FastDateFormat.getDateInstance(FastDateFormat.LONG, Locale.CANADA),</span>
+<span class="fc" id="L186">                FastDateFormat.getDateInstance(FastDateFormat.LONG, TimeZone.getDefault(), Locale.CANADA));</span>
+
+<span class="fc" id="L188">        assertEquals(FastDateFormat.getDateInstance(FastDateFormat.LONG, TimeZone.getTimeZone(&quot;America/New_York&quot;)),</span>
+<span class="fc" id="L189">                FastDateFormat.getDateInstance(FastDateFormat.LONG, TimeZone.getTimeZone(&quot;America/New_York&quot;), Locale.getDefault()));</span>
+
+<span class="fc" id="L191">        assertEquals(FastDateFormat.getDateInstance(FastDateFormat.LONG),</span>
+<span class="fc" id="L192">                FastDateFormat.getDateInstance(FastDateFormat.LONG, TimeZone.getDefault(), Locale.getDefault()));</span>
+<span class="fc" id="L193">    }</span>
+
+    @Test
+    public void testTimeDefaults() {
+<span class="fc" id="L197">        assertEquals(FastDateFormat.getTimeInstance(FastDateFormat.LONG, Locale.CANADA),</span>
+<span class="fc" id="L198">                FastDateFormat.getTimeInstance(FastDateFormat.LONG, TimeZone.getDefault(), Locale.CANADA));</span>
+
+<span class="fc" id="L200">        assertEquals(FastDateFormat.getTimeInstance(FastDateFormat.LONG, TimeZone.getTimeZone(&quot;America/New_York&quot;)),</span>
+<span class="fc" id="L201">                FastDateFormat.getTimeInstance(FastDateFormat.LONG, TimeZone.getTimeZone(&quot;America/New_York&quot;), Locale.getDefault()));</span>
+
+<span class="fc" id="L203">        assertEquals(FastDateFormat.getTimeInstance(FastDateFormat.LONG),</span>
+<span class="fc" id="L204">                FastDateFormat.getTimeInstance(FastDateFormat.LONG, TimeZone.getDefault(), Locale.getDefault()));</span>
+<span class="fc" id="L205">    }</span>
+
+    @Test
+    public void testTimeDateDefaults() {
+<span class="fc" id="L209">        assertEquals(FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.MEDIUM, Locale.CANADA),</span>
+<span class="fc" id="L210">                FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.MEDIUM, TimeZone.getDefault(), Locale.CANADA));</span>
+
+<span class="fc" id="L212">        assertEquals(FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.MEDIUM, TimeZone.getTimeZone(&quot;America/New_York&quot;)),</span>
+<span class="fc" id="L213">                FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.MEDIUM, TimeZone.getTimeZone(&quot;America/New_York&quot;), Locale.getDefault()));</span>
+
+<span class="fc" id="L215">        assertEquals(FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.MEDIUM),</span>
+<span class="fc" id="L216">                FastDateFormat.getDateTimeInstance(FastDateFormat.LONG, FastDateFormat.MEDIUM, TimeZone.getDefault(), Locale.getDefault()));</span>
+<span class="fc" id="L217">    }</span>
+
+    @Test
+    public void testParseSync() throws InterruptedException {
+<span class="fc" id="L221">        final String pattern = &quot;yyyy-MM-dd'T'HH:mm:ss.SSS&quot;;</span>
+<span class="fc" id="L222">        final SimpleDateFormat inner = new SimpleDateFormat(pattern);</span>
+<span class="fc" id="L223">        final Format sdf= new Format() {</span>
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public StringBuffer format(final Object obj,
+                    final StringBuffer toAppendTo,
+                    final FieldPosition fieldPosition) {
+<span class="fc" id="L230">                synchronized(this) {</span>
+<span class="fc" id="L231">                    return inner.format(obj, toAppendTo, fieldPosition);</span>
+                }
+            }
+
+            @Override
+            public Object parseObject(final String source, final ParsePosition pos) {
+<span class="fc" id="L237">                synchronized(this) {</span>
+<span class="fc" id="L238">                    return inner.parseObject(source, pos);</span>
+                }
+            }
+        };
+<span class="fc" id="L242">        final AtomicLongArray sdfTime= measureTime(sdf, sdf);</span>
+
+<span class="fc" id="L244">        final Format fdf = FastDateFormat.getInstance(pattern);</span>
+<span class="fc" id="L245">        final AtomicLongArray fdfTime= measureTime(fdf, fdf);</span>
+
+<span class="fc" id="L247">        System.out.println(&quot;&gt;&gt;FastDateFormatTest: FastDatePrinter:&quot;+fdfTime.get(0)+&quot;  SimpleDateFormat:&quot;+sdfTime.get(0));</span>
+<span class="fc" id="L248">        System.out.println(&quot;&gt;&gt;FastDateFormatTest: FastDateParser:&quot;+fdfTime.get(1)+&quot;  SimpleDateFormat:&quot;+sdfTime.get(1));</span>
+<span class="fc" id="L249">    }</span>
+
+    private static final int NTHREADS= 10;
+    private static final int NROUNDS= 10000;
+
+    private AtomicLongArray measureTime(final Format printer, final Format parser) throws InterruptedException {
+<span class="fc" id="L255">        final ExecutorService pool = Executors.newFixedThreadPool(NTHREADS);</span>
+<span class="fc" id="L256">        final AtomicInteger failures= new AtomicInteger(0);</span>
+<span class="fc" id="L257">        final AtomicLongArray totalElapsed= new AtomicLongArray(2);</span>
+
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        for (int i= 0; i&lt;NTHREADS; ++i) {</span>
+<span class="fc" id="L260">            pool.submit(new Runnable() {</span>
+                @Override
+                public void run() {
+<span class="fc bfc" id="L263" title="All 2 branches covered.">                    for (int j= 0; j&lt;NROUNDS; ++j) {</span>
+                        try {
+<span class="fc" id="L265">                            final Date date= new Date();</span>
+
+<span class="fc" id="L267">                            final long t0= System.currentTimeMillis();</span>
+<span class="fc" id="L268">                            final String formattedDate= printer.format(date);</span>
+<span class="fc" id="L269">                            totalElapsed.addAndGet(0, System.currentTimeMillis() - t0);</span>
+
+<span class="fc" id="L271">                            final long t1 = System.currentTimeMillis();</span>
+<span class="fc" id="L272">                            final Object pd= parser.parseObject(formattedDate);</span>
+<span class="fc" id="L273">                            totalElapsed.addAndGet(1, System.currentTimeMillis() - t1);</span>
+
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">                            if (!date.equals(pd)) {</span>
+<span class="nc" id="L276">                                failures.incrementAndGet();</span>
+                            }
+<span class="nc" id="L278">                        } catch (final Exception e) {</span>
+<span class="nc" id="L279">                            failures.incrementAndGet();</span>
+<span class="nc" id="L280">                            e.printStackTrace();</span>
+<span class="fc" id="L281">                        }</span>
+                    }
+<span class="fc" id="L283">                }</span>
+            });
+        }
+<span class="fc" id="L286">        pool.shutdown();</span>
+        // depending on the performance of the machine used to run the parsing,
+        // the tests can run for a while. It should however complete within
+        // 30 seconds. Might need increase on very slow machines.
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">        if (!pool.awaitTermination(30, TimeUnit.SECONDS)) {</span>
+<span class="nc" id="L291">            pool.shutdownNow();</span>
+<span class="nc" id="L292">            fail(&quot;did not complete tasks&quot;);</span>
+        }
+<span class="fc" id="L294">        assertEquals(0, failures.get());</span>
+<span class="fc" id="L295">        return totalElapsed;</span>
+    }
+
+    /**
+     * According to LANG-954 (https://issues.apache.org/jira/browse/LANG-954) this is broken in Android 2.1.
+     */
+    @Test
+    public void testLANG_954() {
+<span class="fc" id="L303">        final String pattern = &quot;yyyy-MM-dd'T'&quot;;</span>
+<span class="fc" id="L304">        FastDateFormat.getInstance(pattern);</span>
+<span class="fc" id="L305">    }</span>
+
+    @Test
+    public void testLANG_1152() {
+<span class="fc" id="L309">        final TimeZone utc = FastTimeZone.getGmtTimeZone();</span>
+<span class="fc" id="L310">        final Date date = new Date(Long.MAX_VALUE);</span>
+
+<span class="fc" id="L312">        String dateAsString = FastDateFormat.getInstance(&quot;yyyy-MM-dd&quot;, utc, Locale.US).format(date);</span>
+<span class="fc" id="L313">        assertEquals(&quot;292278994-08-17&quot;, dateAsString);</span>
+
+<span class="fc" id="L315">        dateAsString = FastDateFormat.getInstance(&quot;dd/MM/yyyy&quot;, utc, Locale.US).format(date);</span>
+<span class="fc" id="L316">        assertEquals(&quot;17/08/292278994&quot;, dateAsString);</span>
+<span class="fc" id="L317">    }</span>
+
+    @Test
+    public void testLANG_1267() {
+<span class="fc" id="L321">        FastDateFormat.getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss.SSSXXX&quot;);</span>
+<span class="fc" id="L322">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

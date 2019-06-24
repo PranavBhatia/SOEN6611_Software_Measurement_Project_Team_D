@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestNodeSelector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestNodeSelector.java</span></div><h1>TestNodeSelector.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code NodeSelector}.
+ *
+ */
+<span class="fc" id="L38">public class TestNodeSelector</span>
+{
+    /** Constant for a test key. */
+    private static final String KEY = &quot;tables.testKey&quot;;
+
+    /** The root node for query operations. */
+    private static ImmutableNode root;
+
+    /** A NodeKeyResolver implementation. */
+    private static NodeKeyResolver&lt;ImmutableNode&gt; resolver;
+
+    /** The node handler object. */
+    private static NodeHandler&lt;ImmutableNode&gt; handler;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L55">        resolver = createResolver();</span>
+<span class="fc" id="L56">        handler = new InMemoryNodeModel().getNodeHandler();</span>
+<span class="fc" id="L57">        root =</span>
+<span class="fc" id="L58">                new ImmutableNode.Builder(1).addChild(</span>
+<span class="fc" id="L59">                        NodeStructureHelper.ROOT_TABLES_TREE).create();</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Creates a {@code NodeKeyResolver} object to be used in the tests. This
+     * resolver object uses a {@code DefaultExpressionEngine} instance for
+     * resolving keys. Methods for obtaining add or update data objects are not
+     * implemented.
+     *
+     * @return the {@code NodeKeyResolver}
+     */
+    private static NodeKeyResolver&lt;ImmutableNode&gt; createResolver()
+    {
+        final NodeKeyResolver&lt;ImmutableNode&gt; resolver =
+<span class="fc" id="L73">                NodeStructureHelper.createResolverMock();</span>
+<span class="fc" id="L74">        NodeStructureHelper.expectResolveKeyForQueries(resolver);</span>
+<span class="fc" id="L75">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L76">        return resolver;</span>
+    }
+
+    /**
+     * Tests a successful select operation for a single key.
+     */
+    @Test
+    public void testSelectSingleKeySuccess()
+    {
+<span class="fc" id="L85">        final NodeSelector selector = new NodeSelector(&quot;tables.table(0).name&quot;);</span>
+<span class="fc" id="L86">        final ImmutableNode target = selector.select(root, resolver, handler);</span>
+<span class="fc" id="L87">        assertEquals(&quot;Wrong name&quot;, &quot;name&quot;, target.getNodeName());</span>
+<span class="fc" id="L88">        assertEquals(&quot;Wrong value&quot;, NodeStructureHelper.table(0),</span>
+<span class="fc" id="L89">                target.getValue());</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Tests a select operation if the key selects an attribute node.
+     */
+    @Test
+    public void testSelectSingleAttributeKey()
+    {
+        final NodeKeyResolver&lt;ImmutableNode&gt; resolverMock =
+<span class="fc" id="L99">                NodeStructureHelper.createResolverMock();</span>
+<span class="fc" id="L100">        EasyMock.expect(resolverMock.resolveKey(root, KEY, handler)).andReturn(</span>
+<span class="fc" id="L101">                Collections.singletonList(QueryResult.createAttributeResult(</span>
+                        root, KEY)));
+<span class="fc" id="L103">        EasyMock.replay(resolverMock);</span>
+
+<span class="fc" id="L105">        final NodeSelector selector = new NodeSelector(KEY);</span>
+<span class="fc" id="L106">        assertNull(&quot;Got a result&quot;, selector.select(root, resolverMock, handler));</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Tests whether attribute results are ignored when evaluating the key.
+     */
+    @Test
+    public void testSelectIgnoreAttributeResults()
+    {
+        final NodeKeyResolver&lt;ImmutableNode&gt; resolverMock =
+<span class="fc" id="L116">                NodeStructureHelper.createResolverMock();</span>
+<span class="fc" id="L117">        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; results =</span>
+                new LinkedList&lt;&gt;();
+<span class="fc" id="L119">        results.add(QueryResult.createAttributeResult(</span>
+<span class="fc" id="L120">                NodeStructureHelper.nodeForKey(root, &quot;tables/table(0)&quot;), &quot;type&quot;));</span>
+<span class="fc" id="L121">        final ImmutableNode target =</span>
+<span class="fc" id="L122">                NodeStructureHelper.nodeForKey(root, &quot;tables/table(1)&quot;);</span>
+<span class="fc" id="L123">        results.add(QueryResult.createNodeResult(target));</span>
+<span class="fc" id="L124">        results.add(QueryResult.createAttributeResult(NodeStructureHelper</span>
+<span class="fc" id="L125">                .nodeForKey(root, &quot;tables/table(0)/fields/field(1)&quot;), &quot;type&quot;));</span>
+<span class="fc" id="L126">        EasyMock.expect(resolverMock.resolveKey(root, KEY, handler)).andReturn(</span>
+                results);
+<span class="fc" id="L128">        EasyMock.replay(resolverMock);</span>
+
+<span class="fc" id="L130">        final NodeSelector selector = new NodeSelector(KEY);</span>
+<span class="fc" id="L131">        assertSame(&quot;Wrong target&quot;, target,</span>
+<span class="fc" id="L132">                selector.select(root, resolverMock, handler));</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Tests a select operation with a key yielding multiple target nodes.
+     */
+    @Test
+    public void testSelectMultipleTargets()
+    {
+<span class="fc" id="L141">        final NodeSelector selector = new NodeSelector(&quot;tables.table.name&quot;);</span>
+<span class="fc" id="L142">        assertNull(&quot;Got a result&quot;, selector.select(root, resolver, handler));</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Tests a select operation with a sub key.
+     */
+    @Test
+    public void testSelectSubKey()
+    {
+<span class="fc" id="L151">        final NodeSelector selectorParent = new NodeSelector(&quot;tables.table(0)&quot;);</span>
+<span class="fc" id="L152">        final NodeSelector selector =</span>
+<span class="fc" id="L153">                selectorParent.subSelector(&quot;fields.field(1).name&quot;);</span>
+<span class="fc" id="L154">        final ImmutableNode target = selector.select(root, resolver, handler);</span>
+<span class="fc" id="L155">        assertEquals(&quot;Wrong node selected&quot;, NodeStructureHelper.field(0, 1),</span>
+<span class="fc" id="L156">                target.getValue());</span>
+<span class="fc" id="L157">    }</span>
+
+    /**
+     * Tests select() if a key is used which does not yield any results.
+     */
+    @Test
+    public void testSelectSubKeyUnknown()
+    {
+<span class="fc" id="L165">        final NodeSelector selectorParent = new NodeSelector(&quot;tables.unknown&quot;);</span>
+<span class="fc" id="L166">        final NodeSelector selector =</span>
+<span class="fc" id="L167">                selectorParent.subSelector(&quot;fields.field(1).name&quot;);</span>
+<span class="fc" id="L168">        assertNull(&quot;Got a result&quot;, selector.select(root, resolver, handler));</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Tests a select operation with a sub key which produces multiple results.
+     */
+    @Test
+    public void testSelectSubKeyMultipleResults()
+    {
+<span class="fc" id="L177">        final NodeSelector selectorParent = new NodeSelector(&quot;tables.table&quot;);</span>
+<span class="fc" id="L178">        final NodeSelector selector =</span>
+<span class="fc" id="L179">                selectorParent.subSelector(&quot;fields.field(1).name&quot;);</span>
+<span class="fc" id="L180">        assertNull(&quot;Got a result&quot;, selector.select(root, resolver, handler));</span>
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Tests a select operation with a sub key which requires complex
+     * processing: The first kes produce multiple results; the final key reduces
+     * the result set to a single node.
+     */
+    @Test
+    public void testSelectSubKeyComplexEvaluation()
+    {
+<span class="fc" id="L191">        final NodeSelector first = new NodeSelector(&quot;tables.table&quot;);</span>
+<span class="fc" id="L192">        final NodeSelector second = first.subSelector(&quot;fields&quot;);</span>
+<span class="fc" id="L193">        final int fldIdx = NodeStructureHelper.fieldsLength(1) - 1;</span>
+<span class="fc" id="L194">        final NodeSelector selector =</span>
+<span class="fc" id="L195">                second.subSelector(&quot;field(&quot; + fldIdx + &quot;).name&quot;);</span>
+<span class="fc" id="L196">        final ImmutableNode target = selector.select(root, resolver, handler);</span>
+<span class="fc" id="L197">        assertEquals(&quot;Wrong target node&quot;, NodeStructureHelper.field(1, fldIdx),</span>
+<span class="fc" id="L198">                target.getValue());</span>
+<span class="fc" id="L199">    }</span>
+
+    /**
+     * Tests equals() if the expected result is true.
+     */
+    @Test
+    public void testEqualsTrue()
+    {
+<span class="fc" id="L207">        final NodeSelector selector = new NodeSelector(KEY);</span>
+<span class="fc" id="L208">        ConfigurationAssert.checkEquals(selector, selector, true);</span>
+<span class="fc" id="L209">        final NodeSelector sel2 = new NodeSelector(KEY);</span>
+<span class="fc" id="L210">        ConfigurationAssert.checkEquals(selector, sel2, true);</span>
+<span class="fc" id="L211">        final NodeSelector sub1 = selector.subSelector(&quot;k2&quot;);</span>
+<span class="fc" id="L212">        final NodeSelector sub2 = sel2.subSelector(&quot;k2&quot;);</span>
+<span class="fc" id="L213">        ConfigurationAssert.checkEquals(sub1, sub2, true);</span>
+<span class="fc" id="L214">    }</span>
+
+    /**
+     * Tests equals() if the expected result is false.
+     */
+    @Test
+    public void testEqualsFalse()
+    {
+<span class="fc" id="L222">        final NodeSelector selector = new NodeSelector(KEY);</span>
+<span class="fc" id="L223">        NodeSelector sel2 = new NodeSelector(&quot;other&quot; + KEY);</span>
+<span class="fc" id="L224">        ConfigurationAssert.checkEquals(selector, sel2, false);</span>
+<span class="fc" id="L225">        sel2 = new NodeSelector(KEY).subSelector(KEY);</span>
+<span class="fc" id="L226">        ConfigurationAssert.checkEquals(selector, sel2, false);</span>
+<span class="fc" id="L227">    }</span>
+
+    /**
+     * Tests equals() with other objects.
+     */
+    @Test
+    public void testEqualsOtherObjects()
+    {
+<span class="fc" id="L235">        final NodeSelector selector = new NodeSelector(KEY);</span>
+<span class="fc" id="L236">        ConfigurationAssert.checkEquals(selector, null, false);</span>
+<span class="fc" id="L237">        ConfigurationAssert.checkEquals(selector, this, false);</span>
+<span class="fc" id="L238">    }</span>
+
+    /**
+     * Tests the string representation.
+     */
+    @Test
+    public void testToString()
+    {
+<span class="fc" id="L246">        final String key2 = &quot;anotherSelectionKey&quot;;</span>
+<span class="fc" id="L247">        final NodeSelector selector = new NodeSelector(KEY).subSelector(key2);</span>
+<span class="fc" id="L248">        final String s = selector.toString();</span>
+<span class="fc" id="L249">        assertThat(s, containsString(KEY));</span>
+<span class="fc" id="L250">        assertThat(s, containsString(key2));</span>
+<span class="fc" id="L251">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

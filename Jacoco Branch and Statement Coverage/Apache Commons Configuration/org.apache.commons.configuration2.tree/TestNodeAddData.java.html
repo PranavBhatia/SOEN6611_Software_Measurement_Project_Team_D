@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestNodeAddData.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestNodeAddData.java</span></div><h1>TestNodeAddData.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for NodeAddData.
+ *
+ */
+<span class="fc" id="L33">public class TestNodeAddData</span>
+{
+    /** Constant for the name of the new node. */
+    private static final String TEST_NODENAME = &quot;testNewNode&quot;;
+
+    /** Constant for the name of a path node. */
+    private static final String PATH_NODE_NAME = &quot;PATHNODE&quot;;
+
+    /** A default parent node. */
+    private static ImmutableNode parentNode;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L47">        parentNode = new ImmutableNode.Builder().name(&quot;testParent&quot;).create();</span>
+<span class="fc" id="L48">    }</span>
+
+    /**
+     * Tests whether the constructor can handle a null collection of path nodes.
+     */
+    @Test
+    public void testPathNodesNull()
+    {
+<span class="fc" id="L56">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+                new NodeAddData&lt;&gt;(parentNode, TEST_NODENAME,
+                        false, null);
+<span class="fc" id="L59">        assertTrue(&quot;Got path nodes&quot;, data.getPathNodes().isEmpty());</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Tests whether the collection with path nodes cannot be modified if no
+     * data is available.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPathNodesNullModify()
+    {
+<span class="fc" id="L69">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+                new NodeAddData&lt;&gt;(parentNode, TEST_NODENAME,
+                        false, null);
+<span class="nc" id="L72">        data.getPathNodes().add(&quot;test&quot;);</span>
+<span class="nc" id="L73">    }</span>
+
+    /**
+     * Tests whether a defensive copy of the collection with path nodes is
+     * created.
+     */
+    @Test
+    public void testInitPathNodesDefensiveCopy()
+    {
+<span class="fc" id="L82">        final List&lt;String&gt; pathNodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L83">        pathNodes.add(PATH_NODE_NAME);</span>
+<span class="fc" id="L84">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+                new NodeAddData&lt;&gt;(parentNode, TEST_NODENAME,
+                        false, pathNodes);
+<span class="fc" id="L87">        pathNodes.add(&quot;anotherNode&quot;);</span>
+<span class="fc" id="L88">        assertEquals(&quot;Wrong number of path nodes&quot;, 1, data.getPathNodes()</span>
+<span class="fc" id="L89">                .size());</span>
+<span class="fc" id="L90">        assertEquals(&quot;Wrong path node&quot;, PATH_NODE_NAME, data.getPathNodes()</span>
+<span class="fc" id="L91">                .get(0));</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Tests that the collection with path nodes cannot be modified if data is
+     * available.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPathNodesDefinedModify()
+    {
+<span class="fc" id="L101">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+                new NodeAddData&lt;&gt;(parentNode, TEST_NODENAME,
+<span class="fc" id="L103">                        false, Collections.singleton(PATH_NODE_NAME));</span>
+<span class="nc" id="L104">        data.getPathNodes().add(&quot;anotherNode&quot;);</span>
+<span class="nc" id="L105">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

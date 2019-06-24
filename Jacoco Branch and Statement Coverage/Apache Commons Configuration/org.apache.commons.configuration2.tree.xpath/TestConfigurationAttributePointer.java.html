@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationAttributePointer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree.xpath</a> &gt; <span class="el_source">TestConfigurationAttributePointer.java</span></div><h1>TestConfigurationAttributePointer.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree.xpath;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Locale;
+
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.InMemoryNodeModel;
+import org.apache.commons.configuration2.tree.QueryResult;
+import org.apache.commons.jxpath.ri.Compiler;
+import org.apache.commons.jxpath.ri.QName;
+import org.apache.commons.jxpath.ri.compiler.NodeTest;
+import org.apache.commons.jxpath.ri.compiler.NodeTypeTest;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ConfigurationAttributePointer}.
+ *
+ */
+<span class="fc" id="L41">public class TestConfigurationAttributePointer</span>
+{
+    /** Constant for the name of the test attribute. */
+    private static final String ATTR_NAME = &quot;myAttr&quot;;
+
+    /** Constant for the value of the test attribute. */
+    private static final String ATTR_VALUE = &quot;myValue&quot;;
+
+    /** Stores the parent node pointer. */
+    private ConfigurationNodePointer&lt;ImmutableNode&gt; parent;
+
+    /** The attribute pointer to be tested. */
+    private ConfigurationAttributePointer&lt;ImmutableNode&gt; pointer;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L58">        final ImmutableNode.Builder ndBuilder = new ImmutableNode.Builder();</span>
+<span class="fc" id="L59">        ndBuilder.name(&quot;parent&quot;).addAttribute(ATTR_NAME, ATTR_VALUE);</span>
+<span class="fc" id="L60">        final ImmutableNode nd = ndBuilder.create();</span>
+<span class="fc" id="L61">        parent =</span>
+                new ConfigurationNodePointer&lt;&gt;(nd, Locale.ENGLISH,
+<span class="fc" id="L63">                        new InMemoryNodeModel(nd).getNodeHandler());</span>
+<span class="fc" id="L64">        pointer =</span>
+                new ConfigurationAttributePointer&lt;&gt;(parent,
+                        ATTR_NAME);
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Tests whether the correct pointer is returned.
+     */
+    @Test
+    public void testGetParentPointer()
+    {
+<span class="fc" id="L75">        assertSame(&quot;Wrong parent pointer&quot;, parent, pointer.getParentPointer());</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Tests querying the base value.
+     */
+    @Test
+    public void testGetBaseValue()
+    {
+<span class="fc" id="L84">        assertEquals(&quot;Wrong base value&quot;, ATTR_VALUE, pointer.getBaseValue());</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Tests querying the immediate node. Here a proxy for an attribute node
+     * should be returned.
+     */
+    @Test
+    public void testGetImmediateNode()
+    {
+<span class="fc" id="L94">        final Object node = pointer.getImmediateNode();</span>
+<span class="fc" id="L95">        assertTrue(&quot;Wrong node class&quot;, node instanceof QueryResult);</span>
+<span class="fc" id="L96">        final QueryResult&lt;?&gt; proxy = (QueryResult&lt;?&gt;) node;</span>
+<span class="fc" id="L97">        assertTrue(&quot;No attribute result&quot;, proxy.isAttributeResult());</span>
+<span class="fc" id="L98">        assertEquals(&quot;Wrong parent node&quot;, parent.getConfigurationNode(),</span>
+<span class="fc" id="L99">                proxy.getNode());</span>
+<span class="fc" id="L100">        assertEquals(&quot;Wrong attribute name&quot;, ATTR_NAME,</span>
+<span class="fc" id="L101">                proxy.getAttributeName());</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Tests the length.
+     */
+    @Test
+    public void testGetLength()
+    {
+<span class="fc" id="L110">        assertEquals(&quot;Wrong length&quot;, 1, pointer.getLength());</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Tests querying the node name.
+     */
+    @Test
+    public void testGetName()
+    {
+<span class="fc" id="L119">        final QName name = pointer.getName();</span>
+<span class="fc" id="L120">        assertEquals(&quot;Wrong name&quot;, ATTR_NAME, name.getName());</span>
+<span class="fc" id="L121">        assertNull(&quot;Prefix not null&quot;, name.getPrefix());</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Tests the collection flag.
+     */
+    @Test
+    public void testIsCollection()
+    {
+<span class="fc" id="L130">        assertFalse(&quot;Wrong collection flag&quot;, pointer.isCollection());</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests the leaf flag.
+     */
+    @Test
+    public void testIsLeaf()
+    {
+<span class="fc" id="L139">        assertTrue(&quot;Wrong leaf flag&quot;, pointer.isLeaf());</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests the attribute flag.
+     */
+    @Test
+    public void testIsAttribute()
+    {
+<span class="fc" id="L148">        assertTrue(&quot;Not an attribute&quot;, pointer.isAttribute());</span>
+<span class="fc" id="L149">    }</span>
+
+    /**
+     * Tests querying the attribute's value.
+     */
+    @Test
+    public void testGetValue()
+    {
+<span class="fc" id="L157">        assertEquals(&quot;Wrong value&quot;, ATTR_VALUE, pointer.getValue());</span>
+<span class="fc" id="L158">    }</span>
+
+    /**
+     * Tries to set a new value.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetValue()
+    {
+<span class="nc" id="L166">        pointer.setValue(&quot;newValue&quot;);</span>
+<span class="nc" id="L167">    }</span>
+
+    /**
+     * Tests querying an iterator for attributes. Result should be null.
+     */
+    @Test
+    public void testAttributeIterator()
+    {
+<span class="fc" id="L175">        assertNull(&quot;Returned an attribute iterator&quot;, pointer</span>
+<span class="fc" id="L176">                .attributeIterator(new QName(null, &quot;test&quot;)));</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Tests querying an iterator for children. Result should be null.
+     */
+    @Test
+    public void testChildIterator()
+    {
+<span class="fc" id="L185">        assertNull(&quot;Returned an iterator for children&quot;, pointer.childIterator(</span>
+                null, false, null));
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Tests the testNode() method.
+     */
+    @Test
+    public void testTestNode()
+    {
+<span class="fc" id="L195">        NodeTest test = new NodeTypeTest(Compiler.NODE_TYPE_TEXT);</span>
+<span class="fc" id="L196">        assertTrue(&quot;No a text node&quot;, pointer.testNode(test));</span>
+<span class="fc" id="L197">        test = new NodeTypeTest(Compiler.NODE_TYPE_COMMENT);</span>
+<span class="fc" id="L198">        assertFalse(&quot;A comment node&quot;, pointer.testNode(test));</span>
+<span class="fc" id="L199">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

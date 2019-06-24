@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestAbstractConfigurationSynchronization.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestAbstractConfigurationSynchronization.java</span></div><h1>TestAbstractConfigurationSynchronization.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collections;
+
+import org.apache.commons.configuration2.SynchronizerTestImpl.Methods;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.sync.LockMode;
+import org.apache.commons.configuration2.sync.NoOpSynchronizer;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * A test class for the synchronization capabilities of
+ * {@code AbstractConfiguration}. This class mainly checks the collaboration
+ * between a configuration object and its {@code Synchronizer}.
+ *
+ */
+<span class="fc" id="L40">public class TestAbstractConfigurationSynchronization</span>
+{
+    /** Constant for the test property accessed by all tests. */
+    private static final String PROP = &quot;configuration.loaded&quot;;
+
+    /** The synchronizer used for testing. */
+    private SynchronizerTestImpl sync;
+
+    /** A test configuration. */
+    private AbstractConfiguration config;
+
+    @Before
+    public void setUp() throws Exception
+    {
+        // any concrete class will do
+<span class="fc" id="L55">        final PropertiesConfiguration c = new PropertiesConfiguration();</span>
+<span class="fc" id="L56">        new FileHandler(c).load(ConfigurationAssert</span>
+<span class="fc" id="L57">                .getTestFile(&quot;test.properties&quot;));</span>
+<span class="fc" id="L58">        sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L59">        c.setSynchronizer(sync);</span>
+<span class="fc" id="L60">        config = c;</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Tests the Synchronizer used by default.
+     */
+    @Test
+    public void testDefaultSynchronizer()
+    {
+<span class="fc" id="L69">        assertSame(&quot;Wrong default synchronizer&quot;, NoOpSynchronizer.INSTANCE,</span>
+<span class="fc" id="L70">                new PropertiesConfiguration().getSynchronizer());</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Tests whether a read lock can be obtained.
+     */
+    @Test
+    public void testLockRead()
+    {
+<span class="fc" id="L79">        config.lock(LockMode.READ);</span>
+<span class="fc" id="L80">        sync.verify(Methods.BEGIN_READ);</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Tests whether a write lock can be obtained.
+     */
+    @Test
+    public void testLockWrite()
+    {
+<span class="fc" id="L89">        config.lock(LockMode.WRITE);</span>
+<span class="fc" id="L90">        sync.verify(Methods.BEGIN_WRITE);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Tests lock() with a null argument.
+     */
+    @Test(expected = NullPointerException.class)
+    public void testLockNull()
+    {
+<span class="nc" id="L99">        config.lock(null);</span>
+<span class="nc" id="L100">    }</span>
+
+    /**
+     * Tests whether a read lock can be released.
+     */
+    @Test
+    public void testUnlockRead()
+    {
+<span class="fc" id="L108">        config.unlock(LockMode.READ);</span>
+<span class="fc" id="L109">        sync.verify(Methods.END_READ);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests whether a write lock can be released.
+     */
+    @Test
+    public void testUnlockWrite()
+    {
+<span class="fc" id="L118">        config.unlock(LockMode.WRITE);</span>
+<span class="fc" id="L119">        sync.verify(Methods.END_WRITE);</span>
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Tests the correct synchronization of addProperty().
+     */
+    @Test
+    public void testAddPropertySynchronized()
+    {
+<span class="fc" id="L128">        config.addProperty(PROP, &quot;of course&quot;);</span>
+<span class="fc" id="L129">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * Tests the correct synchronization of setProperty().
+     */
+    @Test
+    public void testSetPropertySynchronized()
+    {
+<span class="fc" id="L138">        config.setProperty(PROP, &quot;yes&quot;);</span>
+<span class="fc" id="L139">        sync.verifyStart(Methods.BEGIN_WRITE);</span>
+<span class="fc" id="L140">        sync.verifyEnd(Methods.END_WRITE);</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Tests the correct synchronization of clearProperty().
+     */
+    @Test
+    public void testClearPropertySynchronized()
+    {
+<span class="fc" id="L149">        config.clearProperty(PROP);</span>
+<span class="fc" id="L150">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests the correct synchronization of clear().
+     */
+    @Test
+    public void testClearSynchronized()
+    {
+<span class="fc" id="L159">        config.clear();</span>
+<span class="fc" id="L160">        sync.verifyStart(Methods.BEGIN_WRITE);</span>
+<span class="fc" id="L161">        sync.verifyEnd(Methods.END_WRITE);</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Tests whether read access to properties is synchronized.
+     */
+    @Test
+    public void testGetPropertySynchronized()
+    {
+<span class="fc" id="L170">        assertEquals(&quot;Wrong raw value&quot;, &quot;true&quot;, config.getProperty(PROP));</span>
+<span class="fc" id="L171">        assertTrue(&quot;Wrong boolean value&quot;, config.getBoolean(PROP));</span>
+<span class="fc" id="L172">        sync.verify(Methods.BEGIN_READ, Methods.END_READ, Methods.BEGIN_READ,</span>
+                Methods.END_READ);
+<span class="fc" id="L174">    }</span>
+
+    /**
+     * Tests whether containsKey() is correctly synchronized.
+     */
+    @Test
+    public void testContainsKeySychronized()
+    {
+<span class="fc" id="L182">        assertTrue(&quot;Wrong result&quot;, config.containsKey(PROP));</span>
+<span class="fc" id="L183">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Tests whether isEmpty() is correctly synchronized.
+     */
+    @Test
+    public void testIsEmptySynchronized()
+    {
+<span class="fc" id="L192">        assertFalse(&quot;Configuration is empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L193">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * Tests whether size() is correctly synchronized.
+     */
+    @Test
+    public void testSizeSynchronized()
+    {
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        assertTrue(&quot;Wrong size&quot;, config.size() &gt; 0);</span>
+<span class="fc" id="L203">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L204">    }</span>
+
+    /**
+     * Tests whether getKeys() is correctly synchronized.
+     */
+    @Test
+    public void testGetKeysSynchronized()
+    {
+<span class="fc" id="L212">        assertTrue(&quot;No keys&quot;, config.getKeys().hasNext());</span>
+<span class="fc" id="L213">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L214">    }</span>
+
+    /**
+     * Tests whether getKeys(String prefix) is correctly synchronized.
+     */
+    @Test
+    public void testGetKeysPrefixSynchronized()
+    {
+<span class="fc" id="L222">        config.getKeys(&quot;test&quot;);</span>
+<span class="fc" id="L223">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L224">    }</span>
+
+    /**
+     * Tests synchronization of subset().
+     */
+    @Test
+    public void testSubsetSynchronized()
+    {
+<span class="fc" id="L232">        final AbstractConfiguration subset =</span>
+<span class="fc" id="L233">                (AbstractConfiguration) config.subset(&quot;configuration&quot;);</span>
+<span class="fc" id="L234">        sync.verify();</span>
+<span class="fc" id="L235">        assertEquals(&quot;Wrong synchronizer for subset&quot;,</span>
+<span class="fc" id="L236">                NoOpSynchronizer.INSTANCE, subset.getSynchronizer());</span>
+<span class="fc" id="L237">    }</span>
+
+    /**
+     * Prepares a mock configuration for a copy operation.
+     *
+     * @return the mock configuration
+     */
+    private static Configuration prepareConfigurationMockForCopy()
+    {
+<span class="fc" id="L246">        final Configuration config2 = EasyMock.createStrictMock(Configuration.class);</span>
+<span class="fc" id="L247">        config2.lock(LockMode.READ);</span>
+<span class="fc" id="L248">        EasyMock.expect(config2.getKeys()).andReturn(</span>
+<span class="fc" id="L249">                Collections.&lt;String&gt; emptySet().iterator());</span>
+<span class="fc" id="L250">        config2.unlock(LockMode.READ);</span>
+<span class="fc" id="L251">        EasyMock.replay(config2);</span>
+<span class="fc" id="L252">        return config2;</span>
+    }
+
+    /**
+     * Tests whether the append() method uses synchronization.
+     */
+    @Test
+    public void testAppendSynchronized()
+    {
+<span class="fc" id="L261">        final Configuration config2 = prepareConfigurationMockForCopy();</span>
+<span class="fc" id="L262">        config.append(config2);</span>
+<span class="fc" id="L263">        EasyMock.verify(config2);</span>
+<span class="fc" id="L264">    }</span>
+
+    /**
+     * Tests whether the copy() method uses synchronization.
+     */
+    @Test
+    public void testCopySynchronized()
+    {
+<span class="fc" id="L272">        final Configuration config2 = prepareConfigurationMockForCopy();</span>
+<span class="fc" id="L273">        config.copy(config2);</span>
+<span class="fc" id="L274">        EasyMock.verify(config2);</span>
+<span class="fc" id="L275">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

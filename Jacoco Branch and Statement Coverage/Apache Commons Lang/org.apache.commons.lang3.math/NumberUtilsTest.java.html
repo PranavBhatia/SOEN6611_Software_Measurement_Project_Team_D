@@ -1,0 +1,1579 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NumberUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.math</a> &gt; <span class="el_source">NumberUtilsTest.java</span></div><h1>NumberUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.math;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import java.math.RoundingMode;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.math.NumberUtils}.
+ */
+<span class="fc" id="L37">public class NumberUtilsTest {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L42">        assertNotNull(new NumberUtils());</span>
+<span class="fc" id="L43">        final Constructor&lt;?&gt;[] cons = NumberUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L44">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L45">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L46">        assertTrue(Modifier.isPublic(NumberUtils.class.getModifiers()));</span>
+<span class="fc" id="L47">        assertFalse(Modifier.isFinal(NumberUtils.class.getModifiers()));</span>
+<span class="fc" id="L48">    }</span>
+
+    //---------------------------------------------------------------------
+
+    /**
+     * Test for {@link NumberUtils#toInt(String)}.
+     */
+    @Test
+    public void testToIntString() {
+<span class="fc" id="L57">        assertEquals(12345, NumberUtils.toInt(&quot;12345&quot;), &quot;toInt(String) 1 failed&quot;);</span>
+<span class="fc" id="L58">        assertEquals(0, NumberUtils.toInt(&quot;abc&quot;), &quot;toInt(String) 2 failed&quot;);</span>
+<span class="fc" id="L59">        assertEquals(0, NumberUtils.toInt(&quot;&quot;), &quot;toInt(empty) failed&quot;);</span>
+<span class="fc" id="L60">        assertEquals(0, NumberUtils.toInt(null), &quot;toInt(null) failed&quot;);</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toInt(String, int)}.
+     */
+    @Test
+    public void testToIntStringI() {
+<span class="fc" id="L68">        assertEquals(12345, NumberUtils.toInt(&quot;12345&quot;, 5), &quot;toInt(String, int) 1 failed&quot;);</span>
+<span class="fc" id="L69">        assertEquals(5, NumberUtils.toInt(&quot;1234.5&quot;, 5), &quot;toInt(String, int) 2 failed&quot;);</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toLong(String)}.
+     */
+    @Test
+    public void testToLongString() {
+<span class="fc" id="L77">        assertEquals(12345L, NumberUtils.toLong(&quot;12345&quot;), &quot;toLong(String) 1 failed&quot;);</span>
+<span class="fc" id="L78">        assertEquals(0L, NumberUtils.toLong(&quot;abc&quot;), &quot;toLong(String) 2 failed&quot;);</span>
+<span class="fc" id="L79">        assertEquals(0L, NumberUtils.toLong(&quot;1L&quot;), &quot;toLong(String) 3 failed&quot;);</span>
+<span class="fc" id="L80">        assertEquals(0L, NumberUtils.toLong(&quot;1l&quot;), &quot;toLong(String) 4 failed&quot;);</span>
+<span class="fc" id="L81">        assertEquals(NumberUtils.toLong(Long.MAX_VALUE + &quot;&quot;), Long.MAX_VALUE, &quot;toLong(Long.MAX_VALUE) failed&quot;);</span>
+<span class="fc" id="L82">        assertEquals(NumberUtils.toLong(Long.MIN_VALUE + &quot;&quot;), Long.MIN_VALUE, &quot;toLong(Long.MIN_VALUE) failed&quot;);</span>
+<span class="fc" id="L83">        assertEquals(0L, NumberUtils.toLong(&quot;&quot;), &quot;toLong(empty) failed&quot;);</span>
+<span class="fc" id="L84">        assertEquals(0L, NumberUtils.toLong(null), &quot;toLong(null) failed&quot;);</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toLong(String, long)}.
+     */
+    @Test
+    public void testToLongStringL() {
+<span class="fc" id="L92">        assertEquals(12345L, NumberUtils.toLong(&quot;12345&quot;, 5L), &quot;toLong(String, long) 1 failed&quot;);</span>
+<span class="fc" id="L93">        assertEquals(5L, NumberUtils.toLong(&quot;1234.5&quot;, 5L), &quot;toLong(String, long) 2 failed&quot;);</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toFloat(String)}.
+     */
+    @Test
+    public void testToFloatString() {
+<span class="fc" id="L101">        assertEquals(NumberUtils.toFloat(&quot;-1.2345&quot;), -1.2345f, &quot;toFloat(String) 1 failed&quot;);</span>
+<span class="fc" id="L102">        assertEquals(1.2345f, NumberUtils.toFloat(&quot;1.2345&quot;), &quot;toFloat(String) 2 failed&quot;);</span>
+<span class="fc" id="L103">        assertEquals(0.0f, NumberUtils.toFloat(&quot;abc&quot;), &quot;toFloat(String) 3 failed&quot;);</span>
+        // LANG-1060
+<span class="fc" id="L105">        assertEquals(NumberUtils.toFloat(&quot;-001.2345&quot;), -1.2345f, &quot;toFloat(String) 4 failed&quot;);</span>
+<span class="fc" id="L106">        assertEquals(1.2345f, NumberUtils.toFloat(&quot;+001.2345&quot;), &quot;toFloat(String) 5 failed&quot;);</span>
+<span class="fc" id="L107">        assertEquals(1.2345f, NumberUtils.toFloat(&quot;001.2345&quot;), &quot;toFloat(String) 6 failed&quot;);</span>
+<span class="fc" id="L108">        assertEquals(0f, NumberUtils.toFloat(&quot;000.00&quot;), &quot;toFloat(String) 7 failed&quot;);</span>
+
+<span class="fc" id="L110">        assertEquals(NumberUtils.toFloat(Float.MAX_VALUE + &quot;&quot;), Float.MAX_VALUE, &quot;toFloat(Float.MAX_VALUE) failed&quot;);</span>
+<span class="fc" id="L111">        assertEquals(NumberUtils.toFloat(Float.MIN_VALUE + &quot;&quot;), Float.MIN_VALUE, &quot;toFloat(Float.MIN_VALUE) failed&quot;);</span>
+<span class="fc" id="L112">        assertEquals(0.0f, NumberUtils.toFloat(&quot;&quot;), &quot;toFloat(empty) failed&quot;);</span>
+<span class="fc" id="L113">        assertEquals(0.0f, NumberUtils.toFloat(null), &quot;toFloat(null) failed&quot;);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toFloat(String, float)}.
+     */
+    @Test
+    public void testToFloatStringF() {
+<span class="fc" id="L121">        assertEquals(1.2345f, NumberUtils.toFloat(&quot;1.2345&quot;, 5.1f), &quot;toFloat(String, int) 1 failed&quot;);</span>
+<span class="fc" id="L122">        assertEquals(5.0f, NumberUtils.toFloat(&quot;a&quot;, 5.0f), &quot;toFloat(String, int) 2 failed&quot;);</span>
+        // LANG-1060
+<span class="fc" id="L124">        assertEquals(5.0f, NumberUtils.toFloat(&quot;-001Z.2345&quot;, 5.0f), &quot;toFloat(String, int) 3 failed&quot;);</span>
+<span class="fc" id="L125">        assertEquals(5.0f, NumberUtils.toFloat(&quot;+001AB.2345&quot;, 5.0f), &quot;toFloat(String, int) 4 failed&quot;);</span>
+<span class="fc" id="L126">        assertEquals(5.0f, NumberUtils.toFloat(&quot;001Z.2345&quot;, 5.0f), &quot;toFloat(String, int) 5 failed&quot;);</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Test for {(@link NumberUtils#createNumber(String)}
+     */
+    @Test
+    public void testStringCreateNumberEnsureNoPrecisionLoss() {
+<span class="fc" id="L134">        final String shouldBeFloat = &quot;1.23&quot;;</span>
+<span class="fc" id="L135">        final String shouldBeDouble = &quot;3.40282354e+38&quot;;</span>
+<span class="fc" id="L136">        final String shouldBeBigDecimal = &quot;1.797693134862315759e+308&quot;;</span>
+<span class="fc" id="L137">        assertTrue(NumberUtils.createNumber(shouldBeFloat) instanceof Float);</span>
+<span class="fc" id="L138">        assertTrue(NumberUtils.createNumber(shouldBeDouble) instanceof Double);</span>
+<span class="fc" id="L139">        assertTrue(NumberUtils.createNumber(shouldBeBigDecimal) instanceof BigDecimal);</span>
+        // LANG-1060
+<span class="fc" id="L141">        assertTrue(NumberUtils.createNumber(&quot;001.12&quot;) instanceof Float);</span>
+<span class="fc" id="L142">        assertTrue(NumberUtils.createNumber(&quot;-001.12&quot;) instanceof Float);</span>
+<span class="fc" id="L143">        assertTrue(NumberUtils.createNumber(&quot;+001.12&quot;) instanceof Float);</span>
+<span class="fc" id="L144">        assertTrue(NumberUtils.createNumber(&quot;003.40282354e+38&quot;) instanceof Double);</span>
+<span class="fc" id="L145">        assertTrue(NumberUtils.createNumber(&quot;-003.40282354e+38&quot;) instanceof Double);</span>
+<span class="fc" id="L146">        assertTrue(NumberUtils.createNumber(&quot;+003.40282354e+38&quot;) instanceof Double);</span>
+<span class="fc" id="L147">        assertTrue(NumberUtils.createNumber(&quot;0001.797693134862315759e+308&quot;) instanceof BigDecimal);</span>
+<span class="fc" id="L148">        assertTrue(NumberUtils.createNumber(&quot;-001.797693134862315759e+308&quot;) instanceof BigDecimal);</span>
+<span class="fc" id="L149">        assertTrue(NumberUtils.createNumber(&quot;+001.797693134862315759e+308&quot;) instanceof BigDecimal);</span>
+<span class="fc" id="L150">    }</span>
+    /**
+     * Test for {@link NumberUtils#toDouble(String)}.
+     */
+    @Test
+    public void testStringToDoubleString() {
+<span class="fc" id="L156">        assertEquals(NumberUtils.toDouble(&quot;-1.2345&quot;), -1.2345d, &quot;toDouble(String) 1 failed&quot;);</span>
+<span class="fc" id="L157">        assertEquals(1.2345d, NumberUtils.toDouble(&quot;1.2345&quot;), &quot;toDouble(String) 2 failed&quot;);</span>
+<span class="fc" id="L158">        assertEquals(0.0d, NumberUtils.toDouble(&quot;abc&quot;), &quot;toDouble(String) 3 failed&quot;);</span>
+        // LANG-1060
+<span class="fc" id="L160">        assertEquals(NumberUtils.toDouble(&quot;-001.2345&quot;), -1.2345d, &quot;toDouble(String) 4 failed&quot;);</span>
+<span class="fc" id="L161">        assertEquals(1.2345d, NumberUtils.toDouble(&quot;+001.2345&quot;), &quot;toDouble(String) 5 failed&quot;);</span>
+<span class="fc" id="L162">        assertEquals(1.2345d, NumberUtils.toDouble(&quot;001.2345&quot;), &quot;toDouble(String) 6 failed&quot;);</span>
+<span class="fc" id="L163">        assertEquals(0d, NumberUtils.toDouble(&quot;000.00000&quot;), &quot;toDouble(String) 7 failed&quot;);</span>
+
+<span class="fc" id="L165">        assertEquals(NumberUtils.toDouble(Double.MAX_VALUE + &quot;&quot;), Double.MAX_VALUE, &quot;toDouble(Double.MAX_VALUE) failed&quot;);</span>
+<span class="fc" id="L166">        assertEquals(NumberUtils.toDouble(Double.MIN_VALUE + &quot;&quot;), Double.MIN_VALUE, &quot;toDouble(Double.MIN_VALUE) failed&quot;);</span>
+<span class="fc" id="L167">        assertEquals(0.0d, NumberUtils.toDouble(&quot;&quot;), &quot;toDouble(empty) failed&quot;);</span>
+<span class="fc" id="L168">        assertEquals(0.0d, NumberUtils.toDouble((String) null), &quot;toDouble(null) failed&quot;);</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toDouble(String, double)}.
+     */
+    @Test
+    public void testStringToDoubleStringD() {
+<span class="fc" id="L176">        assertEquals(1.2345d, NumberUtils.toDouble(&quot;1.2345&quot;, 5.1d), &quot;toDouble(String, int) 1 failed&quot;);</span>
+<span class="fc" id="L177">        assertEquals(5.0d, NumberUtils.toDouble(&quot;a&quot;, 5.0d), &quot;toDouble(String, int) 2 failed&quot;);</span>
+        // LANG-1060
+<span class="fc" id="L179">        assertEquals(1.2345d, NumberUtils.toDouble(&quot;001.2345&quot;, 5.1d), &quot;toDouble(String, int) 3 failed&quot;);</span>
+<span class="fc" id="L180">        assertEquals(NumberUtils.toDouble(&quot;-001.2345&quot;, 5.1d), -1.2345d, &quot;toDouble(String, int) 4 failed&quot;);</span>
+<span class="fc" id="L181">        assertEquals(1.2345d, NumberUtils.toDouble(&quot;+001.2345&quot;, 5.1d), &quot;toDouble(String, int) 5 failed&quot;);</span>
+<span class="fc" id="L182">        assertEquals(0d, NumberUtils.toDouble(&quot;000.00&quot;, 5.1d), &quot;toDouble(String, int) 7 failed&quot;);</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toDouble(BigDecimal)}
+     */
+    @Test
+    public void testBigIntegerToDoubleBigInteger() {
+<span class="fc" id="L190">        assertEquals(0.0d, NumberUtils.toDouble((BigDecimal) null), &quot;toDouble(BigInteger) 1 failed&quot;);</span>
+<span class="fc" id="L191">        assertEquals(8.5d, NumberUtils.toDouble(BigDecimal.valueOf(8.5d)), &quot;toDouble(BigInteger) 2 failed&quot;);</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toDouble(BigDecimal, double)}
+     */
+    @Test
+    public void testBigIntegerToDoubleBigIntegerD() {
+<span class="fc" id="L199">        assertEquals(1.1d, NumberUtils.toDouble((BigDecimal) null, 1.1d), &quot;toDouble(BigInteger) 1 failed&quot;);</span>
+<span class="fc" id="L200">        assertEquals(8.5d, NumberUtils.toDouble(BigDecimal.valueOf(8.5d), 1.1d), &quot;toDouble(BigInteger) 2 failed&quot;);</span>
+<span class="fc" id="L201">    }</span>
+
+     /**
+     * Test for {@link NumberUtils#toByte(String)}.
+     */
+    @Test
+    public void testToByteString() {
+<span class="fc" id="L208">        assertEquals(123, NumberUtils.toByte(&quot;123&quot;), &quot;toByte(String) 1 failed&quot;);</span>
+<span class="fc" id="L209">        assertEquals(0, NumberUtils.toByte(&quot;abc&quot;), &quot;toByte(String) 2 failed&quot;);</span>
+<span class="fc" id="L210">        assertEquals(0, NumberUtils.toByte(&quot;&quot;), &quot;toByte(empty) failed&quot;);</span>
+<span class="fc" id="L211">        assertEquals(0, NumberUtils.toByte(null), &quot;toByte(null) failed&quot;);</span>
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toByte(String, byte)}.
+     */
+    @Test
+    public void testToByteStringI() {
+<span class="fc" id="L219">        assertEquals(123, NumberUtils.toByte(&quot;123&quot;, (byte) 5), &quot;toByte(String, byte) 1 failed&quot;);</span>
+<span class="fc" id="L220">        assertEquals(5, NumberUtils.toByte(&quot;12.3&quot;, (byte) 5), &quot;toByte(String, byte) 2 failed&quot;);</span>
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toShort(String)}.
+     */
+    @Test
+    public void testToShortString() {
+<span class="fc" id="L228">        assertEquals(12345, NumberUtils.toShort(&quot;12345&quot;), &quot;toShort(String) 1 failed&quot;);</span>
+<span class="fc" id="L229">        assertEquals(0, NumberUtils.toShort(&quot;abc&quot;), &quot;toShort(String) 2 failed&quot;);</span>
+<span class="fc" id="L230">        assertEquals(0, NumberUtils.toShort(&quot;&quot;), &quot;toShort(empty) failed&quot;);</span>
+<span class="fc" id="L231">        assertEquals(0, NumberUtils.toShort(null), &quot;toShort(null) failed&quot;);</span>
+<span class="fc" id="L232">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toShort(String, short)}.
+     */
+    @Test
+    public void testToShortStringI() {
+<span class="fc" id="L239">        assertEquals(12345, NumberUtils.toShort(&quot;12345&quot;, (short) 5), &quot;toShort(String, short) 1 failed&quot;);</span>
+<span class="fc" id="L240">        assertEquals(5, NumberUtils.toShort(&quot;1234.5&quot;, (short) 5), &quot;toShort(String, short) 2 failed&quot;);</span>
+<span class="fc" id="L241">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(BigDecimal)}.
+     */
+    @Test
+    public void testToScaledBigDecimalBigDecimal() {
+<span class="fc" id="L248">        assertEquals(NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(123.456)), BigDecimal.valueOf(123.46), &quot;toScaledBigDecimal(BigDecimal) 1 failed&quot;);</span>
+        // Test RoudingMode.HALF_EVEN default rounding.
+<span class="fc" id="L250">        assertEquals(NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(23.515)), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(BigDecimal) 2 failed&quot;);</span>
+<span class="fc" id="L251">        assertEquals(NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(23.525)), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(BigDecimal) 3 failed&quot;);</span>
+<span class="fc" id="L252">        assertEquals(&quot;2352.00&quot;, NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(23.525))</span>
+<span class="fc" id="L253">                .multiply(BigDecimal.valueOf(100)).toString(), &quot;toScaledBigDecimal(BigDecimal) 4 failed&quot;);</span>
+<span class="fc" id="L254">        assertEquals(NumberUtils.toScaledBigDecimal((BigDecimal) null), BigDecimal.ZERO, &quot;toScaledBigDecimal(BigDecimal) 5 failed&quot;);</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(BigDecimal, int, RoundingMode)}.
+     */
+    @Test
+    public void testToScaledBigDecimalBigDecimalIRM() {
+<span class="fc" id="L262">        assertEquals(NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(123.456), 1, RoundingMode.CEILING), BigDecimal.valueOf(123.5), &quot;toScaledBigDecimal(BigDecimal, int, RoudingMode) 1 failed&quot;);</span>
+<span class="fc" id="L263">        assertEquals(NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(23.5159), 3, RoundingMode.FLOOR), BigDecimal.valueOf(23.515), &quot;toScaledBigDecimal(BigDecimal, int, RoudingMode) 2 failed&quot;);</span>
+<span class="fc" id="L264">        assertEquals(NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(23.525), 2, RoundingMode.HALF_UP), BigDecimal.valueOf(23.53), &quot;toScaledBigDecimal(BigDecimal, int, RoudingMode) 3 failed&quot;);</span>
+<span class="fc" id="L265">        assertEquals(&quot;23521.0000&quot;, NumberUtils.toScaledBigDecimal(BigDecimal.valueOf(23.521), 4, RoundingMode.HALF_EVEN)</span>
+<span class="fc" id="L266">                .multiply(BigDecimal.valueOf(1000))</span>
+<span class="fc" id="L267">                .toString(), &quot;toScaledBigDecimal(BigDecimal, int, RoudingMode) 4 failed&quot;);</span>
+<span class="fc" id="L268">        assertEquals(NumberUtils.toScaledBigDecimal((BigDecimal) null, 2, RoundingMode.HALF_UP), BigDecimal.ZERO, &quot;toScaledBigDecimal(BigDecimal, int, RoudingMode) 5 failed&quot;);</span>
+<span class="fc" id="L269">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(Float)}.
+     */
+    @Test
+    public void testToScaledBigDecimalFloat() {
+<span class="fc" id="L276">        assertEquals(NumberUtils.toScaledBigDecimal(Float.valueOf(123.456f)), BigDecimal.valueOf(123.46), &quot;toScaledBigDecimal(Float) 1 failed&quot;);</span>
+        // Test RoudingMode.HALF_EVEN default rounding.
+<span class="fc" id="L278">        assertEquals(NumberUtils.toScaledBigDecimal(Float.valueOf(23.515f)), BigDecimal.valueOf(23.51), &quot;toScaledBigDecimal(Float) 2 failed&quot;);</span>
+        // Note. NumberUtils.toScaledBigDecimal(Float.valueOf(23.515f)).equals(BigDecimal.valueOf(23.51))
+        // because of roundoff error. It is ok.
+<span class="fc" id="L281">        assertEquals(NumberUtils.toScaledBigDecimal(Float.valueOf(23.525f)), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(Float) 3 failed&quot;);</span>
+<span class="fc" id="L282">        assertEquals(&quot;2352.00&quot;, NumberUtils.toScaledBigDecimal(Float.valueOf(23.525f))</span>
+<span class="fc" id="L283">                .multiply(BigDecimal.valueOf(100)).toString(), &quot;toScaledBigDecimal(Float) 4 failed&quot;);</span>
+<span class="fc" id="L284">        assertEquals(NumberUtils.toScaledBigDecimal((Float) null), BigDecimal.ZERO, &quot;toScaledBigDecimal(Float) 5 failed&quot;);</span>
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(Float, int, RoundingMode)}.
+     */
+    @Test
+    public void testToScaledBigDecimalFloatIRM() {
+<span class="fc" id="L292">        assertEquals(NumberUtils.toScaledBigDecimal(Float.valueOf(123.456f), 1, RoundingMode.CEILING), BigDecimal.valueOf(123.5), &quot;toScaledBigDecimal(Float, int, RoudingMode) 1 failed&quot;);</span>
+<span class="fc" id="L293">        assertEquals(NumberUtils.toScaledBigDecimal(Float.valueOf(23.5159f), 3, RoundingMode.FLOOR), BigDecimal.valueOf(23.515), &quot;toScaledBigDecimal(Float, int, RoudingMode) 2 failed&quot;);</span>
+        // The following happens due to roundoff error. We're ok with this.
+<span class="fc" id="L295">        assertEquals(NumberUtils.toScaledBigDecimal(Float.valueOf(23.525f), 2, RoundingMode.HALF_UP), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(Float, int, RoudingMode) 3 failed&quot;);</span>
+<span class="fc" id="L296">        assertEquals(&quot;23521.0000&quot;, NumberUtils.toScaledBigDecimal(Float.valueOf(23.521f), 4, RoundingMode.HALF_EVEN)</span>
+<span class="fc" id="L297">                .multiply(BigDecimal.valueOf(1000))</span>
+<span class="fc" id="L298">                .toString(), &quot;toScaledBigDecimal(Float, int, RoudingMode) 4 failed&quot;);</span>
+<span class="fc" id="L299">        assertEquals(NumberUtils.toScaledBigDecimal((Float) null, 2, RoundingMode.HALF_UP), BigDecimal.ZERO, &quot;toScaledBigDecimal(Float, int, RoudingMode) 5 failed&quot;);</span>
+<span class="fc" id="L300">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(Double)}.
+     */
+    @Test
+    public void testToScaledBigDecimalDouble() {
+<span class="fc" id="L307">        assertEquals(NumberUtils.toScaledBigDecimal(Double.valueOf(123.456d)), BigDecimal.valueOf(123.46), &quot;toScaledBigDecimal(Double) 1 failed&quot;);</span>
+        // Test RoudingMode.HALF_EVEN default rounding.
+<span class="fc" id="L309">        assertEquals(NumberUtils.toScaledBigDecimal(Double.valueOf(23.515d)), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(Double) 2 failed&quot;);</span>
+<span class="fc" id="L310">        assertEquals(NumberUtils.toScaledBigDecimal(Double.valueOf(23.525d)), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(Double) 3 failed&quot;);</span>
+<span class="fc" id="L311">        assertEquals(&quot;2352.00&quot;, NumberUtils.toScaledBigDecimal(Double.valueOf(23.525d))</span>
+<span class="fc" id="L312">                .multiply(BigDecimal.valueOf(100)).toString(), &quot;toScaledBigDecimal(Double) 4 failed&quot;);</span>
+<span class="fc" id="L313">        assertEquals(NumberUtils.toScaledBigDecimal((Double) null), BigDecimal.ZERO, &quot;toScaledBigDecimal(Double) 5 failed&quot;);</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(Double, int, RoundingMode)}.
+     */
+    @Test
+    public void testToScaledBigDecimalDoubleIRM() {
+<span class="fc" id="L321">        assertEquals(NumberUtils.toScaledBigDecimal(Double.valueOf(123.456d), 1, RoundingMode.CEILING), BigDecimal.valueOf(123.5), &quot;toScaledBigDecimal(Double, int, RoudingMode) 1 failed&quot;);</span>
+<span class="fc" id="L322">        assertEquals(NumberUtils.toScaledBigDecimal(Double.valueOf(23.5159d), 3, RoundingMode.FLOOR), BigDecimal.valueOf(23.515), &quot;toScaledBigDecimal(Double, int, RoudingMode) 2 failed&quot;);</span>
+<span class="fc" id="L323">        assertEquals(NumberUtils.toScaledBigDecimal(Double.valueOf(23.525d), 2, RoundingMode.HALF_UP), BigDecimal.valueOf(23.53), &quot;toScaledBigDecimal(Double, int, RoudingMode) 3 failed&quot;);</span>
+<span class="fc" id="L324">        assertEquals(&quot;23521.0000&quot;, NumberUtils.toScaledBigDecimal(Double.valueOf(23.521d), 4, RoundingMode.HALF_EVEN)</span>
+<span class="fc" id="L325">                .multiply(BigDecimal.valueOf(1000))</span>
+<span class="fc" id="L326">                .toString(), &quot;toScaledBigDecimal(Double, int, RoudingMode) 4 failed&quot;);</span>
+<span class="fc" id="L327">        assertEquals(NumberUtils.toScaledBigDecimal((Double) null, 2, RoundingMode.HALF_UP), BigDecimal.ZERO, &quot;toScaledBigDecimal(Double, int, RoudingMode) 5 failed&quot;);</span>
+<span class="fc" id="L328">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(Double)}.
+     */
+    @Test
+    public void testToScaledBigDecimalString() {
+<span class="fc" id="L335">        assertEquals(NumberUtils.toScaledBigDecimal(&quot;123.456&quot;), BigDecimal.valueOf(123.46), &quot;toScaledBigDecimal(String) 1 failed&quot;);</span>
+        // Test RoudingMode.HALF_EVEN default rounding.
+<span class="fc" id="L337">        assertEquals(NumberUtils.toScaledBigDecimal(&quot;23.515&quot;), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(String) 2 failed&quot;);</span>
+<span class="fc" id="L338">        assertEquals(NumberUtils.toScaledBigDecimal(&quot;23.525&quot;), BigDecimal.valueOf(23.52), &quot;toScaledBigDecimal(String) 3 failed&quot;);</span>
+<span class="fc" id="L339">        assertEquals(&quot;2352.00&quot;, NumberUtils.toScaledBigDecimal(&quot;23.525&quot;)</span>
+<span class="fc" id="L340">                .multiply(BigDecimal.valueOf(100)).toString(), &quot;toScaledBigDecimal(String) 4 failed&quot;);</span>
+<span class="fc" id="L341">        assertEquals(NumberUtils.toScaledBigDecimal((String) null), BigDecimal.ZERO, &quot;toScaledBigDecimal(String) 5 failed&quot;);</span>
+<span class="fc" id="L342">    }</span>
+
+    /**
+     * Test for {@link NumberUtils#toScaledBigDecimal(Double, int, RoundingMode)}.
+     */
+    @Test
+    public void testToScaledBigDecimalStringIRM() {
+<span class="fc" id="L349">        assertEquals(NumberUtils.toScaledBigDecimal(&quot;123.456&quot;, 1, RoundingMode.CEILING), BigDecimal.valueOf(123.5), &quot;toScaledBigDecimal(String, int, RoudingMode) 1 failed&quot;);</span>
+<span class="fc" id="L350">        assertEquals(NumberUtils.toScaledBigDecimal(&quot;23.5159&quot;, 3, RoundingMode.FLOOR), BigDecimal.valueOf(23.515), &quot;toScaledBigDecimal(String, int, RoudingMode) 2 failed&quot;);</span>
+<span class="fc" id="L351">        assertEquals(NumberUtils.toScaledBigDecimal(&quot;23.525&quot;, 2, RoundingMode.HALF_UP), BigDecimal.valueOf(23.53), &quot;toScaledBigDecimal(String, int, RoudingMode) 3 failed&quot;);</span>
+<span class="fc" id="L352">        assertEquals(&quot;23521.0000&quot;, NumberUtils.toScaledBigDecimal(&quot;23.521&quot;, 4, RoundingMode.HALF_EVEN)</span>
+<span class="fc" id="L353">                .multiply(BigDecimal.valueOf(1000))</span>
+<span class="fc" id="L354">                .toString(), &quot;toScaledBigDecimal(String, int, RoudingMode) 4 failed&quot;);</span>
+<span class="fc" id="L355">        assertEquals(NumberUtils.toScaledBigDecimal((String) null, 2, RoundingMode.HALF_UP), BigDecimal.ZERO, &quot;toScaledBigDecimal(String, int, RoudingMode) 5 failed&quot;);</span>
+<span class="fc" id="L356">    }</span>
+
+    @Test
+    public void testCreateNumber() {
+        // a lot of things can go wrong
+<span class="fc" id="L361">        assertEquals(Float.valueOf(&quot;1234.5&quot;), NumberUtils.createNumber(&quot;1234.5&quot;), &quot;createNumber(String) 1 failed&quot;);</span>
+<span class="fc" id="L362">        assertEquals(Integer.valueOf(&quot;12345&quot;), NumberUtils.createNumber(&quot;12345&quot;), &quot;createNumber(String) 2 failed&quot;);</span>
+<span class="fc" id="L363">        assertEquals(Double.valueOf(&quot;1234.5&quot;), NumberUtils.createNumber(&quot;1234.5D&quot;), &quot;createNumber(String) 3 failed&quot;);</span>
+<span class="fc" id="L364">        assertEquals(Double.valueOf(&quot;1234.5&quot;), NumberUtils.createNumber(&quot;1234.5d&quot;), &quot;createNumber(String) 3 failed&quot;);</span>
+<span class="fc" id="L365">        assertEquals(Float.valueOf(&quot;1234.5&quot;), NumberUtils.createNumber(&quot;1234.5F&quot;), &quot;createNumber(String) 4 failed&quot;);</span>
+<span class="fc" id="L366">        assertEquals(Float.valueOf(&quot;1234.5&quot;), NumberUtils.createNumber(&quot;1234.5f&quot;), &quot;createNumber(String) 4 failed&quot;);</span>
+<span class="fc" id="L367">        assertEquals(Long.valueOf(Integer.MAX_VALUE + 1L), NumberUtils.createNumber(&quot;&quot;</span>
+                    + (Integer.MAX_VALUE + 1L)), &quot;createNumber(String) 5 failed&quot;);
+<span class="fc" id="L369">        assertEquals(Long.valueOf(12345), NumberUtils.createNumber(&quot;12345L&quot;), &quot;createNumber(String) 6 failed&quot;);</span>
+<span class="fc" id="L370">        assertEquals(Long.valueOf(12345), NumberUtils.createNumber(&quot;12345l&quot;), &quot;createNumber(String) 6 failed&quot;);</span>
+<span class="fc" id="L371">        assertEquals(Float.valueOf(&quot;-1234.5&quot;), NumberUtils.createNumber(&quot;-1234.5&quot;), &quot;createNumber(String) 7 failed&quot;);</span>
+<span class="fc" id="L372">        assertEquals(Integer.valueOf(&quot;-12345&quot;), NumberUtils.createNumber(&quot;-12345&quot;), &quot;createNumber(String) 8 failed&quot;);</span>
+<span class="fc" id="L373">        assertEquals(0xFADE, NumberUtils.createNumber(&quot;0xFADE&quot;).intValue(), &quot;createNumber(String) 9a failed&quot;);</span>
+<span class="fc" id="L374">        assertEquals(0xFADE, NumberUtils.createNumber(&quot;0Xfade&quot;).intValue(), &quot;createNumber(String) 9b failed&quot;);</span>
+<span class="fc" id="L375">        assertEquals(-0xFADE, NumberUtils.createNumber(&quot;-0xFADE&quot;).intValue(), &quot;createNumber(String) 10a failed&quot;);</span>
+<span class="fc" id="L376">        assertEquals(-0xFADE, NumberUtils.createNumber(&quot;-0Xfade&quot;).intValue(), &quot;createNumber(String) 10b failed&quot;);</span>
+<span class="fc" id="L377">        assertEquals(Double.valueOf(&quot;1.1E200&quot;), NumberUtils.createNumber(&quot;1.1E200&quot;), &quot;createNumber(String) 11 failed&quot;);</span>
+<span class="fc" id="L378">        assertEquals(Float.valueOf(&quot;1.1E20&quot;), NumberUtils.createNumber(&quot;1.1E20&quot;), &quot;createNumber(String) 12 failed&quot;);</span>
+<span class="fc" id="L379">        assertEquals(Double.valueOf(&quot;-1.1E200&quot;), NumberUtils.createNumber(&quot;-1.1E200&quot;), &quot;createNumber(String) 13 failed&quot;);</span>
+<span class="fc" id="L380">        assertEquals(Double.valueOf(&quot;1.1E-200&quot;), NumberUtils.createNumber(&quot;1.1E-200&quot;), &quot;createNumber(String) 14 failed&quot;);</span>
+<span class="fc" id="L381">        assertNull(NumberUtils.createNumber(null), &quot;createNumber(null) failed&quot;);</span>
+<span class="fc" id="L382">        assertEquals(new BigInteger(&quot;12345678901234567890&quot;), NumberUtils.createNumber(&quot;12345678901234567890L&quot;), &quot;createNumber(String) failed&quot;);</span>
+
+<span class="fc" id="L384">        assertEquals(new BigDecimal(&quot;1.1E-700&quot;), NumberUtils.createNumber(&quot;1.1E-700F&quot;), &quot;createNumber(String) 15 failed&quot;);</span>
+
+<span class="fc" id="L386">        assertEquals(Long.valueOf(&quot;10&quot; + Integer.MAX_VALUE), NumberUtils.createNumber(&quot;10&quot; + Integer.MAX_VALUE + &quot;L&quot;), &quot;createNumber(String) 16 failed&quot;);</span>
+<span class="fc" id="L387">        assertEquals(Long.valueOf(&quot;10&quot; + Integer.MAX_VALUE), NumberUtils.createNumber(&quot;10&quot; + Integer.MAX_VALUE), &quot;createNumber(String) 17 failed&quot;);</span>
+<span class="fc" id="L388">        assertEquals(new BigInteger(&quot;10&quot; + Long.MAX_VALUE), NumberUtils.createNumber(&quot;10&quot; + Long.MAX_VALUE), &quot;createNumber(String) 18 failed&quot;);</span>
+
+        // LANG-521
+<span class="fc" id="L391">        assertEquals(Float.valueOf(&quot;2.&quot;), NumberUtils.createNumber(&quot;2.&quot;), &quot;createNumber(String) LANG-521 failed&quot;);</span>
+
+        // LANG-638
+<span class="fc" id="L394">        assertFalse(checkCreateNumber(&quot;1eE&quot;), &quot;createNumber(String) succeeded&quot;);</span>
+
+        // LANG-693
+<span class="fc" id="L397">        assertEquals(Double.valueOf(Double.MAX_VALUE), NumberUtils.createNumber(&quot;&quot; + Double.MAX_VALUE), &quot;createNumber(String) LANG-693 failed&quot;);</span>
+
+        // LANG-822
+        // ensure that the underlying negative number would create a BigDecimal
+<span class="fc" id="L401">        final Number bigNum = NumberUtils.createNumber(&quot;-1.1E-700F&quot;);</span>
+<span class="fc" id="L402">        assertNotNull(bigNum);</span>
+<span class="fc" id="L403">        assertEquals(BigDecimal.class, bigNum.getClass());</span>
+
+        // LANG-1018
+<span class="fc" id="L406">        assertEquals(Double.valueOf(&quot;-160952.54&quot;), NumberUtils.createNumber(&quot;-160952.54&quot;),</span>
+                &quot;createNumber(String) LANG-1018 failed&quot;);
+        // LANG-1187
+<span class="fc" id="L409">        assertEquals(Double.valueOf(&quot;6264583.33&quot;), NumberUtils.createNumber(&quot;6264583.33&quot;),</span>
+                &quot;createNumber(String) LANG-1187 failed&quot;);
+        // LANG-1215
+<span class="fc" id="L412">        assertEquals(Double.valueOf(&quot;193343.82&quot;), NumberUtils.createNumber(&quot;193343.82&quot;),</span>
+                &quot;createNumber(String) LANG-1215 failed&quot;);
+        // LANG-1060
+<span class="fc" id="L415">        assertEquals(Double.valueOf(&quot;001234.5678&quot;), NumberUtils.createNumber(&quot;001234.5678&quot;), &quot;createNumber(String) LANG-1060a failed&quot;);</span>
+<span class="fc" id="L416">        assertEquals(Double.valueOf(&quot;+001234.5678&quot;), NumberUtils.createNumber(&quot;+001234.5678&quot;), &quot;createNumber(String) LANG-1060b failed&quot;);</span>
+<span class="fc" id="L417">        assertEquals(Double.valueOf(&quot;-001234.5678&quot;), NumberUtils.createNumber(&quot;-001234.5678&quot;), &quot;createNumber(String) LANG-1060c failed&quot;);</span>
+<span class="fc" id="L418">        assertEquals(Double.valueOf(&quot;0000.00000&quot;), NumberUtils.createNumber(&quot;0000.00000d&quot;), &quot;createNumber(String) LANG-1060d failed&quot;);</span>
+<span class="fc" id="L419">        assertEquals(Float.valueOf(&quot;001234.56&quot;), NumberUtils.createNumber(&quot;001234.56&quot;), &quot;createNumber(String) LANG-1060e failed&quot;);</span>
+<span class="fc" id="L420">        assertEquals(Float.valueOf(&quot;+001234.56&quot;), NumberUtils.createNumber(&quot;+001234.56&quot;), &quot;createNumber(String) LANG-1060f failed&quot;);</span>
+<span class="fc" id="L421">        assertEquals(Float.valueOf(&quot;-001234.56&quot;), NumberUtils.createNumber(&quot;-001234.56&quot;), &quot;createNumber(String) LANG-1060g failed&quot;);</span>
+<span class="fc" id="L422">        assertEquals(Float.valueOf(&quot;0000.10&quot;), NumberUtils.createNumber(&quot;0000.10&quot;), &quot;createNumber(String) LANG-1060h failed&quot;);</span>
+<span class="fc" id="L423">        assertEquals(Float.valueOf(&quot;001.1E20&quot;), NumberUtils.createNumber(&quot;001.1E20&quot;), &quot;createNumber(String) LANG-1060i failed&quot;);</span>
+<span class="fc" id="L424">        assertEquals(Float.valueOf(&quot;+001.1E20&quot;), NumberUtils.createNumber(&quot;+001.1E20&quot;), &quot;createNumber(String) LANG-1060j failed&quot;);</span>
+<span class="fc" id="L425">        assertEquals(Float.valueOf(&quot;-001.1E20&quot;), NumberUtils.createNumber(&quot;-001.1E20&quot;), &quot;createNumber(String) LANG-1060k failed&quot;);</span>
+<span class="fc" id="L426">        assertEquals(Double.valueOf(&quot;001.1E200&quot;), NumberUtils.createNumber(&quot;001.1E200&quot;), &quot;createNumber(String) LANG-1060l failed&quot;);</span>
+<span class="fc" id="L427">        assertEquals(Double.valueOf(&quot;+001.1E200&quot;), NumberUtils.createNumber(&quot;+001.1E200&quot;), &quot;createNumber(String) LANG-1060m failed&quot;);</span>
+<span class="fc" id="L428">        assertEquals(Double.valueOf(&quot;-001.1E200&quot;), NumberUtils.createNumber(&quot;-001.1E200&quot;), &quot;createNumber(String) LANG-1060n failed&quot;);</span>
+<span class="fc" id="L429">    }</span>
+
+    @Test
+    public void testLang1087() {
+        // no sign cases
+<span class="fc" id="L434">        assertEquals(Float.class, NumberUtils.createNumber(&quot;0.0&quot;).getClass());</span>
+<span class="fc" id="L435">        assertEquals(Float.valueOf(&quot;0.0&quot;), NumberUtils.createNumber(&quot;0.0&quot;));</span>
+        // explicit positive sign cases
+<span class="fc" id="L437">        assertEquals(Float.class, NumberUtils.createNumber(&quot;+0.0&quot;).getClass());</span>
+<span class="fc" id="L438">        assertEquals(Float.valueOf(&quot;+0.0&quot;), NumberUtils.createNumber(&quot;+0.0&quot;));</span>
+        // negative sign cases
+<span class="fc" id="L440">        assertEquals(Float.class, NumberUtils.createNumber(&quot;-0.0&quot;).getClass());</span>
+<span class="fc" id="L441">        assertEquals(Float.valueOf(&quot;-0.0&quot;), NumberUtils.createNumber(&quot;-0.0&quot;));</span>
+<span class="fc" id="L442">    }</span>
+
+    @Test
+    public void TestLang747() {
+<span class="fc" id="L446">        assertEquals(Integer.valueOf(0x8000),      NumberUtils.createNumber(&quot;0x8000&quot;));</span>
+<span class="fc" id="L447">        assertEquals(Integer.valueOf(0x80000),     NumberUtils.createNumber(&quot;0x80000&quot;));</span>
+<span class="fc" id="L448">        assertEquals(Integer.valueOf(0x800000),    NumberUtils.createNumber(&quot;0x800000&quot;));</span>
+<span class="fc" id="L449">        assertEquals(Integer.valueOf(0x8000000),   NumberUtils.createNumber(&quot;0x8000000&quot;));</span>
+<span class="fc" id="L450">        assertEquals(Integer.valueOf(0x7FFFFFFF),  NumberUtils.createNumber(&quot;0x7FFFFFFF&quot;));</span>
+<span class="fc" id="L451">        assertEquals(Long.valueOf(0x80000000L),    NumberUtils.createNumber(&quot;0x80000000&quot;));</span>
+<span class="fc" id="L452">        assertEquals(Long.valueOf(0xFFFFFFFFL),    NumberUtils.createNumber(&quot;0xFFFFFFFF&quot;));</span>
+
+        // Leading zero tests
+<span class="fc" id="L455">        assertEquals(Integer.valueOf(0x8000000),   NumberUtils.createNumber(&quot;0x08000000&quot;));</span>
+<span class="fc" id="L456">        assertEquals(Integer.valueOf(0x7FFFFFFF),  NumberUtils.createNumber(&quot;0x007FFFFFFF&quot;));</span>
+<span class="fc" id="L457">        assertEquals(Long.valueOf(0x80000000L),    NumberUtils.createNumber(&quot;0x080000000&quot;));</span>
+<span class="fc" id="L458">        assertEquals(Long.valueOf(0xFFFFFFFFL),    NumberUtils.createNumber(&quot;0x00FFFFFFFF&quot;));</span>
+
+<span class="fc" id="L460">        assertEquals(Long.valueOf(0x800000000L),        NumberUtils.createNumber(&quot;0x800000000&quot;));</span>
+<span class="fc" id="L461">        assertEquals(Long.valueOf(0x8000000000L),       NumberUtils.createNumber(&quot;0x8000000000&quot;));</span>
+<span class="fc" id="L462">        assertEquals(Long.valueOf(0x80000000000L),      NumberUtils.createNumber(&quot;0x80000000000&quot;));</span>
+<span class="fc" id="L463">        assertEquals(Long.valueOf(0x800000000000L),     NumberUtils.createNumber(&quot;0x800000000000&quot;));</span>
+<span class="fc" id="L464">        assertEquals(Long.valueOf(0x8000000000000L),    NumberUtils.createNumber(&quot;0x8000000000000&quot;));</span>
+<span class="fc" id="L465">        assertEquals(Long.valueOf(0x80000000000000L),   NumberUtils.createNumber(&quot;0x80000000000000&quot;));</span>
+<span class="fc" id="L466">        assertEquals(Long.valueOf(0x800000000000000L),  NumberUtils.createNumber(&quot;0x800000000000000&quot;));</span>
+<span class="fc" id="L467">        assertEquals(Long.valueOf(0x7FFFFFFFFFFFFFFFL), NumberUtils.createNumber(&quot;0x7FFFFFFFFFFFFFFF&quot;));</span>
+        // N.B. Cannot use a hex constant such as 0x8000000000000000L here as that is interpreted as a negative long
+<span class="fc" id="L469">        assertEquals(new BigInteger(&quot;8000000000000000&quot;, 16), NumberUtils.createNumber(&quot;0x8000000000000000&quot;));</span>
+<span class="fc" id="L470">        assertEquals(new BigInteger(&quot;FFFFFFFFFFFFFFFF&quot;, 16), NumberUtils.createNumber(&quot;0xFFFFFFFFFFFFFFFF&quot;));</span>
+
+        // Leading zero tests
+<span class="fc" id="L473">        assertEquals(Long.valueOf(0x80000000000000L),   NumberUtils.createNumber(&quot;0x00080000000000000&quot;));</span>
+<span class="fc" id="L474">        assertEquals(Long.valueOf(0x800000000000000L),  NumberUtils.createNumber(&quot;0x0800000000000000&quot;));</span>
+<span class="fc" id="L475">        assertEquals(Long.valueOf(0x7FFFFFFFFFFFFFFFL), NumberUtils.createNumber(&quot;0x07FFFFFFFFFFFFFFF&quot;));</span>
+        // N.B. Cannot use a hex constant such as 0x8000000000000000L here as that is interpreted as a negative long
+<span class="fc" id="L477">        assertEquals(new BigInteger(&quot;8000000000000000&quot;, 16), NumberUtils.createNumber(&quot;0x00008000000000000000&quot;));</span>
+<span class="fc" id="L478">        assertEquals(new BigInteger(&quot;FFFFFFFFFFFFFFFF&quot;, 16), NumberUtils.createNumber(&quot;0x0FFFFFFFFFFFFFFFF&quot;));</span>
+<span class="fc" id="L479">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when preceded by -- rather than -
+    public void testCreateNumberFailure_1() {
+<span class="pc" id="L484">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;--1.1E-700F&quot;));</span>
+<span class="fc" id="L485">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when both e and E are present (with decimal)
+    public void testCreateNumberFailure_2() {
+<span class="pc" id="L490">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;-1.1E+0-7e00&quot;));</span>
+<span class="fc" id="L491">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when both e and E are present (no decimal)
+    public void testCreateNumberFailure_3() {
+<span class="pc" id="L496">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;-11E+0-7e00&quot;));</span>
+<span class="fc" id="L497">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when both e and E are present (no decimal)
+    public void testCreateNumberFailure_4() {
+<span class="pc" id="L502">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;1eE+00001&quot;));</span>
+<span class="fc" id="L503">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when there are multiple trailing 'f' characters (LANG-1205)
+    public void testCreateNumberFailure_5() {
+<span class="pc" id="L508">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;1234.5ff&quot;));</span>
+<span class="fc" id="L509">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when there are multiple trailing 'F' characters (LANG-1205)
+    public void testCreateNumberFailure_6() {
+<span class="pc" id="L514">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;1234.5FF&quot;));</span>
+<span class="fc" id="L515">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when there are multiple trailing 'd' characters (LANG-1205)
+    public void testCreateNumberFailure_7() {
+<span class="pc" id="L520">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;1234.5dd&quot;));</span>
+<span class="fc" id="L521">    }</span>
+
+    @Test
+    // Check that the code fails to create a valid number when there are multiple trailing 'D' characters (LANG-1205)
+    public void testCreateNumberFailure_8() {
+<span class="pc" id="L526">        assertThrows(NumberFormatException.class, () -&gt; NumberUtils.createNumber(&quot;1234.5DD&quot;));</span>
+<span class="fc" id="L527">    }</span>
+
+    // Tests to show when magnitude causes switch to next Number type
+    // Will probably need to be adjusted if code is changed to check precision (LANG-693)
+    @Test
+    public void testCreateNumberMagnitude() {
+        // Test Float.MAX_VALUE, and same with +1 in final digit to check conversion changes to next Number type
+<span class="fc" id="L534">        assertEquals(Float.valueOf(Float.MAX_VALUE),  NumberUtils.createNumber(&quot;3.4028235e+38&quot;));</span>
+<span class="fc" id="L535">        assertEquals(Double.valueOf(3.4028236e+38),   NumberUtils.createNumber(&quot;3.4028236e+38&quot;));</span>
+
+        // Test Double.MAX_VALUE
+<span class="fc" id="L538">        assertEquals(Double.valueOf(Double.MAX_VALUE),          NumberUtils.createNumber(&quot;1.7976931348623157e+308&quot;));</span>
+        // Test with +2 in final digit (+1 does not cause roll-over to BigDecimal)
+<span class="fc" id="L540">        assertEquals(new BigDecimal(&quot;1.7976931348623159e+308&quot;), NumberUtils.createNumber(&quot;1.7976931348623159e+308&quot;));</span>
+
+<span class="fc" id="L542">        assertEquals(Integer.valueOf(0x12345678), NumberUtils.createNumber(&quot;0x12345678&quot;));</span>
+<span class="fc" id="L543">        assertEquals(Long.valueOf(0x123456789L),  NumberUtils.createNumber(&quot;0x123456789&quot;));</span>
+
+<span class="fc" id="L545">        assertEquals(Long.valueOf(0x7fffffffffffffffL),      NumberUtils.createNumber(&quot;0x7fffffffffffffff&quot;));</span>
+        // Does not appear to be a way to create a literal BigInteger of this magnitude
+<span class="fc" id="L547">        assertEquals(new BigInteger(&quot;7fffffffffffffff0&quot;, 16), NumberUtils.createNumber(&quot;0x7fffffffffffffff0&quot;));</span>
+
+<span class="fc" id="L549">        assertEquals(Long.valueOf(0x7fffffffffffffffL),      NumberUtils.createNumber(&quot;#7fffffffffffffff&quot;));</span>
+<span class="fc" id="L550">        assertEquals(new BigInteger(&quot;7fffffffffffffff0&quot;, 16), NumberUtils.createNumber(&quot;#7fffffffffffffff0&quot;));</span>
+
+<span class="fc" id="L552">        assertEquals(Integer.valueOf(017777777777), NumberUtils.createNumber(&quot;017777777777&quot;)); // 31 bits</span>
+<span class="fc" id="L553">        assertEquals(Long.valueOf(037777777777L),   NumberUtils.createNumber(&quot;037777777777&quot;)); // 32 bits</span>
+
+<span class="fc" id="L555">        assertEquals(Long.valueOf(0777777777777777777777L),      NumberUtils.createNumber(&quot;0777777777777777777777&quot;)); // 63 bits</span>
+<span class="fc" id="L556">        assertEquals(new BigInteger(&quot;1777777777777777777777&quot;, 8), NumberUtils.createNumber(&quot;01777777777777777777777&quot;)); // 64 bits</span>
+<span class="fc" id="L557">    }</span>
+
+    @Test
+    public void testCreateFloat() {
+<span class="fc" id="L561">        assertEquals(Float.valueOf(&quot;1234.5&quot;), NumberUtils.createFloat(&quot;1234.5&quot;), &quot;createFloat(String) failed&quot;);</span>
+<span class="fc" id="L562">        assertNull(NumberUtils.createFloat(null), &quot;createFloat(null) failed&quot;);</span>
+<span class="fc" id="L563">        this.testCreateFloatFailure(&quot;&quot;);</span>
+<span class="fc" id="L564">        this.testCreateFloatFailure(&quot; &quot;);</span>
+<span class="fc" id="L565">        this.testCreateFloatFailure(&quot;\b\t\n\f\r&quot;);</span>
+        // Funky whitespaces
+<span class="fc" id="L567">        this.testCreateFloatFailure(&quot;\u00A0\uFEFF\u000B\u000C\u001C\u001D\u001E\u001F&quot;);</span>
+<span class="fc" id="L568">    }</span>
+
+    protected void testCreateFloatFailure(final String str) {
+<span class="fc" id="L571">        assertThrows(</span>
+                NumberFormatException.class,
+<span class="nc" id="L573">                () -&gt; NumberUtils.createFloat(str), &quot;createFloat(\&quot;&quot; + str + &quot;\&quot;) should have failed.&quot;);</span>
+<span class="fc" id="L574">    }</span>
+
+    @Test
+    public void testCreateDouble() {
+<span class="fc" id="L578">        assertEquals(Double.valueOf(&quot;1234.5&quot;), NumberUtils.createDouble(&quot;1234.5&quot;), &quot;createDouble(String) failed&quot;);</span>
+<span class="fc" id="L579">        assertNull(NumberUtils.createDouble(null), &quot;createDouble(null) failed&quot;);</span>
+<span class="fc" id="L580">        this.testCreateDoubleFailure(&quot;&quot;);</span>
+<span class="fc" id="L581">        this.testCreateDoubleFailure(&quot; &quot;);</span>
+<span class="fc" id="L582">        this.testCreateDoubleFailure(&quot;\b\t\n\f\r&quot;);</span>
+        // Funky whitespaces
+<span class="fc" id="L584">        this.testCreateDoubleFailure(&quot;\u00A0\uFEFF\u000B\u000C\u001C\u001D\u001E\u001F&quot;);</span>
+<span class="fc" id="L585">    }</span>
+
+    protected void testCreateDoubleFailure(final String str) {
+<span class="fc" id="L588">        assertThrows(</span>
+                NumberFormatException.class,
+<span class="nc" id="L590">                () -&gt; NumberUtils.createDouble(str),</span>
+                &quot;createDouble(\&quot;&quot; + str + &quot;\&quot;) should have failed.&quot;);
+<span class="fc" id="L592">    }</span>
+
+    @Test
+    public void testCreateInteger() {
+<span class="fc" id="L596">        assertEquals(Integer.valueOf(&quot;12345&quot;), NumberUtils.createInteger(&quot;12345&quot;), &quot;createInteger(String) failed&quot;);</span>
+<span class="fc" id="L597">        assertNull(NumberUtils.createInteger(null), &quot;createInteger(null) failed&quot;);</span>
+<span class="fc" id="L598">        this.testCreateIntegerFailure(&quot;&quot;);</span>
+<span class="fc" id="L599">        this.testCreateIntegerFailure(&quot; &quot;);</span>
+<span class="fc" id="L600">        this.testCreateIntegerFailure(&quot;\b\t\n\f\r&quot;);</span>
+        // Funky whitespaces
+<span class="fc" id="L602">        this.testCreateIntegerFailure(&quot;\u00A0\uFEFF\u000B\u000C\u001C\u001D\u001E\u001F&quot;);</span>
+<span class="fc" id="L603">    }</span>
+
+    protected void testCreateIntegerFailure(final String str) {
+<span class="fc" id="L606">        assertThrows(</span>
+                NumberFormatException.class,
+<span class="nc" id="L608">                () -&gt; NumberUtils.createInteger(str),</span>
+                &quot;createInteger(\&quot;&quot; + str + &quot;\&quot;) should have failed.&quot;);
+<span class="fc" id="L610">    }</span>
+
+    @Test
+    public void testCreateLong() {
+<span class="fc" id="L614">        assertEquals(Long.valueOf(&quot;12345&quot;), NumberUtils.createLong(&quot;12345&quot;), &quot;createLong(String) failed&quot;);</span>
+<span class="fc" id="L615">        assertNull(NumberUtils.createLong(null), &quot;createLong(null) failed&quot;);</span>
+<span class="fc" id="L616">        this.testCreateLongFailure(&quot;&quot;);</span>
+<span class="fc" id="L617">        this.testCreateLongFailure(&quot; &quot;);</span>
+<span class="fc" id="L618">        this.testCreateLongFailure(&quot;\b\t\n\f\r&quot;);</span>
+        // Funky whitespaces
+<span class="fc" id="L620">        this.testCreateLongFailure(&quot;\u00A0\uFEFF\u000B\u000C\u001C\u001D\u001E\u001F&quot;);</span>
+<span class="fc" id="L621">    }</span>
+
+    protected void testCreateLongFailure(final String str) {
+<span class="fc" id="L624">        assertThrows(</span>
+                NumberFormatException.class,
+<span class="nc" id="L626">                () -&gt; NumberUtils.createLong(str),</span>
+                &quot;createLong(\&quot;&quot; + str + &quot;\&quot;) should have failed.&quot;);
+<span class="fc" id="L628">    }</span>
+
+    @Test
+    public void testCreateBigInteger() {
+<span class="fc" id="L632">        assertEquals(new BigInteger(&quot;12345&quot;), NumberUtils.createBigInteger(&quot;12345&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L633">        assertNull(NumberUtils.createBigInteger(null), &quot;createBigInteger(null) failed&quot;);</span>
+<span class="fc" id="L634">        this.testCreateBigIntegerFailure(&quot;&quot;);</span>
+<span class="fc" id="L635">        this.testCreateBigIntegerFailure(&quot; &quot;);</span>
+<span class="fc" id="L636">        this.testCreateBigIntegerFailure(&quot;\b\t\n\f\r&quot;);</span>
+        // Funky whitespaces
+<span class="fc" id="L638">        this.testCreateBigIntegerFailure(&quot;\u00A0\uFEFF\u000B\u000C\u001C\u001D\u001E\u001F&quot;);</span>
+<span class="fc" id="L639">        assertEquals(new BigInteger(&quot;255&quot;), NumberUtils.createBigInteger(&quot;0xff&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L640">        assertEquals(new BigInteger(&quot;255&quot;), NumberUtils.createBigInteger(&quot;0Xff&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L641">        assertEquals(new BigInteger(&quot;255&quot;), NumberUtils.createBigInteger(&quot;#ff&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L642">        assertEquals(new BigInteger(&quot;-255&quot;), NumberUtils.createBigInteger(&quot;-0xff&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L643">        assertEquals(new BigInteger(&quot;255&quot;), NumberUtils.createBigInteger(&quot;0377&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L644">        assertEquals(new BigInteger(&quot;-255&quot;), NumberUtils.createBigInteger(&quot;-0377&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L645">        assertEquals(new BigInteger(&quot;-255&quot;), NumberUtils.createBigInteger(&quot;-0377&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L646">        assertEquals(new BigInteger(&quot;-0&quot;), NumberUtils.createBigInteger(&quot;-0&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L647">        assertEquals(new BigInteger(&quot;0&quot;), NumberUtils.createBigInteger(&quot;0&quot;), &quot;createBigInteger(String) failed&quot;);</span>
+<span class="fc" id="L648">        testCreateBigIntegerFailure(&quot;#&quot;);</span>
+<span class="fc" id="L649">        testCreateBigIntegerFailure(&quot;-#&quot;);</span>
+<span class="fc" id="L650">        testCreateBigIntegerFailure(&quot;0x&quot;);</span>
+<span class="fc" id="L651">        testCreateBigIntegerFailure(&quot;-0x&quot;);</span>
+<span class="fc" id="L652">    }</span>
+
+    protected void testCreateBigIntegerFailure(final String str) {
+<span class="fc" id="L655">        assertThrows(</span>
+                NumberFormatException.class,
+<span class="nc" id="L657">                () -&gt; NumberUtils.createBigInteger(str),</span>
+                &quot;createBigInteger(\&quot;&quot; + str + &quot;\&quot;) should have failed.&quot;);
+<span class="fc" id="L659">    }</span>
+
+    @Test
+    public void testCreateBigDecimal() {
+<span class="fc" id="L663">        assertEquals(new BigDecimal(&quot;1234.5&quot;), NumberUtils.createBigDecimal(&quot;1234.5&quot;), &quot;createBigDecimal(String) failed&quot;);</span>
+<span class="fc" id="L664">        assertNull(NumberUtils.createBigDecimal(null), &quot;createBigDecimal(null) failed&quot;);</span>
+<span class="fc" id="L665">        this.testCreateBigDecimalFailure(&quot;&quot;);</span>
+<span class="fc" id="L666">        this.testCreateBigDecimalFailure(&quot; &quot;);</span>
+<span class="fc" id="L667">        this.testCreateBigDecimalFailure(&quot;\b\t\n\f\r&quot;);</span>
+        // Funky whitespaces
+<span class="fc" id="L669">        this.testCreateBigDecimalFailure(&quot;\u00A0\uFEFF\u000B\u000C\u001C\u001D\u001E\u001F&quot;);</span>
+<span class="fc" id="L670">        this.testCreateBigDecimalFailure(&quot;-&quot;); // sign alone not valid</span>
+<span class="fc" id="L671">        this.testCreateBigDecimalFailure(&quot;--&quot;); // comment in NumberUtils suggests some implementations may incorrectly allow this</span>
+<span class="fc" id="L672">        this.testCreateBigDecimalFailure(&quot;--0&quot;);</span>
+<span class="fc" id="L673">        this.testCreateBigDecimalFailure(&quot;+&quot;); // sign alone not valid</span>
+<span class="fc" id="L674">        this.testCreateBigDecimalFailure(&quot;++&quot;); // in case this was also allowed by some JVMs</span>
+<span class="fc" id="L675">        this.testCreateBigDecimalFailure(&quot;++0&quot;);</span>
+<span class="fc" id="L676">    }</span>
+
+    protected void testCreateBigDecimalFailure(final String str) {
+<span class="fc" id="L679">        assertThrows(</span>
+                NumberFormatException.class,
+<span class="nc" id="L681">                () -&gt; NumberUtils.createBigDecimal(str),</span>
+                &quot;createBigDecimal(\&quot;&quot; + str + &quot;\&quot;) should have failed.&quot;);
+<span class="fc" id="L683">    }</span>
+
+    // min/max tests
+    // ----------------------------------------------------------------------
+    @Test
+    public void testMinLong_nullArray() {
+<span class="pc" id="L689">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min((long[]) null));</span>
+<span class="fc" id="L690">    }</span>
+
+    @Test
+    public void testMinLong_emptyArray() {
+<span class="pc" id="L694">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min(new long[0]));</span>
+<span class="fc" id="L695">    }</span>
+
+    @Test
+    public void testMinLong() {
+<span class="fc" id="L699">        assertEquals(5, NumberUtils.min(new long[] { 5 }), &quot;min(long[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L700">        assertEquals(6, NumberUtils.min(new long[] { 6, 9 }), &quot;min(long[]) failed for array length 2&quot;);</span>
+
+<span class="fc" id="L702">        assertEquals(-10, NumberUtils.min(new long[] { -10, -5, 0, 5, 10 }));</span>
+<span class="fc" id="L703">        assertEquals(-10, NumberUtils.min(new long[] { -5, 0, -10, 5, 10 }));</span>
+<span class="fc" id="L704">    }</span>
+
+    @Test
+    public void testMinInt_nullArray() {
+<span class="pc" id="L708">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min((int[]) null));</span>
+<span class="fc" id="L709">    }</span>
+
+    @Test
+    public void testMinInt_emptyArray() {
+<span class="pc" id="L713">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min(new int[0]));</span>
+<span class="fc" id="L714">    }</span>
+
+    @Test
+    public void testMinInt() {
+<span class="fc" id="L718">        assertEquals(5, NumberUtils.min(5), &quot;min(int[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L719">        assertEquals(6, NumberUtils.min(6, 9), &quot;min(int[]) failed for array length 2&quot;);</span>
+
+<span class="fc" id="L721">        assertEquals(-10, NumberUtils.min(-10, -5, 0, 5, 10));</span>
+<span class="fc" id="L722">        assertEquals(-10, NumberUtils.min(-5, 0, -10, 5, 10));</span>
+<span class="fc" id="L723">    }</span>
+
+    @Test
+    public void testMinShort_nullArray() {
+<span class="pc" id="L727">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min((short[]) null));</span>
+<span class="fc" id="L728">    }</span>
+
+    @Test
+    public void testMinShort_emptyArray() {
+<span class="pc" id="L732">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min(new short[0]));</span>
+<span class="fc" id="L733">    }</span>
+
+    @Test
+    public void testMinShort() {
+<span class="fc" id="L737">        assertEquals(5, NumberUtils.min(new short[] { 5 }), &quot;min(short[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L738">        assertEquals(6, NumberUtils.min(new short[] { 6, 9 }), &quot;min(short[]) failed for array length 2&quot;);</span>
+
+<span class="fc" id="L740">        assertEquals(-10, NumberUtils.min(new short[] { -10, -5, 0, 5, 10 }));</span>
+<span class="fc" id="L741">        assertEquals(-10, NumberUtils.min(new short[] { -5, 0, -10, 5, 10 }));</span>
+<span class="fc" id="L742">    }</span>
+
+    @Test
+    public void testMinByte_nullArray() {
+<span class="pc" id="L746">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min((byte[]) null));</span>
+<span class="fc" id="L747">    }</span>
+
+    @Test
+    public void testMinByte_emptyArray() {
+<span class="pc" id="L751">        assertThrows(IllegalArgumentException.class, NumberUtils::min);</span>
+<span class="fc" id="L752">    }</span>
+
+    @Test
+    public void testMinByte() {
+<span class="fc" id="L756">        assertEquals(5, NumberUtils.min(new byte[] { 5 }), &quot;min(byte[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L757">        assertEquals(6, NumberUtils.min(new byte[] { 6, 9 }), &quot;min(byte[]) failed for array length 2&quot;);</span>
+
+<span class="fc" id="L759">        assertEquals(-10, NumberUtils.min(new byte[] { -10, -5, 0, 5, 10 }));</span>
+<span class="fc" id="L760">        assertEquals(-10, NumberUtils.min(new byte[] { -5, 0, -10, 5, 10 }));</span>
+<span class="fc" id="L761">    }</span>
+
+    @Test
+    public void testMinDouble_nullArray() {
+<span class="pc" id="L765">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min((double[]) null));</span>
+<span class="fc" id="L766">    }</span>
+
+    @Test
+    public void testMinDouble_emptyArray() {
+<span class="pc" id="L770">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min(new double[0]));</span>
+<span class="fc" id="L771">    }</span>
+
+    @Test
+    public void testMinDouble() {
+<span class="fc" id="L775">        assertEquals(5.12, NumberUtils.min(5.12), &quot;min(double[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L776">        assertEquals(6.23, NumberUtils.min(6.23, 9.34), &quot;min(double[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L777">        assertEquals(-10.45, NumberUtils.min(-10.45, -5.56, 0, 5.67, 10.78), &quot;min(double[]) failed for array length 5&quot;);</span>
+<span class="fc" id="L778">        assertEquals(-10, NumberUtils.min(new double[] { -10, -5, 0, 5, 10 }), 0.0001);</span>
+<span class="fc" id="L779">        assertEquals(-10, NumberUtils.min(new double[] { -5, 0, -10, 5, 10 }), 0.0001);</span>
+<span class="fc" id="L780">    }</span>
+
+    @Test
+    public void testMinFloat_nullArray() {
+<span class="pc" id="L784">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min((float[]) null));</span>
+<span class="fc" id="L785">    }</span>
+
+    @Test
+    public void testMinFloat_emptyArray() {
+<span class="pc" id="L789">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.min(new float[0]));</span>
+<span class="fc" id="L790">    }</span>
+
+    @Test
+    public void testMinFloat() {
+<span class="fc" id="L794">        assertEquals(5.9f, NumberUtils.min(5.9f), &quot;min(float[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L795">        assertEquals(6.8f, NumberUtils.min(6.8f, 9.7f), &quot;min(float[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L796">        assertEquals(-10.6f, NumberUtils.min(-10.6f, -5.5f, 0, 5.4f, 10.3f), &quot;min(float[]) failed for array length 5&quot;);</span>
+<span class="fc" id="L797">        assertEquals(-10, NumberUtils.min(new float[] { -10, -5, 0, 5, 10 }), 0.0001f);</span>
+<span class="fc" id="L798">        assertEquals(-10, NumberUtils.min(new float[] { -5, 0, -10, 5, 10 }), 0.0001f);</span>
+<span class="fc" id="L799">    }</span>
+
+    @Test
+    public void testMaxLong_nullArray() {
+<span class="pc" id="L803">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max((long[]) null));</span>
+<span class="fc" id="L804">    }</span>
+
+    @Test
+    public void testMaxLong_emptyArray() {
+<span class="pc" id="L808">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max(new long[0]));</span>
+<span class="fc" id="L809">    }</span>
+
+    @Test
+    public void testMaxLong() {
+<span class="fc" id="L813">        assertEquals(5, NumberUtils.max(new long[] { 5 }), &quot;max(long[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L814">        assertEquals(9, NumberUtils.max(new long[] { 6, 9 }), &quot;max(long[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L815">        assertEquals(10, NumberUtils.max(new long[] { -10, -5, 0, 5, 10 }), &quot;max(long[]) failed for array length 5&quot;);</span>
+<span class="fc" id="L816">        assertEquals(10, NumberUtils.max(new long[] { -10, -5, 0, 5, 10 }));</span>
+<span class="fc" id="L817">        assertEquals(10, NumberUtils.max(new long[] { -5, 0, 10, 5, -10 }));</span>
+<span class="fc" id="L818">    }</span>
+
+    @Test
+    public void testMaxInt_nullArray() {
+<span class="pc" id="L822">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max((int[]) null));</span>
+<span class="fc" id="L823">    }</span>
+
+    @Test
+    public void testMaxInt_emptyArray() {
+<span class="pc" id="L827">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max(new int[0]));</span>
+<span class="fc" id="L828">    }</span>
+
+    @Test
+    public void testMaxInt() {
+<span class="fc" id="L832">        assertEquals(5, NumberUtils.max(5), &quot;max(int[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L833">        assertEquals(9, NumberUtils.max(6, 9), &quot;max(int[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L834">        assertEquals(10, NumberUtils.max(-10, -5, 0, 5, 10), &quot;max(int[]) failed for array length 5&quot;);</span>
+<span class="fc" id="L835">        assertEquals(10, NumberUtils.max(-10, -5, 0, 5, 10));</span>
+<span class="fc" id="L836">        assertEquals(10, NumberUtils.max(-5, 0, 10, 5, -10));</span>
+<span class="fc" id="L837">    }</span>
+
+    @Test
+    public void testMaxShort_nullArray() {
+<span class="pc" id="L841">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max((short[]) null));</span>
+<span class="fc" id="L842">    }</span>
+
+    @Test
+    public void testMaxShort_emptyArray() {
+<span class="pc" id="L846">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max(new short[0]));</span>
+<span class="fc" id="L847">    }</span>
+
+    @Test
+    public void testMaxShort() {
+<span class="fc" id="L851">        assertEquals(5, NumberUtils.max(new short[] { 5 }), &quot;max(short[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L852">        assertEquals(9, NumberUtils.max(new short[] { 6, 9 }), &quot;max(short[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L853">        assertEquals(10, NumberUtils.max(new short[] { -10, -5, 0, 5, 10 }), &quot;max(short[]) failed for array length 5&quot;);</span>
+<span class="fc" id="L854">        assertEquals(10, NumberUtils.max(new short[] { -10, -5, 0, 5, 10 }));</span>
+<span class="fc" id="L855">        assertEquals(10, NumberUtils.max(new short[] { -5, 0, 10, 5, -10 }));</span>
+<span class="fc" id="L856">    }</span>
+
+    @Test
+    public void testMaxByte_nullArray() {
+<span class="pc" id="L860">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max((byte[]) null));</span>
+<span class="fc" id="L861">    }</span>
+
+    @Test
+    public void testMaxByte_emptyArray() {
+<span class="pc" id="L865">        assertThrows(IllegalArgumentException.class, NumberUtils::max);</span>
+<span class="fc" id="L866">    }</span>
+
+    @Test
+    public void testMaxByte() {
+<span class="fc" id="L870">        assertEquals(5, NumberUtils.max(new byte[] { 5 }), &quot;max(byte[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L871">        assertEquals(9, NumberUtils.max(new byte[] { 6, 9 }), &quot;max(byte[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L872">        assertEquals(10, NumberUtils.max(new byte[] { -10, -5, 0, 5, 10 }), &quot;max(byte[]) failed for array length 5&quot;);</span>
+<span class="fc" id="L873">        assertEquals(10, NumberUtils.max(new byte[] { -10, -5, 0, 5, 10 }));</span>
+<span class="fc" id="L874">        assertEquals(10, NumberUtils.max(new byte[] { -5, 0, 10, 5, -10 }));</span>
+<span class="fc" id="L875">    }</span>
+
+    @Test
+    public void testMaxDouble_nullArray() {
+<span class="pc" id="L879">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max((double[]) null));</span>
+<span class="fc" id="L880">    }</span>
+
+    @Test
+    public void testMaxDouble_emptyArray() {
+<span class="pc" id="L884">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max(new double[0]));</span>
+<span class="fc" id="L885">    }</span>
+
+    @Test
+    public void testMaxDouble() {
+<span class="fc" id="L889">        final double[] d = null;</span>
+<span class="fc" id="L890">        assertThrows(</span>
+<span class="nc" id="L891">                IllegalArgumentException.class, () -&gt; NumberUtils.max(d), &quot;No exception was thrown for null input.&quot;);</span>
+
+<span class="fc" id="L893">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L895">                () -&gt; NumberUtils.max(new double[0]),</span>
+                &quot;No exception was thrown for empty input.&quot;);
+
+<span class="fc" id="L898">        assertEquals(5.1f, NumberUtils.max(new double[]{5.1f}), &quot;max(double[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L899">        assertEquals(9.2f, NumberUtils.max(new double[]{6.3f, 9.2f}), &quot;max(double[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L900">        assertEquals(10.4f, NumberUtils.max(new double[]{-10.5f, -5.6f, 0, 5.7f, 10.4f}), &quot;max(double[]) failed for float length 5&quot;);</span>
+<span class="fc" id="L901">        assertEquals(10, NumberUtils.max(new double[] { -10, -5, 0, 5, 10 }), 0.0001);</span>
+<span class="fc" id="L902">        assertEquals(10, NumberUtils.max(new double[] { -5, 0, 10, 5, -10 }), 0.0001);</span>
+<span class="fc" id="L903">    }</span>
+
+    @Test
+    public void testMaxFloat_nullArray() {
+<span class="pc" id="L907">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max((float[]) null));</span>
+<span class="fc" id="L908">    }</span>
+
+    @Test
+    public void testMaxFloat_emptyArray() {
+<span class="pc" id="L912">        assertThrows(IllegalArgumentException.class, () -&gt; NumberUtils.max(new float[0]));</span>
+<span class="fc" id="L913">    }</span>
+
+    @Test
+    public void testMaxFloat() {
+<span class="fc" id="L917">        assertEquals(5.1f, NumberUtils.max(5.1f), &quot;max(float[]) failed for array length 1&quot;);</span>
+<span class="fc" id="L918">        assertEquals(9.2f, NumberUtils.max(6.3f, 9.2f), &quot;max(float[]) failed for array length 2&quot;);</span>
+<span class="fc" id="L919">        assertEquals(10.4f, NumberUtils.max(-10.5f, -5.6f, 0, 5.7f, 10.4f), &quot;max(float[]) failed for float length 5&quot;);</span>
+<span class="fc" id="L920">        assertEquals(10, NumberUtils.max(new float[] { -10, -5, 0, 5, 10 }), 0.0001f);</span>
+<span class="fc" id="L921">        assertEquals(10, NumberUtils.max(new float[] { -5, 0, 10, 5, -10 }), 0.0001f);</span>
+<span class="fc" id="L922">    }</span>
+
+    @Test
+    public void testMinimumLong() {
+<span class="fc" id="L926">        assertEquals(12345L, NumberUtils.min(12345L, 12345L + 1L, 12345L + 2L), &quot;minimum(long, long, long) 1 failed&quot;);</span>
+<span class="fc" id="L927">        assertEquals(12345L, NumberUtils.min(12345L + 1L, 12345L, 12345 + 2L), &quot;minimum(long, long, long) 2 failed&quot;);</span>
+<span class="fc" id="L928">        assertEquals(12345L, NumberUtils.min(12345L + 1L, 12345L + 2L, 12345L), &quot;minimum(long, long, long) 3 failed&quot;);</span>
+<span class="fc" id="L929">        assertEquals(12345L, NumberUtils.min(12345L + 1L, 12345L, 12345L), &quot;minimum(long, long, long) 4 failed&quot;);</span>
+<span class="fc" id="L930">        assertEquals(12345L, NumberUtils.min(12345L, 12345L, 12345L), &quot;minimum(long, long, long) 5 failed&quot;);</span>
+<span class="fc" id="L931">    }</span>
+
+    @Test
+    public void testMinimumInt() {
+<span class="fc" id="L935">        assertEquals(12345, NumberUtils.min(12345, 12345 + 1, 12345 + 2), &quot;minimum(int, int, int) 1 failed&quot;);</span>
+<span class="fc" id="L936">        assertEquals(12345, NumberUtils.min(12345 + 1, 12345, 12345 + 2), &quot;minimum(int, int, int) 2 failed&quot;);</span>
+<span class="fc" id="L937">        assertEquals(12345, NumberUtils.min(12345 + 1, 12345 + 2, 12345), &quot;minimum(int, int, int) 3 failed&quot;);</span>
+<span class="fc" id="L938">        assertEquals(12345, NumberUtils.min(12345 + 1, 12345, 12345), &quot;minimum(int, int, int) 4 failed&quot;);</span>
+<span class="fc" id="L939">        assertEquals(12345, NumberUtils.min(12345, 12345, 12345), &quot;minimum(int, int, int) 5 failed&quot;);</span>
+<span class="fc" id="L940">    }</span>
+
+    @Test
+    public void testMinimumShort() {
+<span class="fc" id="L944">        final short low = 1234;</span>
+<span class="fc" id="L945">        final short mid = 1234 + 1;</span>
+<span class="fc" id="L946">        final short high = 1234 + 2;</span>
+<span class="fc" id="L947">        assertEquals(low, NumberUtils.min(low, mid, high), &quot;minimum(short, short, short) 1 failed&quot;);</span>
+<span class="fc" id="L948">        assertEquals(low, NumberUtils.min(mid, low, high), &quot;minimum(short, short, short) 2 failed&quot;);</span>
+<span class="fc" id="L949">        assertEquals(low, NumberUtils.min(mid, high, low), &quot;minimum(short, short, short) 3 failed&quot;);</span>
+<span class="fc" id="L950">        assertEquals(low, NumberUtils.min(low, mid, low), &quot;minimum(short, short, short) 4 failed&quot;);</span>
+<span class="fc" id="L951">    }</span>
+
+    @Test
+    public void testMinimumByte() {
+<span class="fc" id="L955">        final byte low = 123;</span>
+<span class="fc" id="L956">        final byte mid = 123 + 1;</span>
+<span class="fc" id="L957">        final byte high = 123 + 2;</span>
+<span class="fc" id="L958">        assertEquals(low, NumberUtils.min(low, mid, high), &quot;minimum(byte, byte, byte) 1 failed&quot;);</span>
+<span class="fc" id="L959">        assertEquals(low, NumberUtils.min(mid, low, high), &quot;minimum(byte, byte, byte) 2 failed&quot;);</span>
+<span class="fc" id="L960">        assertEquals(low, NumberUtils.min(mid, high, low), &quot;minimum(byte, byte, byte) 3 failed&quot;);</span>
+<span class="fc" id="L961">        assertEquals(low, NumberUtils.min(low, mid, low), &quot;minimum(byte, byte, byte) 4 failed&quot;);</span>
+<span class="fc" id="L962">    }</span>
+
+    @Test
+    public void testMinimumDouble() {
+<span class="fc" id="L966">        final double low = 12.3;</span>
+<span class="fc" id="L967">        final double mid = 12.3 + 1;</span>
+<span class="fc" id="L968">        final double high = 12.3 + 2;</span>
+<span class="fc" id="L969">        assertEquals(low, NumberUtils.min(low, mid, high), 0.0001);</span>
+<span class="fc" id="L970">        assertEquals(low, NumberUtils.min(mid, low, high), 0.0001);</span>
+<span class="fc" id="L971">        assertEquals(low, NumberUtils.min(mid, high, low), 0.0001);</span>
+<span class="fc" id="L972">        assertEquals(low, NumberUtils.min(low, mid, low), 0.0001);</span>
+<span class="fc" id="L973">        assertEquals(mid, NumberUtils.min(high, mid, high), 0.0001);</span>
+<span class="fc" id="L974">    }</span>
+
+    @Test
+    public void testMinimumFloat() {
+<span class="fc" id="L978">        final float low = 12.3f;</span>
+<span class="fc" id="L979">        final float mid = 12.3f + 1;</span>
+<span class="fc" id="L980">        final float high = 12.3f + 2;</span>
+<span class="fc" id="L981">        assertEquals(low, NumberUtils.min(low, mid, high), 0.0001f);</span>
+<span class="fc" id="L982">        assertEquals(low, NumberUtils.min(mid, low, high), 0.0001f);</span>
+<span class="fc" id="L983">        assertEquals(low, NumberUtils.min(mid, high, low), 0.0001f);</span>
+<span class="fc" id="L984">        assertEquals(low, NumberUtils.min(low, mid, low), 0.0001f);</span>
+<span class="fc" id="L985">        assertEquals(mid, NumberUtils.min(high, mid, high), 0.0001f);</span>
+<span class="fc" id="L986">    }</span>
+
+    @Test
+    public void testMaximumLong() {
+<span class="fc" id="L990">        assertEquals(12345L, NumberUtils.max(12345L, 12345L - 1L, 12345L - 2L), &quot;maximum(long, long, long) 1 failed&quot;);</span>
+<span class="fc" id="L991">        assertEquals(12345L, NumberUtils.max(12345L - 1L, 12345L, 12345L - 2L), &quot;maximum(long, long, long) 2 failed&quot;);</span>
+<span class="fc" id="L992">        assertEquals(12345L, NumberUtils.max(12345L - 1L, 12345L - 2L, 12345L), &quot;maximum(long, long, long) 3 failed&quot;);</span>
+<span class="fc" id="L993">        assertEquals(12345L, NumberUtils.max(12345L - 1L, 12345L, 12345L), &quot;maximum(long, long, long) 4 failed&quot;);</span>
+<span class="fc" id="L994">        assertEquals(12345L, NumberUtils.max(12345L, 12345L, 12345L), &quot;maximum(long, long, long) 5 failed&quot;);</span>
+<span class="fc" id="L995">    }</span>
+
+    @Test
+    public void testMaximumInt() {
+<span class="fc" id="L999">        assertEquals(12345, NumberUtils.max(12345, 12345 - 1, 12345 - 2), &quot;maximum(int, int, int) 1 failed&quot;);</span>
+<span class="fc" id="L1000">        assertEquals(12345, NumberUtils.max(12345 - 1, 12345, 12345 - 2), &quot;maximum(int, int, int) 2 failed&quot;);</span>
+<span class="fc" id="L1001">        assertEquals(12345, NumberUtils.max(12345 - 1, 12345 - 2, 12345), &quot;maximum(int, int, int) 3 failed&quot;);</span>
+<span class="fc" id="L1002">        assertEquals(12345, NumberUtils.max(12345 - 1, 12345, 12345), &quot;maximum(int, int, int) 4 failed&quot;);</span>
+<span class="fc" id="L1003">        assertEquals(12345, NumberUtils.max(12345, 12345, 12345), &quot;maximum(int, int, int) 5 failed&quot;);</span>
+<span class="fc" id="L1004">    }</span>
+
+    @Test
+    public void testMaximumShort() {
+<span class="fc" id="L1008">        final short low = 1234;</span>
+<span class="fc" id="L1009">        final short mid = 1234 + 1;</span>
+<span class="fc" id="L1010">        final short high = 1234 + 2;</span>
+<span class="fc" id="L1011">        assertEquals(high, NumberUtils.max(low, mid, high), &quot;maximum(short, short, short) 1 failed&quot;);</span>
+<span class="fc" id="L1012">        assertEquals(high, NumberUtils.max(mid, low, high), &quot;maximum(short, short, short) 2 failed&quot;);</span>
+<span class="fc" id="L1013">        assertEquals(high, NumberUtils.max(mid, high, low), &quot;maximum(short, short, short) 3 failed&quot;);</span>
+<span class="fc" id="L1014">        assertEquals(high, NumberUtils.max(high, mid, high), &quot;maximum(short, short, short) 4 failed&quot;);</span>
+<span class="fc" id="L1015">    }</span>
+
+    @Test
+    public void testMaximumByte() {
+<span class="fc" id="L1019">        final byte low = 123;</span>
+<span class="fc" id="L1020">        final byte mid = 123 + 1;</span>
+<span class="fc" id="L1021">        final byte high = 123 + 2;</span>
+<span class="fc" id="L1022">        assertEquals(high, NumberUtils.max(low, mid, high), &quot;maximum(byte, byte, byte) 1 failed&quot;);</span>
+<span class="fc" id="L1023">        assertEquals(high, NumberUtils.max(mid, low, high), &quot;maximum(byte, byte, byte) 2 failed&quot;);</span>
+<span class="fc" id="L1024">        assertEquals(high, NumberUtils.max(mid, high, low), &quot;maximum(byte, byte, byte) 3 failed&quot;);</span>
+<span class="fc" id="L1025">        assertEquals(high, NumberUtils.max(high, mid, high), &quot;maximum(byte, byte, byte) 4 failed&quot;);</span>
+<span class="fc" id="L1026">    }</span>
+
+    @Test
+    public void testMaximumDouble() {
+<span class="fc" id="L1030">        final double low = 12.3;</span>
+<span class="fc" id="L1031">        final double mid = 12.3 + 1;</span>
+<span class="fc" id="L1032">        final double high = 12.3 + 2;</span>
+<span class="fc" id="L1033">        assertEquals(high, NumberUtils.max(low, mid, high), 0.0001);</span>
+<span class="fc" id="L1034">        assertEquals(high, NumberUtils.max(mid, low, high), 0.0001);</span>
+<span class="fc" id="L1035">        assertEquals(high, NumberUtils.max(mid, high, low), 0.0001);</span>
+<span class="fc" id="L1036">        assertEquals(mid, NumberUtils.max(low, mid, low), 0.0001);</span>
+<span class="fc" id="L1037">        assertEquals(high, NumberUtils.max(high, mid, high), 0.0001);</span>
+<span class="fc" id="L1038">    }</span>
+
+    @Test
+    public void testMaximumFloat() {
+<span class="fc" id="L1042">        final float low = 12.3f;</span>
+<span class="fc" id="L1043">        final float mid = 12.3f + 1;</span>
+<span class="fc" id="L1044">        final float high = 12.3f + 2;</span>
+<span class="fc" id="L1045">        assertEquals(high, NumberUtils.max(low, mid, high), 0.0001f);</span>
+<span class="fc" id="L1046">        assertEquals(high, NumberUtils.max(mid, low, high), 0.0001f);</span>
+<span class="fc" id="L1047">        assertEquals(high, NumberUtils.max(mid, high, low), 0.0001f);</span>
+<span class="fc" id="L1048">        assertEquals(mid, NumberUtils.max(low, mid, low), 0.0001f);</span>
+<span class="fc" id="L1049">        assertEquals(high, NumberUtils.max(high, mid, high), 0.0001f);</span>
+<span class="fc" id="L1050">    }</span>
+
+    // Testing JDK against old Lang functionality
+    @Test
+    public void testCompareDouble() {
+<span class="fc" id="L1055">        assertEquals(0, Double.compare(Double.NaN, Double.NaN));</span>
+<span class="fc" id="L1056">        assertEquals(Double.compare(Double.NaN, Double.POSITIVE_INFINITY), +1);</span>
+<span class="fc" id="L1057">        assertEquals(Double.compare(Double.NaN, Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1058">        assertEquals(Double.compare(Double.NaN, 1.2d), +1);</span>
+<span class="fc" id="L1059">        assertEquals(Double.compare(Double.NaN, 0.0d), +1);</span>
+<span class="fc" id="L1060">        assertEquals(Double.compare(Double.NaN, -0.0d), +1);</span>
+<span class="fc" id="L1061">        assertEquals(Double.compare(Double.NaN, -1.2d), +1);</span>
+<span class="fc" id="L1062">        assertEquals(Double.compare(Double.NaN, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1063">        assertEquals(Double.compare(Double.NaN, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1065">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, Double.NaN), -1);</span>
+<span class="fc" id="L1066">        assertEquals(0, Double.compare(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY));</span>
+<span class="fc" id="L1067">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1068">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, 1.2d), +1);</span>
+<span class="fc" id="L1069">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, 0.0d), +1);</span>
+<span class="fc" id="L1070">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, -0.0d), +1);</span>
+<span class="fc" id="L1071">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, -1.2d), +1);</span>
+<span class="fc" id="L1072">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1073">        assertEquals(Double.compare(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1075">        assertEquals(Double.compare(Double.MAX_VALUE, Double.NaN), -1);</span>
+<span class="fc" id="L1076">        assertEquals(Double.compare(Double.MAX_VALUE, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1077">        assertEquals(0, Double.compare(Double.MAX_VALUE, Double.MAX_VALUE));</span>
+<span class="fc" id="L1078">        assertEquals(Double.compare(Double.MAX_VALUE, 1.2d), +1);</span>
+<span class="fc" id="L1079">        assertEquals(Double.compare(Double.MAX_VALUE, 0.0d), +1);</span>
+<span class="fc" id="L1080">        assertEquals(Double.compare(Double.MAX_VALUE, -0.0d), +1);</span>
+<span class="fc" id="L1081">        assertEquals(Double.compare(Double.MAX_VALUE, -1.2d), +1);</span>
+<span class="fc" id="L1082">        assertEquals(Double.compare(Double.MAX_VALUE, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1083">        assertEquals(Double.compare(Double.MAX_VALUE, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1085">        assertEquals(Double.compare(1.2d, Double.NaN), -1);</span>
+<span class="fc" id="L1086">        assertEquals(Double.compare(1.2d, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1087">        assertEquals(Double.compare(1.2d, Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1088">        assertEquals(0, Double.compare(1.2d, 1.2d));</span>
+<span class="fc" id="L1089">        assertEquals(Double.compare(1.2d, 0.0d), +1);</span>
+<span class="fc" id="L1090">        assertEquals(Double.compare(1.2d, -0.0d), +1);</span>
+<span class="fc" id="L1091">        assertEquals(Double.compare(1.2d, -1.2d), +1);</span>
+<span class="fc" id="L1092">        assertEquals(Double.compare(1.2d, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1093">        assertEquals(Double.compare(1.2d, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1095">        assertEquals(Double.compare(0.0d, Double.NaN), -1);</span>
+<span class="fc" id="L1096">        assertEquals(Double.compare(0.0d, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1097">        assertEquals(Double.compare(0.0d, Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1098">        assertEquals(Double.compare(0.0d, 1.2d), -1);</span>
+<span class="fc" id="L1099">        assertEquals(0, Double.compare(0.0d, 0.0d));</span>
+<span class="fc" id="L1100">        assertEquals(Double.compare(0.0d, -0.0d), +1);</span>
+<span class="fc" id="L1101">        assertEquals(Double.compare(0.0d, -1.2d), +1);</span>
+<span class="fc" id="L1102">        assertEquals(Double.compare(0.0d, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1103">        assertEquals(Double.compare(0.0d, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1105">        assertEquals(Double.compare(-0.0d, Double.NaN), -1);</span>
+<span class="fc" id="L1106">        assertEquals(Double.compare(-0.0d, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1107">        assertEquals(Double.compare(-0.0d, Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1108">        assertEquals(Double.compare(-0.0d, 1.2d), -1);</span>
+<span class="fc" id="L1109">        assertEquals(Double.compare(-0.0d, 0.0d), -1);</span>
+<span class="fc" id="L1110">        assertEquals(0, Double.compare(-0.0d, -0.0d));</span>
+<span class="fc" id="L1111">        assertEquals(Double.compare(-0.0d, -1.2d), +1);</span>
+<span class="fc" id="L1112">        assertEquals(Double.compare(-0.0d, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1113">        assertEquals(Double.compare(-0.0d, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1115">        assertEquals(Double.compare(-1.2d, Double.NaN), -1);</span>
+<span class="fc" id="L1116">        assertEquals(Double.compare(-1.2d, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1117">        assertEquals(Double.compare(-1.2d, Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1118">        assertEquals(Double.compare(-1.2d, 1.2d), -1);</span>
+<span class="fc" id="L1119">        assertEquals(Double.compare(-1.2d, 0.0d), -1);</span>
+<span class="fc" id="L1120">        assertEquals(Double.compare(-1.2d, -0.0d), -1);</span>
+<span class="fc" id="L1121">        assertEquals(0, Double.compare(-1.2d, -1.2d));</span>
+<span class="fc" id="L1122">        assertEquals(Double.compare(-1.2d, -Double.MAX_VALUE), +1);</span>
+<span class="fc" id="L1123">        assertEquals(Double.compare(-1.2d, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1125">        assertEquals(Double.compare(-Double.MAX_VALUE, Double.NaN), -1);</span>
+<span class="fc" id="L1126">        assertEquals(Double.compare(-Double.MAX_VALUE, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1127">        assertEquals(Double.compare(-Double.MAX_VALUE, Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1128">        assertEquals(Double.compare(-Double.MAX_VALUE, 1.2d), -1);</span>
+<span class="fc" id="L1129">        assertEquals(Double.compare(-Double.MAX_VALUE, 0.0d), -1);</span>
+<span class="fc" id="L1130">        assertEquals(Double.compare(-Double.MAX_VALUE, -0.0d), -1);</span>
+<span class="fc" id="L1131">        assertEquals(Double.compare(-Double.MAX_VALUE, -1.2d), -1);</span>
+<span class="fc" id="L1132">        assertEquals(0, Double.compare(-Double.MAX_VALUE, -Double.MAX_VALUE));</span>
+<span class="fc" id="L1133">        assertEquals(Double.compare(-Double.MAX_VALUE, Double.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1135">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, Double.NaN), -1);</span>
+<span class="fc" id="L1136">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1137">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1138">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, 1.2d), -1);</span>
+<span class="fc" id="L1139">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, 0.0d), -1);</span>
+<span class="fc" id="L1140">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, -0.0d), -1);</span>
+<span class="fc" id="L1141">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, -1.2d), -1);</span>
+<span class="fc" id="L1142">        assertEquals(Double.compare(Double.NEGATIVE_INFINITY, -Double.MAX_VALUE), -1);</span>
+<span class="fc" id="L1143">        assertEquals(0, Double.compare(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY));</span>
+<span class="fc" id="L1144">    }</span>
+
+    @Test
+    public void testCompareFloat() {
+<span class="fc" id="L1148">        assertEquals(0, Float.compare(Float.NaN, Float.NaN));</span>
+<span class="fc" id="L1149">        assertEquals(Float.compare(Float.NaN, Float.POSITIVE_INFINITY), +1);</span>
+<span class="fc" id="L1150">        assertEquals(Float.compare(Float.NaN, Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1151">        assertEquals(Float.compare(Float.NaN, 1.2f), +1);</span>
+<span class="fc" id="L1152">        assertEquals(Float.compare(Float.NaN, 0.0f), +1);</span>
+<span class="fc" id="L1153">        assertEquals(Float.compare(Float.NaN, -0.0f), +1);</span>
+<span class="fc" id="L1154">        assertEquals(Float.compare(Float.NaN, -1.2f), +1);</span>
+<span class="fc" id="L1155">        assertEquals(Float.compare(Float.NaN, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1156">        assertEquals(Float.compare(Float.NaN, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1158">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, Float.NaN), -1);</span>
+<span class="fc" id="L1159">        assertEquals(0, Float.compare(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));</span>
+<span class="fc" id="L1160">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1161">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, 1.2f), +1);</span>
+<span class="fc" id="L1162">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, 0.0f), +1);</span>
+<span class="fc" id="L1163">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, -0.0f), +1);</span>
+<span class="fc" id="L1164">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, -1.2f), +1);</span>
+<span class="fc" id="L1165">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1166">        assertEquals(Float.compare(Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1168">        assertEquals(Float.compare(Float.MAX_VALUE, Float.NaN), -1);</span>
+<span class="fc" id="L1169">        assertEquals(Float.compare(Float.MAX_VALUE, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1170">        assertEquals(0, Float.compare(Float.MAX_VALUE, Float.MAX_VALUE));</span>
+<span class="fc" id="L1171">        assertEquals(Float.compare(Float.MAX_VALUE, 1.2f), +1);</span>
+<span class="fc" id="L1172">        assertEquals(Float.compare(Float.MAX_VALUE, 0.0f), +1);</span>
+<span class="fc" id="L1173">        assertEquals(Float.compare(Float.MAX_VALUE, -0.0f), +1);</span>
+<span class="fc" id="L1174">        assertEquals(Float.compare(Float.MAX_VALUE, -1.2f), +1);</span>
+<span class="fc" id="L1175">        assertEquals(Float.compare(Float.MAX_VALUE, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1176">        assertEquals(Float.compare(Float.MAX_VALUE, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1178">        assertEquals(Float.compare(1.2f, Float.NaN), -1);</span>
+<span class="fc" id="L1179">        assertEquals(Float.compare(1.2f, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1180">        assertEquals(Float.compare(1.2f, Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1181">        assertEquals(0, Float.compare(1.2f, 1.2f));</span>
+<span class="fc" id="L1182">        assertEquals(Float.compare(1.2f, 0.0f), +1);</span>
+<span class="fc" id="L1183">        assertEquals(Float.compare(1.2f, -0.0f), +1);</span>
+<span class="fc" id="L1184">        assertEquals(Float.compare(1.2f, -1.2f), +1);</span>
+<span class="fc" id="L1185">        assertEquals(Float.compare(1.2f, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1186">        assertEquals(Float.compare(1.2f, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1188">        assertEquals(Float.compare(0.0f, Float.NaN), -1);</span>
+<span class="fc" id="L1189">        assertEquals(Float.compare(0.0f, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1190">        assertEquals(Float.compare(0.0f, Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1191">        assertEquals(Float.compare(0.0f, 1.2f), -1);</span>
+<span class="fc" id="L1192">        assertEquals(0, Float.compare(0.0f, 0.0f));</span>
+<span class="fc" id="L1193">        assertEquals(Float.compare(0.0f, -0.0f), +1);</span>
+<span class="fc" id="L1194">        assertEquals(Float.compare(0.0f, -1.2f), +1);</span>
+<span class="fc" id="L1195">        assertEquals(Float.compare(0.0f, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1196">        assertEquals(Float.compare(0.0f, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1198">        assertEquals(Float.compare(-0.0f, Float.NaN), -1);</span>
+<span class="fc" id="L1199">        assertEquals(Float.compare(-0.0f, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1200">        assertEquals(Float.compare(-0.0f, Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1201">        assertEquals(Float.compare(-0.0f, 1.2f), -1);</span>
+<span class="fc" id="L1202">        assertEquals(Float.compare(-0.0f, 0.0f), -1);</span>
+<span class="fc" id="L1203">        assertEquals(0, Float.compare(-0.0f, -0.0f));</span>
+<span class="fc" id="L1204">        assertEquals(Float.compare(-0.0f, -1.2f), +1);</span>
+<span class="fc" id="L1205">        assertEquals(Float.compare(-0.0f, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1206">        assertEquals(Float.compare(-0.0f, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1208">        assertEquals(Float.compare(-1.2f, Float.NaN), -1);</span>
+<span class="fc" id="L1209">        assertEquals(Float.compare(-1.2f, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1210">        assertEquals(Float.compare(-1.2f, Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1211">        assertEquals(Float.compare(-1.2f, 1.2f), -1);</span>
+<span class="fc" id="L1212">        assertEquals(Float.compare(-1.2f, 0.0f), -1);</span>
+<span class="fc" id="L1213">        assertEquals(Float.compare(-1.2f, -0.0f), -1);</span>
+<span class="fc" id="L1214">        assertEquals(0, Float.compare(-1.2f, -1.2f));</span>
+<span class="fc" id="L1215">        assertEquals(Float.compare(-1.2f, -Float.MAX_VALUE), +1);</span>
+<span class="fc" id="L1216">        assertEquals(Float.compare(-1.2f, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1218">        assertEquals(Float.compare(-Float.MAX_VALUE, Float.NaN), -1);</span>
+<span class="fc" id="L1219">        assertEquals(Float.compare(-Float.MAX_VALUE, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1220">        assertEquals(Float.compare(-Float.MAX_VALUE, Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1221">        assertEquals(Float.compare(-Float.MAX_VALUE, 1.2f), -1);</span>
+<span class="fc" id="L1222">        assertEquals(Float.compare(-Float.MAX_VALUE, 0.0f), -1);</span>
+<span class="fc" id="L1223">        assertEquals(Float.compare(-Float.MAX_VALUE, -0.0f), -1);</span>
+<span class="fc" id="L1224">        assertEquals(Float.compare(-Float.MAX_VALUE, -1.2f), -1);</span>
+<span class="fc" id="L1225">        assertEquals(0, Float.compare(-Float.MAX_VALUE, -Float.MAX_VALUE));</span>
+<span class="fc" id="L1226">        assertEquals(Float.compare(-Float.MAX_VALUE, Float.NEGATIVE_INFINITY), +1);</span>
+
+<span class="fc" id="L1228">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, Float.NaN), -1);</span>
+<span class="fc" id="L1229">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY), -1);</span>
+<span class="fc" id="L1230">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1231">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, 1.2f), -1);</span>
+<span class="fc" id="L1232">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, 0.0f), -1);</span>
+<span class="fc" id="L1233">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, -0.0f), -1);</span>
+<span class="fc" id="L1234">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, -1.2f), -1);</span>
+<span class="fc" id="L1235">        assertEquals(Float.compare(Float.NEGATIVE_INFINITY, -Float.MAX_VALUE), -1);</span>
+<span class="fc" id="L1236">        assertEquals(0, Float.compare(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));</span>
+<span class="fc" id="L1237">    }</span>
+
+    @Test
+    public void testIsDigits() {
+<span class="fc" id="L1241">        assertFalse(NumberUtils.isDigits(null), &quot;isDigits(null) failed&quot;);</span>
+<span class="fc" id="L1242">        assertFalse(NumberUtils.isDigits(&quot;&quot;), &quot;isDigits('') failed&quot;);</span>
+<span class="fc" id="L1243">        assertTrue(NumberUtils.isDigits(&quot;12345&quot;), &quot;isDigits(String) failed&quot;);</span>
+<span class="fc" id="L1244">        assertFalse(NumberUtils.isDigits(&quot;1234.5&quot;), &quot;isDigits(String) neg 1 failed&quot;);</span>
+<span class="fc" id="L1245">        assertFalse(NumberUtils.isDigits(&quot;1ab&quot;), &quot;isDigits(String) neg 3 failed&quot;);</span>
+<span class="fc" id="L1246">        assertFalse(NumberUtils.isDigits(&quot;abc&quot;), &quot;isDigits(String) neg 4 failed&quot;);</span>
+<span class="fc" id="L1247">    }</span>
+
+    /**
+     * Tests isCreatable(String) and tests that createNumber(String) returns
+     * a valid number iff isCreatable(String) returns false.
+     */
+    @Test
+    public void testIsCreatable() {
+<span class="fc" id="L1255">        compareIsCreatableWithCreateNumber(&quot;12345&quot;, true);</span>
+<span class="fc" id="L1256">        compareIsCreatableWithCreateNumber(&quot;1234.5&quot;, true);</span>
+<span class="fc" id="L1257">        compareIsCreatableWithCreateNumber(&quot;.12345&quot;, true);</span>
+<span class="fc" id="L1258">        compareIsCreatableWithCreateNumber(&quot;1234E5&quot;, true);</span>
+<span class="fc" id="L1259">        compareIsCreatableWithCreateNumber(&quot;1234E+5&quot;, true);</span>
+<span class="fc" id="L1260">        compareIsCreatableWithCreateNumber(&quot;1234E-5&quot;, true);</span>
+<span class="fc" id="L1261">        compareIsCreatableWithCreateNumber(&quot;123.4E5&quot;, true);</span>
+<span class="fc" id="L1262">        compareIsCreatableWithCreateNumber(&quot;-1234&quot;, true);</span>
+<span class="fc" id="L1263">        compareIsCreatableWithCreateNumber(&quot;-1234.5&quot;, true);</span>
+<span class="fc" id="L1264">        compareIsCreatableWithCreateNumber(&quot;-.12345&quot;, true);</span>
+<span class="fc" id="L1265">        compareIsCreatableWithCreateNumber(&quot;-1234E5&quot;, true);</span>
+<span class="fc" id="L1266">        compareIsCreatableWithCreateNumber(&quot;0&quot;, true);</span>
+<span class="fc" id="L1267">        compareIsCreatableWithCreateNumber(&quot;0.1&quot;, true); // LANG-1216</span>
+<span class="fc" id="L1268">        compareIsCreatableWithCreateNumber(&quot;-0&quot;, true);</span>
+<span class="fc" id="L1269">        compareIsCreatableWithCreateNumber(&quot;01234&quot;, true);</span>
+<span class="fc" id="L1270">        compareIsCreatableWithCreateNumber(&quot;-01234&quot;, true);</span>
+<span class="fc" id="L1271">        compareIsCreatableWithCreateNumber(&quot;-0xABC123&quot;, true);</span>
+<span class="fc" id="L1272">        compareIsCreatableWithCreateNumber(&quot;-0x0&quot;, true);</span>
+<span class="fc" id="L1273">        compareIsCreatableWithCreateNumber(&quot;123.4E21D&quot;, true);</span>
+<span class="fc" id="L1274">        compareIsCreatableWithCreateNumber(&quot;-221.23F&quot;, true);</span>
+<span class="fc" id="L1275">        compareIsCreatableWithCreateNumber(&quot;22338L&quot;, true);</span>
+
+<span class="fc" id="L1277">        compareIsCreatableWithCreateNumber(null, false);</span>
+<span class="fc" id="L1278">        compareIsCreatableWithCreateNumber(&quot;&quot;, false);</span>
+<span class="fc" id="L1279">        compareIsCreatableWithCreateNumber(&quot; &quot;, false);</span>
+<span class="fc" id="L1280">        compareIsCreatableWithCreateNumber(&quot;\r\n\t&quot;, false);</span>
+<span class="fc" id="L1281">        compareIsCreatableWithCreateNumber(&quot;--2.3&quot;, false);</span>
+<span class="fc" id="L1282">        compareIsCreatableWithCreateNumber(&quot;.12.3&quot;, false);</span>
+<span class="fc" id="L1283">        compareIsCreatableWithCreateNumber(&quot;-123E&quot;, false);</span>
+<span class="fc" id="L1284">        compareIsCreatableWithCreateNumber(&quot;-123E+-212&quot;, false);</span>
+<span class="fc" id="L1285">        compareIsCreatableWithCreateNumber(&quot;-123E2.12&quot;, false);</span>
+<span class="fc" id="L1286">        compareIsCreatableWithCreateNumber(&quot;0xGF&quot;, false);</span>
+<span class="fc" id="L1287">        compareIsCreatableWithCreateNumber(&quot;0xFAE-1&quot;, false);</span>
+<span class="fc" id="L1288">        compareIsCreatableWithCreateNumber(&quot;.&quot;, false);</span>
+<span class="fc" id="L1289">        compareIsCreatableWithCreateNumber(&quot;-0ABC123&quot;, false);</span>
+<span class="fc" id="L1290">        compareIsCreatableWithCreateNumber(&quot;123.4E-D&quot;, false);</span>
+<span class="fc" id="L1291">        compareIsCreatableWithCreateNumber(&quot;123.4ED&quot;, false);</span>
+<span class="fc" id="L1292">        compareIsCreatableWithCreateNumber(&quot;1234E5l&quot;, false);</span>
+<span class="fc" id="L1293">        compareIsCreatableWithCreateNumber(&quot;11a&quot;, false);</span>
+<span class="fc" id="L1294">        compareIsCreatableWithCreateNumber(&quot;1a&quot;, false);</span>
+<span class="fc" id="L1295">        compareIsCreatableWithCreateNumber(&quot;a&quot;, false);</span>
+<span class="fc" id="L1296">        compareIsCreatableWithCreateNumber(&quot;11g&quot;, false);</span>
+<span class="fc" id="L1297">        compareIsCreatableWithCreateNumber(&quot;11z&quot;, false);</span>
+<span class="fc" id="L1298">        compareIsCreatableWithCreateNumber(&quot;11def&quot;, false);</span>
+<span class="fc" id="L1299">        compareIsCreatableWithCreateNumber(&quot;11d11&quot;, false);</span>
+<span class="fc" id="L1300">        compareIsCreatableWithCreateNumber(&quot;11 11&quot;, false);</span>
+<span class="fc" id="L1301">        compareIsCreatableWithCreateNumber(&quot; 1111&quot;, false);</span>
+<span class="fc" id="L1302">        compareIsCreatableWithCreateNumber(&quot;1111 &quot;, false);</span>
+
+<span class="fc" id="L1304">        compareIsCreatableWithCreateNumber(&quot;2.&quot;, true); // LANG-521</span>
+<span class="fc" id="L1305">        compareIsCreatableWithCreateNumber(&quot;1.1L&quot;, false); // LANG-664</span>
+<span class="fc" id="L1306">    }</span>
+
+    @Test
+    public void testLANG971() {
+<span class="fc" id="L1310">        compareIsCreatableWithCreateNumber(&quot;0085&quot;, false);</span>
+<span class="fc" id="L1311">        compareIsCreatableWithCreateNumber(&quot;085&quot;, false);</span>
+<span class="fc" id="L1312">        compareIsCreatableWithCreateNumber(&quot;08&quot;, false);</span>
+<span class="fc" id="L1313">        compareIsCreatableWithCreateNumber(&quot;07&quot;, true);</span>
+<span class="fc" id="L1314">        compareIsCreatableWithCreateNumber(&quot;00&quot;, true);</span>
+<span class="fc" id="L1315">    }</span>
+
+    @Test
+    public void testLANG992() {
+<span class="fc" id="L1319">        compareIsCreatableWithCreateNumber(&quot;0.0&quot;, true);</span>
+<span class="fc" id="L1320">        compareIsCreatableWithCreateNumber(&quot;0.4790&quot;, true);</span>
+<span class="fc" id="L1321">    }</span>
+
+    @Test
+    public void testLANG972() {
+<span class="fc" id="L1325">        compareIsCreatableWithCreateNumber(&quot;0xABCD&quot;, true);</span>
+<span class="fc" id="L1326">        compareIsCreatableWithCreateNumber(&quot;0XABCD&quot;, true);</span>
+<span class="fc" id="L1327">    }</span>
+
+    @Test
+    public void testLANG1252() {
+<span class="fc" id="L1331">        compareIsCreatableWithCreateNumber(&quot;+2&quot;, true);</span>
+<span class="fc" id="L1332">        compareIsCreatableWithCreateNumber(&quot;+2.0&quot;, true);</span>
+<span class="fc" id="L1333">    }</span>
+
+    private void compareIsCreatableWithCreateNumber(final String val, final boolean expected) {
+<span class="fc" id="L1336">        final boolean isValid = NumberUtils.isCreatable(val);</span>
+<span class="fc" id="L1337">        final boolean canCreate = checkCreateNumber(val);</span>
+<span class="pc bpc" id="L1338" title="2 of 4 branches missed.">        assertTrue(</span>
+                isValid == expected &amp;&amp; canCreate == expected,
+                &quot;Expecting &quot; + expected + &quot; for isCreatable/createNumber using \&quot;&quot; + val + &quot;\&quot; but got &quot; + isValid + &quot; and &quot; + canCreate);
+<span class="fc" id="L1341">    }</span>
+
+    /**
+     * Tests isCreatable(String) and tests that createNumber(String) returns
+     * a valid number iff isCreatable(String) returns false.
+     */
+    @Test
+    public void testIsNumber() {
+<span class="fc" id="L1349">        compareIsNumberWithCreateNumber(&quot;12345&quot;, true);</span>
+<span class="fc" id="L1350">        compareIsNumberWithCreateNumber(&quot;1234.5&quot;, true);</span>
+<span class="fc" id="L1351">        compareIsNumberWithCreateNumber(&quot;.12345&quot;, true);</span>
+<span class="fc" id="L1352">        compareIsNumberWithCreateNumber(&quot;1234E5&quot;, true);</span>
+<span class="fc" id="L1353">        compareIsNumberWithCreateNumber(&quot;1234E+5&quot;, true);</span>
+<span class="fc" id="L1354">        compareIsNumberWithCreateNumber(&quot;1234E-5&quot;, true);</span>
+<span class="fc" id="L1355">        compareIsNumberWithCreateNumber(&quot;123.4E5&quot;, true);</span>
+<span class="fc" id="L1356">        compareIsNumberWithCreateNumber(&quot;-1234&quot;, true);</span>
+<span class="fc" id="L1357">        compareIsNumberWithCreateNumber(&quot;-1234.5&quot;, true);</span>
+<span class="fc" id="L1358">        compareIsNumberWithCreateNumber(&quot;-.12345&quot;, true);</span>
+<span class="fc" id="L1359">        compareIsNumberWithCreateNumber(&quot;-0001.12345&quot;, true);</span>
+<span class="fc" id="L1360">        compareIsNumberWithCreateNumber(&quot;-000.12345&quot;, true);</span>
+<span class="fc" id="L1361">        compareIsNumberWithCreateNumber(&quot;+00.12345&quot;, true);</span>
+<span class="fc" id="L1362">        compareIsNumberWithCreateNumber(&quot;+0002.12345&quot;, true);</span>
+<span class="fc" id="L1363">        compareIsNumberWithCreateNumber(&quot;-1234E5&quot;, true);</span>
+<span class="fc" id="L1364">        compareIsNumberWithCreateNumber(&quot;0&quot;, true);</span>
+<span class="fc" id="L1365">        compareIsNumberWithCreateNumber(&quot;-0&quot;, true);</span>
+<span class="fc" id="L1366">        compareIsNumberWithCreateNumber(&quot;01234&quot;, true);</span>
+<span class="fc" id="L1367">        compareIsNumberWithCreateNumber(&quot;-01234&quot;, true);</span>
+<span class="fc" id="L1368">        compareIsNumberWithCreateNumber(&quot;-0xABC123&quot;, true);</span>
+<span class="fc" id="L1369">        compareIsNumberWithCreateNumber(&quot;-0x0&quot;, true);</span>
+<span class="fc" id="L1370">        compareIsNumberWithCreateNumber(&quot;123.4E21D&quot;, true);</span>
+<span class="fc" id="L1371">        compareIsNumberWithCreateNumber(&quot;-221.23F&quot;, true);</span>
+<span class="fc" id="L1372">        compareIsNumberWithCreateNumber(&quot;22338L&quot;, true);</span>
+
+<span class="fc" id="L1374">        compareIsNumberWithCreateNumber(null, false);</span>
+<span class="fc" id="L1375">        compareIsNumberWithCreateNumber(&quot;&quot;, false);</span>
+<span class="fc" id="L1376">        compareIsNumberWithCreateNumber(&quot; &quot;, false);</span>
+<span class="fc" id="L1377">        compareIsNumberWithCreateNumber(&quot;\r\n\t&quot;, false);</span>
+<span class="fc" id="L1378">        compareIsNumberWithCreateNumber(&quot;--2.3&quot;, false);</span>
+
+<span class="fc" id="L1380">        compareIsNumberWithCreateNumber(&quot;.12.3&quot;, false);</span>
+<span class="fc" id="L1381">        compareIsNumberWithCreateNumber(&quot;-123E&quot;, false);</span>
+<span class="fc" id="L1382">        compareIsNumberWithCreateNumber(&quot;-123E+-212&quot;, false);</span>
+<span class="fc" id="L1383">        compareIsNumberWithCreateNumber(&quot;-123E2.12&quot;, false);</span>
+<span class="fc" id="L1384">        compareIsNumberWithCreateNumber(&quot;0xGF&quot;, false);</span>
+<span class="fc" id="L1385">        compareIsNumberWithCreateNumber(&quot;0xFAE-1&quot;, false);</span>
+<span class="fc" id="L1386">        compareIsNumberWithCreateNumber(&quot;.&quot;, false);</span>
+<span class="fc" id="L1387">        compareIsNumberWithCreateNumber(&quot;-0ABC123&quot;, false);</span>
+<span class="fc" id="L1388">        compareIsNumberWithCreateNumber(&quot;123.4E-D&quot;, false);</span>
+<span class="fc" id="L1389">        compareIsNumberWithCreateNumber(&quot;123.4ED&quot;, false);</span>
+<span class="fc" id="L1390">        compareIsNumberWithCreateNumber(&quot;+000E.12345&quot;, false);</span>
+<span class="fc" id="L1391">        compareIsNumberWithCreateNumber(&quot;-000E.12345&quot;, false);</span>
+<span class="fc" id="L1392">        compareIsNumberWithCreateNumber(&quot;1234E5l&quot;, false);</span>
+<span class="fc" id="L1393">        compareIsNumberWithCreateNumber(&quot;11a&quot;, false);</span>
+<span class="fc" id="L1394">        compareIsNumberWithCreateNumber(&quot;1a&quot;, false);</span>
+<span class="fc" id="L1395">        compareIsNumberWithCreateNumber(&quot;a&quot;, false);</span>
+<span class="fc" id="L1396">        compareIsNumberWithCreateNumber(&quot;11g&quot;, false);</span>
+<span class="fc" id="L1397">        compareIsNumberWithCreateNumber(&quot;11z&quot;, false);</span>
+<span class="fc" id="L1398">        compareIsNumberWithCreateNumber(&quot;11def&quot;, false);</span>
+<span class="fc" id="L1399">        compareIsNumberWithCreateNumber(&quot;11d11&quot;, false);</span>
+<span class="fc" id="L1400">        compareIsNumberWithCreateNumber(&quot;11 11&quot;, false);</span>
+<span class="fc" id="L1401">        compareIsNumberWithCreateNumber(&quot; 1111&quot;, false);</span>
+<span class="fc" id="L1402">        compareIsNumberWithCreateNumber(&quot;1111 &quot;, false);</span>
+
+<span class="fc" id="L1404">        compareIsNumberWithCreateNumber(&quot;2.&quot;, true); // LANG-521</span>
+<span class="fc" id="L1405">        compareIsNumberWithCreateNumber(&quot;1.1L&quot;, false); // LANG-664</span>
+<span class="fc" id="L1406">    }</span>
+
+    @Test
+    public void testIsNumberLANG971() {
+<span class="fc" id="L1410">        compareIsNumberWithCreateNumber(&quot;0085&quot;, false);</span>
+<span class="fc" id="L1411">        compareIsNumberWithCreateNumber(&quot;085&quot;, false);</span>
+<span class="fc" id="L1412">        compareIsNumberWithCreateNumber(&quot;08&quot;, false);</span>
+<span class="fc" id="L1413">        compareIsNumberWithCreateNumber(&quot;07&quot;, true);</span>
+<span class="fc" id="L1414">        compareIsNumberWithCreateNumber(&quot;00&quot;, true);</span>
+<span class="fc" id="L1415">    }</span>
+
+    @Test
+    public void testIsNumberLANG992() {
+<span class="fc" id="L1419">        compareIsNumberWithCreateNumber(&quot;0.0&quot;, true);</span>
+<span class="fc" id="L1420">        compareIsNumberWithCreateNumber(&quot;0.4790&quot;, true);</span>
+<span class="fc" id="L1421">    }</span>
+
+    @Test
+    public void testIsNumberLANG972() {
+<span class="fc" id="L1425">        compareIsNumberWithCreateNumber(&quot;0xABCD&quot;, true);</span>
+<span class="fc" id="L1426">        compareIsNumberWithCreateNumber(&quot;0XABCD&quot;, true);</span>
+<span class="fc" id="L1427">    }</span>
+
+    @Test
+    public void testIsNumberLANG1252() {
+<span class="fc" id="L1431">        compareIsNumberWithCreateNumber(&quot;+2&quot;, true);</span>
+<span class="fc" id="L1432">        compareIsNumberWithCreateNumber(&quot;+2.0&quot;, true);</span>
+<span class="fc" id="L1433">    }</span>
+
+    @Test
+    public void testIsNumberLANG1385() {
+<span class="fc" id="L1437">        compareIsNumberWithCreateNumber(&quot;L&quot;, false);</span>
+<span class="fc" id="L1438">    }</span>
+
+    private void compareIsNumberWithCreateNumber(final String val, final boolean expected) {
+<span class="fc" id="L1441">        final boolean isValid = NumberUtils.isCreatable(val);</span>
+<span class="fc" id="L1442">        final boolean canCreate = checkCreateNumber(val);</span>
+<span class="pc bpc" id="L1443" title="2 of 4 branches missed.">        assertTrue(</span>
+                isValid == expected &amp;&amp; canCreate == expected,
+                &quot;Expecting &quot;+ expected + &quot; for isCreatable/createNumber using \&quot;&quot; + val + &quot;\&quot; but got &quot; + isValid + &quot; and &quot; + canCreate);
+<span class="fc" id="L1446">    }</span>
+
+    @Test
+    public void testIsParsable() {
+<span class="fc" id="L1450">        assertFalse( NumberUtils.isParsable(null) );</span>
+<span class="fc" id="L1451">        assertFalse( NumberUtils.isParsable(&quot;&quot;) );</span>
+<span class="fc" id="L1452">        assertFalse( NumberUtils.isParsable(&quot;0xC1AB&quot;) );</span>
+<span class="fc" id="L1453">        assertFalse( NumberUtils.isParsable(&quot;65CBA2&quot;) );</span>
+<span class="fc" id="L1454">        assertFalse( NumberUtils.isParsable(&quot;pendro&quot;) );</span>
+<span class="fc" id="L1455">        assertFalse( NumberUtils.isParsable(&quot;64, 2&quot;) );</span>
+<span class="fc" id="L1456">        assertFalse( NumberUtils.isParsable(&quot;64.2.2&quot;) );</span>
+<span class="fc" id="L1457">        assertFalse( NumberUtils.isParsable(&quot;64.&quot;) );</span>
+<span class="fc" id="L1458">        assertFalse( NumberUtils.isParsable(&quot;64L&quot;) );</span>
+<span class="fc" id="L1459">        assertFalse( NumberUtils.isParsable(&quot;-&quot;) );</span>
+<span class="fc" id="L1460">        assertFalse( NumberUtils.isParsable(&quot;--2&quot;) );</span>
+<span class="fc" id="L1461">        assertTrue( NumberUtils.isParsable(&quot;64.2&quot;) );</span>
+<span class="fc" id="L1462">        assertTrue( NumberUtils.isParsable(&quot;64&quot;) );</span>
+<span class="fc" id="L1463">        assertTrue( NumberUtils.isParsable(&quot;018&quot;) );</span>
+<span class="fc" id="L1464">        assertTrue( NumberUtils.isParsable(&quot;.18&quot;) );</span>
+<span class="fc" id="L1465">        assertTrue( NumberUtils.isParsable(&quot;-65&quot;) );</span>
+<span class="fc" id="L1466">        assertTrue( NumberUtils.isParsable(&quot;-018&quot;) );</span>
+<span class="fc" id="L1467">        assertTrue( NumberUtils.isParsable(&quot;-018.2&quot;) );</span>
+<span class="fc" id="L1468">        assertTrue( NumberUtils.isParsable(&quot;-.236&quot;) );</span>
+<span class="fc" id="L1469">    }</span>
+
+    private boolean checkCreateNumber(final String val) {
+        try {
+<span class="fc" id="L1473">            final Object obj = NumberUtils.createNumber(val);</span>
+<span class="fc bfc" id="L1474" title="All 2 branches covered.">            return obj != null;</span>
+<span class="fc" id="L1475">        } catch (final NumberFormatException e) {</span>
+<span class="fc" id="L1476">            return false;</span>
+       }
+    }
+
+    @SuppressWarnings(&quot;cast&quot;) // suppress instanceof warning check
+    @Test
+    public void testConstants() {
+<span class="fc" id="L1483">        assertTrue(NumberUtils.LONG_ZERO instanceof Long);</span>
+<span class="fc" id="L1484">        assertTrue(NumberUtils.LONG_ONE instanceof Long);</span>
+<span class="fc" id="L1485">        assertTrue(NumberUtils.LONG_MINUS_ONE instanceof Long);</span>
+<span class="fc" id="L1486">        assertTrue(NumberUtils.INTEGER_ZERO instanceof Integer);</span>
+<span class="fc" id="L1487">        assertTrue(NumberUtils.INTEGER_ONE instanceof Integer);</span>
+<span class="fc" id="L1488">        assertTrue(NumberUtils.INTEGER_MINUS_ONE instanceof Integer);</span>
+<span class="fc" id="L1489">        assertTrue(NumberUtils.SHORT_ZERO instanceof Short);</span>
+<span class="fc" id="L1490">        assertTrue(NumberUtils.SHORT_ONE instanceof Short);</span>
+<span class="fc" id="L1491">        assertTrue(NumberUtils.SHORT_MINUS_ONE instanceof Short);</span>
+<span class="fc" id="L1492">        assertTrue(NumberUtils.BYTE_ZERO instanceof Byte);</span>
+<span class="fc" id="L1493">        assertTrue(NumberUtils.BYTE_ONE instanceof Byte);</span>
+<span class="fc" id="L1494">        assertTrue(NumberUtils.BYTE_MINUS_ONE instanceof Byte);</span>
+<span class="fc" id="L1495">        assertTrue(NumberUtils.DOUBLE_ZERO instanceof Double);</span>
+<span class="fc" id="L1496">        assertTrue(NumberUtils.DOUBLE_ONE instanceof Double);</span>
+<span class="fc" id="L1497">        assertTrue(NumberUtils.DOUBLE_MINUS_ONE instanceof Double);</span>
+<span class="fc" id="L1498">        assertTrue(NumberUtils.FLOAT_ZERO instanceof Float);</span>
+<span class="fc" id="L1499">        assertTrue(NumberUtils.FLOAT_ONE instanceof Float);</span>
+<span class="fc" id="L1500">        assertTrue(NumberUtils.FLOAT_MINUS_ONE instanceof Float);</span>
+
+<span class="fc" id="L1502">        assertEquals(0, NumberUtils.LONG_ZERO.longValue());</span>
+<span class="fc" id="L1503">        assertEquals(1, NumberUtils.LONG_ONE.longValue());</span>
+<span class="fc" id="L1504">        assertEquals(NumberUtils.LONG_MINUS_ONE.longValue(), -1);</span>
+<span class="fc" id="L1505">        assertEquals(0, NumberUtils.INTEGER_ZERO.intValue());</span>
+<span class="fc" id="L1506">        assertEquals(1, NumberUtils.INTEGER_ONE.intValue());</span>
+<span class="fc" id="L1507">        assertEquals(NumberUtils.INTEGER_MINUS_ONE.intValue(), -1);</span>
+<span class="fc" id="L1508">        assertEquals(0, NumberUtils.SHORT_ZERO.shortValue());</span>
+<span class="fc" id="L1509">        assertEquals(1, NumberUtils.SHORT_ONE.shortValue());</span>
+<span class="fc" id="L1510">        assertEquals(NumberUtils.SHORT_MINUS_ONE.shortValue(), -1);</span>
+<span class="fc" id="L1511">        assertEquals(0, NumberUtils.BYTE_ZERO.byteValue());</span>
+<span class="fc" id="L1512">        assertEquals(1, NumberUtils.BYTE_ONE.byteValue());</span>
+<span class="fc" id="L1513">        assertEquals(NumberUtils.BYTE_MINUS_ONE.byteValue(), -1);</span>
+<span class="fc" id="L1514">        assertEquals(0.0d, NumberUtils.DOUBLE_ZERO.doubleValue());</span>
+<span class="fc" id="L1515">        assertEquals(1.0d, NumberUtils.DOUBLE_ONE.doubleValue());</span>
+<span class="fc" id="L1516">        assertEquals(NumberUtils.DOUBLE_MINUS_ONE.doubleValue(), -1.0d);</span>
+<span class="fc" id="L1517">        assertEquals(0.0f, NumberUtils.FLOAT_ZERO.floatValue());</span>
+<span class="fc" id="L1518">        assertEquals(1.0f, NumberUtils.FLOAT_ONE.floatValue());</span>
+<span class="fc" id="L1519">        assertEquals(NumberUtils.FLOAT_MINUS_ONE.floatValue(), -1.0f);</span>
+<span class="fc" id="L1520">    }</span>
+
+    @Test
+    public void testLang300() {
+<span class="fc" id="L1524">        NumberUtils.createNumber(&quot;-1l&quot;);</span>
+<span class="fc" id="L1525">        NumberUtils.createNumber(&quot;01l&quot;);</span>
+<span class="fc" id="L1526">        NumberUtils.createNumber(&quot;1l&quot;);</span>
+<span class="fc" id="L1527">    }</span>
+
+    @Test
+    public void testLang381() {
+<span class="fc" id="L1531">        assertTrue(Double.isNaN(NumberUtils.min(1.2, 2.5, Double.NaN)));</span>
+<span class="fc" id="L1532">        assertTrue(Double.isNaN(NumberUtils.max(1.2, 2.5, Double.NaN)));</span>
+<span class="fc" id="L1533">        assertTrue(Float.isNaN(NumberUtils.min(1.2f, 2.5f, Float.NaN)));</span>
+<span class="fc" id="L1534">        assertTrue(Float.isNaN(NumberUtils.max(1.2f, 2.5f, Float.NaN)));</span>
+
+<span class="fc" id="L1536">        final double[] a = new double[] { 1.2, Double.NaN, 3.7, 27.0, 42.0, Double.NaN };</span>
+<span class="fc" id="L1537">        assertTrue(Double.isNaN(NumberUtils.max(a)));</span>
+<span class="fc" id="L1538">        assertTrue(Double.isNaN(NumberUtils.min(a)));</span>
+
+<span class="fc" id="L1540">        final double[] b = new double[] { Double.NaN, 1.2, Double.NaN, 3.7, 27.0, 42.0, Double.NaN };</span>
+<span class="fc" id="L1541">        assertTrue(Double.isNaN(NumberUtils.max(b)));</span>
+<span class="fc" id="L1542">        assertTrue(Double.isNaN(NumberUtils.min(b)));</span>
+
+<span class="fc" id="L1544">        final float[] aF = new float[] { 1.2f, Float.NaN, 3.7f, 27.0f, 42.0f, Float.NaN };</span>
+<span class="fc" id="L1545">        assertTrue(Float.isNaN(NumberUtils.max(aF)));</span>
+
+<span class="fc" id="L1547">        final float[] bF = new float[] { Float.NaN, 1.2f, Float.NaN, 3.7f, 27.0f, 42.0f, Float.NaN };</span>
+<span class="fc" id="L1548">        assertTrue(Float.isNaN(NumberUtils.max(bF)));</span>
+<span class="fc" id="L1549">    }</span>
+
+    @Test
+    public void compareInt() {
+<span class="pc bpc" id="L1553" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare(-3, 0) &lt; 0);</span>
+<span class="fc" id="L1554">        assertEquals(0, NumberUtils.compare(113, 113));</span>
+<span class="pc bpc" id="L1555" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare(213, 32) &gt; 0);</span>
+<span class="fc" id="L1556">    }</span>
+
+    @Test
+    public void compareLong() {
+<span class="pc bpc" id="L1560" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare(-3L, 0L) &lt; 0);</span>
+<span class="fc" id="L1561">        assertEquals(0, NumberUtils.compare(113L, 113L));</span>
+<span class="pc bpc" id="L1562" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare(213L, 32L) &gt; 0);</span>
+<span class="fc" id="L1563">    }</span>
+
+    @Test
+    public void compareShort() {
+<span class="pc bpc" id="L1567" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare((short) -3, (short) 0) &lt; 0);</span>
+<span class="fc" id="L1568">        assertEquals(0, NumberUtils.compare((short) 113, (short) 113));</span>
+<span class="pc bpc" id="L1569" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare((short) 213, (short) 32) &gt; 0);</span>
+<span class="fc" id="L1570">    }</span>
+
+    @Test
+    public void compareByte() {
+<span class="pc bpc" id="L1574" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare((byte) -3, (byte) 0) &lt; 0);</span>
+<span class="fc" id="L1575">        assertEquals(0, NumberUtils.compare((byte) 113, (byte) 113));</span>
+<span class="pc bpc" id="L1576" title="1 of 2 branches missed.">        assertTrue(NumberUtils.compare((byte) 123, (byte) 32) &gt; 0);</span>
+<span class="fc" id="L1577">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

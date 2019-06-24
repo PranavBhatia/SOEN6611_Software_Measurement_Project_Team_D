@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestNodeHandlerDecorator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestNodeHandlerDecorator.java</span></div><h1>TestNodeHandlerDecorator.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+/**
+ * Test class for {@code NodeHandlerDecorator}. This class uses the abstract
+ * base class for NodeHandler tests to verify that all methods defined by the
+ * {@code NodeHandler} interface are correctly delegated to the wrapped handler.
+ *
+ */
+<span class="fc" id="L25">public class TestNodeHandlerDecorator extends AbstractImmutableNodeHandlerTest</span>
+{
+    /**
+     * {@inheritDoc} This implementation returns a {@code NodeHandlerDecorator}
+     * which wraps a {@code TreeData} object acting as the actual node handler.
+     */
+    @Override
+    protected NodeHandler&lt;ImmutableNode&gt; createHandler(final ImmutableNode root)
+    {
+<span class="fc" id="L34">        final InMemoryNodeModel model = new InMemoryNodeModel(root);</span>
+<span class="fc" id="L35">        return new NodeHandlerDecorator&lt;ImmutableNode&gt;()</span>
+<span class="fc" id="L36">        {</span>
+            @Override
+            protected NodeHandler&lt;ImmutableNode&gt; getDecoratedNodeHandler()
+            {
+<span class="fc" id="L40">                return model.getNodeHandler();</span>
+            }
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

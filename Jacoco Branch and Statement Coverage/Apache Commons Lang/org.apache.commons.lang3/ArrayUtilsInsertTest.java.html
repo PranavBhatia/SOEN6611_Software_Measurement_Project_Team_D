@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArrayUtilsInsertTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">ArrayUtilsInsertTest.java</span></div><h1>ArrayUtilsInsertTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests ArrayUtils insert methods.
+ */
+<span class="fc" id="L30">public class ArrayUtilsInsertTest {</span>
+
+    @Test
+    public void testInsertBooleans() {
+<span class="fc" id="L34">        final boolean[] array = {true, false, true};</span>
+<span class="fc" id="L35">        final boolean[] values = {false, true, false};</span>
+
+<span class="fc" id="L37">        final boolean[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L38">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L39">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L41">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L42">        assertArrayEquals(new boolean[0], ArrayUtils.insert(0, new boolean[0], null));</span>
+<span class="fc" id="L43">        assertNull(ArrayUtils.insert(42, (boolean[]) null, null));</span>
+
+<span class="pc" id="L45">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L46">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L48">        assertArrayEquals(new boolean[]{false, true, false, true}, ArrayUtils.insert(0, array, false));</span>
+<span class="fc" id="L49">        assertArrayEquals(new boolean[]{true, false, false, true}, ArrayUtils.insert(1, array, false));</span>
+<span class="fc" id="L50">        assertArrayEquals(new boolean[]{true, false, true, false}, ArrayUtils.insert(array.length, array, false));</span>
+<span class="fc" id="L51">        assertArrayEquals(new boolean[]{false, true, false, true, false, true}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L52">        assertArrayEquals(new boolean[]{true, false, true, false, false, true}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L53">        assertArrayEquals(new boolean[]{true, false, true, false, true, false}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L54">    }</span>
+
+
+    @Test
+    public void testInsertBytes() {
+<span class="fc" id="L59">        final byte[] array = {1, 2, 3};</span>
+<span class="fc" id="L60">        final byte[] values = {4, 5, 6};</span>
+
+<span class="fc" id="L62">        final byte[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L63">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L64">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L66">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L67">        assertArrayEquals(new byte[0], ArrayUtils.insert(0, new byte[0], null));</span>
+<span class="fc" id="L68">        assertNull(ArrayUtils.insert(42, (byte[]) null, null));</span>
+
+<span class="pc" id="L70">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L71">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L73">        assertArrayEquals(new byte[]{0, 1, 2, 3}, ArrayUtils.insert(0, array, (byte) 0));</span>
+<span class="fc" id="L74">        assertArrayEquals(new byte[]{1, 0, 2, 3}, ArrayUtils.insert(1, array, (byte) 0));</span>
+<span class="fc" id="L75">        assertArrayEquals(new byte[]{1, 2, 3, 0}, ArrayUtils.insert(array.length, array, (byte) 0));</span>
+<span class="fc" id="L76">        assertArrayEquals(new byte[]{4, 5, 6, 1, 2, 3}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L77">        assertArrayEquals(new byte[]{1, 4, 5, 6, 2, 3}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L78">        assertArrayEquals(new byte[]{1, 2, 3, 4, 5, 6}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void testInsertChars() {
+<span class="fc" id="L83">        final char[] array = {'a', 'b', 'c'};</span>
+<span class="fc" id="L84">        final char[] values = {'d', 'e', 'f'};</span>
+
+<span class="fc" id="L86">        final char[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L87">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L88">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L90">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L91">        assertArrayEquals(new char[0], ArrayUtils.insert(0, new char[0], null));</span>
+<span class="fc" id="L92">        assertNull(ArrayUtils.insert(42, (char[]) null, null));</span>
+
+<span class="pc" id="L94">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L95">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L97">        assertArrayEquals(new char[]{'z', 'a', 'b', 'c'}, ArrayUtils.insert(0, array, 'z'));</span>
+<span class="fc" id="L98">        assertArrayEquals(new char[]{'a', 'z', 'b', 'c'}, ArrayUtils.insert(1, array, 'z'));</span>
+<span class="fc" id="L99">        assertArrayEquals(new char[]{'a', 'b', 'c', 'z'}, ArrayUtils.insert(array.length, array, 'z'));</span>
+<span class="fc" id="L100">        assertArrayEquals(new char[]{'d', 'e', 'f', 'a', 'b', 'c'}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L101">        assertArrayEquals(new char[]{'a', 'd', 'e', 'f', 'b', 'c'}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L102">        assertArrayEquals(new char[]{'a', 'b', 'c', 'd', 'e', 'f'}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L103">    }</span>
+
+    @Test
+    public void testInsertDoubles() {
+<span class="fc" id="L107">        final double[] array = {1, 2, 3};</span>
+<span class="fc" id="L108">        final double[] values = {4, 5, 6};</span>
+<span class="fc" id="L109">        final double delta = 0.000001;</span>
+
+<span class="fc" id="L111">        final double[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L112">        assertArrayEquals(array, result, delta);</span>
+<span class="fc" id="L113">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L115">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L116">        assertArrayEquals(new double[0], ArrayUtils.insert(0, new double[0], null), delta);</span>
+<span class="fc" id="L117">        assertNull(ArrayUtils.insert(42, (double[]) null, null));</span>
+
+<span class="pc" id="L119">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L120">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L122">        assertArrayEquals(new double[]{0, 1, 2, 3}, ArrayUtils.insert(0, array, 0), delta);</span>
+<span class="fc" id="L123">        assertArrayEquals(new double[]{1, 0, 2, 3}, ArrayUtils.insert(1, array, 0), delta);</span>
+<span class="fc" id="L124">        assertArrayEquals(new double[]{1, 2, 3, 0}, ArrayUtils.insert(array.length, array, 0), delta);</span>
+<span class="fc" id="L125">        assertArrayEquals(new double[]{4, 5, 6, 1, 2, 3}, ArrayUtils.insert(0, array, values), delta);</span>
+<span class="fc" id="L126">        assertArrayEquals(new double[]{1, 4, 5, 6, 2, 3}, ArrayUtils.insert(1, array, values), delta);</span>
+<span class="fc" id="L127">        assertArrayEquals(new double[]{1, 2, 3, 4, 5, 6}, ArrayUtils.insert(array.length, array, values), delta);</span>
+<span class="fc" id="L128">    }</span>
+
+    @Test
+    public void testInsertFloats() {
+<span class="fc" id="L132">        final float[] array = {1, 2, 3};</span>
+<span class="fc" id="L133">        final float[] values = {4, 5, 6};</span>
+<span class="fc" id="L134">        final float delta = 0.000001f;</span>
+
+<span class="fc" id="L136">        final float[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L137">        assertArrayEquals(array, result, delta);</span>
+<span class="fc" id="L138">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L140">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L141">        assertArrayEquals(new float[0], ArrayUtils.insert(0, new float[0], null), delta);</span>
+<span class="fc" id="L142">        assertNull(ArrayUtils.insert(42, (float[]) null, null));</span>
+
+<span class="pc" id="L144">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L145">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L147">        assertArrayEquals(new float[]{0, 1, 2, 3}, ArrayUtils.insert(0, array, 0), delta);</span>
+<span class="fc" id="L148">        assertArrayEquals(new float[]{1, 0, 2, 3}, ArrayUtils.insert(1, array, 0), delta);</span>
+<span class="fc" id="L149">        assertArrayEquals(new float[]{1, 2, 3, 0}, ArrayUtils.insert(array.length, array, 0), delta);</span>
+<span class="fc" id="L150">        assertArrayEquals(new float[]{4, 5, 6, 1, 2, 3}, ArrayUtils.insert(0, array, values), delta);</span>
+<span class="fc" id="L151">        assertArrayEquals(new float[]{1, 4, 5, 6, 2, 3}, ArrayUtils.insert(1, array, values), delta);</span>
+<span class="fc" id="L152">        assertArrayEquals(new float[]{1, 2, 3, 4, 5, 6}, ArrayUtils.insert(array.length, array, values), delta);</span>
+<span class="fc" id="L153">    }</span>
+
+    @Test
+    public void testInsertInts() {
+<span class="fc" id="L157">        final int[] array = {1, 2, 3};</span>
+<span class="fc" id="L158">        final int[] values = {4, 5, 6};</span>
+
+<span class="fc" id="L160">        final int[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L161">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L162">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L164">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L165">        assertArrayEquals(new int[0], ArrayUtils.insert(0, new int[0], null));</span>
+<span class="fc" id="L166">        assertNull(ArrayUtils.insert(42, (int[]) null, null));</span>
+
+<span class="pc" id="L168">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L169">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L171">        assertArrayEquals(new int[]{0, 1, 2, 3}, ArrayUtils.insert(0, array, 0));</span>
+<span class="fc" id="L172">        assertArrayEquals(new int[]{1, 0, 2, 3}, ArrayUtils.insert(1, array, 0));</span>
+<span class="fc" id="L173">        assertArrayEquals(new int[]{1, 2, 3, 0}, ArrayUtils.insert(array.length, array, 0));</span>
+<span class="fc" id="L174">        assertArrayEquals(new int[]{4, 5, 6, 1, 2, 3}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L175">        assertArrayEquals(new int[]{1, 4, 5, 6, 2, 3}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L176">        assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L177">    }</span>
+
+
+    @Test
+    public void testInsertLongs() {
+<span class="fc" id="L182">        final long[] array = {1, 2, 3};</span>
+<span class="fc" id="L183">        final long[] values = {4, 5, 6};</span>
+
+<span class="fc" id="L185">        final long[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L186">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L187">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L189">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L190">        assertArrayEquals(new long[0], ArrayUtils.insert(0, new long[0], null));</span>
+<span class="fc" id="L191">        assertNull(ArrayUtils.insert(42, (long[]) null, null));</span>
+
+<span class="pc" id="L193">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L194">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L196">        assertArrayEquals(new long[]{0, 1, 2, 3}, ArrayUtils.insert(0, array, 0));</span>
+<span class="fc" id="L197">        assertArrayEquals(new long[]{1, 0, 2, 3}, ArrayUtils.insert(1, array, 0));</span>
+<span class="fc" id="L198">        assertArrayEquals(new long[]{1, 2, 3, 0}, ArrayUtils.insert(array.length, array, 0));</span>
+<span class="fc" id="L199">        assertArrayEquals(new long[]{4, 5, 6, 1, 2, 3}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L200">        assertArrayEquals(new long[]{1, 4, 5, 6, 2, 3}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L201">        assertArrayEquals(new long[]{1, 2, 3, 4, 5, 6}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L202">    }</span>
+
+
+    @Test
+    public void testInsertShorts() {
+<span class="fc" id="L207">        final short[] array = {1, 2, 3};</span>
+<span class="fc" id="L208">        final short[] values = {4, 5, 6};</span>
+
+<span class="fc" id="L210">        final short[] result = ArrayUtils.insert(42, array, null);</span>
+<span class="fc" id="L211">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L212">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L214">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L215">        assertArrayEquals(new short[0], ArrayUtils.insert(0, new short[0], null));</span>
+<span class="fc" id="L216">        assertNull(ArrayUtils.insert(42, (short[]) null, null));</span>
+
+<span class="pc" id="L218">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L219">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L221">        assertArrayEquals(new short[]{0, 1, 2, 3}, ArrayUtils.insert(0, array, (short) 0));</span>
+<span class="fc" id="L222">        assertArrayEquals(new short[]{1, 0, 2, 3}, ArrayUtils.insert(1, array, (short) 0));</span>
+<span class="fc" id="L223">        assertArrayEquals(new short[]{1, 2, 3, 0}, ArrayUtils.insert(array.length, array, (short) 0));</span>
+<span class="fc" id="L224">        assertArrayEquals(new short[]{4, 5, 6, 1, 2, 3}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L225">        assertArrayEquals(new short[]{1, 4, 5, 6, 2, 3}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L226">        assertArrayEquals(new short[]{1, 2, 3, 4, 5, 6}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L227">    }</span>
+
+
+    @Test
+    public void testInsertGenericArray() {
+<span class="fc" id="L232">        final String[] array = {&quot;a&quot;, &quot;b&quot;, &quot;c&quot;};</span>
+<span class="fc" id="L233">        final String[] values = {&quot;d&quot;, &quot;e&quot;, &quot;f&quot;};</span>
+
+<span class="fc" id="L235">        final String[] result = ArrayUtils.insert(42, array, (String[]) null);</span>
+<span class="fc" id="L236">        assertArrayEquals(array, result);</span>
+<span class="fc" id="L237">        assertNotSame(array, result);</span>
+
+<span class="fc" id="L239">        assertNull(ArrayUtils.insert(42, null, array));</span>
+<span class="fc" id="L240">        assertArrayEquals(new String[0], ArrayUtils.insert(0, new String[0], (String[]) null));</span>
+<span class="fc" id="L241">        assertNull(ArrayUtils.insert(42, null, (String[]) null));</span>
+
+<span class="pc" id="L243">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(-1, array, array));</span>
+<span class="pc" id="L244">        assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.insert(array.length + 1, array, array));</span>
+
+<span class="fc" id="L246">        assertArrayEquals(new String[]{&quot;z&quot;, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;}, ArrayUtils.insert(0, array, &quot;z&quot;));</span>
+<span class="fc" id="L247">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;z&quot;, &quot;b&quot;, &quot;c&quot;}, ArrayUtils.insert(1, array, &quot;z&quot;));</span>
+<span class="fc" id="L248">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;z&quot;}, ArrayUtils.insert(array.length, array, &quot;z&quot;));</span>
+<span class="fc" id="L249">        assertArrayEquals(new String[]{&quot;d&quot;, &quot;e&quot;, &quot;f&quot;, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;}, ArrayUtils.insert(0, array, values));</span>
+<span class="fc" id="L250">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;, &quot;b&quot;, &quot;c&quot;}, ArrayUtils.insert(1, array, values));</span>
+<span class="fc" id="L251">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;}, ArrayUtils.insert(array.length, array, values));</span>
+<span class="fc" id="L252">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

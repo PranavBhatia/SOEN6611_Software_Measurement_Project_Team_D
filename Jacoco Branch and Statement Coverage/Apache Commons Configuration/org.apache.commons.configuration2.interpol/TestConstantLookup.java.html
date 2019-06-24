@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConstantLookup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.interpol</a> &gt; <span class="el_source">TestConstantLookup.java</span></div><h1>TestConstantLookup.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.interpol;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.awt.event.KeyEvent;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for ConstantLookup.
+ *
+ */
+<span class="fc" id="L32">public class TestConstantLookup</span>
+{
+    /** A public field that can be read by the lookup. */
+    public static final String FIELD = &quot;Field that can be read&quot;;
+
+    /** A private field that cannot be read by the lookup. */
+    @SuppressWarnings(&quot;unused&quot;)
+    private static final String PRIVATE_FIELD = &quot;PRIVATE&quot;;
+
+    /** The lookup object to be tested. */
+    private ConstantLookup lookup;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L47">        lookup = new ConstantLookup();</span>
+<span class="fc" id="L48">    }</span>
+
+    /**
+     * Generates the name of a variable for a lookup operation based on the
+     * given field name of this class.
+     *
+     * @param field the field name
+     * @return the variable for looking up this field
+     */
+    private String variable(final String field)
+    {
+<span class="fc" id="L59">        return getClass().getName() + '.' + field;</span>
+    }
+
+    /**
+     * Clears the test environment. Here the static cache of the constant lookup
+     * class is wiped out.
+     */
+    @After
+    public void tearDown()
+    {
+<span class="fc" id="L69">        ConstantLookup.clear();</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Tests resolving a valid constant.
+     */
+    @Test
+    public void testLookupConstant()
+    {
+<span class="fc" id="L78">        assertEquals(&quot;Wrong value of constant&quot;, FIELD,</span>
+<span class="fc" id="L79">                lookup.lookup(variable(&quot;FIELD&quot;)));</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Tests resolving a non existing constant. Result should be null.
+     */
+    @Test
+    public void testLookupNonExisting()
+    {
+<span class="fc" id="L88">        assertNull(&quot;Non null return value for non existing constant&quot;,</span>
+<span class="fc" id="L89">                lookup.lookup(variable(&quot;NO_FIELD&quot;)));</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Tests resolving a private constant. Because a private field cannot be
+     * accessed this should again yield null.
+     */
+    @Test
+    public void testLookupPrivate()
+    {
+<span class="fc" id="L99">        assertNull(&quot;Non null return value for non accessible field&quot;, lookup</span>
+<span class="fc" id="L100">                .lookup(variable(&quot;PRIVATE_FIELD&quot;)));</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Tests resolving a field from an unknown class.
+     */
+    @Test
+    public void testLookupUnknownClass()
+    {
+<span class="fc" id="L109">        assertNull(&quot;Non null return value for unknown class&quot;, lookup</span>
+<span class="fc" id="L110">                .lookup(&quot;org.apache.commons.configuration.NonExistingConfig.&quot;</span>
+                        + FIELD));
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Tries to resolve a variable with an invalid syntax: The name does not
+     * contain a dot as a field separator.
+     */
+    @Test
+    public void testLookupInvalidSyntax()
+    {
+<span class="fc" id="L121">        assertNull(&quot;Non null return value for invalid variable name&quot;, lookup</span>
+<span class="fc" id="L122">                .lookup(&quot;InvalidVariableName&quot;));</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Tests looking up a null variable.
+     */
+    @Test
+    public void testLookupNull()
+    {
+<span class="fc" id="L131">        assertNull(&quot;Non null return value for null variable&quot;, lookup</span>
+<span class="fc" id="L132">                .lookup(null));</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Tests accessing the cache by querying a variable twice.
+     */
+    @Test
+    public void testLookupCache()
+    {
+<span class="fc" id="L141">        testLookupConstant();</span>
+<span class="fc" id="L142">        testLookupConstant();</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Tests resolving a non string constant. Then looks the same variable up
+     * from the cache.
+     */
+    @Test
+    public void testLookupNonStringFromCache()
+    {
+<span class="fc" id="L152">        final String var = KeyEvent.class.getName() + &quot;.VK_ESCAPE&quot;;</span>
+<span class="fc" id="L153">        final Object expected = KeyEvent.VK_ESCAPE;</span>
+<span class="fc" id="L154">        assertEquals(&quot;Wrong result of first lookup&quot;, expected, lookup</span>
+<span class="fc" id="L155">                .lookup(var));</span>
+<span class="fc" id="L156">        assertEquals(&quot;Wrong result of 2nd lookup&quot;, expected, lookup.lookup(var));</span>
+<span class="fc" id="L157">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

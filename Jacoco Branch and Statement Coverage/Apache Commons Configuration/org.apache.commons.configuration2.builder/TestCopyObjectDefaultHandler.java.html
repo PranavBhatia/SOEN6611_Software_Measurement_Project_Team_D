@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCopyObjectDefaultHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestCopyObjectDefaultHandler.java</span></div><h1>TestCopyObjectDefaultHandler.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.Map;
+
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.apache.commons.configuration2.tree.ExpressionEngine;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code CopyObjectDefaultHandler}.
+ *
+ */
+<span class="fc" id="L32">public class TestCopyObjectDefaultHandler</span>
+{
+    /**
+     * Tries to create an instance without a source object.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNull()
+    {
+<span class="nc" id="L40">        new CopyObjectDefaultHandler(null);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Tests whether default values can be copied onto an object of the same
+     * type.
+     */
+    @Test
+    public void testInitializeDefaultsSameType()
+    {
+<span class="fc" id="L50">        final Long refresh = 50000L;</span>
+<span class="fc" id="L51">        final FileBasedBuilderParametersImpl source =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L53">        source.setReloadingRefreshDelay(refresh).setThrowExceptionOnMissing(</span>
+                true);
+<span class="fc" id="L55">        final CopyObjectDefaultHandler handler = new CopyObjectDefaultHandler(source);</span>
+<span class="fc" id="L56">        final FileBasedBuilderParametersImpl copy =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L58">        handler.initializeDefaults(copy);</span>
+<span class="fc" id="L59">        final Map&lt;String, Object&gt; map = copy.getParameters();</span>
+<span class="fc" id="L60">        assertEquals(&quot;Wrong exception flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L61">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L62">        assertEquals(&quot;Wrong refresh&quot;, refresh, copy.getReloadingRefreshDelay());</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Tests whether a base type can be initialized with default values. Unknown
+     * properties should silently be ignored.
+     */
+    @Test
+    public void testInitializeDefaultsBaseType()
+    {
+<span class="fc" id="L72">        final Long refresh = 50000L;</span>
+<span class="fc" id="L73">        final XMLBuilderParametersImpl paramsXml = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L74">        paramsXml</span>
+<span class="fc" id="L75">                .setValidating(true)</span>
+<span class="fc" id="L76">                .setExpressionEngine(</span>
+<span class="fc" id="L77">                        EasyMock.createMock(ExpressionEngine.class))</span>
+<span class="fc" id="L78">                .setReloadingRefreshDelay(refresh);</span>
+<span class="fc" id="L79">        final CopyObjectDefaultHandler handler =</span>
+                new CopyObjectDefaultHandler(paramsXml);
+<span class="fc" id="L81">        final FileBasedBuilderParametersImpl paramsFb =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L83">        handler.initializeDefaults(paramsFb);</span>
+<span class="fc" id="L84">        assertEquals(&quot;Wrong refresh&quot;, refresh,</span>
+<span class="fc" id="L85">                paramsFb.getReloadingRefreshDelay());</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Tests whether exceptions during copying are re-thrown as runtime
+     * exceptions.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testInitializeDefaultsException()
+    {
+<span class="fc" id="L95">        final ExpressionEngine engine = EasyMock.createMock(ExpressionEngine.class);</span>
+<span class="fc" id="L96">        final XMLBuilderParametersImpl source = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L97">        source.setExpressionEngine(engine);</span>
+<span class="fc" id="L98">        final XMLBuilderParametersImpl dest = new XMLBuilderParametersImpl()</span>
+<span class="fc" id="L99">        {</span>
+            @Override
+            public HierarchicalBuilderParametersImpl setExpressionEngine(
+                    final ExpressionEngine engine)
+            {
+<span class="fc" id="L104">                throw new ConfigurationRuntimeException(&quot;Test exception&quot;);</span>
+            }
+        };
+
+<span class="fc" id="L108">        final CopyObjectDefaultHandler handler = new CopyObjectDefaultHandler(source);</span>
+<span class="nc" id="L109">        handler.initializeDefaults(dest);</span>
+<span class="nc" id="L110">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

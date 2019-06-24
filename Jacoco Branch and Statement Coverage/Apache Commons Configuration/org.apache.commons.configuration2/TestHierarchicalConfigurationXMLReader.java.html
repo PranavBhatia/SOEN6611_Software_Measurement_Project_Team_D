@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestHierarchicalConfigurationXMLReader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestHierarchicalConfigurationXMLReader.java</span></div><h1>TestHierarchicalConfigurationXMLReader.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.sax.SAXSource;
+
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.jxpath.JXPathContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+
+/**
+ * Test class for HierarchicalConfigurationXMLReader.
+ *
+ */
+<span class="fc" id="L40">public class TestHierarchicalConfigurationXMLReader</span>
+{
+<span class="fc" id="L42">    private static final String TEST_FILE = ConfigurationAssert.getTestFile(</span>
+<span class="fc" id="L43">            &quot;testHierarchicalXMLConfiguration.xml&quot;).getAbsolutePath();</span>
+
+    private HierarchicalConfigurationXMLReader&lt;ImmutableNode&gt; parser;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L50">        final XMLConfiguration config = new XMLConfiguration();</span>
+<span class="fc" id="L51">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L52">        handler.load(TEST_FILE);</span>
+<span class="fc" id="L53">        parser = new HierarchicalConfigurationXMLReader&lt;&gt;(config);</span>
+<span class="fc" id="L54">    }</span>
+
+    @Test
+    public void testParse() throws Exception
+    {
+<span class="fc" id="L59">        final SAXSource source = new SAXSource(parser, new InputSource());</span>
+<span class="fc" id="L60">        final DOMResult result = new DOMResult();</span>
+<span class="fc" id="L61">        final Transformer trans = TransformerFactory.newInstance().newTransformer();</span>
+<span class="fc" id="L62">        trans.transform(source, result);</span>
+<span class="fc" id="L63">        final Node root = ((Document) result.getNode()).getDocumentElement();</span>
+<span class="fc" id="L64">        final JXPathContext ctx = JXPathContext.newContext(root);</span>
+
+<span class="fc" id="L66">        assertEquals(&quot;Wrong name of root element&quot;, &quot;database&quot;, root.getNodeName());</span>
+<span class="fc" id="L67">        assertEquals(&quot;Wrong number of children of root&quot;, 1, ctx.selectNodes(</span>
+<span class="fc" id="L68">                &quot;/*&quot;).size());</span>
+<span class="fc" id="L69">        assertEquals(&quot;Wrong number of tables&quot;, 2, ctx.selectNodes(</span>
+<span class="fc" id="L70">                &quot;/tables/table&quot;).size());</span>
+<span class="fc" id="L71">        assertEquals(&quot;Wrong name of first table&quot;, &quot;users&quot;, ctx</span>
+<span class="fc" id="L72">                .getValue(&quot;/tables/table[1]/name&quot;));</span>
+<span class="fc" id="L73">        assertEquals(&quot;Wrong number of fields in first table&quot;, 5, ctx</span>
+<span class="fc" id="L74">                .selectNodes(&quot;/tables/table[1]/fields/field&quot;).size());</span>
+<span class="fc" id="L75">        assertEquals(&quot;Wrong attribute value&quot;, &quot;system&quot;, ctx</span>
+<span class="fc" id="L76">                .getValue(&quot;/tables/table[1]/@tableType&quot;));</span>
+<span class="fc" id="L77">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

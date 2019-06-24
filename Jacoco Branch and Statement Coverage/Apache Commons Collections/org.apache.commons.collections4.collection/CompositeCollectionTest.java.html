@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CompositeCollectionTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_collections4$Jacoco_Reports.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.collections4.collection</a> &gt; <span class="el_source">CompositeCollectionTest.java</span></div><h1>CompositeCollectionTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.collections4.collection;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Predicate;
+
+import org.junit.Assert;
+
+/**
+ * Extension of {@link AbstractCollectionTest} for exercising the
+ * {@link CompositeCollection} implementation.
+ *
+ * @since 3.0
+ */
+public class CompositeCollectionTest&lt;E&gt; extends AbstractCollectionTest&lt;E&gt; {
+
+    protected CompositeCollection&lt;E&gt; c;
+
+ protected Collection&lt;E&gt; one;
+
+    protected Collection&lt;E&gt; two;
+
+    public CompositeCollectionTest(final String name) {
+<span class="fc" id="L44">        super(name);</span>
+<span class="fc" id="L45">    }</span>
+
+    @Override
+    public String getCompatibilityVersion() {
+<span class="fc" id="L49">        return &quot;4&quot;;</span>
+    }
+
+    @Override
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public E[] getFullElements() {
+<span class="fc" id="L55">        return (E[]) new Object[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot; };</span>
+    }
+
+    //-----------------------------------------------------------------------------
+    /**
+     * Run stock collection tests without Mutator, so turn off add, remove
+     */
+    @Override
+    public boolean isAddSupported() {
+<span class="fc" id="L64">        return false;</span>
+    }
+
+    @Override
+    public boolean isRemoveSupported() {
+<span class="fc" id="L69">        return false;</span>
+    }
+
+    @Override
+    public Collection&lt;E&gt; makeConfirmedCollection() {
+<span class="fc" id="L74">        return new HashSet&lt;&gt;();</span>
+    }
+
+    //--------------------------------------------------------------------------
+
+    /**
+     * Full collection should look like a collection with 4 elements
+     */
+    @Override
+    public Collection&lt;E&gt; makeConfirmedFullCollection() {
+<span class="fc" id="L84">        final Collection&lt;E&gt; collection = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L85">        collection.addAll(Arrays.asList(getFullElements()));</span>
+<span class="fc" id="L86">        return collection;</span>
+    }
+    /**
+     * Full collection consists of 4 collections, each with one element
+     */
+    @Override
+    public Collection&lt;E&gt; makeFullCollection() {
+<span class="fc" id="L93">        final CompositeCollection&lt;E&gt; compositeCollection = new CompositeCollection&lt;&gt;();</span>
+<span class="fc" id="L94">        final E[] elements = getFullElements();</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (final E element : elements) {</span>
+<span class="fc" id="L96">            final Collection&lt;E&gt; summand = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L97">            summand.add(element);</span>
+<span class="fc" id="L98">            compositeCollection.addComposited(summand);</span>
+        }
+<span class="fc" id="L100">        return compositeCollection;</span>
+    }
+    /**
+     * Empty collection is empty composite
+     */
+    @Override
+    public Collection&lt;E&gt; makeObject() {
+<span class="fc" id="L107">        return new CompositeCollection&lt;&gt;();</span>
+    }
+
+    @SuppressWarnings(&quot;serial&quot;)
+    protected void setUpMutatorTest() {
+<span class="fc" id="L112">        setUpTest();</span>
+<span class="fc" id="L113">        c.setMutator(new CompositeCollection.CollectionMutator&lt;E&gt;() {</span>
+
+            @Override
+            public boolean add(final CompositeCollection&lt;E&gt; composite, final List&lt;Collection&lt;E&gt;&gt; collections, final E obj) {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                for (final Collection&lt;E&gt; coll : collections) {</span>
+<span class="nc" id="L118">                    coll.add(obj);</span>
+<span class="nc" id="L119">                }</span>
+<span class="nc" id="L120">                return true;</span>
+            }
+
+            @Override
+            public boolean addAll(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final Collection&lt;? extends E&gt; coll) {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                for (final Collection&lt;E&gt; collection : collections) {</span>
+<span class="nc" id="L127">                    collection.addAll(coll);</span>
+<span class="nc" id="L128">                }</span>
+<span class="nc" id="L129">                return true;</span>
+            }
+
+            @Override
+            public boolean remove(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final Object obj) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">                for (final Collection&lt;E&gt; collection : collections) {</span>
+<span class="fc" id="L136">                    collection.remove(obj);</span>
+<span class="fc" id="L137">                }</span>
+<span class="fc" id="L138">                return true;</span>
+            }
+        });
+<span class="fc" id="L141">    }</span>
+
+    protected void setUpTest() {
+<span class="fc" id="L144">        c = new CompositeCollection&lt;&gt;();</span>
+<span class="fc" id="L145">        one = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L146">        two = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L147">    }</span>
+
+    @SuppressWarnings({ &quot;unchecked&quot;, &quot;serial&quot; })
+    public void testAddAllMutator() {
+<span class="fc" id="L151">        setUpTest();</span>
+<span class="fc" id="L152">        c.setMutator(new CompositeCollection.CollectionMutator&lt;E&gt;() {</span>
+            @Override
+            public boolean add(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final E obj) {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                for (final Collection&lt;E&gt; collection : collections) {</span>
+<span class="nc" id="L157">                    collection.add(obj);</span>
+<span class="nc" id="L158">                }</span>
+<span class="nc" id="L159">                return true;</span>
+            }
+
+            @Override
+            public boolean addAll(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final Collection&lt;? extends E&gt; coll) {
+<span class="fc bfc" id="L165" title="All 2 branches covered.">                for (final Collection&lt;E&gt; collection : collections) {</span>
+<span class="fc" id="L166">                    collection.addAll(coll);</span>
+<span class="fc" id="L167">                }</span>
+<span class="fc" id="L168">                return true;</span>
+            }
+
+            @Override
+            public boolean remove(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final Object obj) {
+<span class="nc" id="L174">                return false;</span>
+            }
+        });
+
+<span class="fc" id="L178">        c.addComposited(one);</span>
+<span class="fc" id="L179">        two.add((E) &quot;foo&quot;);</span>
+<span class="fc" id="L180">        c.addAll(two);</span>
+<span class="fc" id="L181">        assertTrue(c.contains(&quot;foo&quot;));</span>
+<span class="fc" id="L182">        assertTrue(one.contains(&quot;foo&quot;));</span>
+<span class="fc" id="L183">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testAddAllToCollection() {
+<span class="fc" id="L187">        setUpTest();</span>
+<span class="fc" id="L188">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L189">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L190">        c.addComposited(one, two);</span>
+<span class="fc" id="L191">        final Collection&lt;E&gt; toCollection = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L192">        toCollection.addAll(c);</span>
+<span class="fc" id="L193">        assertTrue(toCollection.containsAll(c));</span>
+<span class="fc" id="L194">        assertEquals(c.size(), toCollection.size());</span>
+<span class="fc" id="L195">    }</span>
+
+    @SuppressWarnings({ &quot;unchecked&quot;, &quot;serial&quot; })
+    public void testAddMutator() {
+<span class="fc" id="L199">        setUpTest();</span>
+<span class="fc" id="L200">        c.setMutator(new CompositeCollection.CollectionMutator&lt;E&gt;() {</span>
+            @Override
+            public boolean add(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final E obj) {
+<span class="fc bfc" id="L204" title="All 2 branches covered.">                for (final Collection&lt;E&gt; collection : collections) {</span>
+<span class="fc" id="L205">                    collection.add(obj);</span>
+<span class="fc" id="L206">                }</span>
+<span class="fc" id="L207">                return true;</span>
+            }
+
+            @Override
+            public boolean addAll(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final Collection&lt;? extends E&gt; coll) {
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                for (final Collection&lt;E&gt; collection : collections) {</span>
+<span class="nc" id="L214">                    collection.addAll(coll);</span>
+<span class="nc" id="L215">                }</span>
+<span class="nc" id="L216">                return true;</span>
+            }
+
+            @Override
+            public boolean remove(final CompositeCollection&lt;E&gt; composite,
+                    final List&lt;Collection&lt;E&gt;&gt; collections, final Object obj) {
+<span class="nc" id="L222">                return false;</span>
+            }
+        });
+
+<span class="fc" id="L226">        c.addComposited(one);</span>
+<span class="fc" id="L227">        c.add((E) &quot;foo&quot;);</span>
+<span class="fc" id="L228">        assertTrue(c.contains(&quot;foo&quot;));</span>
+<span class="fc" id="L229">        assertTrue(one.contains(&quot;foo&quot;));</span>
+<span class="fc" id="L230">    }</span>
+
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testClear() {
+<span class="fc" id="L235">        setUpTest();</span>
+<span class="fc" id="L236">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L237">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L238">        c.addComposited(one, two);</span>
+<span class="fc" id="L239">        c.clear();</span>
+<span class="fc" id="L240">        assertTrue(one.isEmpty());</span>
+<span class="fc" id="L241">        assertTrue(two.isEmpty());</span>
+<span class="fc" id="L242">        assertTrue(c.isEmpty());</span>
+<span class="fc" id="L243">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testContainsAll() {
+<span class="fc" id="L247">        setUpTest();</span>
+<span class="fc" id="L248">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L249">        two.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L250">        c.addComposited(one);</span>
+<span class="fc" id="L251">        assertTrue(c.containsAll(two));</span>
+<span class="fc" id="L252">        assertFalse(c.containsAll(null));</span>
+<span class="fc" id="L253">    }</span>
+
+    public void testAddNullList() {
+<span class="fc" id="L256">        ArrayList&lt;String&gt; nullList = null;</span>
+<span class="fc" id="L257">        CompositeCollection&lt;String&gt; cc = new CompositeCollection&lt;&gt;();</span>
+<span class="fc" id="L258">        cc.addComposited(nullList);</span>
+<span class="fc" id="L259">        Assert.assertEquals(0, cc.size());</span>
+<span class="fc" id="L260">    }</span>
+
+    public void testAddNullLists2Args() {
+<span class="fc" id="L263">        ArrayList&lt;String&gt; nullList = null;</span>
+<span class="fc" id="L264">        CompositeCollection&lt;String&gt; cc = new CompositeCollection&lt;&gt;();</span>
+<span class="fc" id="L265">        cc.addComposited(nullList, nullList);</span>
+<span class="fc" id="L266">        Assert.assertEquals(0, cc.size());</span>
+<span class="fc" id="L267">    }</span>
+
+    public void testAddNullListsVarArgs() {
+<span class="fc" id="L270">        ArrayList&lt;String&gt; nullList = null;</span>
+<span class="fc" id="L271">        CompositeCollection&lt;String&gt; cc = new CompositeCollection&lt;&gt;();</span>
+<span class="fc" id="L272">        cc.addComposited(nullList, nullList, nullList);</span>
+<span class="fc" id="L273">        Assert.assertEquals(0, cc.size());</span>
+<span class="fc" id="L274">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testIsEmpty() {
+<span class="fc" id="L278">        setUpTest();</span>
+<span class="fc" id="L279">        assertTrue(c.isEmpty());</span>
+<span class="fc" id="L280">        final HashSet&lt;E&gt; empty = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L281">        c.addComposited(empty);</span>
+<span class="fc" id="L282">        assertTrue(c.isEmpty());</span>
+<span class="fc" id="L283">        empty.add((E) &quot;a&quot;);</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">        assertTrue(!c.isEmpty());</span>
+<span class="fc" id="L285">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testIterator() {
+<span class="fc" id="L289">        setUpTest();</span>
+<span class="fc" id="L290">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L291">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L292">        c.addComposited(one);</span>
+<span class="fc" id="L293">        c.addComposited(two);</span>
+<span class="fc" id="L294">        final Iterator&lt;E&gt; i = c.iterator();</span>
+<span class="fc" id="L295">        E next = i.next();</span>
+<span class="fc" id="L296">        assertTrue(c.contains(next));</span>
+<span class="fc" id="L297">        assertTrue(one.contains(next));</span>
+<span class="fc" id="L298">        next = i.next();</span>
+<span class="fc" id="L299">        i.remove();</span>
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">        assertTrue(!c.contains(next));</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">        assertTrue(!two.contains(next));</span>
+<span class="fc" id="L302">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testMultipleCollectionsSize() {
+<span class="fc" id="L306">        setUpTest();</span>
+<span class="fc" id="L307">        final HashSet&lt;E&gt; set = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L308">        set.add((E) &quot;a&quot;);</span>
+<span class="fc" id="L309">        set.add((E) &quot;b&quot;);</span>
+<span class="fc" id="L310">        c.addComposited(set);</span>
+<span class="fc" id="L311">        final HashSet&lt;E&gt; other = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L312">        other.add((E) &quot;c&quot;);</span>
+<span class="fc" id="L313">        c.addComposited(other);</span>
+<span class="fc" id="L314">        assertEquals(set.size() + other.size(), c.size());</span>
+<span class="fc" id="L315">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testRemove() {
+<span class="fc" id="L319">        setUpMutatorTest();</span>
+<span class="fc" id="L320">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L321">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L322">        two.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L323">        c.addComposited(one, two);</span>
+<span class="fc" id="L324">        c.remove(&quot;1&quot;);</span>
+<span class="pc bpc" id="L325" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L327" title="1 of 2 branches missed.">        assertTrue(!two.contains(&quot;1&quot;));</span>
+<span class="fc" id="L328">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testRemoveAll() {
+<span class="fc" id="L332">        setUpMutatorTest();</span>
+<span class="fc" id="L333">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L334">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L335">        two.add((E) &quot;1&quot;);</span>
+        // need separate list to remove, as otherwise one clears itself
+<span class="fc" id="L337">        final Collection&lt;E&gt; removing = new ArrayList&lt;&gt;(one);</span>
+<span class="fc" id="L338">        c.addComposited(one, two);</span>
+<span class="fc" id="L339">        c.removeAll(removing);</span>
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L341" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L342" title="1 of 2 branches missed.">        assertTrue(!two.contains(&quot;1&quot;));</span>
+<span class="fc" id="L343">        c.removeAll(null);</span>
+<span class="pc bpc" id="L344" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">        assertTrue(!two.contains(&quot;1&quot;));</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * @since 4.4
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testRemoveIf() {
+<span class="fc" id="L354">        setUpMutatorTest();</span>
+<span class="fc" id="L355">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L356">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L357">        two.add((E) &quot;1&quot;);</span>
+        // need separate list to remove, as otherwise one clears itself
+<span class="fc bfc" id="L359" title="All 2 branches covered.">        final Predicate&lt;E&gt; predicate = e -&gt; e == &quot;1&quot;;</span>
+<span class="fc" id="L360">        c.addComposited(one, two);</span>
+<span class="fc" id="L361">        c.removeIf(predicate);</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L363" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">        assertTrue(!two.contains(&quot;1&quot;));</span>
+<span class="fc" id="L365">        c.removeIf(null);</span>
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;1&quot;));</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">        assertTrue(!two.contains(&quot;1&quot;));</span>
+<span class="fc" id="L369">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testRemoveComposited() {
+<span class="fc" id="L373">        setUpMutatorTest();</span>
+<span class="fc" id="L374">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L375">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L376">        two.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L377">        c.addComposited(one, two);</span>
+<span class="fc" id="L378">        c.removeComposited(one);</span>
+<span class="fc" id="L379">        assertTrue(c.contains(&quot;1&quot;));</span>
+<span class="fc" id="L380">        assertEquals(2, c.size());</span>
+<span class="fc" id="L381">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testRetainAll() {
+<span class="fc" id="L385">        setUpTest();</span>
+<span class="fc" id="L386">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L387">        one.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L388">        two.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L389">        c.addComposited(one);</span>
+<span class="fc" id="L390">        c.retainAll(two);</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;2&quot;));</span>
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;2&quot;));</span>
+<span class="fc" id="L393">        assertTrue(c.contains(&quot;1&quot;));</span>
+<span class="fc" id="L394">        assertTrue(one.contains(&quot;1&quot;));</span>
+<span class="fc" id="L395">        c.retainAll(null);</span>
+<span class="pc bpc" id="L396" title="1 of 2 branches missed.">        assertTrue(!c.contains(&quot;2&quot;));</span>
+<span class="pc bpc" id="L397" title="1 of 2 branches missed.">        assertTrue(!one.contains(&quot;2&quot;));</span>
+<span class="fc" id="L398">        assertTrue(c.contains(&quot;1&quot;));</span>
+<span class="fc" id="L399">        assertTrue(one.contains(&quot;1&quot;));</span>
+<span class="fc" id="L400">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testSize() {
+<span class="fc" id="L404">        setUpTest();</span>
+<span class="fc" id="L405">        final HashSet&lt;E&gt; set = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L406">        set.add((E) &quot;a&quot;);</span>
+<span class="fc" id="L407">        set.add((E) &quot;b&quot;);</span>
+<span class="fc" id="L408">        c.addComposited(set);</span>
+<span class="fc" id="L409">        assertEquals(set.size(), c.size());</span>
+<span class="fc" id="L410">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testToCollection() {
+<span class="fc" id="L414">        setUpTest();</span>
+<span class="fc" id="L415">        one.add((E) &quot;1&quot;);</span>
+<span class="fc" id="L416">        two.add((E) &quot;2&quot;);</span>
+<span class="fc" id="L417">        c.addComposited(one, two);</span>
+<span class="fc" id="L418">        final Collection&lt;E&gt; foo = c.toCollection();</span>
+<span class="fc" id="L419">        assertTrue(foo.containsAll(c));</span>
+<span class="fc" id="L420">        assertEquals(c.size(), foo.size());</span>
+<span class="fc" id="L421">        one.add((E) &quot;3&quot;);</span>
+<span class="pc bpc" id="L422" title="1 of 2 branches missed.">        assertTrue(!foo.containsAll(c));</span>
+<span class="fc" id="L423">    }</span>
+
+    /**
+     * Override testUnsupportedRemove, since the default impl expects removeAll,
+     * retainAll and iterator().remove to throw
+     */
+    @Override
+    public void testUnsupportedRemove() {
+<span class="fc" id="L431">        resetFull();</span>
+        try {
+<span class="nc" id="L433">            getCollection().remove(null);</span>
+<span class="nc" id="L434">            fail(&quot;remove should raise UnsupportedOperationException&quot;);</span>
+<span class="fc" id="L435">        } catch (final UnsupportedOperationException e) {</span>
+            // expected
+<span class="nc" id="L437">        }</span>
+<span class="fc" id="L438">        verify();</span>
+<span class="fc" id="L439">    }</span>
+
+//    public void testCreate() throws Exception {
+//        resetEmpty();
+//        writeExternalFormToDisk((java.io.Serializable) getCollection(), &quot;src/test/resources/data/test/CompositeCollection.emptyCollection.version4.obj&quot;);
+//        resetFull();
+//        writeExternalFormToDisk((java.io.Serializable) getCollection(), &quot;src/test/resources/data/test/CompositeCollection.fullCollection.version4.obj&quot;);
+//    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

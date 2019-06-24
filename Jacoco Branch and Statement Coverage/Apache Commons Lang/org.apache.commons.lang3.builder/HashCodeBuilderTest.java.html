@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HashCodeBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">HashCodeBuilderTest.java</span></div><h1>HashCodeBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.builder.HashCodeBuilder}.
+ */
+<span class="fc" id="L29">public class HashCodeBuilderTest {</span>
+
+    /**
+     * A reflection test fixture.
+     */
+<span class="fc" id="L34">    static class ReflectionTestCycleA {</span>
+        ReflectionTestCycleB b;
+
+        @Override
+        public int hashCode() {
+<span class="fc" id="L39">            return HashCodeBuilder.reflectionHashCode(this);</span>
+        }
+    }
+
+    /**
+     * A reflection test fixture.
+     */
+<span class="fc" id="L46">    static class ReflectionTestCycleB {</span>
+        ReflectionTestCycleA a;
+
+        @Override
+        public int hashCode() {
+<span class="fc" id="L51">            return HashCodeBuilder.reflectionHashCode(this);</span>
+        }
+    }
+
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testConstructorExZero() {
+<span class="pc" id="L59">        assertThrows(IllegalArgumentException.class, () -&gt; new HashCodeBuilder(0, 0));</span>
+<span class="fc" id="L60">    }</span>
+
+    @Test
+    public void testConstructorExEvenFirst() {
+<span class="pc" id="L64">        assertThrows(IllegalArgumentException.class, () -&gt; new HashCodeBuilder(2, 3));</span>
+<span class="fc" id="L65">    }</span>
+
+    @Test
+    public void testConstructorExEvenSecond() {
+<span class="pc" id="L69">        assertThrows(IllegalArgumentException.class, () -&gt; new HashCodeBuilder(3, 2));</span>
+<span class="fc" id="L70">    }</span>
+
+    @Test
+    public void testConstructorExEvenNegative() {
+<span class="pc" id="L74">        assertThrows(IllegalArgumentException.class, () -&gt; new HashCodeBuilder(-2, -2));</span>
+<span class="fc" id="L75">    }</span>
+
+    static class TestObject {
+        private int a;
+
+<span class="fc" id="L80">        TestObject(final int a) {</span>
+<span class="fc" id="L81">            this.a = a;</span>
+<span class="fc" id="L82">        }</span>
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (o == this) {</span>
+<span class="nc" id="L87">                return true;</span>
+            }
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (!(o instanceof TestObject)) {</span>
+<span class="nc" id="L90">                return false;</span>
+            }
+<span class="nc" id="L92">            final TestObject rhs = (TestObject) o;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            return a == rhs.a;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L98">            return a;</span>
+        }
+
+        public void setA(final int a) {
+<span class="nc" id="L102">            this.a = a;</span>
+<span class="nc" id="L103">        }</span>
+
+        public int getA() {
+<span class="nc" id="L106">            return a;</span>
+        }
+    }
+
+    static class TestSubObject extends TestObject {
+        private int b;
+
+        @SuppressWarnings(&quot;unused&quot;)
+        private transient int t;
+
+        TestSubObject() {
+<span class="nc" id="L117">            super(0);</span>
+<span class="nc" id="L118">        }</span>
+
+        TestSubObject(final int a, final int b, final int t) {
+<span class="fc" id="L121">            super(a);</span>
+<span class="fc" id="L122">            this.b = b;</span>
+<span class="fc" id="L123">            this.t = t;</span>
+<span class="fc" id="L124">        }</span>
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            if (o == this) {</span>
+<span class="nc" id="L129">                return true;</span>
+            }
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (!(o instanceof TestSubObject)) {</span>
+<span class="nc" id="L132">                return false;</span>
+            }
+<span class="nc" id="L134">            final TestSubObject rhs = (TestSubObject) o;</span>
+<span class="nc bnc" id="L135" title="All 4 branches missed.">            return super.equals(o) &amp;&amp; b == rhs.b;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L140">            return b*17 + super.hashCode();</span>
+        }
+
+    }
+
+    @Test
+    public void testReflectionHashCode() {
+<span class="fc" id="L147">        assertEquals(17 * 37, HashCodeBuilder.reflectionHashCode(new TestObject(0)));</span>
+<span class="fc" id="L148">        assertEquals(17 * 37 + 123456, HashCodeBuilder.reflectionHashCode(new TestObject(123456)));</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    public void testReflectionHierarchyHashCode() {
+<span class="fc" id="L153">        assertEquals(17 * 37 * 37, HashCodeBuilder.reflectionHashCode(new TestSubObject(0, 0, 0)));</span>
+<span class="fc" id="L154">        assertEquals(17 * 37 * 37 * 37, HashCodeBuilder.reflectionHashCode(new TestSubObject(0, 0, 0), true));</span>
+<span class="fc" id="L155">        assertEquals((17 * 37 + 7890) * 37 + 123456, HashCodeBuilder.reflectionHashCode(new TestSubObject(123456, 7890,</span>
+                0)));
+<span class="fc" id="L157">        assertEquals(((17 * 37 + 7890) * 37 + 0) * 37 + 123456, HashCodeBuilder.reflectionHashCode(new TestSubObject(</span>
+                123456, 7890, 0), true));
+<span class="fc" id="L159">    }</span>
+
+    @Test
+    public void testReflectionHierarchyHashCodeEx1() {
+<span class="pc" id="L163">        assertThrows(IllegalArgumentException.class, () -&gt; HashCodeBuilder.reflectionHashCode(0, 0, new TestSubObject(0, 0, 0), true));</span>
+<span class="fc" id="L164">    }</span>
+
+    @Test
+    public void testReflectionHierarchyHashCodeEx2() {
+<span class="pc" id="L168">        assertThrows(IllegalArgumentException.class, () -&gt; HashCodeBuilder.reflectionHashCode(2, 2, new TestSubObject(0, 0, 0), true));</span>
+<span class="fc" id="L169">    }</span>
+
+    @Test
+    public void testReflectionHashCodeEx1() {
+<span class="pc" id="L173">        assertThrows(IllegalArgumentException.class, () -&gt; HashCodeBuilder.reflectionHashCode(0, 0, new TestObject(0), true));</span>
+<span class="fc" id="L174">    }</span>
+
+    @Test
+    public void testReflectionHashCodeEx2() {
+<span class="pc" id="L178">        assertThrows(IllegalArgumentException.class, () -&gt; HashCodeBuilder.reflectionHashCode(2, 2, new TestObject(0), true));</span>
+<span class="fc" id="L179">    }</span>
+
+    @Test
+    public void testReflectionHashCodeEx3() {
+<span class="pc" id="L183">        assertThrows(IllegalArgumentException.class, () -&gt; HashCodeBuilder.reflectionHashCode(13, 19, null, true));</span>
+<span class="fc" id="L184">    }</span>
+
+    @Test
+    public void testSuper() {
+<span class="fc" id="L188">        final Object obj = new Object();</span>
+<span class="fc" id="L189">        assertEquals(17 * 37 + 19 * 41 + obj.hashCode(), new HashCodeBuilder(17, 37).appendSuper(</span>
+<span class="fc" id="L190">                new HashCodeBuilder(19, 41).append(obj).toHashCode()).toHashCode());</span>
+<span class="fc" id="L191">    }</span>
+
+    @Test
+    public void testObject() {
+<span class="fc" id="L195">        Object obj = null;</span>
+<span class="fc" id="L196">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L197">        obj = new Object();</span>
+<span class="fc" id="L198">        assertEquals(17 * 37 + obj.hashCode(), new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L199">    }</span>
+
+    @Test
+    public void testObjectBuild() {
+<span class="fc" id="L203">        Object obj = null;</span>
+<span class="fc" id="L204">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(obj).build().intValue());</span>
+<span class="fc" id="L205">        obj = new Object();</span>
+<span class="fc" id="L206">        assertEquals(17 * 37 + obj.hashCode(), new HashCodeBuilder(17, 37).append(obj).build().intValue());</span>
+<span class="fc" id="L207">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;) // cast is not really needed, keep for consistency
+    public void testLong() {
+<span class="fc" id="L212">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(0L).toHashCode());</span>
+<span class="fc" id="L213">        assertEquals(17 * 37 + (int) (123456789L ^ 123456789L &gt;&gt; 32), new HashCodeBuilder(17, 37).append(</span>
+<span class="fc" id="L214">                123456789L).toHashCode());</span>
+<span class="fc" id="L215">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;) // cast is not really needed, keep for consistency
+    public void testInt() {
+<span class="fc" id="L220">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(0).toHashCode());</span>
+<span class="fc" id="L221">        assertEquals(17 * 37 + 123456, new HashCodeBuilder(17, 37).append(123456).toHashCode());</span>
+<span class="fc" id="L222">    }</span>
+
+    @Test
+    public void testShort() {
+<span class="fc" id="L226">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((short) 0).toHashCode());</span>
+<span class="fc" id="L227">        assertEquals(17 * 37 + 12345, new HashCodeBuilder(17, 37).append((short) 12345).toHashCode());</span>
+<span class="fc" id="L228">    }</span>
+
+    @Test
+    public void testChar() {
+<span class="fc" id="L232">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((char) 0).toHashCode());</span>
+<span class="fc" id="L233">        assertEquals(17 * 37 + 1234, new HashCodeBuilder(17, 37).append((char) 1234).toHashCode());</span>
+<span class="fc" id="L234">    }</span>
+
+    @Test
+    public void testByte() {
+<span class="fc" id="L238">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((byte) 0).toHashCode());</span>
+<span class="fc" id="L239">        assertEquals(17 * 37 + 123, new HashCodeBuilder(17, 37).append((byte) 123).toHashCode());</span>
+<span class="fc" id="L240">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;) // cast is not really needed, keep for consistency
+    public void testDouble() {
+<span class="fc" id="L245">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(0d).toHashCode());</span>
+<span class="fc" id="L246">        final double d = 1234567.89;</span>
+<span class="fc" id="L247">        final long l = Double.doubleToLongBits(d);</span>
+<span class="fc" id="L248">        assertEquals(17 * 37 + (int) (l ^ l &gt;&gt; 32), new HashCodeBuilder(17, 37).append(d).toHashCode());</span>
+<span class="fc" id="L249">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;cast&quot;) // cast is not really needed, keep for consistency
+    public void testFloat() {
+<span class="fc" id="L254">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(0f).toHashCode());</span>
+<span class="fc" id="L255">        final float f = 1234.89f;</span>
+<span class="fc" id="L256">        final int i = Float.floatToIntBits(f);</span>
+<span class="fc" id="L257">        assertEquals(17 * 37 + i, new HashCodeBuilder(17, 37).append(f).toHashCode());</span>
+<span class="fc" id="L258">    }</span>
+
+    @Test
+    public void testBoolean() {
+<span class="fc" id="L262">        assertEquals(17 * 37 + 0, new HashCodeBuilder(17, 37).append(true).toHashCode());</span>
+<span class="fc" id="L263">        assertEquals(17 * 37 + 1, new HashCodeBuilder(17, 37).append(false).toHashCode());</span>
+<span class="fc" id="L264">    }</span>
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L268">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((Object[]) null).toHashCode());</span>
+<span class="fc" id="L269">        final Object[] obj = new Object[2];</span>
+<span class="fc" id="L270">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L271">        obj[0] = new Object();</span>
+<span class="fc" id="L272">        assertEquals((17 * 37 + obj[0].hashCode()) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L273">        obj[1] = new Object();</span>
+<span class="fc" id="L274">        assertEquals((17 * 37 + obj[0].hashCode()) * 37 + obj[1].hashCode(), new HashCodeBuilder(17, 37).append(obj)</span>
+<span class="fc" id="L275">                .toHashCode());</span>
+<span class="fc" id="L276">    }</span>
+
+    @Test
+    public void testObjectArrayAsObject() {
+<span class="fc" id="L280">        final Object[] obj = new Object[2];</span>
+<span class="fc" id="L281">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L282">        obj[0] = new Object();</span>
+<span class="fc" id="L283">        assertEquals((17 * 37 + obj[0].hashCode()) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L284">        obj[1] = new Object();</span>
+<span class="fc" id="L285">        assertEquals((17 * 37 + obj[0].hashCode()) * 37 + obj[1].hashCode(), new HashCodeBuilder(17, 37).append(</span>
+<span class="fc" id="L286">                (Object) obj).toHashCode());</span>
+<span class="fc" id="L287">    }</span>
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L291">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((long[]) null).toHashCode());</span>
+<span class="fc" id="L292">        final long[] obj = new long[2];</span>
+<span class="fc" id="L293">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L294">        obj[0] = 5L;</span>
+<span class="fc" id="L295">        final int h1 = (int) (5L ^ 5L &gt;&gt; 32);</span>
+<span class="fc" id="L296">        assertEquals((17 * 37 + h1) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L297">        obj[1] = 6L;</span>
+<span class="fc" id="L298">        final int h2 = (int) (6L ^ 6L &gt;&gt; 32);</span>
+<span class="fc" id="L299">        assertEquals((17 * 37 + h1) * 37 + h2, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L300">    }</span>
+
+    @Test
+    public void testLongArrayAsObject() {
+<span class="fc" id="L304">        final long[] obj = new long[2];</span>
+<span class="fc" id="L305">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L306">        obj[0] = 5L;</span>
+<span class="fc" id="L307">        final int h1 = (int) (5L ^ 5L &gt;&gt; 32);</span>
+<span class="fc" id="L308">        assertEquals((17 * 37 + h1) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L309">        obj[1] = 6L;</span>
+<span class="fc" id="L310">        final int h2 = (int) (6L ^ 6L &gt;&gt; 32);</span>
+<span class="fc" id="L311">        assertEquals((17 * 37 + h1) * 37 + h2, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L312">    }</span>
+
+    @Test
+    public void testIntArray() {
+<span class="fc" id="L316">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((int[]) null).toHashCode());</span>
+<span class="fc" id="L317">        final int[] obj = new int[2];</span>
+<span class="fc" id="L318">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L319">        obj[0] = 5;</span>
+<span class="fc" id="L320">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L321">        obj[1] = 6;</span>
+<span class="fc" id="L322">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L323">    }</span>
+
+    @Test
+    public void testIntArrayAsObject() {
+<span class="fc" id="L327">        final int[] obj = new int[2];</span>
+<span class="fc" id="L328">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L329">        obj[0] = 5;</span>
+<span class="fc" id="L330">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L331">        obj[1] = 6;</span>
+<span class="fc" id="L332">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L333">    }</span>
+
+    @Test
+    public void testShortArray() {
+<span class="fc" id="L337">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((short[]) null).toHashCode());</span>
+<span class="fc" id="L338">        final short[] obj = new short[2];</span>
+<span class="fc" id="L339">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L340">        obj[0] = (short) 5;</span>
+<span class="fc" id="L341">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L342">        obj[1] = (short) 6;</span>
+<span class="fc" id="L343">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L344">    }</span>
+
+    @Test
+    public void testShortArrayAsObject() {
+<span class="fc" id="L348">        final short[] obj = new short[2];</span>
+<span class="fc" id="L349">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L350">        obj[0] = (short) 5;</span>
+<span class="fc" id="L351">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L352">        obj[1] = (short) 6;</span>
+<span class="fc" id="L353">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L354">    }</span>
+
+    @Test
+    public void testCharArray() {
+<span class="fc" id="L358">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((char[]) null).toHashCode());</span>
+<span class="fc" id="L359">        final char[] obj = new char[2];</span>
+<span class="fc" id="L360">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L361">        obj[0] = (char) 5;</span>
+<span class="fc" id="L362">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L363">        obj[1] = (char) 6;</span>
+<span class="fc" id="L364">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L365">    }</span>
+
+    @Test
+    public void testCharArrayAsObject() {
+<span class="fc" id="L369">        final char[] obj = new char[2];</span>
+<span class="fc" id="L370">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L371">        obj[0] = (char) 5;</span>
+<span class="fc" id="L372">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L373">        obj[1] = (char) 6;</span>
+<span class="fc" id="L374">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L375">    }</span>
+
+    @Test
+    public void testByteArray() {
+<span class="fc" id="L379">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((byte[]) null).toHashCode());</span>
+<span class="fc" id="L380">        final byte[] obj = new byte[2];</span>
+<span class="fc" id="L381">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L382">        obj[0] = (byte) 5;</span>
+<span class="fc" id="L383">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L384">        obj[1] = (byte) 6;</span>
+<span class="fc" id="L385">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L386">    }</span>
+
+    @Test
+    public void testByteArrayAsObject() {
+<span class="fc" id="L390">        final byte[] obj = new byte[2];</span>
+<span class="fc" id="L391">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L392">        obj[0] = (byte) 5;</span>
+<span class="fc" id="L393">        assertEquals((17 * 37 + 5) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L394">        obj[1] = (byte) 6;</span>
+<span class="fc" id="L395">        assertEquals((17 * 37 + 5) * 37 + 6, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L396">    }</span>
+
+    @Test
+    public void testDoubleArray() {
+<span class="fc" id="L400">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((double[]) null).toHashCode());</span>
+<span class="fc" id="L401">        final double[] obj = new double[2];</span>
+<span class="fc" id="L402">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L403">        obj[0] = 5.4d;</span>
+<span class="fc" id="L404">        final long l1 = Double.doubleToLongBits(5.4d);</span>
+<span class="fc" id="L405">        final int h1 = (int) (l1 ^ l1 &gt;&gt; 32);</span>
+<span class="fc" id="L406">        assertEquals((17 * 37 + h1) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L407">        obj[1] = 6.3d;</span>
+<span class="fc" id="L408">        final long l2 = Double.doubleToLongBits(6.3d);</span>
+<span class="fc" id="L409">        final int h2 = (int) (l2 ^ l2 &gt;&gt; 32);</span>
+<span class="fc" id="L410">        assertEquals((17 * 37 + h1) * 37 + h2, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L411">    }</span>
+
+    @Test
+    public void testDoubleArrayAsObject() {
+<span class="fc" id="L415">        final double[] obj = new double[2];</span>
+<span class="fc" id="L416">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L417">        obj[0] = 5.4d;</span>
+<span class="fc" id="L418">        final long l1 = Double.doubleToLongBits(5.4d);</span>
+<span class="fc" id="L419">        final int h1 = (int) (l1 ^ l1 &gt;&gt; 32);</span>
+<span class="fc" id="L420">        assertEquals((17 * 37 + h1) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L421">        obj[1] = 6.3d;</span>
+<span class="fc" id="L422">        final long l2 = Double.doubleToLongBits(6.3d);</span>
+<span class="fc" id="L423">        final int h2 = (int) (l2 ^ l2 &gt;&gt; 32);</span>
+<span class="fc" id="L424">        assertEquals((17 * 37 + h1) * 37 + h2, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L425">    }</span>
+
+    @Test
+    public void testFloatArray() {
+<span class="fc" id="L429">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((float[]) null).toHashCode());</span>
+<span class="fc" id="L430">        final float[] obj = new float[2];</span>
+<span class="fc" id="L431">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L432">        obj[0] = 5.4f;</span>
+<span class="fc" id="L433">        final int h1 = Float.floatToIntBits(5.4f);</span>
+<span class="fc" id="L434">        assertEquals((17 * 37 + h1) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L435">        obj[1] = 6.3f;</span>
+<span class="fc" id="L436">        final int h2 = Float.floatToIntBits(6.3f);</span>
+<span class="fc" id="L437">        assertEquals((17 * 37 + h1) * 37 + h2, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L438">    }</span>
+
+    @Test
+    public void testFloatArrayAsObject() {
+<span class="fc" id="L442">        final float[] obj = new float[2];</span>
+<span class="fc" id="L443">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L444">        obj[0] = 5.4f;</span>
+<span class="fc" id="L445">        final int h1 = Float.floatToIntBits(5.4f);</span>
+<span class="fc" id="L446">        assertEquals((17 * 37 + h1) * 37, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L447">        obj[1] = 6.3f;</span>
+<span class="fc" id="L448">        final int h2 = Float.floatToIntBits(6.3f);</span>
+<span class="fc" id="L449">        assertEquals((17 * 37 + h1) * 37 + h2, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L450">    }</span>
+
+    @Test
+    public void testBooleanArray() {
+<span class="fc" id="L454">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append((boolean[]) null).toHashCode());</span>
+<span class="fc" id="L455">        final boolean[] obj = new boolean[2];</span>
+<span class="fc" id="L456">        assertEquals((17 * 37 + 1) * 37 + 1, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L457">        obj[0] = true;</span>
+<span class="fc" id="L458">        assertEquals((17 * 37 + 0) * 37 + 1, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L459">        obj[1] = false;</span>
+<span class="fc" id="L460">        assertEquals((17 * 37 + 0) * 37 + 1, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L461">    }</span>
+
+    @Test
+    public void testBooleanArrayAsObject() {
+<span class="fc" id="L465">        final boolean[] obj = new boolean[2];</span>
+<span class="fc" id="L466">        assertEquals((17 * 37 + 1) * 37 + 1, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L467">        obj[0] = true;</span>
+<span class="fc" id="L468">        assertEquals((17 * 37 + 0) * 37 + 1, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L469">        obj[1] = false;</span>
+<span class="fc" id="L470">        assertEquals((17 * 37 + 0) * 37 + 1, new HashCodeBuilder(17, 37).append((Object) obj).toHashCode());</span>
+<span class="fc" id="L471">    }</span>
+
+    @Test
+    public void testBooleanMultiArray() {
+<span class="fc" id="L475">        final boolean[][] obj = new boolean[2][];</span>
+<span class="fc" id="L476">        assertEquals(17 * 37 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L477">        obj[0] = new boolean[0];</span>
+<span class="fc" id="L478">        assertEquals(17 * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L479">        obj[0] = new boolean[1];</span>
+<span class="fc" id="L480">        assertEquals((17 * 37 + 1) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L481">        obj[0] = new boolean[2];</span>
+<span class="fc" id="L482">        assertEquals(((17 * 37 + 1) * 37 + 1) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L483">        obj[0][0] = true;</span>
+<span class="fc" id="L484">        assertEquals(((17 * 37 + 0) * 37 + 1) * 37, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L485">        obj[1] = new boolean[1];</span>
+<span class="fc" id="L486">        assertEquals(((17 * 37 + 0) * 37 + 1) * 37 + 1, new HashCodeBuilder(17, 37).append(obj).toHashCode());</span>
+<span class="fc" id="L487">    }</span>
+
+    @Test
+    public void testReflectionHashCodeExcludeFields() {
+<span class="fc" id="L491">        final TestObjectWithMultipleFields x = new TestObjectWithMultipleFields(1, 2, 3);</span>
+
+<span class="fc" id="L493">        assertEquals(((17 * 37 + 1) * 37 + 2) * 37 + 3, HashCodeBuilder.reflectionHashCode(x));</span>
+
+<span class="fc" id="L495">        assertEquals(((17 * 37 + 1) * 37 + 2) * 37 + 3, HashCodeBuilder.reflectionHashCode(x, (String[]) null));</span>
+<span class="fc" id="L496">        assertEquals(((17 * 37 + 1) * 37 + 2) * 37 + 3, HashCodeBuilder.reflectionHashCode(x));</span>
+<span class="fc" id="L497">        assertEquals(((17 * 37 + 1) * 37 + 2) * 37 + 3, HashCodeBuilder.reflectionHashCode(x, &quot;xxx&quot;));</span>
+
+<span class="fc" id="L499">        assertEquals((17 * 37 + 1) * 37 + 3, HashCodeBuilder.reflectionHashCode(x, &quot;two&quot;));</span>
+<span class="fc" id="L500">        assertEquals((17 * 37 + 1) * 37 + 2, HashCodeBuilder.reflectionHashCode(x, &quot;three&quot;));</span>
+
+<span class="fc" id="L502">        assertEquals(17 * 37 + 1, HashCodeBuilder.reflectionHashCode(x, &quot;two&quot;, &quot;three&quot;));</span>
+
+<span class="fc" id="L504">        assertEquals(17, HashCodeBuilder.reflectionHashCode(x, &quot;one&quot;, &quot;two&quot;, &quot;three&quot;));</span>
+<span class="fc" id="L505">        assertEquals(17, HashCodeBuilder.reflectionHashCode(x, &quot;one&quot;, &quot;two&quot;, &quot;three&quot;, &quot;xxx&quot;));</span>
+<span class="fc" id="L506">    }</span>
+
+    static class TestObjectWithMultipleFields {
+<span class="fc" id="L509">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private int one = 0;
+
+<span class="fc" id="L512">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private int two = 0;
+
+<span class="fc" id="L515">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private int three = 0;
+
+<span class="fc" id="L518">        TestObjectWithMultipleFields(final int one, final int two, final int three) {</span>
+<span class="fc" id="L519">            this.one = one;</span>
+<span class="fc" id="L520">            this.two = two;</span>
+<span class="fc" id="L521">            this.three = three;</span>
+<span class="fc" id="L522">        }</span>
+    }
+
+    /**
+     * Test Objects pointing to each other.
+     */
+    @Test
+    public void testReflectionObjectCycle() {
+<span class="fc" id="L530">        final ReflectionTestCycleA a = new ReflectionTestCycleA();</span>
+<span class="fc" id="L531">        final ReflectionTestCycleB b = new ReflectionTestCycleB();</span>
+<span class="fc" id="L532">        a.b = b;</span>
+<span class="fc" id="L533">        b.a = a;</span>
+
+        // Used to caused:
+        // java.lang.StackOverflowError
+        // at java.lang.ClassLoader.getCallerClassLoader(Native Method)
+        // at java.lang.Class.getDeclaredFields(Class.java:992)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.reflectionAppend(HashCodeBuilder.java:373)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.reflectionHashCode(HashCodeBuilder.java:349)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.reflectionHashCode(HashCodeBuilder.java:155)
+        // at
+        // org.apache.commons.lang.builder.HashCodeBuilderTest$ReflectionTestCycleB.hashCode(HashCodeBuilderTest.java:53)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.append(HashCodeBuilder.java:422)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.reflectionAppend(HashCodeBuilder.java:383)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.reflectionHashCode(HashCodeBuilder.java:349)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.reflectionHashCode(HashCodeBuilder.java:155)
+        // at
+        // org.apache.commons.lang.builder.HashCodeBuilderTest$ReflectionTestCycleA.hashCode(HashCodeBuilderTest.java:42)
+        // at org.apache.commons.lang.builder.HashCodeBuilder.append(HashCodeBuilder.java:422)
+
+<span class="fc" id="L552">        a.hashCode();</span>
+<span class="fc" id="L553">        assertNull(HashCodeBuilder.getRegistry());</span>
+<span class="fc" id="L554">        b.hashCode();</span>
+<span class="fc" id="L555">        assertNull(HashCodeBuilder.getRegistry());</span>
+<span class="fc" id="L556">    }</span>
+
+    /**
+     * Ensures LANG-520 remains true
+     */
+    @Test
+    public void testToHashCodeEqualsHashCode() {
+<span class="fc" id="L563">        final HashCodeBuilder hcb = new HashCodeBuilder(17, 37).append(new Object()).append('a');</span>
+<span class="fc" id="L564">        assertEquals(hcb.toHashCode(), hcb.hashCode(),</span>
+            &quot;hashCode() is no longer returning the same value as toHashCode() - see LANG-520&quot;);
+<span class="fc" id="L566">    }</span>
+
+    static class TestObjectHashCodeExclude {
+        @HashCodeExclude
+        private final int a;
+        private final int b;
+
+<span class="fc" id="L573">        TestObjectHashCodeExclude(final int a, final int b) {</span>
+<span class="fc" id="L574">            this.a = a;</span>
+<span class="fc" id="L575">            this.b = b;</span>
+<span class="fc" id="L576">        }</span>
+
+        public int getA() {
+<span class="nc" id="L579">            return a;</span>
+        }
+
+        public int getB() {
+<span class="nc" id="L583">            return b;</span>
+        }
+    }
+
+    static class TestObjectHashCodeExclude2 {
+        @HashCodeExclude
+        private final int a;
+        @HashCodeExclude
+        private final int b;
+
+<span class="fc" id="L593">        TestObjectHashCodeExclude2(final int a, final int b) {</span>
+<span class="fc" id="L594">            this.a = a;</span>
+<span class="fc" id="L595">            this.b = b;</span>
+<span class="fc" id="L596">        }</span>
+
+        public int getA() {
+<span class="nc" id="L599">            return a;</span>
+        }
+
+        public int getB() {
+<span class="nc" id="L603">            return b;</span>
+        }
+    }
+
+    @Test
+    public void testToHashCodeExclude() {
+<span class="fc" id="L609">        final TestObjectHashCodeExclude one = new TestObjectHashCodeExclude(1, 2);</span>
+<span class="fc" id="L610">        final TestObjectHashCodeExclude2 two = new TestObjectHashCodeExclude2(1, 2);</span>
+<span class="fc" id="L611">        assertEquals(17 * 37 + 2, HashCodeBuilder.reflectionHashCode(one));</span>
+<span class="fc" id="L612">        assertEquals(17, HashCodeBuilder.reflectionHashCode(two));</span>
+<span class="fc" id="L613">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

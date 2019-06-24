@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BasicThreadFactoryTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">BasicThreadFactoryTest.java</span></div><h1>BasicThreadFactoryTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.ThreadFactory;
+
+import org.easymock.EasyMock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for {@code BasicThreadFactory}.
+ */
+<span class="fc" id="L37">public class BasicThreadFactoryTest {</span>
+    /** Constant for the test naming pattern. */
+    private static final String PATTERN = &quot;testThread-%d&quot;;
+
+    /** The builder for creating a thread factory. */
+    private BasicThreadFactory.Builder builder;
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L46">        builder = new BasicThreadFactory.Builder();</span>
+<span class="fc" id="L47">    }</span>
+
+    /**
+     * Tests the default options of a thread factory.
+     *
+     * @param factory the factory to be checked
+     */
+    private void checkFactoryDefaults(final BasicThreadFactory factory) {
+<span class="fc" id="L55">        assertNull(factory.getNamingPattern(), &quot;Got a naming pattern&quot;);</span>
+<span class="fc" id="L56">        assertNull(factory.getUncaughtExceptionHandler(), &quot;Got an exception handler&quot;);</span>
+<span class="fc" id="L57">        assertNull(factory.getPriority(), &quot;Got a priority&quot;);</span>
+<span class="fc" id="L58">        assertNull(factory.getDaemonFlag(), &quot;Got a daemon flag&quot;);</span>
+<span class="fc" id="L59">        assertNotNull(factory.getWrappedFactory(), &quot;No wrapped factory&quot;);</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Tests the default values used by the builder.
+     */
+    @Test
+    public void testBuildDefaults() {
+<span class="fc" id="L67">        final BasicThreadFactory factory = builder.build();</span>
+<span class="fc" id="L68">        checkFactoryDefaults(factory);</span>
+<span class="fc" id="L69">    }</span>
+
+    /**
+     * Tries to set a null naming pattern.
+     */
+    @Test
+    public void testBuildNamingPatternNull() {
+<span class="pc" id="L76">        assertThrows(NullPointerException.class, () -&gt; builder.namingPattern(null));</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Tries to set a null wrapped factory.
+     */
+    @Test
+    public void testBuildWrappedFactoryNull() {
+<span class="pc" id="L84">        assertThrows(NullPointerException.class, () -&gt; builder.wrappedFactory(null));</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Tries to set a null exception handler.
+     */
+    @Test
+    public void testBuildUncaughtExceptionHandlerNull() {
+<span class="pc" id="L92">        assertThrows(NullPointerException.class, () -&gt; builder.uncaughtExceptionHandler(null));</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Tests the reset() method of the builder.
+     */
+    @Test
+    public void testBuilderReset() {
+<span class="fc" id="L100">        final ThreadFactory wrappedFactory = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L101">        final Thread.UncaughtExceptionHandler exHandler = EasyMock</span>
+<span class="fc" id="L102">                .createMock(Thread.UncaughtExceptionHandler.class);</span>
+<span class="fc" id="L103">        EasyMock.replay(wrappedFactory, exHandler);</span>
+<span class="fc" id="L104">        builder.namingPattern(PATTERN).daemon(true).priority(</span>
+<span class="fc" id="L105">                Thread.MAX_PRIORITY).uncaughtExceptionHandler(exHandler)</span>
+<span class="fc" id="L106">                .wrappedFactory(wrappedFactory);</span>
+<span class="fc" id="L107">        builder.reset();</span>
+<span class="fc" id="L108">        final BasicThreadFactory factory = builder.build();</span>
+<span class="fc" id="L109">        checkFactoryDefaults(factory);</span>
+<span class="fc" id="L110">        assertNotSame(wrappedFactory, factory.getWrappedFactory(), &quot;Wrapped factory not reset&quot;);</span>
+<span class="fc" id="L111">        EasyMock.verify(wrappedFactory, exHandler);</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Tests whether reset() is automatically called after build().
+     */
+    @Test
+    public void testBuilderResetAfterBuild() {
+<span class="fc" id="L119">        builder.wrappedFactory(EasyMock.createNiceMock(ThreadFactory.class))</span>
+<span class="fc" id="L120">                .namingPattern(PATTERN).daemon(true).build();</span>
+<span class="fc" id="L121">        checkFactoryDefaults(builder.build());</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Tests whether the naming pattern is applied to new threads.
+     */
+    @Test
+    public void testNewThreadNamingPattern() {
+<span class="fc" id="L129">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L130">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L131">        final int count = 12;</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L133">            EasyMock.expect(wrapped.newThread(r)).andReturn(new Thread());</span>
+        }
+<span class="fc" id="L135">        EasyMock.replay(wrapped, r);</span>
+<span class="fc" id="L136">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped)</span>
+<span class="fc" id="L137">                .namingPattern(PATTERN).build();</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L139">            final Thread t = factory.newThread(r);</span>
+<span class="fc" id="L140">            assertEquals(String.format(PATTERN, Long.valueOf(i + 1)), t.getName(), &quot;Wrong thread name&quot;);</span>
+<span class="fc" id="L141">            assertEquals(i + 1, factory.getThreadCount(), &quot;Wrong thread count&quot;);</span>
+        }
+<span class="fc" id="L143">        EasyMock.verify(wrapped, r);</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Tests whether the thread name is not modified if no naming pattern is
+     * set.
+     */
+    @Test
+    public void testNewThreadNoNamingPattern() {
+<span class="fc" id="L152">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L153">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L154">        final String name = &quot;unchangedThreadName&quot;;</span>
+<span class="fc" id="L155">        final Thread t = new Thread(name);</span>
+<span class="fc" id="L156">        EasyMock.expect(wrapped.newThread(r)).andReturn(t);</span>
+<span class="fc" id="L157">        EasyMock.replay(wrapped, r);</span>
+<span class="fc" id="L158">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped).build();</span>
+<span class="fc" id="L159">        assertSame(t, factory.newThread(r), &quot;Wrong thread&quot;);</span>
+<span class="fc" id="L160">        assertEquals(name, t.getName(), &quot;Name was changed&quot;);</span>
+<span class="fc" id="L161">        EasyMock.verify(wrapped, r);</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Helper method for testing whether the daemon flag is taken into account.
+     *
+     * @param flag the value of the flag
+     */
+    private void checkDaemonFlag(final boolean flag) {
+<span class="fc" id="L170">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L171">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L172">        final Thread t = new Thread();</span>
+<span class="fc" id="L173">        EasyMock.expect(wrapped.newThread(r)).andReturn(t);</span>
+<span class="fc" id="L174">        EasyMock.replay(wrapped, r);</span>
+<span class="fc" id="L175">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped).daemon(</span>
+<span class="fc" id="L176">                flag).build();</span>
+<span class="fc" id="L177">        assertSame(t, factory.newThread(r), &quot;Wrong thread&quot;);</span>
+<span class="fc" id="L178">        assertEquals(flag, t.isDaemon(), &quot;Wrong daemon flag&quot;);</span>
+<span class="fc" id="L179">        EasyMock.verify(wrapped, r);</span>
+<span class="fc" id="L180">    }</span>
+
+    /**
+     * Tests whether daemon threads can be created.
+     */
+    @Test
+    public void testNewThreadDaemonTrue() {
+<span class="fc" id="L187">        checkDaemonFlag(true);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests whether the daemon status of new threads can be turned off.
+     */
+    @Test
+    public void testNewThreadDaemonFalse() {
+<span class="fc" id="L195">        checkDaemonFlag(false);</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests whether the daemon flag is not touched on newly created threads if
+     * it is not specified.
+     */
+    @Test
+    public void testNewThreadNoDaemonFlag() {
+<span class="fc" id="L204">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L205">        final Runnable r1 = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L206">        final Runnable r2 = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L207">        final Thread t1 = new Thread();</span>
+<span class="fc" id="L208">        final Thread t2 = new Thread();</span>
+<span class="fc" id="L209">        t1.setDaemon(true);</span>
+<span class="fc" id="L210">        EasyMock.expect(wrapped.newThread(r1)).andReturn(t1);</span>
+<span class="fc" id="L211">        EasyMock.expect(wrapped.newThread(r2)).andReturn(t2);</span>
+<span class="fc" id="L212">        EasyMock.replay(wrapped, r1, r2);</span>
+<span class="fc" id="L213">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped).build();</span>
+<span class="fc" id="L214">        assertSame(t1, factory.newThread(r1), &quot;Wrong thread 1&quot;);</span>
+<span class="fc" id="L215">        assertTrue(t1.isDaemon(), &quot;No daemon thread&quot;);</span>
+<span class="fc" id="L216">        assertSame(t2, factory.newThread(r2), &quot;Wrong thread 2&quot;);</span>
+<span class="fc" id="L217">        assertFalse(t2.isDaemon(), &quot;A daemon thread&quot;);</span>
+<span class="fc" id="L218">        EasyMock.verify(wrapped, r1, r2);</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Tests whether the priority is set on newly created threads.
+     */
+    @Test
+    public void testNewThreadPriority() {
+<span class="fc" id="L226">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L227">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L228">        final Thread t = new Thread();</span>
+<span class="fc" id="L229">        EasyMock.expect(wrapped.newThread(r)).andReturn(t);</span>
+<span class="fc" id="L230">        EasyMock.replay(wrapped, r);</span>
+<span class="fc" id="L231">        final int priority = Thread.NORM_PRIORITY + 1;</span>
+<span class="fc" id="L232">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped).priority(</span>
+<span class="fc" id="L233">                priority).build();</span>
+<span class="fc" id="L234">        assertSame(t, factory.newThread(r), &quot;Wrong thread&quot;);</span>
+<span class="fc" id="L235">        assertEquals(priority, t.getPriority(), &quot;Wrong priority&quot;);</span>
+<span class="fc" id="L236">        EasyMock.verify(wrapped, r);</span>
+<span class="fc" id="L237">    }</span>
+
+    /**
+     * Tests whether the original priority is not changed if no priority is
+     * specified.
+     */
+    @Test
+    public void testNewThreadNoPriority() {
+<span class="fc" id="L245">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L246">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L247">        final int orgPriority = Thread.NORM_PRIORITY + 1;</span>
+<span class="fc" id="L248">        final Thread t = new Thread();</span>
+<span class="fc" id="L249">        t.setPriority(orgPriority);</span>
+<span class="fc" id="L250">        EasyMock.expect(wrapped.newThread(r)).andReturn(t);</span>
+<span class="fc" id="L251">        EasyMock.replay(wrapped, r);</span>
+<span class="fc" id="L252">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped).build();</span>
+<span class="fc" id="L253">        assertSame(t, factory.newThread(r), &quot;Wrong thread&quot;);</span>
+<span class="fc" id="L254">        assertEquals(orgPriority, t.getPriority(), &quot;Wrong priority&quot;);</span>
+<span class="fc" id="L255">        EasyMock.verify(wrapped, r);</span>
+<span class="fc" id="L256">    }</span>
+
+    /**
+     * Tests whether the exception handler is set if one is provided.
+     */
+    @Test
+    public void testNewThreadExHandler() {
+<span class="fc" id="L263">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L264">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L265">        final Thread.UncaughtExceptionHandler handler = EasyMock</span>
+<span class="fc" id="L266">                .createMock(Thread.UncaughtExceptionHandler.class);</span>
+<span class="fc" id="L267">        final Thread t = new Thread();</span>
+<span class="fc" id="L268">        EasyMock.expect(wrapped.newThread(r)).andReturn(t);</span>
+<span class="fc" id="L269">        EasyMock.replay(wrapped, r, handler);</span>
+<span class="fc" id="L270">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped)</span>
+<span class="fc" id="L271">                .uncaughtExceptionHandler(handler).build();</span>
+<span class="fc" id="L272">        assertSame(t, factory.newThread(r), &quot;Wrong thread&quot;);</span>
+<span class="fc" id="L273">        assertEquals(handler, t.getUncaughtExceptionHandler(), &quot;Wrong exception handler&quot;);</span>
+<span class="fc" id="L274">        EasyMock.verify(wrapped, r, handler);</span>
+<span class="fc" id="L275">    }</span>
+
+    /**
+     * Tests whether the original exception handler is not touched if none is
+     * specified.
+     */
+    @Test
+    public void testNewThreadNoExHandler() {
+<span class="fc" id="L283">        final ThreadFactory wrapped = EasyMock.createMock(ThreadFactory.class);</span>
+<span class="fc" id="L284">        final Runnable r = EasyMock.createMock(Runnable.class);</span>
+<span class="fc" id="L285">        final Thread.UncaughtExceptionHandler handler = EasyMock</span>
+<span class="fc" id="L286">                .createMock(Thread.UncaughtExceptionHandler.class);</span>
+<span class="fc" id="L287">        final Thread t = new Thread();</span>
+<span class="fc" id="L288">        t.setUncaughtExceptionHandler(handler);</span>
+<span class="fc" id="L289">        EasyMock.expect(wrapped.newThread(r)).andReturn(t);</span>
+<span class="fc" id="L290">        EasyMock.replay(wrapped, r, handler);</span>
+<span class="fc" id="L291">        final BasicThreadFactory factory = builder.wrappedFactory(wrapped).build();</span>
+<span class="fc" id="L292">        assertSame(t, factory.newThread(r), &quot;Wrong thread&quot;);</span>
+<span class="fc" id="L293">        assertEquals(handler, t.getUncaughtExceptionHandler(), &quot;Wrong exception handler&quot;);</span>
+<span class="fc" id="L294">        EasyMock.verify(wrapped, r, handler);</span>
+<span class="fc" id="L295">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

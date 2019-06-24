@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestTrackedNodeModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestTrackedNodeModel.java</span></div><h1>TestTrackedNodeModel.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertSame;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code TrackedNodeModel}.
+ *
+ */
+<span class="fc" id="L34">public class TestTrackedNodeModel</span>
+{
+    /** Constant for a test key. */
+    private static final String KEY = &quot;aTestKey&quot;;
+
+    /** A test node selector. */
+    private static NodeSelector selector;
+
+    /** A mock resolver. */
+    private static NodeKeyResolver&lt;ImmutableNode&gt; resolver;
+
+    /** A mock for the underlying node model. */
+    private InMemoryNodeModel parentModel;
+
+    /** A mock for the support object that provides the model. */
+    private InMemoryNodeModelSupport modelSupport;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L54">        selector = new NodeSelector(&quot;someKey&quot;);</span>
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L57">        NodeKeyResolver&lt;ImmutableNode&gt; resolverMock =</span>
+<span class="fc" id="L58">                EasyMock.createMock(NodeKeyResolver.class);</span>
+<span class="fc" id="L59">        EasyMock.replay(resolverMock);</span>
+<span class="fc" id="L60">        resolver = resolverMock;</span>
+<span class="fc" id="L61">    }</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L66">        parentModel = EasyMock.createMock(InMemoryNodeModel.class);</span>
+<span class="fc" id="L67">        modelSupport = EasyMock.createMock(InMemoryNodeModelSupport.class);</span>
+<span class="fc" id="L68">        EasyMock.expect(modelSupport.getNodeModel()).andReturn(parentModel)</span>
+<span class="fc" id="L69">                .anyTimes();</span>
+<span class="fc" id="L70">        EasyMock.replay(modelSupport);</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Creates a test model with default settings.
+     *
+     * @return the test model
+     */
+    private TrackedNodeModel setUpModel()
+    {
+<span class="fc" id="L80">        return new TrackedNodeModel(modelSupport, selector, true);</span>
+    }
+
+    /**
+     * Tries to create an instance without a selector.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoSelector()
+    {
+<span class="nc" id="L89">        new TrackedNodeModel(modelSupport, null, true);</span>
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Tries to create an instance without a parent model.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoParentModel()
+    {
+<span class="nc" id="L98">        new TrackedNodeModel(null, selector, true);</span>
+<span class="nc" id="L99">    }</span>
+
+    /**
+     * Tests whether the root node can be changed.
+     */
+    @Test
+    public void testSetRootNode()
+    {
+<span class="fc" id="L107">        final ImmutableNode root = NodeStructureHelper.createNode(&quot;root&quot;, null);</span>
+<span class="fc" id="L108">        parentModel.replaceTrackedNode(selector, root);</span>
+<span class="fc" id="L109">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L111">        final TrackedNodeModel model = setUpModel();</span>
+<span class="fc" id="L112">        model.setRootNode(root);</span>
+<span class="fc" id="L113">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Creates a mock for a node handler and prepares the parent model to expect
+     * a request for the tracked node handler.
+     *
+     * @return the mock for the node handler
+     */
+    private NodeHandler&lt;ImmutableNode&gt; expectGetNodeHandler()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L126">        NodeHandler&lt;ImmutableNode&gt; handler =</span>
+<span class="fc" id="L127">                EasyMock.createMock(NodeHandler.class);</span>
+<span class="fc" id="L128">        EasyMock.expect(parentModel.getTrackedNodeHandler(selector)).andReturn(</span>
+                handler);
+<span class="fc" id="L130">        return handler;</span>
+    }
+
+    /**
+     * Tests whether a node handler can be queried.
+     */
+    @Test
+    public void testGetNodeHandler()
+    {
+<span class="fc" id="L139">        final NodeHandler&lt;ImmutableNode&gt; handler = expectGetNodeHandler();</span>
+<span class="fc" id="L140">        EasyMock.replay(handler, parentModel);</span>
+
+<span class="fc" id="L142">        assertSame(&quot;Wrong node handler&quot;, handler, setUpModel().getNodeHandler());</span>
+<span class="fc" id="L143">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Tests whether properties can be added.
+     */
+    @Test
+    public void testAddProperty()
+    {
+<span class="fc" id="L152">        final Iterable&lt;?&gt; values = EasyMock.createMock(Iterable.class);</span>
+<span class="fc" id="L153">        parentModel.addProperty(KEY, selector, values, resolver);</span>
+<span class="fc" id="L154">        EasyMock.replay(values, parentModel);</span>
+
+<span class="fc" id="L156">        setUpModel().addProperty(KEY, values, resolver);</span>
+<span class="fc" id="L157">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L158">    }</span>
+
+    /**
+     * Tests whether nodes can be added.
+     */
+    @Test
+    public void testAddNodes()
+    {
+<span class="fc" id="L166">        final List&lt;ImmutableNode&gt; nodes =</span>
+<span class="fc" id="L167">                Arrays.asList(NodeStructureHelper.createNode(&quot;n1&quot;, 1),</span>
+<span class="fc" id="L168">                        NodeStructureHelper.createNode(&quot;n2&quot;, 2));</span>
+<span class="fc" id="L169">        parentModel.addNodes(KEY, selector, nodes, resolver);</span>
+<span class="fc" id="L170">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L172">        setUpModel().addNodes(KEY, nodes, resolver);</span>
+<span class="fc" id="L173">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L174">    }</span>
+
+    /**
+     * Tests whether a property can be set.
+     */
+    @Test
+    public void testSetProperty()
+    {
+<span class="fc" id="L182">        final Object value = 42;</span>
+<span class="fc" id="L183">        parentModel.setProperty(KEY, selector, value, resolver);</span>
+<span class="fc" id="L184">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L186">        setUpModel().setProperty(KEY, value, resolver);</span>
+<span class="fc" id="L187">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests whether a sub tree can be cleared.
+     */
+    @Test
+    public void testClearTree()
+    {
+<span class="fc" id="L196">        final QueryResult&lt;ImmutableNode&gt; result =</span>
+<span class="fc" id="L197">                QueryResult.createNodeResult(NodeStructureHelper.createNode(</span>
+                        &quot;test&quot;, null));
+<span class="fc" id="L199">        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; removed =</span>
+<span class="fc" id="L200">                Collections.singletonList(result);</span>
+<span class="fc" id="L201">        EasyMock.expect(parentModel.clearTree(KEY, selector, resolver))</span>
+<span class="fc" id="L202">                .andReturn(removed);</span>
+<span class="fc" id="L203">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L205">        assertSame(&quot;Wrong removed elements&quot;, removed,</span>
+<span class="fc" id="L206">                setUpModel().clearTree(KEY, resolver));</span>
+<span class="fc" id="L207">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Tests whether a property can be cleared.
+     */
+    @Test
+    public void testClearProperty()
+    {
+<span class="fc" id="L216">        parentModel.clearProperty(KEY, selector, resolver);</span>
+<span class="fc" id="L217">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L219">        setUpModel().clearProperty(KEY, resolver);</span>
+<span class="fc" id="L220">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Tests whether the whole model can be cleared.
+     */
+    @Test
+    public void testClear()
+    {
+<span class="fc" id="L229">        EasyMock.expect(parentModel.clearTree(null, selector, resolver))</span>
+<span class="fc" id="L230">                .andReturn(null);</span>
+<span class="fc" id="L231">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L233">        setUpModel().clear(resolver);</span>
+<span class="fc" id="L234">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L235">    }</span>
+
+    /**
+     * Tests whether the model can be closed.
+     */
+    @Test
+    public void testClose()
+    {
+<span class="fc" id="L243">        parentModel.untrackNode(selector);</span>
+<span class="fc" id="L244">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L246">        setUpModel().close();</span>
+<span class="fc" id="L247">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L248">    }</span>
+
+    /**
+     * Tests whether close can be called multiple times.
+     */
+    @Test
+    public void testCloseMultipleTimes()
+    {
+<span class="fc" id="L256">        parentModel.untrackNode(selector);</span>
+<span class="fc" id="L257">        EasyMock.replay(parentModel);</span>
+
+<span class="fc" id="L259">        final TrackedNodeModel model = setUpModel();</span>
+<span class="fc" id="L260">        model.close();</span>
+<span class="fc" id="L261">        model.close();</span>
+<span class="fc" id="L262">        EasyMock.verify(parentModel);</span>
+<span class="fc" id="L263">    }</span>
+
+    /**
+     * Tests whether the correct in-memory representation can be queried.
+     */
+    @Test
+    public void testGetInMemoryRepresentation()
+    {
+<span class="fc" id="L271">        final NodeHandler&lt;ImmutableNode&gt; handler = expectGetNodeHandler();</span>
+<span class="fc" id="L272">        final ImmutableNode root = NodeStructureHelper.createNode(&quot;Root&quot;, null);</span>
+<span class="fc" id="L273">        EasyMock.expect(handler.getRootNode()).andReturn(root);</span>
+<span class="fc" id="L274">        EasyMock.replay(handler, parentModel);</span>
+
+<span class="fc" id="L276">        final TrackedNodeModel model = setUpModel();</span>
+<span class="fc" id="L277">        assertSame(&quot;Wrong root node&quot;, root, model.getInMemoryRepresentation());</span>
+<span class="fc" id="L278">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

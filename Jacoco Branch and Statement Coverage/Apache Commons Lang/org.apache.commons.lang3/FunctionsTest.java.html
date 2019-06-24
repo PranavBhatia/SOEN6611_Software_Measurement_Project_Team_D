@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FunctionsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">FunctionsTest.java</span></div><h1>FunctionsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.reflect.UndeclaredThrowableException;
+
+import org.apache.commons.lang3.Functions.FailableConsumer;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+<span class="fc" id="L32">class FunctionsTest {</span>
+    public static class SomeException extends Exception {
+        private static final long serialVersionUID = -4965704778119283411L;
+
+        private Throwable t;
+
+        SomeException(String pMsg) {
+<span class="fc" id="L39">            super(pMsg);</span>
+<span class="fc" id="L40">        }</span>
+
+        public void setThrowable(Throwable pThrowable) {
+<span class="nc" id="L43">            t = pThrowable;</span>
+<span class="nc" id="L44">        }</span>
+
+        public void test() throws Throwable {
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (t != null) {</span>
+<span class="nc" id="L48">                throw t;</span>
+            }
+<span class="nc" id="L50">        }</span>
+    }
+    public static class Testable {
+        private Throwable t;
+
+<span class="fc" id="L55">        Testable(Throwable pTh) {</span>
+<span class="fc" id="L56">            t = pTh;</span>
+<span class="fc" id="L57">        }</span>
+
+        public void setThrowable(Throwable pThrowable) {
+<span class="fc" id="L60">            t = pThrowable;</span>
+<span class="fc" id="L61">        }</span>
+
+        public void test() throws Throwable {
+<span class="fc" id="L64">            test(t);</span>
+<span class="fc" id="L65">        }</span>
+
+        public void test(Throwable pThrowable) throws Throwable {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">            if (pThrowable != null) {</span>
+<span class="fc" id="L69">                throw pThrowable;</span>
+            }
+<span class="fc" id="L71">        }</span>
+
+        public Integer testInt() throws Throwable {
+<span class="fc" id="L74">            return testInt(t);</span>
+        }
+
+        public Integer testInt(Throwable pThrowable) throws Throwable {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (pThrowable != null) {</span>
+<span class="fc" id="L79">                throw pThrowable;</span>
+            }
+<span class="fc" id="L81">            return 0;</span>
+        }
+    }
+
+    public static class FailureOnOddInvocations {
+        private static int invocation;
+<span class="fc" id="L87">        FailureOnOddInvocations() throws SomeException {</span>
+<span class="fc" id="L88">            final int i = ++invocation;</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (i % 2 == 1) {</span>
+<span class="fc" id="L90">                throw new SomeException(&quot;Odd Invocation: &quot; + i);</span>
+            }
+<span class="fc" id="L92">        }</span>
+    }
+
+<span class="fc" id="L95">    public static class CloseableObject {</span>
+        private boolean closed;
+
+        public void run(Throwable pTh) throws Throwable {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            if (pTh != null) {</span>
+<span class="fc" id="L100">                throw pTh;</span>
+            }
+<span class="fc" id="L102">        }</span>
+
+        public void reset() {
+<span class="fc" id="L105">            closed = false;</span>
+<span class="fc" id="L106">        }</span>
+
+        public void close() {
+<span class="fc" id="L109">            closed = true;</span>
+<span class="fc" id="L110">        }</span>
+
+        public boolean isClosed() {
+<span class="fc" id="L113">            return closed;</span>
+        }
+    }
+
+    @Test
+    void testRunnable() {
+<span class="fc" id="L119">        FailureOnOddInvocations.invocation = 0;</span>
+<span class="pc" id="L120">        UndeclaredThrowableException e = assertThrows(UndeclaredThrowableException.class, () -&gt;  Functions.run(FailureOnOddInvocations::new));</span>
+<span class="fc" id="L121">        final Throwable cause = e.getCause();</span>
+<span class="fc" id="L122">        assertNotNull(cause);</span>
+<span class="fc" id="L123">        assertTrue(cause instanceof SomeException);</span>
+<span class="fc" id="L124">        assertEquals(&quot;Odd Invocation: 1&quot;, cause.getMessage());</span>
+
+        // Even invocation, should not throw an exception
+<span class="fc" id="L127">        Functions.run(FailureOnOddInvocations::new);</span>
+<span class="fc" id="L128">    }</span>
+
+    @Test
+    void testCallable() {
+<span class="fc" id="L132">        FailureOnOddInvocations.invocation = 0;</span>
+<span class="pc" id="L133">        UndeclaredThrowableException e = assertThrows(UndeclaredThrowableException.class, () -&gt;  Functions.run(FailureOnOddInvocations::new));</span>
+<span class="fc" id="L134">        final Throwable cause = e.getCause();</span>
+<span class="fc" id="L135">        assertNotNull(cause);</span>
+<span class="fc" id="L136">        assertTrue(cause instanceof SomeException);</span>
+<span class="fc" id="L137">        assertEquals(&quot;Odd Invocation: 1&quot;, cause.getMessage());</span>
+<span class="fc" id="L138">        final FailureOnOddInvocations instance = Functions.call(FailureOnOddInvocations::new);</span>
+<span class="fc" id="L139">        assertNotNull(instance);</span>
+<span class="fc" id="L140">    }</span>
+
+    @Test
+    void testAcceptConsumer() {
+<span class="fc" id="L144">        final IllegalStateException ise = new IllegalStateException();</span>
+<span class="fc" id="L145">        final Testable testable = new Testable(ise);</span>
+<span class="pc" id="L146">        Throwable e = assertThrows(IllegalStateException.class, () -&gt; Functions.accept(Testable::test, testable));</span>
+<span class="fc" id="L147">        assertSame(ise, e);</span>
+
+<span class="fc" id="L149">        final Error error = new OutOfMemoryError();</span>
+<span class="fc" id="L150">        testable.setThrowable(error);</span>
+<span class="pc" id="L151">        e = assertThrows(OutOfMemoryError.class, () -&gt; Functions.accept(Testable::test, testable));</span>
+<span class="fc" id="L152">        assertSame(error, e);</span>
+
+<span class="fc" id="L154">        final IOException ioe = new IOException(&quot;Unknown I/O error&quot;);</span>
+<span class="fc" id="L155">        testable.setThrowable(ioe);</span>
+<span class="pc" id="L156">        e = assertThrows(UncheckedIOException.class, () -&gt; Functions.accept(Testable::test, testable));</span>
+<span class="fc" id="L157">        final Throwable t = e.getCause();</span>
+<span class="fc" id="L158">        assertNotNull(t);</span>
+<span class="fc" id="L159">        assertSame(ioe, t);</span>
+
+<span class="fc" id="L161">        testable.setThrowable(null);</span>
+<span class="fc" id="L162">        Functions.accept(Testable::test, testable);</span>
+<span class="fc" id="L163">    }</span>
+
+    @Test
+    void testAcceptBiConsumer() {
+<span class="fc" id="L167">        final IllegalStateException ise = new IllegalStateException();</span>
+<span class="fc" id="L168">        final Testable testable = new Testable(null);</span>
+<span class="pc" id="L169">        Throwable e = assertThrows(IllegalStateException.class, () -&gt; Functions.accept(Testable::test, testable, ise));</span>
+<span class="fc" id="L170">        assertSame(ise, e);</span>
+
+<span class="fc" id="L172">        final Error error = new OutOfMemoryError();</span>
+<span class="pc" id="L173">        e = assertThrows(OutOfMemoryError.class, () -&gt; Functions.accept(Testable::test, testable, error));</span>
+<span class="fc" id="L174">        assertSame(error, e);</span>
+
+<span class="fc" id="L176">        final IOException ioe = new IOException(&quot;Unknown I/O error&quot;);</span>
+<span class="fc" id="L177">        testable.setThrowable(ioe);</span>
+<span class="pc" id="L178">        e = assertThrows(UncheckedIOException.class, () -&gt; Functions.accept(Testable::test, testable, ioe));</span>
+<span class="fc" id="L179">        final Throwable t = e.getCause();</span>
+<span class="fc" id="L180">        assertNotNull(t);</span>
+<span class="fc" id="L181">        assertSame(ioe, t);</span>
+
+<span class="fc" id="L183">        testable.setThrowable(null);</span>
+<span class="fc" id="L184">        Functions.accept(Testable::test, testable, (Throwable) null);</span>
+<span class="fc" id="L185">    }</span>
+
+    @Test
+    public void testApplyFunction() {
+<span class="fc" id="L189">        final IllegalStateException ise = new IllegalStateException();</span>
+<span class="fc" id="L190">        final Testable testable = new Testable(ise);</span>
+<span class="pc" id="L191">        Throwable e = assertThrows(IllegalStateException.class, () -&gt; Functions.apply(Testable::testInt, testable));</span>
+<span class="fc" id="L192">        assertSame(ise, e);</span>
+
+<span class="fc" id="L194">        final Error error = new OutOfMemoryError();</span>
+<span class="fc" id="L195">        testable.setThrowable(error);</span>
+<span class="pc" id="L196">        e = assertThrows(OutOfMemoryError.class, () -&gt; Functions.apply(Testable::testInt, testable));</span>
+<span class="fc" id="L197">        assertSame(error, e);</span>
+
+<span class="fc" id="L199">        final IOException ioe = new IOException(&quot;Unknown I/O error&quot;);</span>
+<span class="fc" id="L200">        testable.setThrowable(ioe);</span>
+<span class="pc" id="L201">        e = assertThrows(UncheckedIOException.class, () -&gt; Functions.apply(Testable::testInt, testable));</span>
+<span class="fc" id="L202">        final Throwable t = e.getCause();</span>
+<span class="fc" id="L203">        assertNotNull(t);</span>
+<span class="fc" id="L204">        assertSame(ioe, t);</span>
+
+<span class="fc" id="L206">        testable.setThrowable(null);</span>
+<span class="fc" id="L207">        final Integer i = Functions.apply(Testable::testInt, testable);</span>
+<span class="fc" id="L208">        assertNotNull(i);</span>
+<span class="fc" id="L209">        assertEquals(0, i.intValue());</span>
+<span class="fc" id="L210">    }</span>
+
+    @Test
+    public void testApplyBiFunction() {
+<span class="fc" id="L214">        final IllegalStateException ise = new IllegalStateException();</span>
+<span class="fc" id="L215">        final Testable testable = new Testable(null);</span>
+<span class="pc" id="L216">        Throwable e = assertThrows(IllegalStateException.class, () -&gt; Functions.apply(Testable::testInt, testable, ise));</span>
+<span class="fc" id="L217">        assertSame(ise, e);</span>
+
+<span class="fc" id="L219">        final Error error = new OutOfMemoryError();</span>
+<span class="pc" id="L220">        e = assertThrows(OutOfMemoryError.class, () -&gt; Functions.apply(Testable::testInt, testable, error));</span>
+<span class="fc" id="L221">        assertSame(error, e);</span>
+
+<span class="fc" id="L223">        final IOException ioe = new IOException(&quot;Unknown I/O error&quot;);</span>
+<span class="pc" id="L224">        e = assertThrows(UncheckedIOException.class, () -&gt; Functions.apply(Testable::testInt, testable, ioe));</span>
+<span class="fc" id="L225">        final Throwable t = e.getCause();</span>
+<span class="fc" id="L226">        assertNotNull(t);</span>
+<span class="fc" id="L227">        assertSame(ioe, t);</span>
+
+<span class="fc" id="L229">        final Integer i = Functions.apply(Testable::testInt, testable, (Throwable) null);</span>
+<span class="fc" id="L230">        assertNotNull(i);</span>
+<span class="fc" id="L231">        assertEquals(0, i.intValue());</span>
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testTryWithResources() {
+<span class="fc" id="L236">        final CloseableObject co = new CloseableObject();</span>
+<span class="fc" id="L237">        final FailableConsumer&lt;Throwable, ? extends Throwable&gt; consumer = co::run;</span>
+<span class="fc" id="L238">        final IllegalStateException ise = new IllegalStateException();</span>
+<span class="pc" id="L239">        Throwable e = assertThrows(IllegalStateException.class, () -&gt; Functions.tryWithResources(() -&gt; consumer.accept(ise), co::close));</span>
+<span class="fc" id="L240">        assertSame(ise, e);</span>
+
+<span class="fc" id="L242">        assertTrue(co.isClosed());</span>
+<span class="fc" id="L243">        co.reset();</span>
+<span class="fc" id="L244">        final Error error = new OutOfMemoryError();</span>
+<span class="pc" id="L245">        e = assertThrows(OutOfMemoryError.class, () -&gt; Functions.tryWithResources(() -&gt; consumer.accept(error), co::close));</span>
+<span class="fc" id="L246">        assertSame(error, e);</span>
+
+<span class="fc" id="L248">        assertTrue(co.isClosed());</span>
+<span class="fc" id="L249">        co.reset();</span>
+<span class="fc" id="L250">        final IOException ioe = new IOException(&quot;Unknown I/O error&quot;);</span>
+<span class="pc" id="L251">        UncheckedIOException uioe = assertThrows(UncheckedIOException.class, () -&gt;  Functions.tryWithResources(() -&gt; consumer.accept(ioe), co::close));</span>
+<span class="fc" id="L252">        final IOException cause = uioe.getCause();</span>
+<span class="fc" id="L253">        assertSame(ioe, cause);</span>
+
+<span class="fc" id="L255">        assertTrue(co.isClosed());</span>
+<span class="fc" id="L256">        co.reset();</span>
+<span class="fc" id="L257">        Functions.tryWithResources(() -&gt; consumer.accept(null), co::close);</span>
+<span class="fc" id="L258">        assertTrue(co.isClosed());</span>
+<span class="fc" id="L259">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

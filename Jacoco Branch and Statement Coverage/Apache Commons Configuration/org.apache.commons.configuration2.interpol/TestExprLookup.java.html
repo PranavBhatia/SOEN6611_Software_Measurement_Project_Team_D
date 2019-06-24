@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestExprLookup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.interpol</a> &gt; <span class="el_source">TestExprLookup.java</span></div><h1>TestExprLookup.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.interpol;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.ConfigurationLogger;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.impl.Log4JLogger;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
+import org.junit.Test;
+
+/**
+ * Test class for ExprLookup.
+ *
+ */
+<span class="fc" id="L44">public class TestExprLookup</span>
+{
+<span class="fc" id="L46">    private static File TEST_FILE = ConfigurationAssert.getTestFile(&quot;test.xml&quot;);</span>
+
+<span class="fc" id="L48">    private static String PATTERN1 =</span>
+        &quot;String.replace(Util.message, 'Hello', 'Goodbye') + System.getProperty('user.name')&quot;;
+<span class="fc" id="L50">    private static String PATTERN2 =</span>
+        &quot;'$[element] ' + String.trimToEmpty('$[space.description]')&quot;;
+
+    /**
+     * Loads the test configuration.
+     *
+     * @return the test configuration
+     * @throws ConfigurationException if an error occurs
+     */
+    private static XMLConfiguration loadConfig() throws ConfigurationException
+    {
+<span class="fc" id="L61">        final XMLConfiguration config = new XMLConfiguration();</span>
+<span class="fc" id="L62">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L63">        handler.load(TEST_FILE);</span>
+<span class="fc" id="L64">        return config;</span>
+    }
+
+    @Test
+    public void testLookup() throws Exception
+    {
+<span class="fc" id="L70">        final ConsoleAppender app = new ConsoleAppender(new SimpleLayout());</span>
+<span class="fc" id="L71">        final Log log = LogFactory.getLog(&quot;TestLogger&quot;);</span>
+<span class="fc" id="L72">        final Logger logger = ((Log4JLogger)log).getLogger();</span>
+<span class="fc" id="L73">        logger.addAppender(app);</span>
+<span class="fc" id="L74">        logger.setLevel(Level.DEBUG);</span>
+<span class="fc" id="L75">        logger.setAdditivity(false);</span>
+<span class="fc" id="L76">        final ExprLookup.Variables vars = new ExprLookup.Variables();</span>
+<span class="fc" id="L77">        vars.add(new ExprLookup.Variable(&quot;String&quot;, org.apache.commons.lang3.StringUtils.class));</span>
+<span class="fc" id="L78">        vars.add(new ExprLookup.Variable(&quot;Util&quot;, new Utility(&quot;Hello&quot;)));</span>
+<span class="fc" id="L79">        vars.add(new ExprLookup.Variable(&quot;System&quot;, &quot;Class:java.lang.System&quot;));</span>
+<span class="fc" id="L80">        final XMLConfiguration config = loadConfig();</span>
+<span class="fc" id="L81">        final ConfigurationLogger testLogger = new ConfigurationLogger(&quot;TestLogger&quot;);</span>
+<span class="fc" id="L82">        config.setLogger(testLogger);</span>
+<span class="fc" id="L83">        final ExprLookup lookup = new ExprLookup(vars);</span>
+<span class="fc" id="L84">        lookup.setInterpolator(config.getInterpolator());</span>
+<span class="fc" id="L85">        lookup.setLogger(testLogger);</span>
+<span class="fc" id="L86">        String str = lookup.lookup(PATTERN1);</span>
+<span class="fc" id="L87">        assertTrue(str.startsWith(&quot;Goodbye&quot;));</span>
+<span class="fc" id="L88">        str = lookup.lookup(PATTERN2);</span>
+<span class="fc" id="L89">        assertTrue(&quot;Incorrect value: &quot; + str, str.equals(&quot;value Some text&quot;));</span>
+<span class="fc" id="L90">        logger.removeAppender(app);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Tests a lookup() operation if no ConfigurationInterpolator object has been set.
+     */
+    @Test
+    public void testLookupNoConfigurationInterpolator()
+    {
+<span class="fc" id="L99">        final ExprLookup.Variables vars = new ExprLookup.Variables();</span>
+<span class="fc" id="L100">        vars.add(new ExprLookup.Variable(&quot;String&quot;, org.apache.commons.lang3.StringUtils.class));</span>
+<span class="fc" id="L101">        final ExprLookup lookup = new ExprLookup(vars);</span>
+<span class="fc" id="L102">        final String value = &quot;test&quot;;</span>
+<span class="fc" id="L103">        assertEquals(&quot;Wrong result&quot;, value, lookup.lookup(value));</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Tests whether variables can be queried.
+     */
+    @Test
+    public void testGetVariables()
+    {
+<span class="fc" id="L112">        final ExprLookup.Variables vars = new ExprLookup.Variables();</span>
+<span class="fc" id="L113">        vars.add(new ExprLookup.Variable(&quot;String&quot;, org.apache.commons.lang3.StringUtils.class));</span>
+<span class="fc" id="L114">        final ExprLookup lookup = new ExprLookup(vars);</span>
+<span class="fc" id="L115">        assertEquals(&quot;Wrong variables&quot;, vars, lookup.getVariables());</span>
+<span class="fc" id="L116">    }</span>
+
+    /**
+     * Tests that getVariables() returns a copy of the original variables.
+     */
+    @Test
+    public void testGetVariablesDefensiveCopy()
+    {
+<span class="fc" id="L124">        final ExprLookup.Variables vars = new ExprLookup.Variables();</span>
+<span class="fc" id="L125">        vars.add(new ExprLookup.Variable(&quot;String&quot;, org.apache.commons.lang3.StringUtils.class));</span>
+<span class="fc" id="L126">        final ExprLookup lookup = new ExprLookup(vars);</span>
+<span class="fc" id="L127">        final ExprLookup.Variables vars2 = lookup.getVariables();</span>
+<span class="fc" id="L128">        vars2.add(new ExprLookup.Variable(&quot;System&quot;, &quot;Class:java.lang.System&quot;));</span>
+<span class="fc" id="L129">        assertEquals(&quot;Modified variables&quot;, vars, lookup.getVariables());</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * Tests an expression that does not yield a string.
+     */
+    @Test
+    public void testLookupNonStringExpression() throws ConfigurationException
+    {
+<span class="fc" id="L138">        final ExprLookup.Variables vars = new ExprLookup.Variables();</span>
+<span class="fc" id="L139">        vars.add(new ExprLookup.Variable(&quot;System&quot;, &quot;Class:java.lang.System&quot;));</span>
+<span class="fc" id="L140">        final ExprLookup lookup = new ExprLookup(vars);</span>
+<span class="fc" id="L141">        final XMLConfiguration config = loadConfig();</span>
+<span class="fc" id="L142">        lookup.setInterpolator(config.getInterpolator());</span>
+<span class="fc" id="L143">        final String pattern = &quot;System.currentTimeMillis()&quot;;</span>
+<span class="fc" id="L144">        final String result = lookup.lookup(pattern);</span>
+<span class="fc" id="L145">        assertNotEquals(&quot;Not replaced&quot;, pattern, result);</span>
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Tests an expression that yields a null value.
+     */
+    @Test
+    public void testLookupNullExpression() throws ConfigurationException
+    {
+<span class="fc" id="L154">        final ExprLookup.Variables vars = new ExprLookup.Variables();</span>
+<span class="fc" id="L155">        vars.add(new ExprLookup.Variable(&quot;System&quot;, &quot;Class:java.lang.System&quot;));</span>
+<span class="fc" id="L156">        final ExprLookup lookup = new ExprLookup(vars);</span>
+<span class="fc" id="L157">        final XMLConfiguration config = loadConfig();</span>
+<span class="fc" id="L158">        lookup.setInterpolator(config.getInterpolator());</span>
+<span class="fc" id="L159">        assertNull(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L160">                lookup.lookup(&quot;System.getProperty('undefined.property')&quot;));</span>
+<span class="fc" id="L161">    }</span>
+
+    public static class Utility
+    {
+        String message;
+
+        public Utility(final String msg)
+<span class="fc" id="L168">        {</span>
+<span class="fc" id="L169">            this.message = msg;</span>
+<span class="fc" id="L170">        }</span>
+
+        public String getMessage()
+        {
+<span class="fc" id="L174">            return message;</span>
+        }
+
+        public String str(final String str)
+        {
+<span class="nc" id="L179">            return str;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestMultiWrapDynaBean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestMultiWrapDynaBean.java</span></div><h1>TestMultiWrapDynaBean.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.beanutils.DynaClass;
+import org.apache.commons.beanutils.LazyDynaBean;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.junit.Test;
+
+/**
+ * Test class for {@code MultiWrapDynaBean} and {@code MultiWrapDynaClass}.
+ *
+ */
+<span class="fc" id="L41">public class TestMultiWrapDynaBean</span>
+{
+    /** Constant for a mapped property. */
+    private static final String MAPPED_PROPERTY = &quot;testMappedProperty&quot;;
+
+    /** A test wrapped bean. */
+    private BasicBuilderParameters params;
+
+    /** Another test wrapped bean. */
+    private WrappedBeanTestImpl wrapBean;
+
+    /** A wrapped DynaBean. */
+    private LazyDynaBean wrapDynaBean;
+
+    /**
+     * Creates a new test object with a list of wrapped beans.
+     *
+     * @param withDynaBean a flag whether also a DynaBean should be added to the
+     *        wrapped beans
+     * @return the test bean
+     */
+    private MultiWrapDynaBean createBean(final boolean withDynaBean)
+    {
+<span class="fc" id="L64">        params = new BasicBuilderParameters();</span>
+<span class="fc" id="L65">        wrapBean = new WrappedBeanTestImpl();</span>
+<span class="fc" id="L66">        final Collection&lt;Object&gt; beans = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L67">        beans.add(params);</span>
+<span class="fc" id="L68">        beans.add(wrapBean);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (withDynaBean)</span>
+        {
+<span class="fc" id="L71">            wrapDynaBean = new LazyDynaBean();</span>
+<span class="fc" id="L72">            wrapDynaBean.set(MAPPED_PROPERTY, &quot;someKey&quot;, &quot;somValue&quot;);</span>
+<span class="fc" id="L73">            beans.add(wrapDynaBean);</span>
+        }
+<span class="fc" id="L75">        return new MultiWrapDynaBean(beans);</span>
+    }
+
+    /**
+     * Tests whether a simple property can be set.
+     */
+    @Test
+    public void testSetSimpleProperty() throws Exception
+    {
+<span class="fc" id="L84">        PropertyUtils.setProperty(createBean(false), &quot;throwExceptionOnMissing&quot;,</span>
+                Boolean.TRUE);
+<span class="fc" id="L86">        assertEquals(&quot;Property not set&quot;, Boolean.TRUE, params.getParameters()</span>
+<span class="fc" id="L87">                .get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L88">    }</span>
+
+    /**
+     * Tests whether a simple property can be read.
+     */
+    @Test
+    public void testGetSimpleProperty() throws Exception
+    {
+<span class="fc" id="L96">        final MultiWrapDynaBean bean = createBean(false);</span>
+<span class="fc" id="L97">        final String text = &quot;testText&quot;;</span>
+<span class="fc" id="L98">        wrapBean.setText(text);</span>
+<span class="fc" id="L99">        assertEquals(&quot;Wrong value&quot;, text,</span>
+<span class="fc" id="L100">                PropertyUtils.getProperty(bean, &quot;text&quot;));</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Tests whether an indexed property can be set.
+     */
+    @Test
+    public void testSetIndexedProperty() throws Exception
+    {
+<span class="fc" id="L109">        PropertyUtils.setIndexedProperty(createBean(false), &quot;indexedProperty&quot;,</span>
+<span class="fc" id="L110">                1, 42);</span>
+<span class="fc" id="L111">        assertEquals(&quot;Property not set&quot;, 42, wrapBean.getIndexedProperty(1));</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Tests whether an indexed property can be read.
+     */
+    @Test
+    public void testGetIndexedProperty() throws Exception
+    {
+<span class="fc" id="L120">        final MultiWrapDynaBean bean = createBean(false);</span>
+<span class="fc" id="L121">        wrapBean.setIndexedProperty(3, 20121117);</span>
+<span class="fc" id="L122">        assertEquals(&quot;Wrong value&quot;, 20121117,</span>
+<span class="fc" id="L123">                PropertyUtils.getIndexedProperty(bean, &quot;indexedProperty&quot;, 3));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Tests whether a map property can be set.
+     */
+    @Test
+    public void testSetMappedProperty() throws Exception
+    {
+<span class="fc" id="L132">        final MultiWrapDynaBean bean = createBean(true);</span>
+<span class="fc" id="L133">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L134">        final String text = &quot;Hello World&quot;;</span>
+<span class="fc" id="L135">        PropertyUtils.setMappedProperty(bean, MAPPED_PROPERTY, key, text);</span>
+<span class="fc" id="L136">        assertEquals(&quot;Property not set&quot;, text,</span>
+<span class="fc" id="L137">                wrapDynaBean.get(MAPPED_PROPERTY, key));</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Tests whether a map property can be read.
+     */
+    @Test
+    public void testGetMappedProperty() throws Exception
+    {
+<span class="fc" id="L146">        final MultiWrapDynaBean bean = createBean(true);</span>
+<span class="fc" id="L147">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L148">        final String value = &quot;Hello World&quot;;</span>
+<span class="fc" id="L149">        wrapDynaBean.set(MAPPED_PROPERTY, key, value);</span>
+<span class="fc" id="L150">        assertEquals(&quot;Wrong value&quot;, value,</span>
+<span class="fc" id="L151">                PropertyUtils.getMappedProperty(bean, MAPPED_PROPERTY, key));</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Tries to access an unknown property.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetPropertyUnknown()
+    {
+<span class="nc" id="L160">        createBean(false).get(&quot;unknown property&quot;);</span>
+<span class="nc" id="L161">    }</span>
+
+    /**
+     * Tests whether the class of bean can be queried.
+     */
+    @Test
+    public void testGetDynaClass()
+    {
+<span class="fc" id="L169">        final DynaClass cls = createBean(false).getDynaClass();</span>
+<span class="fc" id="L170">        assertNotNull(&quot;Property not found (1)&quot;,</span>
+<span class="fc" id="L171">                cls.getDynaProperty(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L172">        assertNotNull(&quot;Property not found (2)&quot;, cls.getDynaProperty(&quot;text&quot;));</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Tries to create a new instance of the DynaClass. This is not possible.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDynaClassNewInstance() throws Exception
+    {
+<span class="nc" id="L181">        createBean(false).getDynaClass().newInstance();</span>
+<span class="nc" id="L182">    }</span>
+
+    /**
+     * Checks the name of the DynaClass.
+     */
+    @Test
+    public void testGetDynaClassName()
+    {
+<span class="fc" id="L190">        assertNull(&quot;Got a class name&quot;, createBean(false).getDynaClass()</span>
+<span class="fc" id="L191">                .getName());</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * Tests the remove() implementation. This operation is not available.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRemove()
+    {
+<span class="nc" id="L200">        createBean(false).remove(MAPPED_PROPERTY, &quot;someKey&quot;);</span>
+<span class="nc" id="L201">    }</span>
+
+    /**
+     * Tests the contains() implementation. This operation is not available.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testContains()
+    {
+<span class="nc" id="L209">        createBean(false).contains(MAPPED_PROPERTY, &quot;someKey&quot;);</span>
+<span class="nc" id="L210">    }</span>
+
+    /**
+     * Tests that the order of properties is relevant when adding beans to a
+     * MultiWrapDynaBean.
+     */
+    @Test
+    public void testOrderOfProperties() throws Exception
+    {
+<span class="fc" id="L219">        final Collection&lt;Object&gt; beans = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L220">        params = new BasicBuilderParameters();</span>
+<span class="fc" id="L221">        beans.add(params);</span>
+<span class="fc" id="L222">        beans.add(new FileBasedBuilderParametersImpl());</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">        for (int i = 0; i &lt; 32; i++)</span>
+        {
+<span class="fc" id="L225">            beans.add(new BasicBuilderParameters());</span>
+        }
+<span class="fc" id="L227">        final MultiWrapDynaBean bean = new MultiWrapDynaBean(beans);</span>
+<span class="fc" id="L228">        final ListDelimiterHandler listHandler = new DefaultListDelimiterHandler('+');</span>
+<span class="fc" id="L229">        PropertyUtils</span>
+<span class="fc" id="L230">                .setProperty(bean, &quot;throwExceptionOnMissing&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L231">        PropertyUtils</span>
+<span class="fc" id="L232">                .setProperty(bean, &quot;listDelimiterHandler&quot;, listHandler);</span>
+<span class="fc" id="L233">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L234">        assertEquals(&quot;Exception flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L235">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L236">        assertEquals(&quot;List delimiter handler not set&quot;, listHandler,</span>
+<span class="fc" id="L237">                map.get(&quot;listDelimiterHandler&quot;));</span>
+<span class="fc" id="L238">    }</span>
+
+    /**
+     * A simple test bean class used as wrapped bean.
+     */
+<span class="fc" id="L243">    public static class WrappedBeanTestImpl</span>
+    {
+        /** Stores mapped properties. */
+<span class="fc" id="L246">        private final Map&lt;String, String&gt; mapProperties =</span>
+                new HashMap&lt;&gt;();
+
+        /** Stores indexed properties. */
+<span class="fc" id="L250">        private final int[] indexedValues = new int[8];</span>
+
+        /** A simple property. */
+        private String text;
+
+        public String getMapProperty(final String key)
+        {
+<span class="nc" id="L257">            return mapProperties.get(key);</span>
+        }
+
+        public void setMapProperty(final String key, final String value)
+        {
+<span class="nc" id="L262">            mapProperties.put(key, value);</span>
+<span class="nc" id="L263">        }</span>
+
+        public int getIndexedProperty(final int idx)
+        {
+<span class="fc" id="L267">            return indexedValues[idx];</span>
+        }
+
+        public void setIndexedProperty(final int idx, final int value)
+        {
+<span class="fc" id="L272">            indexedValues[idx] = value;</span>
+<span class="fc" id="L273">        }</span>
+
+        public String getText()
+        {
+<span class="fc" id="L277">            return text;</span>
+        }
+
+        public void setText(final String text)
+        {
+<span class="fc" id="L282">            this.text = text;</span>
+<span class="fc" id="L283">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

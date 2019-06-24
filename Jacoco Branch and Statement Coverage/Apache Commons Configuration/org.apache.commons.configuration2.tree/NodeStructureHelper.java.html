@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NodeStructureHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">NodeStructureHelper.java</span></div><h1>NodeStructureHelper.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.dbunit.dataset.common.handlers.NoHandler;
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+
+/**
+ * A helper class for tests related to hierarchies of {@code ImmutableNode}
+ * objects. This class provides functionality for creating test trees and
+ * accessing single nodes. It can be used by various test classes.
+ *
+ */
+<span class="nc" id="L35">public class NodeStructureHelper</span>
+{
+    /** A pattern for parsing node keys with optional indices. */
+<span class="fc" id="L38">    private static final Pattern PAT_KEY_WITH_INDEX = Pattern</span>
+<span class="fc" id="L39">            .compile(&quot;(\\w+)\\((\\d+)\\)&quot;);</span>
+
+    /** The character for splitting node path elements. */
+    private static final String PATH_SEPARATOR = &quot;/&quot;;
+
+    /** An array with authors. */
+<span class="fc" id="L45">    private static final String[] AUTHORS = {</span>
+            &quot;Shakespeare&quot;, &quot;Homer&quot;, &quot;Simmons&quot;
+    };
+
+    /** An array with the works of the test authors. */
+<span class="fc" id="L50">    private static final String[][] WORKS = {</span>
+            {
+                    &quot;Troilus and Cressida&quot;, &quot;The Tempest&quot;,
+                    &quot;A Midsummer Night's Dream&quot;
+            }, {
+                &quot;Ilias&quot;
+            }, {
+                    &quot;Ilium&quot;, &quot;Hyperion&quot;
+            }
+    };
+
+    /** An array with the personae in the works. */
+<span class="fc" id="L62">    private static final String[][][] PERSONAE = {</span>
+            {
+                    // Works of Shakespeare
+                    {
+                            &quot;Troilus&quot;, &quot;Cressidia&quot;, &quot;Ajax&quot;, &quot;Achilles&quot;
+                    }, {
+                            &quot;Prospero&quot;, &quot;Ariel&quot;
+                    }, {
+                            &quot;Oberon&quot;, &quot;Titania&quot;, &quot;Puck&quot;
+                    }
+            }, {
+                // Works of Homer
+                {
+                        &quot;Achilles&quot;, &quot;Agamemnon&quot;, &quot;Hektor&quot;
+                }
+            }, {
+                    // Works of Dan Simmons
+                    {
+                            &quot;Hockenberry&quot;, &quot;Achilles&quot;
+                    }, {
+                            &quot;Shrike&quot;, &quot;Moneta&quot;, &quot;Consul&quot;, &quot;Weintraub&quot;
+                    }
+            }
+    };
+
+    /** An array with table names used for the TABLES tree. */
+<span class="fc" id="L88">    private static final String[] TABLES = {</span>
+            &quot;users&quot;, &quot;documents&quot;
+    };
+
+    /**
+     * An array with the names of columns to be used for the TABLES tree.
+     */
+<span class="fc" id="L95">    private static final String[][] FIELDS = {</span>
+            {
+                    &quot;uid&quot;, &quot;uname&quot;, &quot;firstName&quot;, &quot;lastName&quot;, &quot;email&quot;
+            }, {
+                    &quot;docid&quot;, &quot;name&quot;, &quot;creationDate&quot;, &quot;authorID&quot;, &quot;version&quot;, &quot;length&quot;
+            }
+    };
+
+    /** Constant for the author attribute. */
+    public static final String ATTR_AUTHOR = &quot;author&quot;;
+
+    /** Constant for the original value element in the personae tree. */
+    public static final String ELEM_ORG_VALUE = &quot;originalValue&quot;;
+
+    /** Constant for the tested attribute. */
+    public static final String ATTR_TESTED = &quot;tested&quot;;
+
+    /** The root node of the authors tree. */
+<span class="fc" id="L113">    public static final ImmutableNode ROOT_AUTHORS_TREE = createAuthorsTree();</span>
+
+    /** The root node of the personae tree. */
+<span class="fc" id="L116">    public static final ImmutableNode ROOT_PERSONAE_TREE = createPersonaeTree();</span>
+
+    /** The root node of the TABLES tree. */
+<span class="fc" id="L119">    public static final ImmutableNode ROOT_TABLES_TREE = createTablesTree();</span>
+
+    /**
+     * Returns the number of authors.
+     *
+     * @return the number of authors
+     */
+    public static int authorsLength()
+    {
+<span class="fc" id="L128">        return AUTHORS.length;</span>
+    }
+
+    /**
+     * Returns the name of the author at the given index.
+     *
+     * @param idx the index
+     * @return the name of this author
+     */
+    public static String author(final int idx)
+    {
+<span class="fc" id="L139">        return AUTHORS[idx];</span>
+    }
+
+    /**
+     * Returns the number of works for the author with the given index.
+     *
+     * @param authorIdx the author index
+     * @return the number of works of this author
+     */
+    public static int worksLength(final int authorIdx)
+    {
+<span class="fc" id="L150">        return WORKS[authorIdx].length;</span>
+    }
+
+    /**
+     * Returns the work of an author with a given index.
+     *
+     * @param authorIdx the author index
+     * @param idx the index of the work
+     * @return the desired work
+     */
+    public static String work(final int authorIdx, final int idx)
+    {
+<span class="fc" id="L162">        return WORKS[authorIdx][idx];</span>
+    }
+
+    /**
+     * Returns the number of personae in the given work of the specified author.
+     *
+     * @param authorIdx the author index
+     * @param workIdx the index of the work
+     * @return the number of personae in this work
+     */
+    public static int personaeLength(final int authorIdx, final int workIdx)
+    {
+<span class="fc" id="L174">        return PERSONAE[authorIdx][workIdx].length;</span>
+    }
+
+    /**
+     * Returns the name of a persona.
+     *
+     * @param authorIdx the author index
+     * @param workIdx the index of the work
+     * @param personaIdx the index of the persona
+     * @return the name of this persona
+     */
+    public static String persona(final int authorIdx, final int workIdx, final int personaIdx)
+    {
+<span class="fc" id="L187">        return PERSONAE[authorIdx][workIdx][personaIdx];</span>
+    }
+
+    /**
+     * Returns the number of tables in the tables tree.
+     *
+     * @return the number of tables
+     */
+    public static int tablesLength()
+    {
+<span class="fc" id="L197">        return TABLES.length;</span>
+    }
+
+    /**
+     * Returns the name of the test table with the given index.
+     *
+     * @param idx the index of the table
+     * @return the name of the test table with this index
+     */
+    public static String table(final int idx)
+    {
+<span class="fc" id="L208">        return TABLES[idx];</span>
+    }
+
+    /**
+     * Returns the number of fields in the test table with the given index.
+     *
+     * @param tabIdx the index of the table
+     * @return the number of fields in this table
+     */
+    public static int fieldsLength(final int tabIdx)
+    {
+<span class="fc" id="L219">        return FIELDS[tabIdx].length;</span>
+    }
+
+    /**
+     * Returns the name of the specified field in the tables tree.
+     *
+     * @param tabIdx the index of the table
+     * @param fldIdx the index of the field
+     * @return the name of this field
+     */
+    public static String field(final int tabIdx, final int fldIdx)
+    {
+<span class="fc" id="L231">        return FIELDS[tabIdx][fldIdx];</span>
+    }
+
+    /**
+     * Appends a component to a node path. The component is added separated by a
+     * path separator.
+     *
+     * @param path the path
+     * @param component the component to be added
+     * @return the resulting path
+     */
+    public static String appendPath(final String path, final String component)
+    {
+<span class="fc" id="L244">        final StringBuilder buf =</span>
+<span class="fc" id="L245">                new StringBuilder(StringUtils.length(path)</span>
+<span class="fc" id="L246">                        + StringUtils.length(component) + 1);</span>
+<span class="fc" id="L247">        buf.append(path).append(PATH_SEPARATOR).append(component);</span>
+<span class="fc" id="L248">        return buf.toString();</span>
+    }
+
+    /**
+     * Evaluates the given key and finds the corresponding child node of the
+     * specified root. Keys have the form {@code path/to/node}. If there are
+     * multiple sibling nodes with the same name, a numerical index can be
+     * specified in parenthesis.
+     *
+     * @param root the root node
+     * @param key the key to the desired node
+     * @return the node with this key
+     * @throws NoSuchElementException if the key cannot be resolved
+     */
+    public static ImmutableNode nodeForKey(final ImmutableNode root, final String key)
+    {
+<span class="fc" id="L264">        final String[] components = key.split(PATH_SEPARATOR);</span>
+<span class="fc" id="L265">        return findNode(root, components, 0);</span>
+    }
+
+    /**
+     * Evaluates the given key and finds the corresponding child node of the
+     * root node of the specified model. This is a convenience method that works
+     * like the method with the same name, but obtains the root node from the
+     * given model.
+     *
+     * @param model the node model
+     * @param key the key to the desired node
+     * @return the found target node
+     * @throws NoSuchElementException if the desired node cannot be found
+     */
+    public static ImmutableNode nodeForKey(final InMemoryNodeModel model, final String key)
+    {
+<span class="fc" id="L281">        return nodeForKey(model.getRootNode(), key);</span>
+    }
+
+    /**
+     * Evaluates the given key and finds the corresponding child node of the
+     * root node of the specified {@code NodeHandler} object. This is a
+     * convenience method that works like the method with the same name, but
+     * obtains the root node from the given handler object.
+     *
+     * @param handler the {@code NodeHandler} object
+     * @param key the key to the desired node
+     * @return the found target node
+     * @throws NoSuchElementException if the desired node cannot be found
+     */
+    public static ImmutableNode nodeForKey(final NodeHandler&lt;ImmutableNode&gt; handler,
+            final String key)
+    {
+<span class="fc" id="L298">        return nodeForKey(handler.getRootNode(), key);</span>
+    }
+
+    /**
+     * Convenience method for creating a path for accessing a node based on the
+     * node names.
+     *
+     * @param path an array with the expected node names on the path
+     * @return the resulting path as string
+     */
+    public static String nodePath(final String... path)
+    {
+<span class="fc" id="L310">        return StringUtils.join(path, PATH_SEPARATOR);</span>
+    }
+
+    /**
+     * Convenience method for creating a node path with a special end node.
+     *
+     * @param endNode the name of the last path component
+     * @param path an array with the expected node names on the path
+     * @return the resulting path as string
+     */
+    public static String nodePathWithEndNode(final String endNode, final String... path)
+    {
+<span class="fc" id="L322">        return nodePath(path) + PATH_SEPARATOR + endNode;</span>
+    }
+
+    /**
+     * Helper method for creating an immutable node with a name and a value.
+     *
+     * @param name the node's name
+     * @param value the node's value
+     * @return the new node
+     */
+    public static ImmutableNode createNode(final String name, final Object value)
+    {
+<span class="fc" id="L334">        return new ImmutableNode.Builder().name(name).value(value).create();</span>
+    }
+
+    /**
+     * Helper method for creating a field node with its children. Nodes of this
+     * type are used within the tables tree. They define a single column of a
+     * table.
+     *
+     * @param name the name of the field
+     * @return the field node
+     */
+    public static ImmutableNode createFieldNode(final String name)
+    {
+<span class="fc" id="L347">        final ImmutableNode.Builder fldBuilder = new ImmutableNode.Builder(1);</span>
+<span class="fc" id="L348">        fldBuilder.addChild(createNode(&quot;name&quot;, name));</span>
+<span class="fc" id="L349">        return fldBuilder.name(&quot;field&quot;).create();</span>
+    }
+
+    /**
+     * Creates a mock for a resolver.
+     *
+     * @return the resolver mock
+     */
+    public static NodeKeyResolver&lt;ImmutableNode&gt; createResolverMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L361">        NodeKeyResolver&lt;ImmutableNode&gt; mock =</span>
+<span class="fc" id="L362">                EasyMock.createMock(NodeKeyResolver.class);</span>
+<span class="fc" id="L363">        return mock;</span>
+    }
+
+    /**
+     * Prepares a mock for a resolver to expect arbitrary resolve operations.
+     * These operations are implemented on top of a default expression engine.
+     *
+     * @param resolver the mock resolver
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public static void expectResolveKeyForQueries(
+            final NodeKeyResolver&lt;ImmutableNode&gt; resolver)
+    {
+<span class="fc" id="L376">        EasyMock.expect(</span>
+<span class="fc" id="L377">                resolver.resolveKey(EasyMock.anyObject(ImmutableNode.class),</span>
+<span class="fc" id="L378">                        EasyMock.anyObject(String.class),</span>
+                        (NodeHandler&lt;ImmutableNode&gt;) EasyMock
+<span class="fc" id="L380">                                .anyObject(NoHandler.class)))</span>
+<span class="fc" id="L381">                .andAnswer(new IAnswer&lt;List&lt;QueryResult&lt;ImmutableNode&gt;&gt;&gt;() {</span>
+                    @Override
+                    public List&lt;QueryResult&lt;ImmutableNode&gt;&gt; answer()
+                            throws Throwable {
+                        final ImmutableNode root =
+<span class="fc" id="L386">                                (ImmutableNode) EasyMock.getCurrentArguments()[0];</span>
+<span class="fc" id="L387">                        final String key = (String) EasyMock.getCurrentArguments()[1];</span>
+                        final NodeHandler&lt;ImmutableNode&gt; handler =
+                                (NodeHandler&lt;ImmutableNode&gt;) EasyMock
+<span class="fc" id="L390">                                        .getCurrentArguments()[2];</span>
+<span class="fc" id="L391">                        return DefaultExpressionEngine.INSTANCE.query(root,</span>
+                                key, handler);
+                    }
+<span class="fc" id="L394">                }).anyTimes();</span>
+<span class="fc" id="L395">    }</span>
+
+    /**
+     * Prepares the passed in resolver mock to resolve add keys. They are
+     * interpreted on a default expression engine.
+     *
+     * @param resolver the {@code NodeKeyResolver} mock
+     */
+    public static void expectResolveAddKeys(
+            final NodeKeyResolver&lt;ImmutableNode&gt; resolver)
+    {
+<span class="fc" id="L406">        EasyMock.expect(</span>
+<span class="fc" id="L407">                resolver.resolveAddKey(EasyMock.anyObject(ImmutableNode.class),</span>
+<span class="fc" id="L408">                        EasyMock.anyString(),</span>
+<span class="fc" id="L409">                        EasyMock.anyObject(TreeData.class)))</span>
+<span class="fc" id="L410">                .andAnswer(new IAnswer&lt;NodeAddData&lt;ImmutableNode&gt;&gt;() {</span>
+                    @Override
+                    public NodeAddData&lt;ImmutableNode&gt; answer() throws Throwable {
+                        final ImmutableNode root =
+<span class="fc" id="L414">                                (ImmutableNode) EasyMock.getCurrentArguments()[0];</span>
+<span class="fc" id="L415">                        final String key = (String) EasyMock.getCurrentArguments()[1];</span>
+                        final TreeData handler =
+<span class="fc" id="L417">                                (TreeData) EasyMock.getCurrentArguments()[2];</span>
+<span class="fc" id="L418">                        return DefaultExpressionEngine.INSTANCE.prepareAdd(</span>
+                                root, key, handler);
+                    }
+<span class="fc" id="L421">                }).anyTimes();</span>
+<span class="fc" id="L422">    }</span>
+
+    /**
+     * Creates as tree with database table data based on the passed in arrays of
+     * table names and fields for tables. Works like the method without
+     * parameters, but allows defining the data of the structure.
+     *
+     * @param tables an array with the names of the tables
+     * @param fields an array with the fields of the single tables
+     * @return the resulting nodes structure
+     */
+    public static ImmutableNode createTablesTree(final String[] tables,
+                                                 final String[][] fields)
+    {
+<span class="fc" id="L436">        final ImmutableNode.Builder bldTables =</span>
+                new ImmutableNode.Builder(tables.length);
+<span class="fc" id="L438">        bldTables.name(&quot;tables&quot;);</span>
+<span class="fc bfc" id="L439" title="All 2 branches covered.">        for (int i = 0; i &lt; tables.length; i++)</span>
+        {
+<span class="fc" id="L441">            final ImmutableNode.Builder bldTable = new ImmutableNode.Builder(2);</span>
+<span class="fc" id="L442">            bldTable.addChild(createNode(&quot;name&quot;, tables[i]));</span>
+<span class="fc" id="L443">            final ImmutableNode.Builder bldFields =</span>
+                    new ImmutableNode.Builder(fields[i].length);
+<span class="fc" id="L445">            bldFields.name(&quot;fields&quot;);</span>
+
+<span class="fc bfc" id="L447" title="All 2 branches covered.">            for (int j = 0; j &lt; fields[i].length; j++)</span>
+            {
+<span class="fc" id="L449">                bldFields.addChild(createFieldNode(fields[i][j]));</span>
+            }
+<span class="fc" id="L451">            bldTable.addChild(bldFields.create());</span>
+<span class="fc" id="L452">            bldTables.addChild(bldTable.name(&quot;table&quot;).create());</span>
+        }
+<span class="fc" id="L454">        return bldTables.create();</span>
+    }
+
+    /**
+     * Returns a clone of the array with the table names. This is useful if a
+     * slightly different tree structure should be created.
+     *
+     * @return the cloned table names
+     */
+    public static String[] getClonedTables()
+    {
+<span class="nc" id="L465">        return TABLES.clone();</span>
+    }
+
+    /**
+     * Returns a clone of the array with the table fields. This is useful if a
+     * slightly different tree structure should be created.
+     *
+     * @return the cloned field names
+     */
+    public static String[][] getClonedFields()
+    {
+<span class="nc" id="L476">        final String[][] fieldNamesNew = new String[FIELDS.length][];</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        for (int i = 0; i &lt; FIELDS.length; i++)</span>
+        {
+<span class="nc" id="L479">            fieldNamesNew[i] = FIELDS[i].clone();</span>
+        }
+<span class="nc" id="L481">        return fieldNamesNew;</span>
+    }
+
+    /**
+     * Creates a tree with a root node whose children are the test authors. Each
+     * other has his works as child nodes. Each work has its personae as
+     * children.
+     *
+     * @return the root node of the authors tree
+     */
+    private static ImmutableNode createAuthorsTree()
+    {
+<span class="fc" id="L493">        final ImmutableNode.Builder rootBuilder =</span>
+                new ImmutableNode.Builder(AUTHORS.length);
+<span class="fc bfc" id="L495" title="All 2 branches covered.">        for (int author = 0; author &lt; AUTHORS.length; author++)</span>
+        {
+<span class="fc" id="L497">            final ImmutableNode.Builder authorBuilder = new ImmutableNode.Builder();</span>
+<span class="fc" id="L498">            authorBuilder.name(AUTHORS[author]);</span>
+<span class="fc bfc" id="L499" title="All 2 branches covered.">            for (int work = 0; work &lt; WORKS[author].length; work++)</span>
+            {
+<span class="fc" id="L501">                final ImmutableNode.Builder workBuilder = new ImmutableNode.Builder();</span>
+<span class="fc" id="L502">                workBuilder.name(WORKS[author][work]);</span>
+<span class="fc bfc" id="L503" title="All 2 branches covered.">                for (final String person : PERSONAE[author][work])</span>
+                {
+<span class="fc" id="L505">                    workBuilder.addChild(new ImmutableNode.Builder().name(</span>
+<span class="fc" id="L506">                            person).create());</span>
+                }
+<span class="fc" id="L508">                authorBuilder.addChild(workBuilder.create());</span>
+            }
+<span class="fc" id="L510">            rootBuilder.addChild(authorBuilder.create());</span>
+        }
+<span class="fc" id="L512">        return rootBuilder.name(&quot;authorTree&quot;).create();</span>
+    }
+
+    /**
+     * Creates a tree with a root node whose children are the test personae.
+     * Each node represents a person and has an attribute pointing to the author
+     * who invented this person. There is a single child node for the associated
+     * work which has again a child and an attribute.
+     *
+     * @return the root node of the personae tree
+     */
+    private static ImmutableNode createPersonaeTree()
+    {
+<span class="fc" id="L525">        final ImmutableNode.Builder rootBuilder = new ImmutableNode.Builder();</span>
+<span class="fc bfc" id="L526" title="All 2 branches covered.">        for (int author = 0; author &lt; AUTHORS.length; author++)</span>
+        {
+<span class="fc bfc" id="L528" title="All 2 branches covered.">            for (int work = 0; work &lt; WORKS[author].length; work++)</span>
+            {
+<span class="fc bfc" id="L530" title="All 2 branches covered.">                for (final String person : PERSONAE[author][work])</span>
+                {
+<span class="fc" id="L532">                    final ImmutableNode orgValue =</span>
+<span class="fc" id="L533">                            new ImmutableNode.Builder().name(ELEM_ORG_VALUE)</span>
+<span class="fc" id="L534">                                    .value(&quot;yes&quot;)</span>
+<span class="fc" id="L535">                                    .addAttribute(ATTR_TESTED, Boolean.FALSE)</span>
+<span class="fc" id="L536">                                    .create();</span>
+<span class="fc" id="L537">                    final ImmutableNode workNode =</span>
+                            new ImmutableNode.Builder(1)
+<span class="fc" id="L539">                                    .name(WORKS[author][work])</span>
+<span class="fc" id="L540">                                    .addChild(orgValue).create();</span>
+<span class="fc" id="L541">                    final ImmutableNode personNode =</span>
+<span class="fc" id="L542">                            new ImmutableNode.Builder(1).name(person)</span>
+<span class="fc" id="L543">                                    .addAttribute(ATTR_AUTHOR, AUTHORS[author])</span>
+<span class="fc" id="L544">                                    .addChild(workNode).create();</span>
+<span class="fc" id="L545">                    rootBuilder.addChild(personNode);</span>
+                }
+            }
+        }
+<span class="fc" id="L549">        return rootBuilder.create();</span>
+    }
+
+    /**
+     * Creates a tree with database table data with the following structure:
+     *
+     * tables
+     *      table
+     *         name
+     *         fields
+     *             field
+     *                 name
+     *             field
+     *                 name
+     * @return the resulting nodes structure
+     */
+    private static ImmutableNode createTablesTree()
+    {
+<span class="fc" id="L567">        return createTablesTree(TABLES, FIELDS);</span>
+    }
+
+    /**
+     * Helper method for evaluating a single component of a node key.
+     *
+     * @param parent the current parent node
+     * @param components the array with the components of the node key
+     * @param currentIdx the index of the current path component
+     * @return the found target node
+     * @throws NoSuchElementException if the desired node cannot be found
+     */
+    private static ImmutableNode findNode(final ImmutableNode parent,
+            final String[] components, final int currentIdx)
+    {
+<span class="fc bfc" id="L582" title="All 2 branches covered.">        if (currentIdx &gt;= components.length)</span>
+        {
+<span class="fc" id="L584">            return parent;</span>
+        }
+
+<span class="fc" id="L587">        final Matcher m = PAT_KEY_WITH_INDEX.matcher(components[currentIdx]);</span>
+        String childName;
+        int childIndex;
+<span class="fc bfc" id="L590" title="All 2 branches covered.">        if (m.matches())</span>
+        {
+<span class="fc" id="L592">            childName = m.group(1);</span>
+<span class="fc" id="L593">            childIndex = Integer.parseInt(m.group(2));</span>
+        }
+        else
+        {
+<span class="fc" id="L597">            childName = components[currentIdx];</span>
+<span class="fc" id="L598">            childIndex = 0;</span>
+        }
+
+<span class="fc" id="L601">        int foundIdx = 0;</span>
+<span class="fc bfc" id="L602" title="All 2 branches covered.">        for (final ImmutableNode node : parent.getChildren())</span>
+        {
+<span class="fc bfc" id="L604" title="All 2 branches covered.">            if (childName.equals(node.getNodeName()))</span>
+            {
+<span class="fc bfc" id="L606" title="All 2 branches covered.">                if (foundIdx++ == childIndex)</span>
+                {
+<span class="fc" id="L608">                    return findNode(node, components, currentIdx + 1);</span>
+                }
+            }
+<span class="fc" id="L611">        }</span>
+<span class="fc" id="L612">        throw new NoSuchElementException(&quot;Cannot resolve child &quot;</span>
+                + components[currentIdx]);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

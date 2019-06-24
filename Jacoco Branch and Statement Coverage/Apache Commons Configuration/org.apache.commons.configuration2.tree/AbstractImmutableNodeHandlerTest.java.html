@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractImmutableNodeHandlerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">AbstractImmutableNodeHandlerTest.java</span></div><h1>AbstractImmutableNodeHandlerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.apache.commons.configuration2.tree.NodeStructureHelper.ROOT_AUTHORS_TREE;
+import static org.apache.commons.configuration2.tree.NodeStructureHelper.ROOT_PERSONAE_TREE;
+import static org.apache.commons.configuration2.tree.NodeStructureHelper.nodeForKey;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Test;
+
+/**
+ * A base test class for {@code NodeHandler} implementations for immutable
+ * nodes. Concrete sub classes have to implement a method which creates a new
+ * handler object for a given nodes structure.
+ *
+ */
+<span class="fc" id="L40">public abstract class AbstractImmutableNodeHandlerTest</span>
+{
+    /**
+     * Creates a new {@code NodeHandler} object for the specified nodes
+     * structure.
+     *
+     * @param root the root of the nodes structure
+     * @return the handler object
+     */
+    protected abstract NodeHandler&lt;ImmutableNode&gt; createHandler(
+            ImmutableNode root);
+
+    /**
+     * Tests whether the correct parent nodes are returned. All nodes in the
+     * tree are checked.
+     */
+    @Test
+    public void testGetParentNode()
+    {
+<span class="fc" id="L59">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (int authorIdx = 0; authorIdx &lt; NodeStructureHelper.authorsLength(); authorIdx++)</span>
+        {
+<span class="fc" id="L62">            final ImmutableNode authorNode =</span>
+<span class="fc" id="L63">                    nodeForKey(handler.getRootNode(),</span>
+<span class="fc" id="L64">                            NodeStructureHelper.author(authorIdx));</span>
+<span class="fc" id="L65">            assertSame(</span>
+<span class="fc" id="L66">                    &quot;Wrong parent for &quot; + NodeStructureHelper.author(authorIdx),</span>
+<span class="fc" id="L67">                    handler.getRootNode(), handler.getParent(authorNode));</span>
+<span class="fc" id="L68">            for (int workIdx = 0; workIdx &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">                    .worksLength(authorIdx); workIdx++)</span>
+            {
+<span class="fc" id="L71">                final String workKey =</span>
+<span class="fc" id="L72">                        NodeStructureHelper.appendPath(</span>
+<span class="fc" id="L73">                                NodeStructureHelper.author(authorIdx),</span>
+<span class="fc" id="L74">                                NodeStructureHelper.work(authorIdx, workIdx));</span>
+<span class="fc" id="L75">                final ImmutableNode workNode =</span>
+<span class="fc" id="L76">                        nodeForKey(handler.getRootNode(), workKey);</span>
+<span class="fc" id="L77">                assertSame(&quot;Wrong parent for &quot; + workKey, authorNode,</span>
+<span class="fc" id="L78">                        handler.getParent(workNode));</span>
+<span class="fc" id="L79">                for (int personaIdx = 0; personaIdx &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">                        .personaeLength(authorIdx, workIdx); personaIdx++)</span>
+                {
+<span class="fc" id="L82">                    final String personKey =</span>
+<span class="fc" id="L83">                            NodeStructureHelper.appendPath(workKey,</span>
+<span class="fc" id="L84">                                    NodeStructureHelper.persona(authorIdx,</span>
+                                            workIdx, personaIdx));
+<span class="fc" id="L86">                    final ImmutableNode personNode =</span>
+<span class="fc" id="L87">                            nodeForKey(handler.getRootNode(), personKey);</span>
+<span class="fc" id="L88">                    assertSame(&quot;Wrong parent for &quot; + personKey, workNode,</span>
+<span class="fc" id="L89">                            handler.getParent(personNode));</span>
+                }
+            }
+        }
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Tests whether the correct parent for the root node is returned.
+     */
+    @Test
+    public void testGetParentForRoot()
+    {
+<span class="fc" id="L101">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L102">        assertNull(&quot;Got a parent&quot;, handler.getParent(ROOT_AUTHORS_TREE));</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Tries to query the parent node for a node which does not belong to the
+     * managed tree.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetParentInvalidNode()
+    {
+<span class="fc" id="L112">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="nc" id="L113">        handler.getParent(new ImmutableNode.Builder().name(&quot;unknown&quot;).create());</span>
+<span class="nc" id="L114">    }</span>
+
+    /**
+     * Tests whether the name of a node can be queried.
+     */
+    @Test
+    public void testNodeHandlerName()
+    {
+<span class="fc" id="L122">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L123">        final ImmutableNode author =</span>
+<span class="fc" id="L124">                nodeForKey(handler, NodeStructureHelper.author(0));</span>
+<span class="fc" id="L125">        assertEquals(&quot;Wrong node name&quot;, NodeStructureHelper.author(0),</span>
+<span class="fc" id="L126">                handler.nodeName(author));</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests whether the value of a node can be queried.
+     */
+    @Test
+    public void testNodeHandlerValue()
+    {
+<span class="fc" id="L135">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L136">        ImmutableNode work = nodeForKey(handler, &quot;Shakespeare/The Tempest&quot;);</span>
+<span class="fc" id="L137">        final int year = 1611;</span>
+<span class="fc" id="L138">        work = work.setValue(year);</span>
+<span class="fc" id="L139">        assertEquals(&quot;Wrong value&quot;, year, handler.getValue(work));</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests whether the children of a node can be queried.
+     */
+    @Test
+    public void testNodeHandlerGetChildren()
+    {
+<span class="fc" id="L148">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L149">        final ImmutableNode node =</span>
+<span class="fc" id="L150">                nodeForKey(handler, NodeStructureHelper.author(0));</span>
+<span class="fc" id="L151">        assertSame(&quot;Wrong children&quot;, node.getChildren(),</span>
+<span class="fc" id="L152">                handler.getChildren(node));</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * Tests whether all children of a specific name can be queried.
+     */
+    @Test
+    public void testNodeHandlerGetChildrenByName()
+    {
+<span class="fc" id="L161">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L162">        final String name = &quot;Achilles&quot;;</span>
+<span class="fc" id="L163">        final Set&lt;ImmutableNode&gt; children =</span>
+<span class="fc" id="L164">                new HashSet&lt;&gt;(handler.getChildren(</span>
+                        ROOT_PERSONAE_TREE, name));
+<span class="fc" id="L166">        assertEquals(&quot;Wrong number of children&quot;, 3, children.size());</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        for (final ImmutableNode c : children)</span>
+        {
+<span class="fc" id="L169">            assertEquals(&quot;Wrong node name&quot;, name, c.getNodeName());</span>
+<span class="fc" id="L170">        }</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Tests whether the collection of children cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNodeHandlerGetChildrenByNameImmutable()
+    {
+<span class="fc" id="L179">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L180">        final List&lt;ImmutableNode&gt; children =</span>
+<span class="fc" id="L181">                handler.getChildren(ROOT_PERSONAE_TREE, &quot;Ajax&quot;);</span>
+<span class="nc" id="L182">        children.add(null);</span>
+<span class="nc" id="L183">    }</span>
+
+    /**
+     * Tests whether a child at a given index can be accessed.
+     */
+    @Test
+    public void testNodeHandlerGetChildAtIndex()
+    {
+<span class="fc" id="L191">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L192">        final ImmutableNode node =</span>
+<span class="fc" id="L193">                nodeForKey(handler, NodeStructureHelper.author(0));</span>
+<span class="fc" id="L194">        assertSame(&quot;Wrong child&quot;, node.getChildren().get(1),</span>
+<span class="fc" id="L195">                handler.getChild(node, 1));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests whether the index of a given child can be queried.
+     */
+    @Test
+    public void testNodeHandlerIndexOfChild()
+    {
+<span class="fc" id="L204">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L205">        final String key = &quot;Simmons/Hyperion&quot;;</span>
+<span class="fc" id="L206">        final ImmutableNode parent = nodeForKey(handler, key);</span>
+<span class="fc" id="L207">        final ImmutableNode child = nodeForKey(handler, key + &quot;/Weintraub&quot;);</span>
+<span class="fc" id="L208">        assertEquals(&quot;Wrong child index&quot;, 3,</span>
+<span class="fc" id="L209">                handler.indexOfChild(parent, child));</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Tests the indexOfChild() method for an unknown child node.
+     */
+    @Test
+    public void testNodeHandlerIndexOfUnknownChild()
+    {
+<span class="fc" id="L218">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L219">        final ImmutableNode parent = nodeForKey(handler, &quot;Homer/Ilias&quot;);</span>
+<span class="fc" id="L220">        final ImmutableNode child =</span>
+<span class="fc" id="L221">                nodeForKey(handler,</span>
+                        &quot;Shakespeare/Troilus and Cressida/Achilles&quot;);
+<span class="fc" id="L223">        assertEquals(&quot;Wrong child index&quot;, -1,</span>
+<span class="fc" id="L224">                handler.indexOfChild(parent, child));</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tests whether the number of all children can be queried.
+     */
+    @Test
+    public void testNodeHandlerGetChildrenCountAll()
+    {
+<span class="fc" id="L233">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L234">        final ImmutableNode node =</span>
+<span class="fc" id="L235">                nodeForKey(handler, NodeStructureHelper.author(0));</span>
+<span class="fc" id="L236">        assertEquals(&quot;Wrong number of children&quot;,</span>
+<span class="fc" id="L237">                NodeStructureHelper.worksLength(0),</span>
+<span class="fc" id="L238">                handler.getChildrenCount(node, null));</span>
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * Tests whether the number of all children with a given name can be
+     * queried.
+     */
+    @Test
+    public void testNodeHandlerGetChildrenCountSpecific()
+    {
+<span class="fc" id="L248">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L249">        assertEquals(&quot;Wrong number of children&quot;, 3,</span>
+<span class="fc" id="L250">                handler.getChildrenCount(ROOT_PERSONAE_TREE, &quot;Achilles&quot;));</span>
+<span class="fc" id="L251">    }</span>
+
+    /**
+     * Tests whether a node's attributes can be queried.
+     */
+    @Test
+    public void testNodeHandlerGetAttributes()
+    {
+<span class="fc" id="L259">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L260">        final ImmutableNode node = nodeForKey(handler, &quot;Puck&quot;);</span>
+<span class="fc" id="L261">        assertEquals(&quot;Wrong attributes&quot;, node.getAttributes().keySet(),</span>
+<span class="fc" id="L262">                handler.getAttributes(node));</span>
+<span class="fc" id="L263">    }</span>
+
+    /**
+     * Tests that the keys of attributes cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNodeHandlerGetAttributesImmutable()
+    {
+<span class="fc" id="L271">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L272">        final ImmutableNode node = nodeForKey(handler, &quot;Puck&quot;);</span>
+<span class="nc" id="L273">        handler.getAttributes(node).add(&quot;test&quot;);</span>
+<span class="nc" id="L274">    }</span>
+
+    /**
+     * Tests a positive check whether a node has attributes.
+     */
+    @Test
+    public void testNodeHandlerHasAttributesTrue()
+    {
+<span class="fc" id="L282">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L283">        final ImmutableNode node = nodeForKey(handler, &quot;Puck&quot;);</span>
+<span class="fc" id="L284">        assertTrue(&quot;No attributes&quot;, handler.hasAttributes(node));</span>
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Tests a negative check whether a node has attributes.
+     */
+    @Test
+    public void testNodeHandlerHasAttributesFalse()
+    {
+<span class="fc" id="L293">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L294">        assertFalse(&quot;Got attributes&quot;,</span>
+<span class="fc" id="L295">                handler.hasAttributes(ROOT_PERSONAE_TREE));</span>
+<span class="fc" id="L296">    }</span>
+
+    /**
+     * Tests whether the value of an attribute can be queried.
+     */
+    @Test
+    public void testNodeHandlerGetAttributeValue()
+    {
+<span class="fc" id="L304">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L305">        final ImmutableNode node = nodeForKey(handler, &quot;Prospero&quot;);</span>
+<span class="fc" id="L306">        assertEquals(&quot;Wrong value&quot;, &quot;Shakespeare&quot;, handler.getAttributeValue(</span>
+                node, NodeStructureHelper.ATTR_AUTHOR));
+<span class="fc" id="L308">    }</span>
+
+    /**
+     * Tests whether a node with children is defined.
+     */
+    @Test
+    public void testNodeHandlerIsDefinedChildren()
+    {
+<span class="fc" id="L316">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L317">        final ImmutableNode node =</span>
+<span class="fc" id="L318">                nodeForKey(handler, NodeStructureHelper.author(2));</span>
+<span class="fc" id="L319">        assertTrue(&quot;Not defined&quot;, handler.isDefined(node));</span>
+<span class="fc" id="L320">    }</span>
+
+    /**
+     * Tests whether a node with attributes is defined.
+     */
+    @Test
+    public void testNodeHandlerIsDefinedAttributes()
+    {
+<span class="fc" id="L328">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L329">        final ImmutableNode node =</span>
+<span class="fc" id="L330">                new ImmutableNode.Builder().addAttribute(</span>
+                        NodeStructureHelper.ATTR_AUTHOR,
+<span class="fc" id="L332">                        NodeStructureHelper.author(0)).create();</span>
+<span class="fc" id="L333">        assertTrue(&quot;Not defined&quot;, handler.isDefined(node));</span>
+<span class="fc" id="L334">    }</span>
+
+    /**
+     * Tests whether a node with a value is defined.
+     */
+    @Test
+    public void testNodeHandlerIsDefinedValue()
+    {
+<span class="fc" id="L342">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L343">        final ImmutableNode node = new ImmutableNode.Builder().value(42).create();</span>
+<span class="fc" id="L344">        assertTrue(&quot;Not defined&quot;, handler.isDefined(node));</span>
+<span class="fc" id="L345">    }</span>
+
+    /**
+     * Tests whether an undefined node is correctly detected.
+     */
+    @Test
+    public void testNodeHandlerIsDefinedFalse()
+    {
+<span class="fc" id="L353">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_PERSONAE_TREE);</span>
+<span class="fc" id="L354">        final ImmutableNode node =</span>
+<span class="fc" id="L355">                new ImmutableNode.Builder().name(NodeStructureHelper.author(1))</span>
+<span class="fc" id="L356">                        .create();</span>
+<span class="fc" id="L357">        assertFalse(&quot;Defined&quot;, handler.isDefined(node));</span>
+<span class="fc" id="L358">    }</span>
+
+    /**
+     * Tests a filter operation on child nodes.
+     */
+    @Test
+    public void testNodeHandlerGetMatchingChildren()
+    {
+<span class="fc" id="L366">        final NodeHandler&lt;ImmutableNode&gt; handler =</span>
+<span class="fc" id="L367">                createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L368">        final ImmutableNode target =</span>
+<span class="fc" id="L369">                NodeStructureHelper.nodeForKey(ROOT_AUTHORS_TREE,</span>
+<span class="fc" id="L370">                        NodeStructureHelper.author(1));</span>
+<span class="fc" id="L371">        final Set&lt;String&gt; encounteredAuthors = new HashSet&lt;&gt;();</span>
+
+<span class="fc" id="L373">        final NodeMatcher&lt;ImmutableNode&gt; matcher = new NodeMatcher&lt;ImmutableNode&gt;()</span>
+<span class="fc" id="L374">        {</span>
+            @Override
+            public &lt;T&gt; boolean matches(final T node, final NodeHandler&lt;T&gt; paramHandler,
+                    final ImmutableNode criterion)
+            {
+<span class="fc" id="L379">                encounteredAuthors.add(paramHandler.nodeName(node));</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">                return node == target;</span>
+            }
+        };
+
+<span class="fc" id="L384">        final List&lt;ImmutableNode&gt; result =</span>
+<span class="fc" id="L385">                handler.getMatchingChildren(handler.getRootNode(), matcher,</span>
+                        target);
+<span class="fc" id="L387">        assertEquals(&quot;Wrong number of matched nodes&quot;, 1, result.size());</span>
+<span class="fc" id="L388">        assertSame(&quot;Wrong result&quot;, target, result.get(0));</span>
+<span class="fc" id="L389">        assertEquals(&quot;Wrong number of encountered nodes&quot;,</span>
+<span class="fc" id="L390">                NodeStructureHelper.authorsLength(), encounteredAuthors.size());</span>
+<span class="fc bfc" id="L391" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.authorsLength(); i++)</span>
+        {
+<span class="fc" id="L393">            assertTrue(&quot;Author not found: &quot; + NodeStructureHelper.author(i),</span>
+<span class="fc" id="L394">                    encounteredAuthors.contains(NodeStructureHelper.author(i)));</span>
+        }
+<span class="fc" id="L396">    }</span>
+
+    /**
+     * Tests that the list returned by getMatchingChildren() cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNodeHandlerGetMatchingChildrenImmutable()
+    {
+<span class="fc" id="L404">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L405">        final List&lt;ImmutableNode&gt; result =</span>
+<span class="fc" id="L406">                handler.getMatchingChildren(handler.getRootNode(),</span>
+                        new DummyNodeMatcher(), this);
+<span class="nc" id="L408">        result.clear();</span>
+<span class="nc" id="L409">    }</span>
+
+    /**
+     * Tests whether filtered nodes can be counted.
+     */
+    @Test
+    public void testNodeHandlerGetMatchingChildrenCount()
+    {
+<span class="fc" id="L417">        final NodeHandler&lt;ImmutableNode&gt; handler = createHandler(ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L418">        assertEquals(&quot;Wrong result&quot;, NodeStructureHelper.authorsLength(),</span>
+<span class="fc" id="L419">                handler.getMatchingChildrenCount(handler.getRootNode(),</span>
+                        new DummyNodeMatcher(), this));
+<span class="fc" id="L421">    }</span>
+
+    /**
+     * A dummy NodeMatcher implementation that will simply accept all passed in nodes.
+     */
+    private static class DummyNodeMatcher implements NodeMatcher&lt;Object&gt;
+    {
+        @Override
+        public &lt;T&gt; boolean matches(final T node, final NodeHandler&lt;T&gt; handler, final Object criterion) {
+<span class="fc" id="L430">            return true;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

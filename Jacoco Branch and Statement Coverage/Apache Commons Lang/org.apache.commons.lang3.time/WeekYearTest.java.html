@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeekYearTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">WeekYearTest.java</span></div><h1>WeekYearTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.text.ParsePosition;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+<span class="fc" id="L32">public class WeekYearTest {</span>
+
+    public static Stream&lt;Arguments&gt; data() {
+<span class="fc" id="L35">        return Stream.of(</span>
+<span class="fc" id="L36">            Arguments.of(new GregorianCalendar( 2005, Calendar.JANUARY, 1), &quot;2004-W53-6&quot;),</span>
+<span class="fc" id="L37">            Arguments.of(new GregorianCalendar( 2005, Calendar.JANUARY, 2), &quot;2004-W53-7&quot;),</span>
+<span class="fc" id="L38">            Arguments.of(new GregorianCalendar( 2005, Calendar.DECEMBER, 31), &quot;2005-W52-6&quot;),</span>
+<span class="fc" id="L39">            Arguments.of(new GregorianCalendar( 2007, Calendar.JANUARY, 1), &quot;2007-W01-1&quot;),</span>
+<span class="fc" id="L40">            Arguments.of(new GregorianCalendar( 2007, Calendar.DECEMBER, 30), &quot;2007-W52-7&quot;),</span>
+<span class="fc" id="L41">            Arguments.of(new GregorianCalendar( 2007, Calendar.DECEMBER, 31), &quot;2008-W01-1&quot;),</span>
+<span class="fc" id="L42">            Arguments.of(new GregorianCalendar( 2008, Calendar.JANUARY, 1), &quot;2008-W01-2&quot;),</span>
+<span class="fc" id="L43">            Arguments.of(new GregorianCalendar( 2008, Calendar.DECEMBER, 28), &quot;2008-W52-7&quot;),</span>
+<span class="fc" id="L44">            Arguments.of(new GregorianCalendar( 2008, Calendar.DECEMBER, 29), &quot;2009-W01-1&quot;),</span>
+<span class="fc" id="L45">            Arguments.of(new GregorianCalendar( 2008, Calendar.DECEMBER, 30), &quot;2009-W01-2&quot;),</span>
+<span class="fc" id="L46">            Arguments.of(new GregorianCalendar( 2008, Calendar.DECEMBER, 31), &quot;2009-W01-3&quot;),</span>
+<span class="fc" id="L47">            Arguments.of(new GregorianCalendar( 2009, Calendar.JANUARY, 1), &quot;2009-W01-4&quot;),</span>
+<span class="fc" id="L48">            Arguments.of(new GregorianCalendar( 2009, Calendar.DECEMBER, 31), &quot;2009-W53-4&quot;),</span>
+<span class="fc" id="L49">            Arguments.of(new GregorianCalendar( 2010, Calendar.JANUARY, 1), &quot;2009-W53-5&quot;),</span>
+<span class="fc" id="L50">            Arguments.of(new GregorianCalendar( 2010, Calendar.JANUARY, 2), &quot;2009-W53-6&quot;),</span>
+<span class="fc" id="L51">            Arguments.of(new GregorianCalendar( 2010, Calendar.JANUARY, 3), &quot;2009-W53-7&quot;)</span>
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testParser(Calendar vulgar, String isoForm) {
+<span class="fc" id="L58">        final DateParser parser = new FastDateParser(&quot;YYYY-'W'ww-u&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+
+<span class="fc" id="L60">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L61">        cal.setMinimalDaysInFirstWeek(4);</span>
+<span class="fc" id="L62">        cal.setFirstDayOfWeek(Calendar.MONDAY);</span>
+<span class="fc" id="L63">        cal.clear();</span>
+
+<span class="fc" id="L65">        parser.parse(isoForm, new ParsePosition(0), cal);</span>
+<span class="fc" id="L66">        assertEquals(vulgar.getTime(), cal.getTime());</span>
+<span class="fc" id="L67">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testPrinter(Calendar vulgar, String isoForm) {
+<span class="fc" id="L72">        final FastDatePrinter printer = new FastDatePrinter(&quot;YYYY-'W'ww-u&quot;, TimeZone.getDefault(), Locale.getDefault());</span>
+
+<span class="fc" id="L74">        vulgar.setMinimalDaysInFirstWeek(4);</span>
+<span class="fc" id="L75">        vulgar.setFirstDayOfWeek(Calendar.MONDAY);</span>
+
+<span class="fc" id="L77">        assertEquals(isoForm, printer.format(vulgar));</span>
+<span class="fc" id="L78">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

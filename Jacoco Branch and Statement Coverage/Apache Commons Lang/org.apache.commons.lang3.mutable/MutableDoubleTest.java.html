@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutableDoubleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.mutable</a> &gt; <span class="el_source">MutableDoubleTest.java</span></div><h1>MutableDoubleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.mutable;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * JUnit tests.
+ *
+ * @see MutableDouble
+ */
+<span class="fc" id="L31">public class MutableDoubleTest {</span>
+
+    // ----------------------------------------------------------------
+    @Test
+    public void testConstructors() {
+<span class="fc" id="L36">        assertEquals(0d, new MutableDouble().doubleValue(), 0.0001d);</span>
+
+<span class="fc" id="L38">        assertEquals(1d, new MutableDouble(1d).doubleValue(), 0.0001d);</span>
+
+<span class="fc" id="L40">        assertEquals(2d, new MutableDouble(Double.valueOf(2d)).doubleValue(), 0.0001d);</span>
+<span class="fc" id="L41">        assertEquals(3d, new MutableDouble(new MutableDouble(3d)).doubleValue(), 0.0001d);</span>
+
+<span class="fc" id="L43">        assertEquals(2d, new MutableDouble(&quot;2.0&quot;).doubleValue(), 0.0001d);</span>
+
+<span class="fc" id="L45">    }</span>
+
+    @Test
+    public void testConstructorNull() {
+<span class="pc" id="L49">        assertThrows(NullPointerException.class, () -&gt; new MutableDouble((Number) null));</span>
+<span class="fc" id="L50">    }</span>
+
+    @Test
+    public void testGetSet() {
+<span class="fc" id="L54">        final MutableDouble mutNum = new MutableDouble(0d);</span>
+<span class="fc" id="L55">        assertEquals(0d, new MutableDouble().doubleValue(), 0.0001d);</span>
+<span class="fc" id="L56">        assertEquals(Double.valueOf(0), new MutableDouble().getValue());</span>
+
+<span class="fc" id="L58">        mutNum.setValue(1);</span>
+<span class="fc" id="L59">        assertEquals(1d, mutNum.doubleValue(), 0.0001d);</span>
+<span class="fc" id="L60">        assertEquals(Double.valueOf(1d), mutNum.getValue());</span>
+
+<span class="fc" id="L62">        mutNum.setValue(Double.valueOf(2d));</span>
+<span class="fc" id="L63">        assertEquals(2d, mutNum.doubleValue(), 0.0001d);</span>
+<span class="fc" id="L64">        assertEquals(Double.valueOf(2d), mutNum.getValue());</span>
+
+<span class="fc" id="L66">        mutNum.setValue(new MutableDouble(3d));</span>
+<span class="fc" id="L67">        assertEquals(3d, mutNum.doubleValue(), 0.0001d);</span>
+<span class="fc" id="L68">        assertEquals(Double.valueOf(3d), mutNum.getValue());</span>
+<span class="fc" id="L69">    }</span>
+
+    @Test
+    public void testSetNull() {
+<span class="fc" id="L73">        final MutableDouble mutNum = new MutableDouble(0d);</span>
+<span class="pc" id="L74">        assertThrows(NullPointerException.class, () -&gt; mutNum.setValue(null));</span>
+<span class="fc" id="L75">    }</span>
+
+    @Test
+    public void testNanInfinite() {
+<span class="fc" id="L79">        MutableDouble mutNum = new MutableDouble(Double.NaN);</span>
+<span class="fc" id="L80">        assertTrue(mutNum.isNaN());</span>
+
+<span class="fc" id="L82">        mutNum = new MutableDouble(Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L83">        assertTrue(mutNum.isInfinite());</span>
+
+<span class="fc" id="L85">        mutNum = new MutableDouble(Double.NEGATIVE_INFINITY);</span>
+<span class="fc" id="L86">        assertTrue(mutNum.isInfinite());</span>
+<span class="fc" id="L87">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L91">        final MutableDouble mutNumA = new MutableDouble(0d);</span>
+<span class="fc" id="L92">        final MutableDouble mutNumB = new MutableDouble(0d);</span>
+<span class="fc" id="L93">        final MutableDouble mutNumC = new MutableDouble(1d);</span>
+
+<span class="fc" id="L95">        assertEquals(mutNumA, mutNumA);</span>
+<span class="fc" id="L96">        assertEquals(mutNumA, mutNumB);</span>
+<span class="fc" id="L97">        assertEquals(mutNumB, mutNumA);</span>
+<span class="fc" id="L98">        assertEquals(mutNumB, mutNumB);</span>
+<span class="fc" id="L99">        assertNotEquals(mutNumA, mutNumC);</span>
+<span class="fc" id="L100">        assertNotEquals(mutNumB, mutNumC);</span>
+<span class="fc" id="L101">        assertEquals(mutNumC, mutNumC);</span>
+<span class="fc" id="L102">        assertNotEquals(null, mutNumA);</span>
+<span class="fc" id="L103">        assertNotEquals(mutNumA, Double.valueOf(0d));</span>
+<span class="fc" id="L104">        assertNotEquals(&quot;0&quot;, mutNumA);</span>
+<span class="fc" id="L105">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L109">        final MutableDouble mutNumA = new MutableDouble(0d);</span>
+<span class="fc" id="L110">        final MutableDouble mutNumB = new MutableDouble(0d);</span>
+<span class="fc" id="L111">        final MutableDouble mutNumC = new MutableDouble(1d);</span>
+
+<span class="fc" id="L113">        assertEquals(mutNumA.hashCode(), mutNumA.hashCode());</span>
+<span class="fc" id="L114">        assertEquals(mutNumA.hashCode(), mutNumB.hashCode());</span>
+<span class="fc" id="L115">        assertNotEquals(mutNumA.hashCode(), mutNumC.hashCode());</span>
+<span class="fc" id="L116">        assertEquals(mutNumA.hashCode(), Double.valueOf(0d).hashCode());</span>
+<span class="fc" id="L117">    }</span>
+
+    @Test
+    public void testCompareTo() {
+<span class="fc" id="L121">        final MutableDouble mutNum = new MutableDouble(0d);</span>
+
+<span class="fc" id="L123">        assertEquals(0, mutNum.compareTo(new MutableDouble(0d)));</span>
+<span class="fc" id="L124">        assertEquals(+1, mutNum.compareTo(new MutableDouble(-1d)));</span>
+<span class="fc" id="L125">        assertEquals(-1, mutNum.compareTo(new MutableDouble(1d)));</span>
+<span class="fc" id="L126">    }</span>
+
+    @Test
+    public void testCompareToNull() {
+<span class="fc" id="L130">        final MutableDouble mutNum = new MutableDouble(0d);</span>
+<span class="pc" id="L131">        assertThrows(NullPointerException.class, () -&gt; mutNum.compareTo(null));</span>
+<span class="fc" id="L132">    }</span>
+
+    @Test
+    public void testPrimitiveValues() {
+<span class="fc" id="L136">        final MutableDouble mutNum = new MutableDouble(1.7);</span>
+<span class="fc" id="L137">        assertEquals(1.7F, mutNum.floatValue());</span>
+<span class="fc" id="L138">        assertEquals(1.7, mutNum.doubleValue());</span>
+<span class="fc" id="L139">        assertEquals( (byte) 1, mutNum.byteValue() );</span>
+<span class="fc" id="L140">        assertEquals( (short) 1, mutNum.shortValue() );</span>
+<span class="fc" id="L141">        assertEquals( 1, mutNum.intValue() );</span>
+<span class="fc" id="L142">        assertEquals( 1L, mutNum.longValue() );</span>
+<span class="fc" id="L143">    }</span>
+
+    @Test
+    public void testToDouble() {
+<span class="fc" id="L147">        assertEquals(Double.valueOf(0d), new MutableDouble(0d).toDouble());</span>
+<span class="fc" id="L148">        assertEquals(Double.valueOf(12.3d), new MutableDouble(12.3d).toDouble());</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    public void testIncrement() {
+<span class="fc" id="L153">        final MutableDouble mutNum = new MutableDouble(1);</span>
+<span class="fc" id="L154">        mutNum.increment();</span>
+
+<span class="fc" id="L156">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L157">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L158">    }</span>
+
+    @Test
+    public void testIncrementAndGet() {
+<span class="fc" id="L162">        final MutableDouble mutNum = new MutableDouble(1d);</span>
+<span class="fc" id="L163">        final double result = mutNum.incrementAndGet();</span>
+
+<span class="fc" id="L165">        assertEquals(2d, result, 0.01d);</span>
+<span class="fc" id="L166">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L167">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L168">    }</span>
+
+    @Test
+    public void testGetAndIncrement() {
+<span class="fc" id="L172">        final MutableDouble mutNum = new MutableDouble(1d);</span>
+<span class="fc" id="L173">        final double result = mutNum.getAndIncrement();</span>
+
+<span class="fc" id="L175">        assertEquals(1d, result, 0.01d);</span>
+<span class="fc" id="L176">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L177">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L178">    }</span>
+
+    @Test
+    public void testDecrement() {
+<span class="fc" id="L182">        final MutableDouble mutNum = new MutableDouble(1);</span>
+<span class="fc" id="L183">        mutNum.decrement();</span>
+
+<span class="fc" id="L185">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L186">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L187">    }</span>
+
+    @Test
+    public void testDecrementAndGet() {
+<span class="fc" id="L191">        final MutableDouble mutNum = new MutableDouble(1d);</span>
+<span class="fc" id="L192">        final double result = mutNum.decrementAndGet();</span>
+
+<span class="fc" id="L194">        assertEquals(0d, result, 0.01d);</span>
+<span class="fc" id="L195">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L196">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L197">    }</span>
+
+    @Test
+    public void testGetAndDecrement() {
+<span class="fc" id="L201">        final MutableDouble mutNum = new MutableDouble(1d);</span>
+<span class="fc" id="L202">        final double result = mutNum.getAndDecrement();</span>
+
+<span class="fc" id="L204">        assertEquals(1d, result, 0.01d);</span>
+<span class="fc" id="L205">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L206">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L207">    }</span>
+
+    @Test
+    public void testAddValuePrimitive() {
+<span class="fc" id="L211">        final MutableDouble mutNum = new MutableDouble(1);</span>
+<span class="fc" id="L212">        mutNum.add(1.1d);</span>
+
+<span class="fc" id="L214">        assertEquals(2.1d, mutNum.doubleValue(), 0.01d);</span>
+<span class="fc" id="L215">    }</span>
+
+    @Test
+    public void testAddValueObject() {
+<span class="fc" id="L219">        final MutableDouble mutNum = new MutableDouble(1);</span>
+<span class="fc" id="L220">        mutNum.add(Double.valueOf(1.1d));</span>
+
+<span class="fc" id="L222">        assertEquals(2.1d, mutNum.doubleValue(), 0.01d);</span>
+<span class="fc" id="L223">    }</span>
+
+    @Test
+    public void testGetAndAddValuePrimitive() {
+<span class="fc" id="L227">        final MutableDouble mutableDouble = new MutableDouble(0.5d);</span>
+<span class="fc" id="L228">        final double result = mutableDouble.getAndAdd(1d);</span>
+
+<span class="fc" id="L230">        assertEquals(0.5d, result, 0.01d);</span>
+<span class="fc" id="L231">        assertEquals(1.5d, mutableDouble.doubleValue(), 0.01d);</span>
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testGetAndAddValueObject() {
+<span class="fc" id="L236">        final MutableDouble mutableDouble = new MutableDouble(0.5d);</span>
+<span class="fc" id="L237">        final double result = mutableDouble.getAndAdd(Double.valueOf(2d));</span>
+
+<span class="fc" id="L239">        assertEquals(0.5d, result, 0.01d);</span>
+<span class="fc" id="L240">        assertEquals(2.5d, mutableDouble.doubleValue(), 0.01d);</span>
+<span class="fc" id="L241">    }</span>
+
+    @Test
+    public void testAddAndGetValuePrimitive() {
+<span class="fc" id="L245">        final MutableDouble mutableDouble = new MutableDouble(10.5d);</span>
+<span class="fc" id="L246">        final double result = mutableDouble.addAndGet(-0.5d);</span>
+
+<span class="fc" id="L248">        assertEquals(10d, result, 0.01d);</span>
+<span class="fc" id="L249">        assertEquals(10d, mutableDouble.doubleValue(), 0.01d);</span>
+<span class="fc" id="L250">    }</span>
+
+    @Test
+    public void testAddAndGetValueObject() {
+<span class="fc" id="L254">        final MutableDouble mutableDouble = new MutableDouble(7.5d);</span>
+<span class="fc" id="L255">        final double result = mutableDouble.addAndGet(Double.valueOf(-2.5d));</span>
+
+<span class="fc" id="L257">        assertEquals(5d, result, 0.01d);</span>
+<span class="fc" id="L258">        assertEquals(5d, mutableDouble.doubleValue(), 0.01d);</span>
+<span class="fc" id="L259">    }</span>
+
+    @Test
+    public void testSubtractValuePrimitive() {
+<span class="fc" id="L263">        final MutableDouble mutNum = new MutableDouble(1);</span>
+<span class="fc" id="L264">        mutNum.subtract(0.9d);</span>
+
+<span class="fc" id="L266">        assertEquals(0.1d, mutNum.doubleValue(), 0.01d);</span>
+<span class="fc" id="L267">    }</span>
+
+    @Test
+    public void testSubtractValueObject() {
+<span class="fc" id="L271">        final MutableDouble mutNum = new MutableDouble(1);</span>
+<span class="fc" id="L272">        mutNum.subtract(Double.valueOf(0.9d));</span>
+
+<span class="fc" id="L274">        assertEquals(0.1d, mutNum.doubleValue(), 0.01d);</span>
+<span class="fc" id="L275">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L279">        assertEquals(&quot;0.0&quot;, new MutableDouble(0d).toString());</span>
+<span class="fc" id="L280">        assertEquals(&quot;10.0&quot;, new MutableDouble(10d).toString());</span>
+<span class="fc" id="L281">        assertEquals(&quot;-123.0&quot;, new MutableDouble(-123d).toString());</span>
+<span class="fc" id="L282">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

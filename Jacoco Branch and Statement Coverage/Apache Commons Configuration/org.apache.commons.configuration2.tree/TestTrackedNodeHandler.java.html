@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestTrackedNodeHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestTrackedNodeHandler.java</span></div><h1>TestTrackedNodeHandler.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertSame;
+
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code TrackedNodeHandler}.
+ *
+ */
+<span class="fc" id="L30">public class TestTrackedNodeHandler</span>
+{
+    /** A test root node. */
+    private static ImmutableNode root;
+
+    /** A mock node handler. */
+    private NodeHandler&lt;ImmutableNode&gt; parentHandler;
+
+    /** The handler to be tested. */
+    private TrackedNodeHandler handler;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L44">        root = new ImmutableNode.Builder().name(&quot;ROOT&quot;).create();</span>
+<span class="fc" id="L45">    }</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L52">        NodeHandler&lt;ImmutableNode&gt; h = EasyMock.createMock(NodeHandler.class);</span>
+<span class="fc" id="L53">        parentHandler = h;</span>
+<span class="fc" id="L54">        handler = new TrackedNodeHandler(root, parentHandler);</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Tests whether the correct root node is returned.
+     */
+    @Test
+    public void testGetRootNode()
+    {
+<span class="fc" id="L63">        assertSame(&quot;Wrong root node&quot;, root, handler.getRootNode());</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Tests whether a parent node can be queried.
+     */
+    @Test
+    public void testGetParent()
+    {
+<span class="fc" id="L72">        final ImmutableNode node = new ImmutableNode.Builder().name(&quot;node&quot;).create();</span>
+<span class="fc" id="L73">        final ImmutableNode parent = new ImmutableNode.Builder().name(&quot;parent&quot;).create();</span>
+<span class="fc" id="L74">        EasyMock.expect(parentHandler.getParent(node)).andReturn(parent);</span>
+<span class="fc" id="L75">        EasyMock.replay(parentHandler);</span>
+
+<span class="fc" id="L77">        assertSame(&quot;Wrong parent node&quot;, parent, handler.getParent(node));</span>
+<span class="fc" id="L78">        EasyMock.verify(parentHandler);</span>
+<span class="fc" id="L79">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

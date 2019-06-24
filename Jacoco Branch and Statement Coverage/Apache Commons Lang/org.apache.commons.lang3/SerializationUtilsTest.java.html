@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SerializationUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">SerializationUtilsTest.java</span></div><h1>SerializationUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.SerializationUtils}.
+ */
+<span class="fc" id="L47">public class SerializationUtilsTest {</span>
+
+  static final String CLASS_NOT_FOUND_MESSAGE = &quot;ClassNotFoundSerialization.readObject fake exception&quot;;
+    protected static final String SERIALIZE_IO_EXCEPTION_MESSAGE = &quot;Anonymous OutputStream I/O exception&quot;;
+
+    private String iString;
+    private Integer iInteger;
+    private HashMap&lt;Object, Object&gt; iMap;
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L58">        iString = &quot;foo&quot;;</span>
+<span class="fc" id="L59">        iInteger = Integer.valueOf(7);</span>
+<span class="fc" id="L60">        iMap = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L61">        iMap.put(&quot;FOO&quot;, iString);</span>
+<span class="fc" id="L62">        iMap.put(&quot;BAR&quot;, iInteger);</span>
+<span class="fc" id="L63">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L69">        assertNotNull(new SerializationUtils());</span>
+<span class="fc" id="L70">        final Constructor&lt;?&gt;[] cons = SerializationUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L71">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L72">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L73">        assertTrue(Modifier.isPublic(SerializationUtils.class.getModifiers()));</span>
+<span class="fc" id="L74">        assertFalse(Modifier.isFinal(SerializationUtils.class.getModifiers()));</span>
+<span class="fc" id="L75">    }</span>
+
+    @Test
+    public void testException() {
+        SerializationException serEx;
+<span class="fc" id="L80">        final Exception ex = new Exception();</span>
+
+<span class="fc" id="L82">        serEx = new SerializationException();</span>
+<span class="fc" id="L83">        assertSame(null, serEx.getMessage());</span>
+<span class="fc" id="L84">        assertSame(null, serEx.getCause());</span>
+
+<span class="fc" id="L86">        serEx = new SerializationException(&quot;Message&quot;);</span>
+<span class="fc" id="L87">        assertSame(&quot;Message&quot;, serEx.getMessage());</span>
+<span class="fc" id="L88">        assertSame(null, serEx.getCause());</span>
+
+<span class="fc" id="L90">        serEx = new SerializationException(ex);</span>
+<span class="fc" id="L91">        assertEquals(&quot;java.lang.Exception&quot;, serEx.getMessage());</span>
+<span class="fc" id="L92">        assertSame(ex, serEx.getCause());</span>
+
+<span class="fc" id="L94">        serEx = new SerializationException(&quot;Message&quot;, ex);</span>
+<span class="fc" id="L95">        assertSame(&quot;Message&quot;, serEx.getMessage());</span>
+<span class="fc" id="L96">        assertSame(ex, serEx.getCause());</span>
+<span class="fc" id="L97">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testSerializeStream() throws Exception {
+<span class="fc" id="L103">        final ByteArrayOutputStream streamTest = new ByteArrayOutputStream();</span>
+<span class="fc" id="L104">        SerializationUtils.serialize(iMap, streamTest);</span>
+
+<span class="fc" id="L106">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L107">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L108">        oos.writeObject(iMap);</span>
+<span class="fc" id="L109">        oos.flush();</span>
+<span class="fc" id="L110">        oos.close();</span>
+
+<span class="fc" id="L112">        final byte[] testBytes = streamTest.toByteArray();</span>
+<span class="fc" id="L113">        final byte[] realBytes = streamReal.toByteArray();</span>
+<span class="fc" id="L114">        assertEquals(testBytes.length, realBytes.length);</span>
+<span class="fc" id="L115">        assertArrayEquals(realBytes, testBytes);</span>
+<span class="fc" id="L116">    }</span>
+
+    @Test
+    public void testSerializeStreamUnserializable() {
+<span class="fc" id="L120">        final ByteArrayOutputStream streamTest = new ByteArrayOutputStream();</span>
+<span class="fc" id="L121">        iMap.put(new Object(), new Object());</span>
+<span class="pc" id="L122">        assertThrows(SerializationException.class, () -&gt; SerializationUtils.serialize(iMap, streamTest));</span>
+<span class="fc" id="L123">    }</span>
+
+    @Test
+    public void testSerializeStreamNullObj() throws Exception {
+<span class="fc" id="L127">        final ByteArrayOutputStream streamTest = new ByteArrayOutputStream();</span>
+<span class="fc" id="L128">        SerializationUtils.serialize(null, streamTest);</span>
+
+<span class="fc" id="L130">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L131">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L132">        oos.writeObject(null);</span>
+<span class="fc" id="L133">        oos.flush();</span>
+<span class="fc" id="L134">        oos.close();</span>
+
+<span class="fc" id="L136">        final byte[] testBytes = streamTest.toByteArray();</span>
+<span class="fc" id="L137">        final byte[] realBytes = streamReal.toByteArray();</span>
+<span class="fc" id="L138">        assertEquals(testBytes.length, realBytes.length);</span>
+<span class="fc" id="L139">        assertArrayEquals(realBytes, testBytes);</span>
+<span class="fc" id="L140">    }</span>
+
+    @Test
+    public void testSerializeStreamObjNull() {
+<span class="pc" id="L144">        assertThrows(IllegalArgumentException.class, () -&gt; SerializationUtils.serialize(iMap, null));</span>
+<span class="fc" id="L145">    }</span>
+
+    @Test
+    public void testSerializeStreamNullNull() {
+<span class="pc" id="L149">        assertThrows(IllegalArgumentException.class, () -&gt; SerializationUtils.serialize(null, null));</span>
+<span class="fc" id="L150">    }</span>
+
+    @Test
+    public void testSerializeIOException() {
+        // forces an IOException when the ObjectOutputStream is created, to test not closing the stream
+        // in the finally block
+<span class="fc" id="L156">        final OutputStream streamTest = new OutputStream() {</span>
+            @Override
+            public void write(final int arg0) throws IOException {
+<span class="fc" id="L159">                throw new IOException(SERIALIZE_IO_EXCEPTION_MESSAGE);</span>
+            }
+        };
+<span class="fc" id="L162">        SerializationException e =</span>
+<span class="pc" id="L163">                assertThrows(SerializationException.class, () -&gt; SerializationUtils.serialize(iMap, streamTest));</span>
+<span class="fc" id="L164">        assertEquals(&quot;java.io.IOException: &quot; + SERIALIZE_IO_EXCEPTION_MESSAGE, e.getMessage());</span>
+<span class="fc" id="L165">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testDeserializeStream() throws Exception {
+<span class="fc" id="L171">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L172">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L173">        oos.writeObject(iMap);</span>
+<span class="fc" id="L174">        oos.flush();</span>
+<span class="fc" id="L175">        oos.close();</span>
+
+<span class="fc" id="L177">        final ByteArrayInputStream inTest = new ByteArrayInputStream(streamReal.toByteArray());</span>
+<span class="fc" id="L178">        final Object test = SerializationUtils.deserialize(inTest);</span>
+<span class="fc" id="L179">        assertNotNull(test);</span>
+<span class="fc" id="L180">        assertTrue(test instanceof HashMap&lt;?, ?&gt;);</span>
+<span class="fc" id="L181">        assertNotSame(test, iMap);</span>
+<span class="fc" id="L182">        final HashMap&lt;?, ?&gt; testMap = (HashMap&lt;?, ?&gt;) test;</span>
+<span class="fc" id="L183">        assertEquals(iString, testMap.get(&quot;FOO&quot;));</span>
+<span class="fc" id="L184">        assertNotSame(iString, testMap.get(&quot;FOO&quot;));</span>
+<span class="fc" id="L185">        assertEquals(iInteger, testMap.get(&quot;BAR&quot;));</span>
+<span class="fc" id="L186">        assertNotSame(iInteger, testMap.get(&quot;BAR&quot;));</span>
+<span class="fc" id="L187">        assertEquals(iMap, testMap);</span>
+<span class="fc" id="L188">    }</span>
+
+    @Test
+    public void testDeserializeClassCastException() {
+<span class="fc" id="L192">        final String value = &quot;Hello&quot;;</span>
+<span class="fc" id="L193">        final byte[] serialized = SerializationUtils.serialize(value);</span>
+<span class="fc" id="L194">        assertEquals(value, SerializationUtils.deserialize(serialized));</span>
+<span class="fc" id="L195">        assertThrows(ClassCastException.class, () -&gt; {</span>
+            // Causes ClassCastException in call site, not in SerializationUtils.deserialize
+            @SuppressWarnings(&quot;unused&quot;) // needed to cause Exception
+<span class="nc" id="L198">            final Integer i = SerializationUtils.deserialize(serialized);</span>
+<span class="nc" id="L199">        });</span>
+<span class="fc" id="L200">    }</span>
+
+    @Test
+    public void testDeserializeStreamOfNull() throws Exception {
+<span class="fc" id="L204">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L205">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L206">        oos.writeObject(null);</span>
+<span class="fc" id="L207">        oos.flush();</span>
+<span class="fc" id="L208">        oos.close();</span>
+
+<span class="fc" id="L210">        final ByteArrayInputStream inTest = new ByteArrayInputStream(streamReal.toByteArray());</span>
+<span class="fc" id="L211">        final Object test = SerializationUtils.deserialize(inTest);</span>
+<span class="fc" id="L212">        assertNull(test);</span>
+<span class="fc" id="L213">    }</span>
+
+    @Test
+    public void testDeserializeStreamNull() {
+<span class="pc" id="L217">        assertThrows(IllegalArgumentException.class, () -&gt; SerializationUtils.deserialize((InputStream) null));</span>
+<span class="fc" id="L218">    }</span>
+
+    @Test
+    public void testDeserializeStreamBadStream() {
+<span class="fc" id="L222">        assertThrows(SerializationException.class,</span>
+<span class="nc" id="L223">                () -&gt; SerializationUtils.deserialize(new ByteArrayInputStream(new byte[0])));</span>
+<span class="fc" id="L224">    }</span>
+
+    @Test
+    public void testDeserializeStreamClassNotFound() throws Exception {
+<span class="fc" id="L228">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L229">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L230">        oos.writeObject(new ClassNotFoundSerialization());</span>
+<span class="fc" id="L231">        oos.flush();</span>
+<span class="fc" id="L232">        oos.close();</span>
+
+<span class="fc" id="L234">        final ByteArrayInputStream inTest = new ByteArrayInputStream(streamReal.toByteArray());</span>
+<span class="fc" id="L235">        SerializationException se =</span>
+<span class="pc" id="L236">                assertThrows(SerializationException.class, () -&gt; SerializationUtils.deserialize(inTest));</span>
+<span class="fc" id="L237">        assertEquals(&quot;java.lang.ClassNotFoundException: &quot; + CLASS_NOT_FOUND_MESSAGE, se.getMessage());</span>
+<span class="fc" id="L238">    }</span>
+
+    @Test
+    public void testRoundtrip() {
+<span class="fc" id="L242">        final HashMap&lt;Object, Object&gt; newMap = SerializationUtils.roundtrip(iMap);</span>
+<span class="fc" id="L243">        assertEquals(iMap, newMap);</span>
+<span class="fc" id="L244">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testSerializeBytes() throws Exception {
+<span class="fc" id="L250">        final byte[] testBytes = SerializationUtils.serialize(iMap);</span>
+
+<span class="fc" id="L252">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L253">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L254">        oos.writeObject(iMap);</span>
+<span class="fc" id="L255">        oos.flush();</span>
+<span class="fc" id="L256">        oos.close();</span>
+
+<span class="fc" id="L258">        final byte[] realBytes = streamReal.toByteArray();</span>
+<span class="fc" id="L259">        assertEquals(testBytes.length, realBytes.length);</span>
+<span class="fc" id="L260">        assertArrayEquals(realBytes, testBytes);</span>
+<span class="fc" id="L261">    }</span>
+
+    @Test
+    public void testSerializeBytesUnserializable() {
+<span class="fc" id="L265">        iMap.put(new Object(), new Object());</span>
+<span class="pc" id="L266">        assertThrows(SerializationException.class, () -&gt; SerializationUtils.serialize(iMap));</span>
+<span class="fc" id="L267">    }</span>
+
+    @Test
+    public void testSerializeBytesNull() throws Exception {
+<span class="fc" id="L271">        final byte[] testBytes = SerializationUtils.serialize(null);</span>
+
+<span class="fc" id="L273">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L274">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L275">        oos.writeObject(null);</span>
+<span class="fc" id="L276">        oos.flush();</span>
+<span class="fc" id="L277">        oos.close();</span>
+
+<span class="fc" id="L279">        final byte[] realBytes = streamReal.toByteArray();</span>
+<span class="fc" id="L280">        assertEquals(testBytes.length, realBytes.length);</span>
+<span class="fc" id="L281">        assertArrayEquals(realBytes, testBytes);</span>
+<span class="fc" id="L282">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testDeserializeBytes() throws Exception {
+<span class="fc" id="L288">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L289">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L290">        oos.writeObject(iMap);</span>
+<span class="fc" id="L291">        oos.flush();</span>
+<span class="fc" id="L292">        oos.close();</span>
+
+<span class="fc" id="L294">        final Object test = SerializationUtils.deserialize(streamReal.toByteArray());</span>
+<span class="fc" id="L295">        assertNotNull(test);</span>
+<span class="fc" id="L296">        assertTrue(test instanceof HashMap&lt;?, ?&gt;);</span>
+<span class="fc" id="L297">        assertNotSame(test, iMap);</span>
+<span class="fc" id="L298">        final HashMap&lt;?, ?&gt; testMap = (HashMap&lt;?, ?&gt;) test;</span>
+<span class="fc" id="L299">        assertEquals(iString, testMap.get(&quot;FOO&quot;));</span>
+<span class="fc" id="L300">        assertNotSame(iString, testMap.get(&quot;FOO&quot;));</span>
+<span class="fc" id="L301">        assertEquals(iInteger, testMap.get(&quot;BAR&quot;));</span>
+<span class="fc" id="L302">        assertNotSame(iInteger, testMap.get(&quot;BAR&quot;));</span>
+<span class="fc" id="L303">        assertEquals(iMap, testMap);</span>
+<span class="fc" id="L304">    }</span>
+
+    @Test
+    public void testDeserializeBytesOfNull() throws Exception {
+<span class="fc" id="L308">        final ByteArrayOutputStream streamReal = new ByteArrayOutputStream();</span>
+<span class="fc" id="L309">        final ObjectOutputStream oos = new ObjectOutputStream(streamReal);</span>
+<span class="fc" id="L310">        oos.writeObject(null);</span>
+<span class="fc" id="L311">        oos.flush();</span>
+<span class="fc" id="L312">        oos.close();</span>
+
+<span class="fc" id="L314">        final Object test = SerializationUtils.deserialize(streamReal.toByteArray());</span>
+<span class="fc" id="L315">        assertNull(test);</span>
+<span class="fc" id="L316">    }</span>
+
+    @Test
+    public void testDeserializeBytesNull() {
+<span class="pc" id="L320">        assertThrows(IllegalArgumentException.class, () -&gt; SerializationUtils.deserialize((byte[]) null));</span>
+<span class="fc" id="L321">    }</span>
+
+    @Test
+    public void testDeserializeBytesBadStream() {
+<span class="pc" id="L325">        assertThrows(SerializationException.class, () -&gt; SerializationUtils.deserialize(new byte[0]));</span>
+<span class="fc" id="L326">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testClone() {
+<span class="fc" id="L332">        final Object test = SerializationUtils.clone(iMap);</span>
+<span class="fc" id="L333">        assertNotNull(test);</span>
+<span class="fc" id="L334">        assertTrue(test instanceof HashMap&lt;?, ?&gt;);</span>
+<span class="fc" id="L335">        assertNotSame(test, iMap);</span>
+<span class="fc" id="L336">        final HashMap&lt;?, ?&gt; testMap = (HashMap&lt;?, ?&gt;) test;</span>
+<span class="fc" id="L337">        assertEquals(iString, testMap.get(&quot;FOO&quot;));</span>
+<span class="fc" id="L338">        assertNotSame(iString, testMap.get(&quot;FOO&quot;));</span>
+<span class="fc" id="L339">        assertEquals(iInteger, testMap.get(&quot;BAR&quot;));</span>
+<span class="fc" id="L340">        assertNotSame(iInteger, testMap.get(&quot;BAR&quot;));</span>
+<span class="fc" id="L341">        assertEquals(iMap, testMap);</span>
+<span class="fc" id="L342">    }</span>
+
+    @Test
+    public void testCloneNull() {
+<span class="fc" id="L346">        final Object test = SerializationUtils.clone(null);</span>
+<span class="fc" id="L347">        assertNull(test);</span>
+<span class="fc" id="L348">    }</span>
+
+    @Test
+    public void testCloneUnserializable() {
+<span class="fc" id="L352">        iMap.put(new Object(), new Object());</span>
+<span class="pc" id="L353">        assertThrows(SerializationException.class, () -&gt; SerializationUtils.clone(iMap));</span>
+<span class="fc" id="L354">    }</span>
+
+    @Test
+    public void testPrimitiveTypeClassSerialization() {
+<span class="fc" id="L358">        final Class&lt;?&gt;[] primitiveTypes = { byte.class, short.class, int.class, long.class, float.class, double.class,</span>
+                boolean.class, char.class, void.class };
+
+<span class="fc bfc" id="L361" title="All 2 branches covered.">        for (final Class&lt;?&gt; primitiveType : primitiveTypes) {</span>
+<span class="fc" id="L362">            final Class&lt;?&gt; clone = SerializationUtils.clone(primitiveType);</span>
+<span class="fc" id="L363">            assertEquals(primitiveType, clone);</span>
+        }
+<span class="fc" id="L365">    }</span>
+
+}
+
+<span class="fc" id="L369">class ClassNotFoundSerialization implements Serializable {</span>
+
+    private static final long serialVersionUID = 1L;
+
+    private void readObject(final ObjectInputStream in) throws ClassNotFoundException    {
+<span class="fc" id="L374">        throw new ClassNotFoundException(SerializationUtilsTest.CLASS_NOT_FOUND_MESSAGE);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

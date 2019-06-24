@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RandomStringUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">RandomStringUtilsTest.java</span></div><h1>RandomStringUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
+import java.util.Random;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.RandomStringUtils}.
+ */
+<span class="fc" id="L41">public class RandomStringUtilsTest {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L46">        assertNotNull(new RandomStringUtils());</span>
+<span class="fc" id="L47">        final Constructor&lt;?&gt;[] cons = RandomStringUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L48">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L49">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L50">        assertTrue(Modifier.isPublic(RandomStringUtils.class.getModifiers()));</span>
+<span class="fc" id="L51">        assertFalse(Modifier.isFinal(RandomStringUtils.class.getModifiers()));</span>
+<span class="fc" id="L52">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Test the implementation
+     */
+    @Test
+    public void testRandomStringUtils() {
+<span class="fc" id="L60">        String r1 = RandomStringUtils.random(50);</span>
+<span class="fc" id="L61">        assertEquals(50, r1.length(), &quot;random(50) length&quot;);</span>
+<span class="fc" id="L62">        String r2 = RandomStringUtils.random(50);</span>
+<span class="fc" id="L63">        assertEquals(50, r2.length(), &quot;random(50) length&quot;);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L66">        r1 = RandomStringUtils.randomAscii(50);</span>
+<span class="fc" id="L67">        assertEquals(50, r1.length(), &quot;randomAscii(50) length&quot;);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L69" title="2 of 4 branches missed.">            assertTrue(r1.charAt(i) &gt;= 32 &amp;&amp; r1.charAt(i) &lt;= 127, &quot;char between 32 and 127&quot;);</span>
+        }
+<span class="fc" id="L71">        r2 = RandomStringUtils.randomAscii(50);</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L74">        r1 = RandomStringUtils.randomAlphabetic(50);</span>
+<span class="fc" id="L75">        assertEquals(50, r1.length(), &quot;randomAlphabetic(50)&quot;);</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">            assertTrue(Character.isLetter(r1.charAt(i)) &amp;&amp; !Character.isDigit(r1.charAt(i)), &quot;r1 contains alphabetic&quot;);</span>
+        }
+<span class="fc" id="L79">        r2 = RandomStringUtils.randomAlphabetic(50);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L82">        r1 = RandomStringUtils.randomAlphanumeric(50);</span>
+<span class="fc" id="L83">        assertEquals(50, r1.length(), &quot;randomAlphanumeric(50)&quot;);</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="fc" id="L85">            assertTrue(Character.isLetterOrDigit(r1.charAt(i)), &quot;r1 contains alphanumeric&quot;);</span>
+        }
+<span class="fc" id="L87">        r2 = RandomStringUtils.randomAlphabetic(50);</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L90">        r1 = RandomStringUtils.randomGraph(50);</span>
+<span class="fc" id="L91">        assertEquals(50, r1.length(), &quot;randomGraph(50) length&quot;);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L93" title="2 of 4 branches missed.">            assertTrue(r1.charAt(i) &gt;= 33 &amp;&amp; r1.charAt(i) &lt;= 126, &quot;char between 33 and 126&quot;);</span>
+        }
+<span class="fc" id="L95">        r2 = RandomStringUtils.randomGraph(50);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L98">        r1 = RandomStringUtils.randomNumeric(50);</span>
+<span class="fc" id="L99">        assertEquals(50, r1.length(), &quot;randomNumeric(50)&quot;);</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L101" title="2 of 4 branches missed.">            assertTrue(Character.isDigit(r1.charAt(i)) &amp;&amp; !Character.isLetter(r1.charAt(i)), &quot;r1 contains numeric&quot;);</span>
+        }
+<span class="fc" id="L103">        r2 = RandomStringUtils.randomNumeric(50);</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L106">        r1 = RandomStringUtils.randomPrint(50);</span>
+<span class="fc" id="L107">        assertEquals(50, r1.length(), &quot;randomPrint(50) length&quot;);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">            assertTrue(r1.charAt(i) &gt;= 32 &amp;&amp; r1.charAt(i) &lt;= 126, &quot;char between 32 and 126&quot;);</span>
+        }
+<span class="fc" id="L111">        r2 = RandomStringUtils.randomPrint(50);</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L114">        String set = &quot;abcdefg&quot;;</span>
+<span class="fc" id="L115">        r1 = RandomStringUtils.random(50, set);</span>
+<span class="fc" id="L116">        assertEquals(50, r1.length(), &quot;random(50, \&quot;abcdefg\&quot;)&quot;);</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">            assertTrue(set.indexOf(r1.charAt(i)) &gt; -1, &quot;random char in set&quot;);</span>
+        }
+<span class="fc" id="L120">        r2 = RandomStringUtils.random(50, set);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L123">        r1 = RandomStringUtils.random(50, (String) null);</span>
+<span class="fc" id="L124">        assertEquals(50, r1.length(), &quot;random(50) length&quot;);</span>
+<span class="fc" id="L125">        r2 = RandomStringUtils.random(50, (String) null);</span>
+<span class="fc" id="L126">        assertEquals(50, r2.length(), &quot;random(50) length&quot;);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L129">        set = &quot;stuvwxyz&quot;;</span>
+<span class="fc" id="L130">        r1 = RandomStringUtils.random(50, set.toCharArray());</span>
+<span class="fc" id="L131">        assertEquals(50, r1.length(), &quot;random(50, \&quot;stuvwxyz\&quot;)&quot;);</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (int i = 0; i &lt; r1.length(); i++) {</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">            assertTrue(set.indexOf(r1.charAt(i)) &gt; -1, &quot;random char in set&quot;);</span>
+        }
+<span class="fc" id="L135">        r2 = RandomStringUtils.random(50, set);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L138">        r1 = RandomStringUtils.random(50, (char[]) null);</span>
+<span class="fc" id="L139">        assertEquals(50, r1.length(), &quot;random(50) length&quot;);</span>
+<span class="fc" id="L140">        r2 = RandomStringUtils.random(50, (char[]) null);</span>
+<span class="fc" id="L141">        assertEquals(50, r2.length(), &quot;random(50) length&quot;);</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        assertTrue(!r1.equals(r2), &quot;!r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L144">        final long seed = System.currentTimeMillis();</span>
+<span class="fc" id="L145">        r1 = RandomStringUtils.random(50, 0, 0, true, true, null, new Random(seed));</span>
+<span class="fc" id="L146">        r2 = RandomStringUtils.random(50, 0, 0, true, true, null, new Random(seed));</span>
+<span class="fc" id="L147">        assertEquals(r1, r2, &quot;r1.equals(r2)&quot;);</span>
+
+<span class="fc" id="L149">        r1 = RandomStringUtils.random(0);</span>
+<span class="fc" id="L150">        assertEquals(&quot;&quot;, r1, &quot;random(0).equals(\&quot;\&quot;)&quot;);</span>
+<span class="fc" id="L151">    }</span>
+
+    @Test
+    public void testLANG805() {
+<span class="fc" id="L155">        final long seed = System.currentTimeMillis();</span>
+<span class="fc" id="L156">        assertEquals(&quot;aaa&quot;, RandomStringUtils.random(3, 0, 0, false, false, new char[]{'a'}, new Random(seed)));</span>
+<span class="fc" id="L157">    }</span>
+
+    @Test
+    public void testLANG807() {
+<span class="fc" id="L161">        IllegalArgumentException ex =</span>
+<span class="pc" id="L162">                assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(3, 5, 5, false, false));</span>
+<span class="fc" id="L163">        final String msg = ex.getMessage();</span>
+<span class="fc" id="L164">        assertTrue(msg.contains(&quot;start&quot;), &quot;Message (&quot; + msg + &quot;) must contain 'start'&quot;);</span>
+<span class="fc" id="L165">        assertTrue(msg.contains(&quot;end&quot;), &quot;Message (&quot; + msg + &quot;) must contain 'end'&quot;);</span>
+<span class="fc" id="L166">    }</span>
+
+    @Test
+    public void testExceptions() {
+<span class="fc" id="L170">        final char[] DUMMY = new char[]{'a'}; // valid char array</span>
+<span class="pc" id="L171">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1));</span>
+<span class="pc" id="L172">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1, true, true));</span>
+<span class="pc" id="L173">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1, DUMMY));</span>
+<span class="pc" id="L174">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(1, new char[0]));</span>
+<span class="pc" id="L175">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1, &quot;&quot;));</span>
+<span class="pc" id="L176">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1, (String) null));</span>
+<span class="pc" id="L177">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1, 'a', 'z', false, false));</span>
+<span class="pc" id="L178">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(-1, 'a', 'z', false, false, DUMMY));</span>
+<span class="fc" id="L179">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L181">                () -&gt; RandomStringUtils.random(-1, 'a', 'z', false, false, DUMMY, new Random()));</span>
+<span class="pc" id="L182">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(8, 32, 48, false, true));</span>
+<span class="pc" id="L183">        assertThrows(IllegalArgumentException.class, () -&gt; RandomStringUtils.random(8, 32, 65, true, false));</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Make sure boundary alphanumeric characters are generated by randomAlphaNumeric
+     * This test will fail randomly with probability = 6 * (61/62)**1000 ~ 5.2E-7
+     */
+    @Test
+    public void testRandomAlphaNumeric() {
+<span class="fc" id="L192">        final char[] testChars = {'a', 'z', 'A', 'Z', '0', '9'};</span>
+<span class="fc" id="L193">        final boolean[] found = {false, false, false, false, false, false};</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; i++) {</span>
+<span class="fc" id="L195">            final String randString = RandomStringUtils.randomAlphanumeric(10);</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">            for (int j = 0; j &lt; testChars.length; j++) {</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">                if (randString.indexOf(testChars[j]) &gt; 0) {</span>
+<span class="fc" id="L198">                    found[j] = true;</span>
+                }
+            }
+        }
+<span class="fc bfc" id="L202" title="All 2 branches covered.">        for (int i = 0; i &lt; testChars.length; i++) {</span>
+<span class="fc" id="L203">            assertTrue(found[i],</span>
+                    &quot;alphanumeric character not generated in 1000 attempts: &quot; +
+                            testChars[i] + &quot; -- repeated failures indicate a problem &quot;);
+        }
+<span class="fc" id="L207">    }</span>
+
+    /**
+     * Make sure '0' and '9' are generated by randomNumeric
+     * This test will fail randomly with probability = 2 * (9/10)**1000 ~ 3.5E-46
+     */
+    @Test
+    public void testRandomNumeric() {
+<span class="fc" id="L215">        final char[] testChars = {'0', '9'};</span>
+<span class="fc" id="L216">        final boolean[] found = {false, false};</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; i++) {</span>
+<span class="fc" id="L218">            final String randString = RandomStringUtils.randomNumeric(10);</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">            for (int j = 0; j &lt; testChars.length; j++) {</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">                if (randString.indexOf(testChars[j]) &gt; 0) {</span>
+<span class="fc" id="L221">                    found[j] = true;</span>
+                }
+            }
+        }
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        for (int i = 0; i &lt; testChars.length; i++) {</span>
+<span class="fc" id="L226">            assertTrue(found[i],</span>
+                    &quot;digit not generated in 1000 attempts: &quot; + testChars[i] +
+                            &quot; -- repeated failures indicate a problem &quot;);
+        }
+<span class="fc" id="L230">    }</span>
+
+    /**
+     * Make sure boundary alpha characters are generated by randomAlphabetic
+     * This test will fail randomly with probability = 4 * (51/52)**1000 ~ 1.58E-8
+     */
+    @Test
+    public void testRandomAlphabetic() {
+<span class="fc" id="L238">        final char[] testChars = {'a', 'z', 'A', 'Z'};</span>
+<span class="fc" id="L239">        final boolean[] found = {false, false, false, false};</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; i++) {</span>
+<span class="fc" id="L241">            final String randString = RandomStringUtils.randomAlphabetic(10);</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">            for (int j = 0; j &lt; testChars.length; j++) {</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">                if (randString.indexOf(testChars[j]) &gt; 0) {</span>
+<span class="fc" id="L244">                    found[j] = true;</span>
+                }
+            }
+        }
+<span class="fc bfc" id="L248" title="All 2 branches covered.">        for (int i = 0; i &lt; testChars.length; i++) {</span>
+<span class="fc" id="L249">            assertTrue(found[i],</span>
+                    &quot;alphanumeric character not generated in 1000 attempts: &quot; + testChars[i] +
+                            &quot; -- repeated failures indicate a problem &quot;);
+        }
+<span class="fc" id="L253">    }</span>
+
+    /**
+     * Make sure 32 and 127 are generated by randomNumeric
+     * This test will fail randomly with probability = 2*(95/96)**1000 ~ 5.7E-5
+     */
+    @Test
+    public void testRandomAscii() {
+<span class="fc" id="L261">        final char[] testChars = {(char) 32, (char) 126};</span>
+<span class="fc" id="L262">        final boolean[] found = {false, false};</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; i++) {</span>
+<span class="fc" id="L264">            final String randString = RandomStringUtils.randomAscii(10);</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">            for (int j = 0; j &lt; testChars.length; j++) {</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">                if (randString.indexOf(testChars[j]) &gt; 0) {</span>
+<span class="fc" id="L267">                    found[j] = true;</span>
+                }
+            }
+        }
+<span class="fc bfc" id="L271" title="All 2 branches covered.">        for (int i = 0; i &lt; testChars.length; i++) {</span>
+<span class="fc" id="L272">            assertTrue(found[i],</span>
+                    &quot;ascii character not generated in 1000 attempts: &quot; + (int) testChars[i] +
+                            &quot; -- repeated failures indicate a problem&quot;);
+        }
+<span class="fc" id="L276">    }</span>
+
+    @Test
+    public void testRandomAsciiRange() {
+<span class="fc" id="L280">        final int expectedMinLengthInclusive = 1;</span>
+<span class="fc" id="L281">        final int expectedMaxLengthExclusive = 11;</span>
+<span class="fc" id="L282">        final String pattern = &quot;^\\p{ASCII}{&quot; + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + &quot;}$&quot;;</span>
+
+<span class="fc" id="L284">        int maxCreatedLength = expectedMinLengthInclusive;</span>
+<span class="fc" id="L285">        int minCreatedLength = expectedMaxLengthExclusive - 1;</span>
+<span class="fc bfc" id="L286" title="All 2 branches covered.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="fc" id="L287">            final String s = RandomStringUtils.randomAscii(expectedMinLengthInclusive, expectedMaxLengthExclusive);</span>
+<span class="fc" id="L288">            assertThat(&quot;within range&quot;, s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));</span>
+<span class="fc" id="L289">            assertTrue(s.matches(pattern), s);</span>
+
+<span class="fc bfc" id="L291" title="All 2 branches covered.">            if (s.length() &lt; minCreatedLength) {</span>
+<span class="fc" id="L292">                minCreatedLength = s.length();</span>
+            }
+
+<span class="fc bfc" id="L295" title="All 2 branches covered.">            if (s.length() &gt; maxCreatedLength) {</span>
+<span class="fc" id="L296">                maxCreatedLength = s.length();</span>
+            }
+        }
+<span class="fc" id="L299">        assertThat(&quot;min generated, may fail randomly rarely&quot;, minCreatedLength, is(expectedMinLengthInclusive));</span>
+<span class="fc" id="L300">        assertThat(&quot;max generated, may fail randomly rarely&quot;, maxCreatedLength, is(expectedMaxLengthExclusive - 1));</span>
+<span class="fc" id="L301">    }</span>
+
+    @Test
+    public void testRandomAlphabeticRange() {
+<span class="fc" id="L305">        final int expectedMinLengthInclusive = 1;</span>
+<span class="fc" id="L306">        final int expectedMaxLengthExclusive = 11;</span>
+<span class="fc" id="L307">        final String pattern = &quot;^\\p{Alpha}{&quot; + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + &quot;}$&quot;;</span>
+
+<span class="fc" id="L309">        int maxCreatedLength = expectedMinLengthInclusive;</span>
+<span class="fc" id="L310">        int minCreatedLength = expectedMaxLengthExclusive - 1;</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="fc" id="L312">            final String s = RandomStringUtils.randomAlphabetic(expectedMinLengthInclusive, expectedMaxLengthExclusive);</span>
+<span class="fc" id="L313">            assertThat(&quot;within range&quot;, s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));</span>
+<span class="fc" id="L314">            assertTrue(s.matches(pattern), s);</span>
+
+<span class="fc bfc" id="L316" title="All 2 branches covered.">            if (s.length() &lt; minCreatedLength) {</span>
+<span class="fc" id="L317">                minCreatedLength = s.length();</span>
+            }
+
+<span class="fc bfc" id="L320" title="All 2 branches covered.">            if (s.length() &gt; maxCreatedLength) {</span>
+<span class="fc" id="L321">                maxCreatedLength = s.length();</span>
+            }
+        }
+<span class="fc" id="L324">        assertThat(&quot;min generated, may fail randomly rarely&quot;, minCreatedLength, is(expectedMinLengthInclusive));</span>
+<span class="fc" id="L325">        assertThat(&quot;max generated, may fail randomly rarely&quot;, maxCreatedLength, is(expectedMaxLengthExclusive - 1));</span>
+<span class="fc" id="L326">    }</span>
+
+    @Test
+    public void testRandomAlphanumericRange() {
+<span class="fc" id="L330">        final int expectedMinLengthInclusive = 1;</span>
+<span class="fc" id="L331">        final int expectedMaxLengthExclusive = 11;</span>
+<span class="fc" id="L332">        final String pattern = &quot;^\\p{Alnum}{&quot; + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + &quot;}$&quot;;</span>
+
+<span class="fc" id="L334">        int maxCreatedLength = expectedMinLengthInclusive;</span>
+<span class="fc" id="L335">        int minCreatedLength = expectedMaxLengthExclusive - 1;</span>
+<span class="fc bfc" id="L336" title="All 2 branches covered.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="fc" id="L337">            final String s = RandomStringUtils.randomAlphanumeric(expectedMinLengthInclusive, expectedMaxLengthExclusive);</span>
+<span class="fc" id="L338">            assertThat(&quot;within range&quot;, s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));</span>
+<span class="fc" id="L339">            assertTrue(s.matches(pattern), s);</span>
+
+<span class="fc bfc" id="L341" title="All 2 branches covered.">            if (s.length() &lt; minCreatedLength) {</span>
+<span class="fc" id="L342">                minCreatedLength = s.length();</span>
+            }
+
+<span class="fc bfc" id="L345" title="All 2 branches covered.">            if (s.length() &gt; maxCreatedLength) {</span>
+<span class="fc" id="L346">                maxCreatedLength = s.length();</span>
+            }
+        }
+<span class="fc" id="L349">        assertThat(&quot;min generated, may fail randomly rarely&quot;, minCreatedLength, is(expectedMinLengthInclusive));</span>
+<span class="fc" id="L350">        assertThat(&quot;max generated, may fail randomly rarely&quot;, maxCreatedLength, is(expectedMaxLengthExclusive - 1));</span>
+<span class="fc" id="L351">    }</span>
+
+    @Test
+    public void testRandomGraphRange() {
+<span class="fc" id="L355">        final int expectedMinLengthInclusive = 1;</span>
+<span class="fc" id="L356">        final int expectedMaxLengthExclusive = 11;</span>
+<span class="fc" id="L357">        final String pattern = &quot;^\\p{Graph}{&quot; + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + &quot;}$&quot;;</span>
+
+<span class="fc" id="L359">        int maxCreatedLength = expectedMinLengthInclusive;</span>
+<span class="fc" id="L360">        int minCreatedLength = expectedMaxLengthExclusive - 1;</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="fc" id="L362">            final String s = RandomStringUtils.randomGraph(expectedMinLengthInclusive, expectedMaxLengthExclusive);</span>
+<span class="fc" id="L363">            assertThat(&quot;within range&quot;, s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));</span>
+<span class="fc" id="L364">            assertTrue(s.matches(pattern), s);</span>
+
+<span class="fc bfc" id="L366" title="All 2 branches covered.">            if (s.length() &lt; minCreatedLength) {</span>
+<span class="fc" id="L367">                minCreatedLength = s.length();</span>
+            }
+
+<span class="fc bfc" id="L370" title="All 2 branches covered.">            if (s.length() &gt; maxCreatedLength) {</span>
+<span class="fc" id="L371">                maxCreatedLength = s.length();</span>
+            }
+        }
+<span class="fc" id="L374">        assertThat(&quot;min generated, may fail randomly rarely&quot;, minCreatedLength, is(expectedMinLengthInclusive));</span>
+<span class="fc" id="L375">        assertThat(&quot;max generated, may fail randomly rarely&quot;, maxCreatedLength, is(expectedMaxLengthExclusive - 1));</span>
+<span class="fc" id="L376">    }</span>
+
+    @Test
+    public void testRandomNumericRange() {
+<span class="fc" id="L380">        final int expectedMinLengthInclusive = 1;</span>
+<span class="fc" id="L381">        final int expectedMaxLengthExclusive = 11;</span>
+<span class="fc" id="L382">        final String pattern = &quot;^\\p{Digit}{&quot; + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + &quot;}$&quot;;</span>
+
+<span class="fc" id="L384">        int maxCreatedLength = expectedMinLengthInclusive;</span>
+<span class="fc" id="L385">        int minCreatedLength = expectedMaxLengthExclusive - 1;</span>
+<span class="fc bfc" id="L386" title="All 2 branches covered.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="fc" id="L387">            final String s = RandomStringUtils.randomNumeric(expectedMinLengthInclusive, expectedMaxLengthExclusive);</span>
+<span class="fc" id="L388">            assertThat(&quot;within range&quot;, s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));</span>
+<span class="fc" id="L389">            assertTrue(s.matches(pattern), s);</span>
+
+<span class="fc bfc" id="L391" title="All 2 branches covered.">            if (s.length() &lt; minCreatedLength) {</span>
+<span class="fc" id="L392">                minCreatedLength = s.length();</span>
+            }
+
+<span class="fc bfc" id="L395" title="All 2 branches covered.">            if (s.length() &gt; maxCreatedLength) {</span>
+<span class="fc" id="L396">                maxCreatedLength = s.length();</span>
+            }
+        }
+<span class="fc" id="L399">        assertThat(&quot;min generated, may fail randomly rarely&quot;, minCreatedLength, is(expectedMinLengthInclusive));</span>
+<span class="fc" id="L400">        assertThat(&quot;max generated, may fail randomly rarely&quot;, maxCreatedLength, is(expectedMaxLengthExclusive - 1));</span>
+<span class="fc" id="L401">    }</span>
+
+    @Test
+    public void testRandomPrintRange() {
+<span class="fc" id="L405">        final int expectedMinLengthInclusive = 1;</span>
+<span class="fc" id="L406">        final int expectedMaxLengthExclusive = 11;</span>
+<span class="fc" id="L407">        final String pattern = &quot;^\\p{Print}{&quot; + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + &quot;}$&quot;;</span>
+
+<span class="fc" id="L409">        int maxCreatedLength = expectedMinLengthInclusive;</span>
+<span class="fc" id="L410">        int minCreatedLength = expectedMaxLengthExclusive - 1;</span>
+<span class="fc bfc" id="L411" title="All 2 branches covered.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="fc" id="L412">            final String s = RandomStringUtils.randomPrint(expectedMinLengthInclusive, expectedMaxLengthExclusive);</span>
+<span class="fc" id="L413">            assertThat(&quot;within range&quot;, s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));</span>
+<span class="fc" id="L414">            assertTrue(s.matches(pattern), s);</span>
+
+<span class="fc bfc" id="L416" title="All 2 branches covered.">            if (s.length() &lt; minCreatedLength) {</span>
+<span class="fc" id="L417">                minCreatedLength = s.length();</span>
+            }
+
+<span class="fc bfc" id="L420" title="All 2 branches covered.">            if (s.length() &gt; maxCreatedLength) {</span>
+<span class="fc" id="L421">                maxCreatedLength = s.length();</span>
+            }
+        }
+<span class="fc" id="L424">        assertThat(&quot;min generated, may fail randomly rarely&quot;, minCreatedLength, is(expectedMinLengthInclusive));</span>
+<span class="fc" id="L425">        assertThat(&quot;max generated, may fail randomly rarely&quot;, maxCreatedLength, is(expectedMaxLengthExclusive - 1));</span>
+<span class="fc" id="L426">    }</span>
+
+    /**
+     * Test homogeneity of random strings generated --
+     * i.e., test that characters show up with expected frequencies
+     * in generated strings.  Will fail randomly about 1 in 1000 times.
+     * Repeated failures indicate a problem.
+     */
+    @Test
+    public void testRandomStringUtilsHomog() {
+<span class="fc" id="L436">        final String set = &quot;abc&quot;;</span>
+<span class="fc" id="L437">        final char[] chars = set.toCharArray();</span>
+<span class="fc" id="L438">        String gen = &quot;&quot;;</span>
+<span class="fc" id="L439">        final int[] counts = {0, 0, 0};</span>
+<span class="fc" id="L440">        final int[] expected = {200, 200, 200};</span>
+<span class="fc bfc" id="L441" title="All 2 branches covered.">        for (int i = 0; i&lt; 100; i++) {</span>
+<span class="fc" id="L442">            gen = RandomStringUtils.random(6, chars);</span>
+<span class="fc bfc" id="L443" title="All 2 branches covered.">            for (int j = 0; j &lt; 6; j++) {</span>
+<span class="pc bpc" id="L444" title="1 of 4 branches missed.">                switch (gen.charAt(j)) {</span>
+                    case 'a': {
+<span class="fc" id="L446">                        counts[0]++;</span>
+<span class="fc" id="L447">                        break;</span>
+                    }
+                    case 'b': {
+<span class="fc" id="L450">                        counts[1]++;</span>
+<span class="fc" id="L451">                        break;</span>
+                    }
+                    case 'c': {
+<span class="fc" id="L454">                        counts[2]++;</span>
+<span class="fc" id="L455">                        break;</span>
+                    }
+                    default: {
+<span class="nc" id="L458">                        fail(&quot;generated character not in set&quot;);</span>
+                    }
+                }
+            }
+        }
+        // Perform chi-square test with df = 3-1 = 2, testing at .001 level
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">        assertTrue(chiSquare(expected, counts) &lt; 13.82, &quot;test homogeneity -- will fail about 1 in 1000 times&quot;);</span>
+<span class="fc" id="L465">    }</span>
+
+    /**
+     * Computes Chi-Square statistic given observed and expected counts
+     * @param observed array of observed frequency counts
+     * @param expected array of expected frequency counts
+     */
+    private double chiSquare(final int[] expected, final int[] observed) {
+<span class="fc" id="L473">        double sumSq = 0.0d;</span>
+<span class="fc" id="L474">        double dev = 0.0d;</span>
+<span class="fc bfc" id="L475" title="All 2 branches covered.">        for (int i = 0; i &lt; observed.length; i++) {</span>
+<span class="fc" id="L476">            dev = observed[i] - expected[i];</span>
+<span class="fc" id="L477">            sumSq += dev * dev / expected[i];</span>
+        }
+<span class="fc" id="L479">        return sumSq;</span>
+    }
+
+    /**
+     * Checks if the string got by {@link RandomStringUtils#random(int)}
+     * can be converted to UTF-8 and back without loss.
+     *
+     * @see &lt;a href=&quot;http://issues.apache.org/jira/browse/LANG-100&quot;&gt;LANG-100&lt;/a&gt;
+     */
+    @Test
+    public void testLang100() {
+<span class="fc" id="L490">        final int size = 5000;</span>
+<span class="fc" id="L491">        final Charset charset = Charset.forName(&quot;UTF-8&quot;);</span>
+<span class="fc" id="L492">        final String orig = RandomStringUtils.random(size);</span>
+<span class="fc" id="L493">        final byte[] bytes = orig.getBytes(charset);</span>
+<span class="fc" id="L494">        final String copy = new String(bytes, charset);</span>
+
+        // for a verbose compare:
+<span class="pc bpc" id="L497" title="1 of 4 branches missed.">        for (int i=0; i &lt; orig.length() &amp;&amp; i &lt; copy.length(); i++) {</span>
+<span class="fc" id="L498">            final char o = orig.charAt(i);</span>
+<span class="fc" id="L499">            final char c = copy.charAt(i);</span>
+<span class="fc" id="L500">            assertEquals(o, c,</span>
+<span class="fc" id="L501">                    &quot;differs at &quot; + i + &quot;(&quot; + Integer.toHexString(new Character(o).hashCode()) + &quot;,&quot; +</span>
+<span class="fc" id="L502">                            Integer.toHexString(new Character(c).hashCode()) + &quot;)&quot;);</span>
+        }
+        // compare length also
+<span class="fc" id="L505">        assertEquals(orig.length(), copy.length());</span>
+        // just to be complete
+<span class="fc" id="L507">        assertEquals(orig, copy);</span>
+<span class="fc" id="L508">    }</span>
+
+
+    /**
+     * Test for LANG-1286. Creates situation where old code would
+     * overflow a char and result in a code point outside the specified
+     * range.
+     */
+    @Test
+    public void testCharOverflow() {
+<span class="fc" id="L518">        final int start = Character.MAX_VALUE;</span>
+<span class="fc" id="L519">        final int end = Integer.MAX_VALUE;</span>
+
+        @SuppressWarnings(&quot;serial&quot;)
+        final
+<span class="fc" id="L523">        Random fixedRandom = new Random() {</span>
+            @Override
+            public int nextInt(final int n) {
+                // Prevents selection of 'start' as the character
+<span class="fc" id="L527">                return super.nextInt(n - 1) + 1;</span>
+            }
+        };
+
+<span class="fc" id="L531">        final String result = RandomStringUtils.random(2, start, end, false, false, null, fixedRandom);</span>
+<span class="fc" id="L532">        final int c = result.codePointAt(0);</span>
+<span class="pc bpc" id="L533" title="2 of 4 branches missed.">        assertTrue(c &gt;= start &amp;&amp; c &lt; end, String.format(&quot;Character '%d' not in range [%d,%d).&quot;, c, start, end));</span>
+<span class="fc" id="L534">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

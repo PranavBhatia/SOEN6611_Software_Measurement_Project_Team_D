@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.event</a> &gt; <span class="el_source">EventUtilsTest.java</span></div><h1>EventUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.event;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.VetoableChangeListener;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.naming.event.ObjectChangeListener;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * @since 3.0
+ */
+<span class="fc" id="L44">public class EventUtilsTest {</span>
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L47">        assertNotNull(new EventUtils());</span>
+<span class="fc" id="L48">        final Constructor&lt;?&gt;[] cons = EventUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L49">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L50">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L51">        assertTrue(Modifier.isPublic(EventUtils.class.getModifiers()));</span>
+<span class="fc" id="L52">        assertFalse(Modifier.isFinal(EventUtils.class.getModifiers()));</span>
+<span class="fc" id="L53">    }</span>
+
+    @Test
+    public void testAddEventListener() {
+<span class="fc" id="L57">        final PropertyChangeSource src = new PropertyChangeSource();</span>
+<span class="fc" id="L58">        final EventCountingInvociationHandler handler = new EventCountingInvociationHandler();</span>
+<span class="fc" id="L59">        final PropertyChangeListener listener = handler.createListener(PropertyChangeListener.class);</span>
+<span class="fc" id="L60">        assertEquals(0, handler.getEventCount(&quot;propertyChange&quot;));</span>
+<span class="fc" id="L61">        EventUtils.addEventListener(src, PropertyChangeListener.class, listener);</span>
+<span class="fc" id="L62">        assertEquals(0, handler.getEventCount(&quot;propertyChange&quot;));</span>
+<span class="fc" id="L63">        src.setProperty(&quot;newValue&quot;);</span>
+<span class="fc" id="L64">        assertEquals(1, handler.getEventCount(&quot;propertyChange&quot;));</span>
+<span class="fc" id="L65">    }</span>
+
+    @Test
+    public void testAddEventListenerWithNoAddMethod() {
+<span class="fc" id="L69">        final PropertyChangeSource src = new PropertyChangeSource();</span>
+<span class="fc" id="L70">        final EventCountingInvociationHandler handler = new EventCountingInvociationHandler();</span>
+<span class="fc" id="L71">        final ObjectChangeListener listener = handler.createListener(ObjectChangeListener.class);</span>
+<span class="fc" id="L72">        IllegalArgumentException e =</span>
+<span class="pc" id="L73">                assertThrows(IllegalArgumentException.class, () -&gt; EventUtils.addEventListener(src, ObjectChangeListener.class, listener));</span>
+<span class="fc" id="L74">        assertEquals(&quot;Class &quot; + src.getClass().getName() + &quot; does not have a public add&quot; + ObjectChangeListener.class.getSimpleName() + &quot; method which takes a parameter of type &quot; + ObjectChangeListener.class.getName() + &quot;.&quot;,</span>
+<span class="fc" id="L75">                e.getMessage());</span>
+<span class="fc" id="L76">    }</span>
+
+    @Test
+    public void testAddEventListenerThrowsException() {
+<span class="fc" id="L80">        final ExceptionEventSource src = new ExceptionEventSource();</span>
+<span class="fc" id="L81">        assertThrows(RuntimeException.class, () -&gt;</span>
+<span class="pc" id="L82">            EventUtils.addEventListener(src, PropertyChangeListener.class, new PropertyChangeListener() {</span>
+                @Override
+                public void propertyChange(final PropertyChangeEvent e) {
+                    // Do nothing!
+<span class="nc" id="L86">                }</span>
+            })
+        );
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testAddEventListenerWithPrivateAddMethod() {
+<span class="fc" id="L93">        final PropertyChangeSource src = new PropertyChangeSource();</span>
+<span class="fc" id="L94">        final EventCountingInvociationHandler handler = new EventCountingInvociationHandler();</span>
+<span class="fc" id="L95">        final VetoableChangeListener listener = handler.createListener(VetoableChangeListener.class);</span>
+<span class="fc" id="L96">        IllegalArgumentException e =</span>
+<span class="pc" id="L97">                assertThrows(IllegalArgumentException.class, () -&gt; EventUtils.addEventListener(src, VetoableChangeListener.class, listener));</span>
+<span class="fc" id="L98">        assertEquals(&quot;Class &quot; + src.getClass().getName() + &quot; does not have a public add&quot; + VetoableChangeListener.class.getSimpleName() + &quot; method which takes a parameter of type &quot; + VetoableChangeListener.class.getName() + &quot;.&quot;,</span>
+<span class="fc" id="L99">                e.getMessage());</span>
+<span class="fc" id="L100">    }</span>
+
+    @Test
+    public void testBindEventsToMethod() {
+<span class="fc" id="L104">        final PropertyChangeSource src = new PropertyChangeSource();</span>
+<span class="fc" id="L105">        final EventCounter counter = new EventCounter();</span>
+<span class="fc" id="L106">        EventUtils.bindEventsToMethod(counter, &quot;eventOccurred&quot;, src, PropertyChangeListener.class);</span>
+<span class="fc" id="L107">        assertEquals(0, counter.getCount());</span>
+<span class="fc" id="L108">        src.setProperty(&quot;newValue&quot;);</span>
+<span class="fc" id="L109">        assertEquals(1, counter.getCount());</span>
+<span class="fc" id="L110">    }</span>
+
+
+    @Test
+    public void testBindEventsToMethodWithEvent() {
+<span class="fc" id="L115">        final PropertyChangeSource src = new PropertyChangeSource();</span>
+<span class="fc" id="L116">        final EventCounterWithEvent counter = new EventCounterWithEvent();</span>
+<span class="fc" id="L117">        EventUtils.bindEventsToMethod(counter, &quot;eventOccurred&quot;, src, PropertyChangeListener.class);</span>
+<span class="fc" id="L118">        assertEquals(0, counter.getCount());</span>
+<span class="fc" id="L119">        src.setProperty(&quot;newValue&quot;);</span>
+<span class="fc" id="L120">        assertEquals(1, counter.getCount());</span>
+<span class="fc" id="L121">    }</span>
+
+
+    @Test
+    public void testBindFilteredEventsToMethod() {
+<span class="fc" id="L126">        final MultipleEventSource src = new MultipleEventSource();</span>
+<span class="fc" id="L127">        final EventCounter counter = new EventCounter();</span>
+<span class="fc" id="L128">        EventUtils.bindEventsToMethod(counter, &quot;eventOccurred&quot;, src, MultipleEventListener.class, &quot;event1&quot;);</span>
+<span class="fc" id="L129">        assertEquals(0, counter.getCount());</span>
+<span class="fc" id="L130">        src.listeners.fire().event1(new PropertyChangeEvent(new Date(), &quot;Day&quot;, Integer.valueOf(0), Integer.valueOf(1)));</span>
+<span class="fc" id="L131">        assertEquals(1, counter.getCount());</span>
+<span class="fc" id="L132">        src.listeners.fire().event2(new PropertyChangeEvent(new Date(), &quot;Day&quot;, Integer.valueOf(1), Integer.valueOf(2)));</span>
+<span class="fc" id="L133">        assertEquals(1, counter.getCount());</span>
+<span class="fc" id="L134">    }</span>
+
+    public interface MultipleEventListener {
+        void event1(PropertyChangeEvent e);
+
+        void event2(PropertyChangeEvent e);
+    }
+
+<span class="fc" id="L142">    public static class EventCounter {</span>
+        private int count;
+
+        public void eventOccurred() {
+<span class="fc" id="L146">            count++;</span>
+<span class="fc" id="L147">        }</span>
+
+        public int getCount() {
+<span class="fc" id="L150">            return count;</span>
+        }
+    }
+
+<span class="fc" id="L154">    public static class EventCounterWithEvent {</span>
+        private int count;
+
+        public void eventOccurred(final PropertyChangeEvent e) {
+<span class="fc" id="L158">            count++;</span>
+<span class="fc" id="L159">        }</span>
+
+        public int getCount() {
+<span class="fc" id="L162">            return count;</span>
+        }
+    }
+
+
+<span class="fc" id="L167">    private static class EventCountingInvociationHandler implements InvocationHandler {</span>
+<span class="fc" id="L168">        private final Map&lt;String, Integer&gt; eventCounts = new TreeMap&lt;&gt;();</span>
+
+        public &lt;L&gt; L createListener(final Class&lt;L&gt; listenerType) {
+<span class="fc" id="L171">            return listenerType.cast(Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),</span>
+                    new Class[]{listenerType},
+                    this));
+        }
+
+        public int getEventCount(final String eventName) {
+<span class="fc" id="L177">            final Integer count = eventCounts.get(eventName);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">            return count == null ? 0 : count.intValue();</span>
+        }
+
+        @Override
+        public Object invoke(final Object proxy, final Method method, final Object[] args) {
+<span class="fc" id="L183">            final Integer count = eventCounts.get(method.getName());</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">            if (count == null) {</span>
+<span class="fc" id="L185">                eventCounts.put(method.getName(), Integer.valueOf(1));</span>
+            } else {
+<span class="nc" id="L187">                eventCounts.put(method.getName(), Integer.valueOf(count.intValue() + 1));</span>
+            }
+<span class="fc" id="L189">            return null;</span>
+        }
+    }
+
+<span class="fc" id="L193">    public static class MultipleEventSource {</span>
+<span class="fc" id="L194">        private final EventListenerSupport&lt;MultipleEventListener&gt; listeners = EventListenerSupport.create(MultipleEventListener.class);</span>
+
+        public void addMultipleEventListener(final MultipleEventListener listener) {
+<span class="fc" id="L197">            listeners.addListener(listener);</span>
+<span class="fc" id="L198">        }</span>
+    }
+
+<span class="fc" id="L201">    public static class ExceptionEventSource {</span>
+        public void addPropertyChangeListener(final PropertyChangeListener listener) {
+<span class="fc" id="L203">            throw new RuntimeException();</span>
+        }
+    }
+
+<span class="fc" id="L207">    public static class PropertyChangeSource {</span>
+<span class="fc" id="L208">        private final EventListenerSupport&lt;PropertyChangeListener&gt; listeners = EventListenerSupport.create(PropertyChangeListener.class);</span>
+
+        private String property;
+
+        public void setProperty(final String property) {
+<span class="fc" id="L213">            final String oldValue = this.property;</span>
+<span class="fc" id="L214">            this.property = property;</span>
+<span class="fc" id="L215">            listeners.fire().propertyChange(new PropertyChangeEvent(this, &quot;property&quot;, oldValue, property));</span>
+<span class="fc" id="L216">        }</span>
+
+        protected void addVetoableChangeListener(final VetoableChangeListener listener) {
+            // Do nothing!
+<span class="nc" id="L220">        }</span>
+
+        public void addPropertyChangeListener(final PropertyChangeListener listener) {
+<span class="fc" id="L223">            listeners.addListener(listener);</span>
+<span class="fc" id="L224">        }</span>
+
+        public void removePropertyChangeListener(final PropertyChangeListener listener) {
+<span class="nc" id="L227">            listeners.removeListener(listener);</span>
+<span class="nc" id="L228">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

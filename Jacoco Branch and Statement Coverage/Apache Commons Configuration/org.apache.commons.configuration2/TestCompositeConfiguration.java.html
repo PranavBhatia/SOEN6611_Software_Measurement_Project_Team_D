@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCompositeConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestCompositeConfiguration.java</span></div><h1>TestCompositeConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.apache.commons.configuration2.SynchronizerTestImpl.Methods;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code CompositeConfiguration}.
+ *
+ */
+<span class="fc" id="L53">public class TestCompositeConfiguration</span>
+{
+    /** Constant for a test property to be checked.*/
+    private static final String TEST_PROPERTY = &quot;test.source.property&quot;;
+
+    protected PropertiesConfiguration conf1;
+    protected PropertiesConfiguration conf2;
+    protected XMLConfiguration xmlConf;
+    protected CompositeConfiguration cc;
+
+    /**
+     * The File that we test with
+     */
+<span class="fc" id="L66">    private final String testProperties = ConfigurationAssert.getTestFile(&quot;test.properties&quot;).getAbsolutePath();</span>
+<span class="fc" id="L67">    private final String testProperties2 = ConfigurationAssert.getTestFile(&quot;test2.properties&quot;).getAbsolutePath();</span>
+<span class="fc" id="L68">    private final String testPropertiesXML = ConfigurationAssert.getTestFile(&quot;test.xml&quot;).getAbsolutePath();</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L73">        cc = new CompositeConfiguration();</span>
+<span class="fc" id="L74">        final ListDelimiterHandler listHandler = new LegacyListDelimiterHandler(',');</span>
+<span class="fc" id="L75">        conf1 = new PropertiesConfiguration();</span>
+<span class="fc" id="L76">        conf1.setListDelimiterHandler(listHandler);</span>
+<span class="fc" id="L77">        final FileHandler handler1 = new FileHandler(conf1);</span>
+<span class="fc" id="L78">        handler1.setFileName(testProperties);</span>
+<span class="fc" id="L79">        handler1.load();</span>
+<span class="fc" id="L80">        conf2 = new PropertiesConfiguration();</span>
+<span class="fc" id="L81">        conf2.setListDelimiterHandler(listHandler);</span>
+<span class="fc" id="L82">        final FileHandler handler2 = new FileHandler(conf2);</span>
+<span class="fc" id="L83">        handler2.setFileName(testProperties2);</span>
+<span class="fc" id="L84">        handler2.load();</span>
+<span class="fc" id="L85">        xmlConf = new XMLConfiguration();</span>
+<span class="fc" id="L86">        final FileHandler handler3 = new FileHandler(xmlConf);</span>
+<span class="fc" id="L87">        handler3.load(new File(testPropertiesXML));</span>
+
+<span class="fc" id="L89">        cc.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testThrowExceptionOnMissing()
+    {
+<span class="fc" id="L95">        assertTrue(&quot;Throw Exception Property is not set!&quot;, cc.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L96">    }</span>
+
+    @Test
+    public void testAddRemoveConfigurations() throws Exception
+    {
+<span class="fc" id="L101">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L102">        assertEquals(&quot;Number of configurations&quot;, 2, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L103">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L104">        assertEquals(&quot;Number of configurations&quot;, 2, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L105">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L106">        assertEquals(&quot;Number of configurations&quot;, 3, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L107">        cc.removeConfiguration(conf1);</span>
+<span class="fc" id="L108">        assertEquals(&quot;Number of configurations&quot;, 2, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L109">        cc.clear();</span>
+<span class="fc" id="L110">        assertEquals(&quot;Number of configurations&quot;, 1, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    public void testAddFirstRemoveConfigurations() throws Exception
+    {
+<span class="fc" id="L116">        cc.addConfigurationFirst(conf1);</span>
+<span class="fc" id="L117">        assertEquals(&quot;Number of configurations&quot;, 2, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L118">        cc.addConfigurationFirst(conf1);</span>
+<span class="fc" id="L119">        assertEquals(&quot;Number of configurations&quot;, 2, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L120">        cc.addConfigurationFirst(conf2);</span>
+<span class="fc" id="L121">        assertEquals(&quot;Number of configurations&quot;, 3, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L122">        cc.removeConfiguration(conf1);</span>
+<span class="fc" id="L123">        assertEquals(&quot;Number of configurations&quot;, 2, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L124">        cc.clear();</span>
+<span class="fc" id="L125">        assertEquals(&quot;Number of configurations&quot;, 1, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L126">    }</span>
+
+    @Test
+    public void testGetPropertyWIncludes() throws Exception
+    {
+<span class="fc" id="L131">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L132">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L133">        final List&lt;Object&gt; l = cc.getList(&quot;packages&quot;);</span>
+<span class="fc" id="L134">        assertTrue(l.contains(&quot;packagea&quot;));</span>
+<span class="fc" id="L135">    }</span>
+
+    @Test
+    public void testGetProperty() throws Exception
+    {
+<span class="fc" id="L140">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L141">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L142">        assertEquals(&quot;Make sure we get the property from conf1 first&quot;, &quot;test.properties&quot;, cc.getString(&quot;propertyInOrder&quot;));</span>
+<span class="fc" id="L143">        cc.clear();</span>
+
+<span class="fc" id="L145">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L146">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L147">        assertEquals(&quot;Make sure we get the property from conf2 first&quot;, &quot;test2.properties&quot;, cc.getString(&quot;propertyInOrder&quot;));</span>
+<span class="fc" id="L148">        cc.clear();</span>
+
+<span class="fc" id="L150">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L151">        cc.addConfigurationFirst(conf2);</span>
+<span class="fc" id="L152">        assertEquals(&quot;Make sure we get the property from conf2 first&quot;, &quot;test2.properties&quot;, cc.getString(&quot;propertyInOrder&quot;));</span>
+<span class="fc" id="L153">        cc.clear();</span>
+<span class="fc" id="L154">    }</span>
+
+    @Test
+    public void testCantRemoveMemoryConfig() throws Exception
+    {
+<span class="fc" id="L159">        cc.clear();</span>
+<span class="fc" id="L160">        assertEquals(1, cc.getNumberOfConfigurations());</span>
+
+<span class="fc" id="L162">        final Configuration internal = cc.getConfiguration(0);</span>
+<span class="fc" id="L163">        cc.removeConfiguration(internal);</span>
+
+<span class="fc" id="L165">        assertEquals(1, cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L166">    }</span>
+
+    @Test
+    public void testGetPropertyMissing() throws Exception
+    {
+<span class="fc" id="L171">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L172">        cc.addConfiguration(conf2);</span>
+        try
+        {
+<span class="nc" id="L175">            assertNull(cc.getString(&quot;bogus.property&quot;));</span>
+<span class="nc" id="L176">            fail(&quot;Should have thrown a NoSuchElementException&quot;);</span>
+        }
+<span class="fc" id="L178">        catch (final NoSuchElementException nsee)</span>
+        {
+<span class="fc" id="L180">            assertTrue(nsee.getMessage().contains(&quot;bogus.property&quot;));</span>
+<span class="nc" id="L181">        }</span>
+
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">        assertTrue(&quot;Should be false&quot;, !cc.getBoolean(&quot;test.missing.boolean&quot;, false));</span>
+<span class="fc" id="L184">        assertTrue(&quot;Should be true&quot;, cc.getBoolean(&quot;test.missing.boolean.true&quot;, true));</span>
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * Tests {@code List} parsing.
+     */
+    @Test
+    public void testMultipleTypesOfConfigs() throws Exception
+    {
+<span class="fc" id="L193">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L194">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L195">        assertEquals(&quot;Make sure we get the property from conf1 first&quot;, 1, cc.getInt(&quot;test.short&quot;));</span>
+<span class="fc" id="L196">        cc.clear();</span>
+
+<span class="fc" id="L198">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L199">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L200">        assertEquals(&quot;Make sure we get the property from xml&quot;, 8, cc.getInt(&quot;test.short&quot;));</span>
+<span class="fc" id="L201">    }</span>
+
+    @Test
+    public void testPropertyExistsInOnlyOneConfig() throws Exception
+    {
+<span class="fc" id="L206">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L207">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L208">        assertEquals(&quot;value&quot;, cc.getString(&quot;element&quot;));</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Tests getting a default when the key doesn't exist
+     */
+    @Test
+    public void testDefaultValueWhenKeyMissing() throws Exception
+    {
+<span class="fc" id="L217">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L218">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L219">        assertEquals(&quot;default&quot;, cc.getString(&quot;bogus&quot;, &quot;default&quot;));</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">        assertTrue(1.4 == cc.getDouble(&quot;bogus&quot;, 1.4));</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">        assertTrue(1.4 == cc.getDouble(&quot;bogus&quot;, 1.4));</span>
+<span class="fc" id="L222">    }</span>
+
+    @Test
+    public void testGettingConfiguration() throws Exception
+    {
+<span class="fc" id="L227">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L228">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L229">        assertEquals(PropertiesConfiguration.class, cc.getConfiguration(0).getClass());</span>
+<span class="fc" id="L230">        assertEquals(XMLConfiguration.class, cc.getConfiguration(1).getClass());</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * Tests setting values.  These are set in memory mode only!
+     */
+    @Test
+    public void testClearingProperty() throws Exception
+    {
+<span class="fc" id="L239">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L240">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L241">        cc.clearProperty(&quot;test.short&quot;);</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        assertTrue(&quot;Make sure test.short is gone!&quot;, !cc.containsKey(&quot;test.short&quot;));</span>
+<span class="fc" id="L243">    }</span>
+
+    /**
+     * Tests adding values.  Make sure they _DON'T_ override any other properties but add to the
+     * existing properties  and keep sequence
+     */
+    @Test
+    public void testAddingProperty() throws Exception
+    {
+<span class="fc" id="L252">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L253">        cc.addConfiguration(xmlConf);</span>
+
+<span class="fc" id="L255">        String[] values = cc.getStringArray(&quot;test.short&quot;);</span>
+
+<span class="fc" id="L257">        assertEquals(&quot;Number of values before add is wrong!&quot;, 1, values.length);</span>
+<span class="fc" id="L258">        assertEquals(&quot;First Value before add is wrong&quot;, &quot;1&quot;, values[0]);</span>
+
+<span class="fc" id="L260">        cc.addProperty(&quot;test.short&quot;, &quot;88&quot;);</span>
+
+<span class="fc" id="L262">        values = cc.getStringArray(&quot;test.short&quot;);</span>
+
+<span class="fc" id="L264">        assertEquals(&quot;Number of values is wrong!&quot;, 2, values.length);</span>
+<span class="fc" id="L265">        assertEquals(&quot;First Value is wrong&quot;, &quot;1&quot;, values[0]);</span>
+<span class="fc" id="L266">        assertEquals(&quot;Third Value is wrong&quot;, &quot;88&quot;, values[1]);</span>
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * Tests setting values.  These are set in memory mode only!
+     */
+    @Test
+    public void testSettingMissingProperty() throws Exception
+    {
+<span class="fc" id="L275">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L276">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L277">        cc.setProperty(&quot;my.new.property&quot;, &quot;supernew&quot;);</span>
+<span class="fc" id="L278">        assertEquals(&quot;supernew&quot;, cc.getString(&quot;my.new.property&quot;));</span>
+<span class="fc" id="L279">    }</span>
+
+    /**
+     * Tests retrieving subsets of configurations
+     */
+    @Test
+    public void testGettingSubset() throws Exception
+    {
+<span class="fc" id="L287">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L288">        cc.addConfiguration(xmlConf);</span>
+
+<span class="fc" id="L290">        Configuration subset = cc.subset(&quot;test&quot;);</span>
+<span class="fc" id="L291">        assertNotNull(subset);</span>
+<span class="fc" id="L292">        assertFalse(&quot;Shouldn't be empty&quot;, subset.isEmpty());</span>
+<span class="fc" id="L293">        assertEquals(&quot;Make sure the initial loaded configs subset overrides any later add configs subset&quot;, &quot;1&quot;, subset.getString(&quot;short&quot;));</span>
+
+<span class="fc" id="L295">        cc.setProperty(&quot;test.short&quot;, &quot;43&quot;);</span>
+<span class="fc" id="L296">        subset = cc.subset(&quot;test&quot;);</span>
+<span class="fc" id="L297">        assertEquals(&quot;Make sure the initial loaded configs subset overrides any later add configs subset&quot;, &quot;43&quot;, subset.getString(&quot;short&quot;));</span>
+<span class="fc" id="L298">    }</span>
+
+    /**
+     * Tests subsets and still can resolve elements
+     */
+    @Test
+    public void testSubsetCanResolve() throws Exception
+    {
+<span class="fc" id="L306">        cc = new CompositeConfiguration();</span>
+<span class="fc" id="L307">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L308">        config.addProperty(&quot;subset.tempfile&quot;, &quot;${java.io.tmpdir}/file.tmp&quot;);</span>
+<span class="fc" id="L309">        cc.addConfiguration(config);</span>
+<span class="fc" id="L310">        cc.addConfiguration(ConfigurationConverter.getConfiguration(System.getProperties()));</span>
+
+<span class="fc" id="L312">        final Configuration subset = cc.subset(&quot;subset&quot;);</span>
+<span class="fc" id="L313">        assertEquals(System.getProperty(&quot;java.io.tmpdir&quot;) + &quot;/file.tmp&quot;, subset.getString(&quot;tempfile&quot;));</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Tests {@code List} parsing.
+     */
+    @Test
+    public void testList() throws Exception
+    {
+<span class="fc" id="L322">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L323">        cc.addConfiguration(xmlConf);</span>
+
+<span class="fc" id="L325">        List&lt;Object&gt; packages = cc.getList(&quot;packages&quot;);</span>
+        // we should get 3 packages here
+<span class="fc" id="L327">        assertEquals(3, packages.size());</span>
+
+<span class="fc" id="L329">        final List&lt;Object&gt; defaultList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L330">        defaultList.add(&quot;1&quot;);</span>
+<span class="fc" id="L331">        defaultList.add(&quot;2&quot;);</span>
+
+<span class="fc" id="L333">        packages = cc.getList(&quot;packages.which.dont.exist&quot;, defaultList);</span>
+        // we should get 2 packages here
+<span class="fc" id="L335">        assertEquals(2, packages.size());</span>
+
+<span class="fc" id="L337">    }</span>
+
+    /**
+     * Tests {@code String} array parsing.
+     */
+    @Test
+    public void testStringArray() throws Exception
+    {
+<span class="fc" id="L345">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L346">        cc.addConfiguration(xmlConf);</span>
+
+<span class="fc" id="L348">        String[] packages = cc.getStringArray(&quot;packages&quot;);</span>
+        // we should get 3 packages here
+<span class="fc" id="L350">        assertEquals(3, packages.length);</span>
+
+<span class="fc" id="L352">        packages = cc.getStringArray(&quot;packages.which.dont.exist&quot;);</span>
+        // we should get 0 packages here
+<span class="fc" id="L354">        assertEquals(0, packages.length);</span>
+<span class="fc" id="L355">    }</span>
+
+    @Test
+    public void testGetList()
+    {
+<span class="fc" id="L360">        final Configuration conf1 = new BaseConfiguration();</span>
+<span class="fc" id="L361">        conf1.addProperty(&quot;array&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L362">        conf1.addProperty(&quot;array&quot;, &quot;value2&quot;);</span>
+
+<span class="fc" id="L364">        final Configuration conf2 = new BaseConfiguration();</span>
+<span class="fc" id="L365">        conf2.addProperty(&quot;array&quot;, &quot;value3&quot;);</span>
+<span class="fc" id="L366">        conf2.addProperty(&quot;array&quot;, &quot;value4&quot;);</span>
+
+<span class="fc" id="L368">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L369">        cc.addConfiguration(conf2);</span>
+
+        // check the composite 'array' property
+<span class="fc" id="L372">        List&lt;Object&gt; list = cc.getList(&quot;array&quot;);</span>
+<span class="fc" id="L373">        assertNotNull(&quot;null list&quot;, list);</span>
+<span class="fc" id="L374">        assertEquals(&quot;list size&quot;, 2, list.size());</span>
+<span class="fc" id="L375">        assertTrue(&quot;'value1' not found in the list&quot;, list.contains(&quot;value1&quot;));</span>
+<span class="fc" id="L376">        assertTrue(&quot;'value2' not found in the list&quot;, list.contains(&quot;value2&quot;));</span>
+
+        // add an element to the list in the composite configuration
+<span class="fc" id="L379">        cc.addProperty(&quot;array&quot;, &quot;value5&quot;);</span>
+
+        // test the new list
+<span class="fc" id="L382">        list = cc.getList(&quot;array&quot;);</span>
+<span class="fc" id="L383">        assertNotNull(&quot;null list&quot;, list);</span>
+<span class="fc" id="L384">        assertEquals(&quot;list size&quot;, 3, list.size());</span>
+<span class="fc" id="L385">        assertTrue(&quot;'value1' not found in the list&quot;, list.contains(&quot;value1&quot;));</span>
+<span class="fc" id="L386">        assertTrue(&quot;'value2' not found in the list&quot;, list.contains(&quot;value2&quot;));</span>
+<span class="fc" id="L387">        assertTrue(&quot;'value5' not found in the list&quot;, list.contains(&quot;value5&quot;));</span>
+<span class="fc" id="L388">    }</span>
+
+    /**
+     * Tests {@code getKeys} preserves the order
+     */
+    @Test
+    public void testGetKeysPreservesOrder() throws Exception
+    {
+<span class="fc" id="L396">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L397">        final List&lt;String&gt; orderedList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L398" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; keys = conf1.getKeys(); keys.hasNext();)</span>
+        {
+<span class="fc" id="L400">            orderedList.add(keys.next());</span>
+        }
+<span class="fc" id="L402">        final List&lt;String&gt; iteratedList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L403" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; keys = cc.getKeys(); keys.hasNext();)</span>
+        {
+<span class="fc" id="L405">            iteratedList.add(keys.next());</span>
+        }
+<span class="fc" id="L407">        assertEquals(orderedList.size(), iteratedList.size());</span>
+<span class="fc bfc" id="L408" title="All 2 branches covered.">        for (int i = 0; i &lt; orderedList.size(); i++)</span>
+        {
+<span class="fc" id="L410">            assertEquals(orderedList.get(i), iteratedList.get(i));</span>
+        }
+<span class="fc" id="L412">    }</span>
+
+    /**
+     * Tests {@code getKeys(String key)} preserves the order
+     */
+    @Test
+    public void testGetKeys2PreservesOrder() throws Exception
+    {
+<span class="fc" id="L420">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L421">        final List&lt;String&gt; orderedList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L422" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; keys = conf1.getKeys(&quot;test&quot;); keys.hasNext();)</span>
+        {
+<span class="fc" id="L424">            orderedList.add(keys.next());</span>
+        }
+<span class="fc" id="L426">        final List&lt;String&gt; iteratedList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L427" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; keys = cc.getKeys(&quot;test&quot;); keys.hasNext();)</span>
+        {
+<span class="fc" id="L429">            iteratedList.add(keys.next());</span>
+        }
+<span class="fc" id="L431">        assertEquals(orderedList.size(), iteratedList.size());</span>
+<span class="fc bfc" id="L432" title="All 2 branches covered.">        for (int i = 0; i &lt; orderedList.size(); i++)</span>
+        {
+<span class="fc" id="L434">            assertEquals(orderedList.get(i), iteratedList.get(i));</span>
+        }
+<span class="fc" id="L436">    }</span>
+
+    @Test
+    public void testGetStringWithDefaults()
+    {
+<span class="fc" id="L441">        final BaseConfiguration defaults = new BaseConfiguration();</span>
+<span class="fc" id="L442">        defaults.addProperty(&quot;default&quot;, &quot;default string&quot;);</span>
+
+<span class="fc" id="L444">        final CompositeConfiguration c = new CompositeConfiguration(defaults);</span>
+<span class="fc" id="L445">        c.setThrowExceptionOnMissing(cc.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L446">        c.addProperty(&quot;string&quot;, &quot;test string&quot;);</span>
+
+<span class="fc" id="L448">        assertEquals(&quot;test string&quot;, c.getString(&quot;string&quot;));</span>
+        try
+        {
+<span class="nc" id="L451">            c.getString(&quot;XXX&quot;);</span>
+<span class="nc" id="L452">            fail(&quot;Should throw NoSuchElementException exception&quot;);</span>
+        }
+<span class="fc" id="L454">        catch (final NoSuchElementException e)</span>
+        {
+            //ok
+        }
+<span class="nc" id="L458">        catch (final Exception e)</span>
+        {
+<span class="nc" id="L460">            fail(&quot;Should throw NoSuchElementException exception, not &quot; + e);</span>
+<span class="pc" id="L461">        }</span>
+
+        //test defaults
+<span class="fc" id="L464">        assertEquals(&quot;test string&quot;, c.getString(&quot;string&quot;, &quot;some default value&quot;));</span>
+<span class="fc" id="L465">        assertEquals(&quot;default string&quot;, c.getString(&quot;default&quot;));</span>
+<span class="fc" id="L466">        assertEquals(&quot;default string&quot;, c.getString(&quot;default&quot;, &quot;some default value&quot;));</span>
+<span class="fc" id="L467">        assertEquals(&quot;some default value&quot;, c.getString(&quot;XXX&quot;, &quot;some default value&quot;));</span>
+<span class="fc" id="L468">    }</span>
+
+    @Test
+    public void testCheckingInMemoryConfiguration() throws Exception
+    {
+<span class="fc" id="L473">        final String TEST_KEY = &quot;testKey&quot;;</span>
+<span class="fc" id="L474">        final Configuration defaults = new PropertiesConfiguration();</span>
+<span class="fc" id="L475">        defaults.setProperty(TEST_KEY, &quot;testValue&quot;);</span>
+<span class="fc" id="L476">        final Configuration testConfiguration = new CompositeConfiguration(defaults);</span>
+<span class="fc" id="L477">        assertTrue(testConfiguration.containsKey(TEST_KEY));</span>
+<span class="fc" id="L478">        assertFalse(testConfiguration.isEmpty());</span>
+<span class="fc" id="L479">        boolean foundTestKey = false;</span>
+<span class="fc" id="L480">        final Iterator&lt;String&gt; i = testConfiguration.getKeys();</span>
+        //assertTrue(i instanceof IteratorChain);
+        //IteratorChain ic = (IteratorChain)i;
+        //assertEquals(2,i.size());
+<span class="fc bfc" id="L484" title="All 2 branches covered.">        for (; i.hasNext();)</span>
+        {
+<span class="fc" id="L486">            final String key = i.next();</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">            if (key.equals(TEST_KEY))</span>
+            {
+<span class="fc" id="L489">                foundTestKey = true;</span>
+            }
+<span class="fc" id="L491">        }</span>
+<span class="fc" id="L492">        assertTrue(foundTestKey);</span>
+<span class="fc" id="L493">        testConfiguration.clearProperty(TEST_KEY);</span>
+<span class="fc" id="L494">        assertFalse(testConfiguration.containsKey(TEST_KEY));</span>
+<span class="fc" id="L495">    }</span>
+
+    @Test
+    public void testStringArrayInterpolation()
+    {
+<span class="fc" id="L500">        final CompositeConfiguration config = new CompositeConfiguration();</span>
+<span class="fc" id="L501">        config.addProperty(&quot;base&quot;, &quot;foo&quot;);</span>
+<span class="fc" id="L502">        config.addProperty(&quot;list&quot;, &quot;${base}.bar1&quot;);</span>
+<span class="fc" id="L503">        config.addProperty(&quot;list&quot;, &quot;${base}.bar2&quot;);</span>
+<span class="fc" id="L504">        config.addProperty(&quot;list&quot;, &quot;${base}.bar3&quot;);</span>
+
+<span class="fc" id="L506">        final String[] array = config.getStringArray(&quot;list&quot;);</span>
+<span class="fc" id="L507">        assertEquals(&quot;size&quot;, 3, array.length);</span>
+<span class="fc" id="L508">        assertEquals(&quot;1st element&quot;, &quot;foo.bar1&quot;, array[0]);</span>
+<span class="fc" id="L509">        assertEquals(&quot;2nd element&quot;, &quot;foo.bar2&quot;, array[1]);</span>
+<span class="fc" id="L510">        assertEquals(&quot;3rd element&quot;, &quot;foo.bar3&quot;, array[2]);</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tests whether global interpolation works with lists.
+     */
+    @Test
+    public void testListInterpolation()
+    {
+<span class="fc" id="L519">        final PropertiesConfiguration c1 = new PropertiesConfiguration();</span>
+<span class="fc" id="L520">        c1.addProperty(&quot;c1.value&quot;, &quot;test1&quot;);</span>
+<span class="fc" id="L521">        c1.addProperty(&quot;c1.value&quot;, &quot;${c2.value}&quot;);</span>
+<span class="fc" id="L522">        cc.addConfiguration(c1);</span>
+<span class="fc" id="L523">        final PropertiesConfiguration c2 = new PropertiesConfiguration();</span>
+<span class="fc" id="L524">        c2.addProperty(&quot;c2.value&quot;, &quot;test2&quot;);</span>
+<span class="fc" id="L525">        cc.addConfiguration(c2);</span>
+<span class="fc" id="L526">        final List&lt;Object&gt; lst = cc.getList(&quot;c1.value&quot;);</span>
+<span class="fc" id="L527">        assertEquals(&quot;Wrong list size&quot;, 2, lst.size());</span>
+<span class="fc" id="L528">        assertEquals(&quot;Wrong first element&quot;, &quot;test1&quot;, lst.get(0));</span>
+<span class="fc" id="L529">        assertEquals(&quot;Wrong second element&quot;, &quot;test2&quot;, lst.get(1));</span>
+<span class="fc" id="L530">    }</span>
+
+    @Test
+    public void testInstanciateWithCollection()
+    {
+<span class="fc" id="L535">        final Collection&lt;Configuration&gt; configs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L536">        configs.add(xmlConf);</span>
+<span class="fc" id="L537">        configs.add(conf1);</span>
+<span class="fc" id="L538">        configs.add(conf2);</span>
+
+<span class="fc" id="L540">        final CompositeConfiguration config = new CompositeConfiguration(configs);</span>
+<span class="fc" id="L541">        assertEquals(&quot;Number of configurations&quot;, 4, config.getNumberOfConfigurations());</span>
+<span class="fc" id="L542">        assertTrue(&quot;The in memory configuration is not empty&quot;, config.getInMemoryConfiguration().isEmpty());</span>
+<span class="fc" id="L543">    }</span>
+
+    @Test
+    public void testClone()
+    {
+<span class="fc" id="L548">        final CompositeConfiguration cc2 = (CompositeConfiguration) cc.clone();</span>
+<span class="fc" id="L549">        assertEquals(&quot;Wrong number of contained configurations&quot;, cc</span>
+<span class="fc" id="L550">                .getNumberOfConfigurations(), cc2.getNumberOfConfigurations());</span>
+
+<span class="fc" id="L552">        final StrictConfigurationComparator comp = new StrictConfigurationComparator();</span>
+<span class="fc bfc" id="L553" title="All 2 branches covered.">        for (int i = 0; i &lt; cc.getNumberOfConfigurations(); i++)</span>
+        {
+<span class="fc" id="L555">            assertEquals(&quot;Wrong configuration class at &quot; + i, cc</span>
+<span class="fc" id="L556">                    .getConfiguration(i).getClass(), cc2.getConfiguration(i)</span>
+<span class="fc" id="L557">                    .getClass());</span>
+<span class="fc" id="L558">            assertNotSame(&quot;Configuration was not cloned&quot;, cc</span>
+<span class="fc" id="L559">                    .getConfiguration(i), cc2.getConfiguration(i));</span>
+<span class="fc" id="L560">            assertTrue(&quot;Configurations at &quot; + i + &quot; not equal&quot;, comp.compare(cc</span>
+<span class="fc" id="L561">                    .getConfiguration(i), cc2.getConfiguration(i)));</span>
+        }
+
+<span class="fc" id="L564">        assertTrue(&quot;Configurations are not equal&quot;, comp.compare(cc, cc2));</span>
+<span class="fc" id="L565">    }</span>
+
+    /**
+     * Tests cloning if one of the contained configurations does not support
+     * this operation. This should cause an exception.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testCloneNotSupported()
+    {
+<span class="fc" id="L574">        cc.addConfiguration(new NonCloneableConfiguration());</span>
+<span class="nc" id="L575">        cc.clone();</span>
+<span class="nc" id="L576">    }</span>
+
+    /**
+     * Ensures that event listeners are not cloned.
+     */
+    @Test
+    public void testCloneEventListener()
+    {
+<span class="fc" id="L584">        cc.addEventListener(ConfigurationEvent.ANY, new EventListenerTestImpl(null));</span>
+<span class="fc" id="L585">        final CompositeConfiguration cc2 = (CompositeConfiguration) cc.clone();</span>
+<span class="fc" id="L586">        assertTrue(&quot;Listeners have been cloned&quot;, cc2</span>
+<span class="fc" id="L587">                .getEventListeners(ConfigurationEvent.ANY).isEmpty());</span>
+<span class="fc" id="L588">    }</span>
+
+    /**
+     * Tests whether interpolation works as expected after cloning.
+     */
+    @Test
+    public void testCloneInterpolation()
+    {
+<span class="fc" id="L596">        final CompositeConfiguration cc2 = (CompositeConfiguration) cc.clone();</span>
+<span class="fc" id="L597">        assertNotSame(&quot;Interpolator was not cloned&quot;, cc.getInterpolator(),</span>
+<span class="fc" id="L598">                cc2.getInterpolator());</span>
+<span class="fc" id="L599">    }</span>
+
+    /**
+     * Tests whether add property events are triggered.
+     */
+    @Test
+    public void testEventAddProperty()
+    {
+<span class="fc" id="L607">        final EventListenerTestImpl listener = new EventListenerTestImpl(cc);</span>
+<span class="fc" id="L608">        cc.addEventListener(ConfigurationEvent.ANY, listener);</span>
+<span class="fc" id="L609">        cc.addProperty(&quot;test&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L610">        listener.checkEvent(ConfigurationEvent.ADD_PROPERTY, &quot;test&quot;, &quot;value&quot;, true);</span>
+<span class="fc" id="L611">        listener.checkEvent(ConfigurationEvent.ADD_PROPERTY, &quot;test&quot;, &quot;value&quot;, false);</span>
+<span class="fc" id="L612">        listener.done();</span>
+<span class="fc" id="L613">    }</span>
+
+    /**
+     * Tests whether set property events are triggered.
+     */
+    @Test
+    public void testEventSetProperty()
+    {
+<span class="fc" id="L621">        final EventListenerTestImpl listener = new EventListenerTestImpl(cc);</span>
+<span class="fc" id="L622">        cc.addEventListener(ConfigurationEvent.ANY, listener);</span>
+<span class="fc" id="L623">        cc.setProperty(&quot;test&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L624">        listener.checkEvent(ConfigurationEvent.SET_PROPERTY, &quot;test&quot;, &quot;value&quot;, true);</span>
+<span class="fc" id="L625">        listener.checkEvent(ConfigurationEvent.SET_PROPERTY, &quot;test&quot;, &quot;value&quot;, false);</span>
+<span class="fc" id="L626">        listener.done();</span>
+<span class="fc" id="L627">    }</span>
+
+    /**
+     * Tests whether clear property events are triggered.
+     */
+    @Test
+    public void testEventClearProperty()
+    {
+<span class="fc" id="L635">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L636">        final String key = &quot;configuration.loaded&quot;;</span>
+<span class="fc" id="L637">        assertTrue(&quot;Wrong value for property&quot;, cc</span>
+<span class="fc" id="L638">                .getBoolean(key));</span>
+<span class="fc" id="L639">        final EventListenerTestImpl listener = new EventListenerTestImpl(cc);</span>
+<span class="fc" id="L640">        cc.addEventListener(ConfigurationEvent.ANY, listener);</span>
+<span class="fc" id="L641">        cc.clearProperty(key);</span>
+<span class="fc" id="L642">        assertFalse(&quot;Key still present&quot;, cc.containsKey(key));</span>
+<span class="fc" id="L643">        listener.checkEvent(ConfigurationEvent.CLEAR_PROPERTY, key, null, true);</span>
+<span class="fc" id="L644">        listener.checkEvent(ConfigurationEvent.CLEAR_PROPERTY, key, null, false);</span>
+<span class="fc" id="L645">        listener.done();</span>
+<span class="fc" id="L646">    }</span>
+
+    /**
+     * Tests changing the list delimiter handler.
+     */
+    @Test
+    public void testSetListDelimiter()
+    {
+<span class="fc" id="L654">        cc.setListDelimiterHandler(new DefaultListDelimiterHandler('/'));</span>
+<span class="fc" id="L655">        checkSetListDelimiterHandler();</span>
+<span class="fc" id="L656">    }</span>
+
+    /**
+     * Tests whether the correct list delimiter handler is set after a clear
+     * operation.
+     */
+    @Test
+    public void testSetListDelimiterAfterClear()
+    {
+<span class="fc" id="L665">        cc.setListDelimiterHandler(new DefaultListDelimiterHandler('/'));</span>
+<span class="fc" id="L666">        cc.clear();</span>
+<span class="fc" id="L667">        checkSetListDelimiterHandler();</span>
+<span class="fc" id="L668">    }</span>
+
+    /**
+     * Helper method for testing whether the list delimiter is correctly
+     * handled.
+     */
+    private void checkSetListDelimiterHandler()
+    {
+<span class="fc" id="L676">        cc.addProperty(&quot;test.list&quot;, &quot;a/b/c&quot;);</span>
+<span class="fc" id="L677">        cc.addProperty(&quot;test.property&quot;, &quot;a,b,c&quot;);</span>
+<span class="fc" id="L678">        assertEquals(&quot;Wrong number of list elements&quot;, 3, cc</span>
+<span class="fc" id="L679">                .getList(&quot;test.list&quot;).size());</span>
+<span class="fc" id="L680">        assertEquals(&quot;Wrong value of property&quot;, &quot;a,b,c&quot;, cc</span>
+<span class="fc" id="L681">                .getString(&quot;test.property&quot;));</span>
+
+<span class="fc" id="L683">        final AbstractConfiguration config =</span>
+<span class="fc" id="L684">                (AbstractConfiguration) cc.getInMemoryConfiguration();</span>
+<span class="fc" id="L685">        final DefaultListDelimiterHandler listHandler =</span>
+<span class="fc" id="L686">                (DefaultListDelimiterHandler) config.getListDelimiterHandler();</span>
+<span class="fc" id="L687">        assertEquals(&quot;Wrong list delimiter&quot;, '/', listHandler.getDelimiter());</span>
+<span class="fc" id="L688">    }</span>
+
+    /**
+     * Prepares a test of the getSource() method.
+     */
+    private void setUpSourceTest()
+    {
+<span class="fc" id="L695">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L696">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L697">    }</span>
+
+    /**
+     * Tests the getSource() method if the property is defined in a single child
+     * configuration.
+     */
+    @Test
+    public void testGetSourceSingle()
+    {
+<span class="fc" id="L706">        setUpSourceTest();</span>
+<span class="fc" id="L707">        conf1.addProperty(TEST_PROPERTY, Boolean.TRUE);</span>
+<span class="fc" id="L708">        assertSame(&quot;Wrong source configuration&quot;, conf1, cc</span>
+<span class="fc" id="L709">                .getSource(TEST_PROPERTY));</span>
+<span class="fc" id="L710">    }</span>
+
+    /**
+     * Tests the getSource() method for an unknown property key.
+     */
+    @Test
+    public void testGetSourceUnknown()
+    {
+<span class="fc" id="L718">        setUpSourceTest();</span>
+<span class="fc" id="L719">        assertNull(&quot;Wrong source for unknown key&quot;, cc.getSource(TEST_PROPERTY));</span>
+<span class="fc" id="L720">    }</span>
+
+    /**
+     * Tests the getSource() method for a property contained in the in memory
+     * configuration.
+     */
+    @Test
+    public void testGetSourceInMemory()
+    {
+<span class="fc" id="L729">        setUpSourceTest();</span>
+<span class="fc" id="L730">        cc.addProperty(TEST_PROPERTY, Boolean.TRUE);</span>
+<span class="fc" id="L731">        assertSame(&quot;Source not found in in-memory config&quot;, cc</span>
+<span class="fc" id="L732">                .getInMemoryConfiguration(), cc.getSource(TEST_PROPERTY));</span>
+<span class="fc" id="L733">    }</span>
+
+    /**
+     * Tests the getSource() method if the property is defined by multiple child
+     * configurations. In this case an exception should be thrown.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetSourceMultiple()
+    {
+<span class="fc" id="L742">        setUpSourceTest();</span>
+<span class="fc" id="L743">        conf1.addProperty(TEST_PROPERTY, Boolean.TRUE);</span>
+<span class="fc" id="L744">        cc.addProperty(TEST_PROPERTY, &quot;a value&quot;);</span>
+<span class="nc" id="L745">        cc.getSource(TEST_PROPERTY);</span>
+<span class="nc" id="L746">    }</span>
+
+    /**
+     * Tests the getSource() method for a null key. This should cause an
+     * exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetSourceNull()
+    {
+<span class="nc" id="L755">        cc.getSource(null);</span>
+<span class="nc" id="L756">    }</span>
+
+    /**
+     * Prepares a test for interpolation with multiple configurations and
+     * similar properties.
+     */
+    private void prepareInterpolationTest()
+    {
+<span class="fc" id="L764">        final PropertiesConfiguration p = new PropertiesConfiguration();</span>
+<span class="fc" id="L765">        p.addProperty(&quot;foo&quot;, &quot;initial&quot;);</span>
+<span class="fc" id="L766">        p.addProperty(&quot;bar&quot;, &quot;${foo}&quot;);</span>
+<span class="fc" id="L767">        p.addProperty(&quot;prefix.foo&quot;, &quot;override&quot;);</span>
+
+<span class="fc" id="L769">        cc.addConfiguration(p.subset(&quot;prefix&quot;));</span>
+<span class="fc" id="L770">        cc.addConfiguration(p);</span>
+<span class="fc" id="L771">        assertEquals(&quot;Wrong value on direct access&quot;, &quot;override&quot;, cc</span>
+<span class="fc" id="L772">                .getString(&quot;bar&quot;));</span>
+<span class="fc" id="L773">    }</span>
+
+    /**
+     * Tests querying a list when a tricky interpolation is involved. This is
+     * related to CONFIGURATION-339.
+     */
+    @Test
+    public void testGetListWithInterpolation()
+    {
+<span class="fc" id="L782">        prepareInterpolationTest();</span>
+<span class="fc" id="L783">        final List&lt;Object&gt; lst = cc.getList(&quot;bar&quot;);</span>
+<span class="fc" id="L784">        assertEquals(&quot;Wrong number of values&quot;, 1, lst.size());</span>
+<span class="fc" id="L785">        assertEquals(&quot;Wrong value in list&quot;, &quot;override&quot;, lst.get(0));</span>
+<span class="fc" id="L786">    }</span>
+
+    /**
+     * Tests querying a string array when a tricky interpolation is involved.
+     */
+    @Test
+    public void testGetStringArrayWithInterpolation()
+    {
+<span class="fc" id="L794">        prepareInterpolationTest();</span>
+<span class="fc" id="L795">        final String[] values = cc.getStringArray(&quot;bar&quot;);</span>
+<span class="fc" id="L796">        assertEquals(&quot;Wrong number of values&quot;, 1, values.length);</span>
+<span class="fc" id="L797">        assertEquals(&quot;Wrong value in array&quot;, &quot;override&quot;, values[0]);</span>
+<span class="fc" id="L798">    }</span>
+
+    /**
+     * Tests whether interpolation works if multiple configurations are
+     * involved. This test is related to CONFIGURATION-441.
+     */
+    @Test
+    public void testInterpolationInMultipleConfigs()
+    {
+<span class="fc" id="L807">        final Configuration c1 = new PropertiesConfiguration();</span>
+<span class="fc" id="L808">        c1.addProperty(&quot;property.one&quot;, &quot;one&quot;);</span>
+<span class="fc" id="L809">        c1.addProperty(&quot;property.two&quot;, &quot;two&quot;);</span>
+<span class="fc" id="L810">        final Configuration c2 = new PropertiesConfiguration();</span>
+<span class="fc" id="L811">        c2.addProperty(&quot;property.one.ref&quot;, &quot;${property.one}&quot;);</span>
+<span class="fc" id="L812">        cc.addConfiguration(c1);</span>
+<span class="fc" id="L813">        cc.addConfiguration(c2);</span>
+<span class="fc" id="L814">        assertEquals(&quot;Wrong interpolated value&quot;, &quot;one&quot;,</span>
+<span class="fc" id="L815">                cc.getString(&quot;property.one.ref&quot;));</span>
+<span class="fc" id="L816">    }</span>
+
+    /**
+     * Tests whether interpolation works if a variable references a property
+     * with multiple values. This test is related to CONFIGURATION-632.
+     */
+    @Test
+    public void testInterpolationArrayReference()
+    {
+<span class="fc" id="L825">        final Configuration props = new PropertiesConfiguration();</span>
+<span class="fc" id="L826">        final String[] values = { &quot;a&quot;, &quot;property&quot;, &quot;with&quot;, &quot;multiple&quot;, &quot;values&quot; };</span>
+<span class="fc" id="L827">        props.addProperty(&quot;keyMultiValues&quot;, values);</span>
+<span class="fc" id="L828">        props.addProperty(&quot;keyReference&quot;, &quot;${keyMultiValues}&quot;);</span>
+<span class="fc" id="L829">        cc.addConfiguration(props);</span>
+<span class="fc" id="L830">        assertArrayEquals(&quot;Wrong interpolated value&quot;, values,</span>
+<span class="fc" id="L831">                cc.getStringArray(&quot;keyReference&quot;));</span>
+<span class="fc" id="L832">    }</span>
+
+    /**
+     * Tests the behavior of setListDelimiterHandler() if the in-memory configuration
+     * is not derived from BaseConfiguration. This test is related to
+     * CONFIGURATION-476.
+     */
+    @Test
+    public void testSetListDelimiterInMemoryConfigNonBaseConfig()
+    {
+<span class="fc" id="L842">        final Configuration inMemoryConfig = EasyMock.createMock(Configuration.class);</span>
+<span class="fc" id="L843">        EasyMock.replay(inMemoryConfig);</span>
+<span class="fc" id="L844">        cc = new CompositeConfiguration(inMemoryConfig);</span>
+<span class="fc" id="L845">        cc.setListDelimiterHandler(new DefaultListDelimiterHandler(';'));</span>
+<span class="fc" id="L846">    }</span>
+
+    /**
+     * Tests whether a configuration can act as both regular child configuration
+     * and in-memory configuration. This test is related to CONFIGURATION-471.
+     */
+    @Test
+    public void testUseChildConfigAsInMemoryConfig()
+    {
+<span class="fc" id="L855">        conf1.setProperty(TEST_PROPERTY, &quot;conf1&quot;);</span>
+<span class="fc" id="L856">        conf2.setProperty(TEST_PROPERTY, &quot;conf2&quot;);</span>
+<span class="fc" id="L857">        cc.addConfiguration(conf1, true);</span>
+<span class="fc" id="L858">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L859">        assertEquals(&quot;Wrong number of configurations&quot;, 2,</span>
+<span class="fc" id="L860">                cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L861">        assertEquals(&quot;Wrong property&quot;, &quot;conf1&quot;, cc.getString(TEST_PROPERTY));</span>
+<span class="fc" id="L862">        cc.addProperty(&quot;newProperty&quot;, &quot;newValue&quot;);</span>
+<span class="fc" id="L863">        assertEquals(&quot;Not added to in-memory config&quot;, &quot;newValue&quot;,</span>
+<span class="fc" id="L864">                conf1.getString(&quot;newProperty&quot;));</span>
+<span class="fc" id="L865">    }</span>
+
+    /**
+     * Tests whether the in-memory configuration can be replaced by a new child
+     * configuration.
+     */
+    @Test
+    public void testReplaceInMemoryConfig()
+    {
+<span class="fc" id="L874">        conf1.setProperty(TEST_PROPERTY, &quot;conf1&quot;);</span>
+<span class="fc" id="L875">        conf2.setProperty(TEST_PROPERTY, &quot;conf2&quot;);</span>
+<span class="fc" id="L876">        cc.addConfiguration(conf1, true);</span>
+<span class="fc" id="L877">        cc.addProperty(&quot;newProperty1&quot;, &quot;newValue1&quot;);</span>
+<span class="fc" id="L878">        cc.addConfiguration(conf2, true);</span>
+<span class="fc" id="L879">        cc.addProperty(&quot;newProperty2&quot;, &quot;newValue2&quot;);</span>
+<span class="fc" id="L880">        assertEquals(&quot;Wrong property&quot;, &quot;conf1&quot;, cc.getString(TEST_PROPERTY));</span>
+<span class="fc" id="L881">        assertEquals(&quot;Not added to in-memory config&quot;, &quot;newValue1&quot;,</span>
+<span class="fc" id="L882">                conf1.getString(&quot;newProperty1&quot;));</span>
+<span class="fc" id="L883">        assertEquals(&quot;In-memory config not changed&quot;, &quot;newValue2&quot;,</span>
+<span class="fc" id="L884">                conf2.getString(&quot;newProperty2&quot;));</span>
+<span class="fc" id="L885">    }</span>
+
+    /**
+     * Creates a test synchronizer and installs it at the test configuration.
+     *
+     * @return the test synchronizer
+     */
+    private SynchronizerTestImpl installSynchronizer()
+    {
+<span class="fc" id="L894">        cc.addConfiguration(conf1);</span>
+<span class="fc" id="L895">        cc.addConfiguration(conf2);</span>
+<span class="fc" id="L896">        final SynchronizerTestImpl sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L897">        cc.setSynchronizer(sync);</span>
+<span class="fc" id="L898">        return sync;</span>
+    }
+
+    /**
+     * Tests whether adding a child configuration is synchronized.
+     */
+    @Test
+    public void testAddConfigurationSynchronized()
+    {
+<span class="fc" id="L907">        final SynchronizerTestImpl sync = installSynchronizer();</span>
+<span class="fc" id="L908">        cc.addConfiguration(xmlConf);</span>
+<span class="fc" id="L909">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L910">    }</span>
+
+    /**
+     * Tests whether removing a child configuration is synchronized.
+     */
+    @Test
+    public void testRemoveConfigurationSynchronized()
+    {
+<span class="fc" id="L918">        final SynchronizerTestImpl sync = installSynchronizer();</span>
+<span class="fc" id="L919">        cc.removeConfiguration(conf1);</span>
+<span class="fc" id="L920">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L921">    }</span>
+
+    /**
+     * Tests whether access to a configuration by index is synchronized.
+     */
+    @Test
+    public void testGetConfigurationSynchronized()
+    {
+<span class="fc" id="L929">        final SynchronizerTestImpl sync = installSynchronizer();</span>
+<span class="fc" id="L930">        assertEquals(&quot;Wrong result&quot;, conf1, cc.getConfiguration(0));</span>
+<span class="fc" id="L931">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L932">    }</span>
+
+    /**
+     * Tests whether access to the in-memory configuration is synchronized.
+     */
+    @Test
+    public void testGetInMemoryConfigurationSynchronized()
+    {
+<span class="fc" id="L940">        final SynchronizerTestImpl sync = installSynchronizer();</span>
+<span class="fc" id="L941">        cc.getInMemoryConfiguration();</span>
+<span class="fc" id="L942">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L943">    }</span>
+
+    /**
+     * Tests whether querying the number of child configurations is
+     * synchronized.
+     */
+    @Test
+    public void testGetNumberOfConfigurationsSynchronized()
+    {
+<span class="fc" id="L952">        final SynchronizerTestImpl sync = installSynchronizer();</span>
+<span class="fc" id="L953">        assertEquals(&quot;Wrong number of configurations&quot;, 3,</span>
+<span class="fc" id="L954">                cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L955">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L956">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

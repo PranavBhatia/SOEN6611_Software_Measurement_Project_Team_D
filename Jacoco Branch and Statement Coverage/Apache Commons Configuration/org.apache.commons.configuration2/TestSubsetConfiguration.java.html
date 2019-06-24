@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestSubsetConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestSubsetConfiguration.java</span></div><h1>TestSubsetConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.combined.CombinedConfigurationBuilder;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.Lookup;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test case for the {@link SubsetConfiguration} class.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L48">public class TestSubsetConfiguration</span>
+{
+    static final String TEST_DIR = ConfigurationAssert.TEST_DIR_NAME;
+    static final String TEST_FILE = &quot;testDigesterConfiguration2.xml&quot;;
+
+    /**
+     * Tries to create an instance without a parent configuration.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoParent() {
+<span class="nc" id="L58">        new SubsetConfiguration(null, &quot;&quot;);</span>
+<span class="nc" id="L59">    }</span>
+
+    @Test
+    public void testGetProperty()
+    {
+<span class="fc" id="L64">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L65">        conf.setProperty(&quot;test.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L66">        conf.setProperty(&quot;testing.key2&quot;, &quot;value1&quot;);</span>
+
+<span class="fc" id="L68">        final Configuration subset = new SubsetConfiguration(conf, &quot;test&quot;, &quot;.&quot;);</span>
+<span class="fc" id="L69">        assertFalse(&quot;the subset is empty&quot;, subset.isEmpty());</span>
+<span class="fc" id="L70">        assertTrue(&quot;'key1' not found in the subset&quot;, subset.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L71">        assertFalse(&quot;'ng.key2' found in the subset&quot;, subset.containsKey(&quot;ng.key2&quot;));</span>
+<span class="fc" id="L72">    }</span>
+
+    @Test
+    public void testSetProperty()
+    {
+<span class="fc" id="L77">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L78">        final Configuration subset = new SubsetConfiguration(conf, &quot;test&quot;, &quot;.&quot;);</span>
+
+        // set a property in the subset and check the parent
+<span class="fc" id="L81">        subset.setProperty(&quot;key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L82">        assertEquals(&quot;key1 in the subset configuration&quot;, &quot;value1&quot;, subset.getProperty(&quot;key1&quot;));</span>
+<span class="fc" id="L83">        assertEquals(&quot;test.key1 in the parent configuration&quot;, &quot;value1&quot;, conf.getProperty(&quot;test.key1&quot;));</span>
+
+        // set a property in the parent and check in the subset
+<span class="fc" id="L86">        conf.setProperty(&quot;test.key2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L87">        assertEquals(&quot;test.key2 in the parent configuration&quot;, &quot;value2&quot;, conf.getProperty(&quot;test.key2&quot;));</span>
+<span class="fc" id="L88">        assertEquals(&quot;key2 in the subset configuration&quot;, &quot;value2&quot;, subset.getProperty(&quot;key2&quot;));</span>
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testGetParentKey()
+    {
+<span class="fc" id="L94">        final Configuration conf = new BaseConfiguration();</span>
+        // subset with delimiter
+<span class="fc" id="L96">        SubsetConfiguration subset = new SubsetConfiguration(conf, &quot;prefix&quot;, &quot;.&quot;);</span>
+<span class="fc" id="L97">        assertEquals(&quot;parent key for \&quot;key\&quot;&quot;, &quot;prefix.key&quot;, subset.getParentKey(&quot;key&quot;));</span>
+<span class="fc" id="L98">        assertEquals(&quot;parent key for \&quot;\&quot;&quot;, &quot;prefix&quot;, subset.getParentKey(&quot;&quot;));</span>
+
+        // subset without delimiter
+<span class="fc" id="L101">        subset = new SubsetConfiguration(conf, &quot;prefix&quot;, null);</span>
+<span class="fc" id="L102">        assertEquals(&quot;parent key for \&quot;key\&quot;&quot;, &quot;prefixkey&quot;, subset.getParentKey(&quot;key&quot;));</span>
+<span class="fc" id="L103">        assertEquals(&quot;parent key for \&quot;\&quot;&quot;, &quot;prefix&quot;, subset.getParentKey(&quot;&quot;));</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testGetChildKey()
+    {
+<span class="fc" id="L109">        final Configuration conf = new BaseConfiguration();</span>
+        // subset with delimiter
+<span class="fc" id="L111">        SubsetConfiguration subset = new SubsetConfiguration(conf, &quot;prefix&quot;, &quot;.&quot;);</span>
+<span class="fc" id="L112">        assertEquals(&quot;parent key for \&quot;prefixkey\&quot;&quot;, &quot;key&quot;, subset.getChildKey(&quot;prefix.key&quot;));</span>
+<span class="fc" id="L113">        assertEquals(&quot;parent key for \&quot;prefix\&quot;&quot;, &quot;&quot;, subset.getChildKey(&quot;prefix&quot;));</span>
+
+        // subset without delimiter
+<span class="fc" id="L116">        subset = new SubsetConfiguration(conf, &quot;prefix&quot;, null);</span>
+<span class="fc" id="L117">        assertEquals(&quot;parent key for \&quot;prefixkey\&quot;&quot;, &quot;key&quot;, subset.getChildKey(&quot;prefixkey&quot;));</span>
+<span class="fc" id="L118">        assertEquals(&quot;parent key for \&quot;prefix\&quot;&quot;, &quot;&quot;, subset.getChildKey(&quot;prefix&quot;));</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    public void testGetKeys()
+    {
+<span class="fc" id="L124">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L125">        conf.setProperty(&quot;test&quot;, &quot;value0&quot;);</span>
+<span class="fc" id="L126">        conf.setProperty(&quot;test.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L127">        conf.setProperty(&quot;testing.key2&quot;, &quot;value1&quot;);</span>
+
+<span class="fc" id="L129">        final Configuration subset = new SubsetConfiguration(conf, &quot;test&quot;, &quot;.&quot;);</span>
+
+<span class="fc" id="L131">        final Iterator&lt;String&gt; it = subset.getKeys();</span>
+<span class="fc" id="L132">        assertEquals(&quot;1st key&quot;, &quot;&quot;, it.next());</span>
+<span class="fc" id="L133">        assertEquals(&quot;2nd key&quot;, &quot;key1&quot;, it.next());</span>
+<span class="fc" id="L134">        assertFalse(&quot;too many elements&quot;, it.hasNext());</span>
+<span class="fc" id="L135">    }</span>
+
+    @Test
+    public void testGetKeysWithPrefix()
+    {
+<span class="fc" id="L140">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L141">        conf.setProperty(&quot;test.abc&quot;, &quot;value0&quot;);</span>
+<span class="fc" id="L142">        conf.setProperty(&quot;test.abc.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L143">        conf.setProperty(&quot;test.abcdef.key2&quot;, &quot;value1&quot;);</span>
+
+<span class="fc" id="L145">        final Configuration subset = new SubsetConfiguration(conf, &quot;test&quot;, &quot;.&quot;);</span>
+
+<span class="fc" id="L147">        final Iterator&lt;String&gt; it = subset.getKeys(&quot;abc&quot;);</span>
+<span class="fc" id="L148">        assertEquals(&quot;1st key&quot;, &quot;abc&quot;, it.next());</span>
+<span class="fc" id="L149">        assertEquals(&quot;2nd key&quot;, &quot;abc.key1&quot;, it.next());</span>
+<span class="fc" id="L150">        assertFalse(&quot;too many elements&quot;, it.hasNext());</span>
+<span class="fc" id="L151">    }</span>
+
+    @Test
+    public void testGetList()
+    {
+<span class="fc" id="L156">        final BaseConfiguration conf = new BaseConfiguration();</span>
+<span class="fc" id="L157">        conf.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L158">        conf.setProperty(&quot;test.abc&quot;, &quot;value0,value1&quot;);</span>
+<span class="fc" id="L159">        conf.addProperty(&quot;test.abc&quot;, &quot;value3&quot;);</span>
+
+<span class="fc" id="L161">        final Configuration subset = new SubsetConfiguration(conf, &quot;test&quot;, &quot;.&quot;);</span>
+<span class="fc" id="L162">        final List&lt;Object&gt; list = subset.getList(&quot;abc&quot;, new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L163">        assertEquals(3, list.size());</span>
+<span class="fc" id="L164">    }</span>
+
+    @Test
+    public void testGetParent()
+    {
+<span class="fc" id="L169">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L170">        final SubsetConfiguration subset = new SubsetConfiguration(conf, &quot;prefix&quot;, &quot;.&quot;);</span>
+
+<span class="fc" id="L172">        assertEquals(&quot;parent&quot;, conf, subset.getParent());</span>
+<span class="fc" id="L173">    }</span>
+
+    @Test
+    public void testGetPrefix()
+    {
+<span class="fc" id="L178">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L179">        final SubsetConfiguration subset = new SubsetConfiguration(conf, &quot;prefix&quot;, &quot;.&quot;);</span>
+
+<span class="fc" id="L181">        assertEquals(&quot;prefix&quot;, &quot;prefix&quot;, subset.getPrefix());</span>
+<span class="fc" id="L182">    }</span>
+
+    @Test
+    public void testSetPrefix()
+    {
+<span class="fc" id="L187">        final Configuration conf = new BaseConfiguration();</span>
+<span class="fc" id="L188">        final SubsetConfiguration subset = new SubsetConfiguration(conf, null, &quot;.&quot;);</span>
+<span class="fc" id="L189">        subset.setPrefix(&quot;prefix&quot;);</span>
+
+<span class="fc" id="L191">        assertEquals(&quot;prefix&quot;, &quot;prefix&quot;, subset.getPrefix());</span>
+<span class="fc" id="L192">    }</span>
+
+    @Test
+    public void testThrowExceptionOnMissing()
+    {
+<span class="fc" id="L197">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L198">        config.setThrowExceptionOnMissing(true);</span>
+
+<span class="fc" id="L200">        final SubsetConfiguration subset = new SubsetConfiguration(config, &quot;prefix&quot;);</span>
+
+        try
+        {
+<span class="nc" id="L204">            subset.getString(&quot;foo&quot;);</span>
+<span class="nc" id="L205">            fail(&quot;NoSuchElementException expected&quot;);</span>
+        }
+<span class="fc" id="L207">        catch (final NoSuchElementException e)</span>
+        {
+            // expected
+<span class="nc" id="L210">        }</span>
+
+<span class="fc" id="L212">        config.setThrowExceptionOnMissing(false);</span>
+<span class="fc" id="L213">        assertNull(subset.getString(&quot;foo&quot;));</span>
+
+
+<span class="fc" id="L216">        subset.setThrowExceptionOnMissing(true);</span>
+        try
+        {
+<span class="nc" id="L219">            config.getString(&quot;foo&quot;);</span>
+<span class="nc" id="L220">            fail(&quot;NoSuchElementException expected&quot;);</span>
+        }
+<span class="fc" id="L222">        catch (final NoSuchElementException e)</span>
+        {
+            // expected
+<span class="nc" id="L225">        }</span>
+<span class="fc" id="L226">    }</span>
+
+    @Test
+    public void testNested() throws Exception
+    {
+<span class="fc" id="L231">        final CombinedConfigurationBuilder builder =</span>
+                new CombinedConfigurationBuilder();
+<span class="fc" id="L233">        builder.configure(new FileBasedBuilderParametersImpl()</span>
+<span class="fc" id="L234">                .setFile(ConfigurationAssert.getTestFile(TEST_FILE)));</span>
+<span class="fc" id="L235">        final Configuration config = builder.getConfiguration();</span>
+<span class="fc" id="L236">        final Configuration subConf = config.subset(&quot;tables.table(0)&quot;);</span>
+<span class="fc" id="L237">        assertTrue(subConf.getKeys().hasNext());</span>
+<span class="fc" id="L238">        final Configuration subSubConf = subConf.subset(&quot;fields.field(1)&quot;);</span>
+<span class="fc" id="L239">        final Iterator&lt;String&gt; itKeys = subSubConf.getKeys();</span>
+<span class="fc" id="L240">        final Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L241">        keys.add(&quot;name&quot;);</span>
+<span class="fc" id="L242">        keys.add(&quot;type&quot;);</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">        while(itKeys.hasNext())</span>
+        {
+<span class="fc" id="L245">            final String k = itKeys.next();</span>
+<span class="fc" id="L246">            assertTrue(keys.contains(k));</span>
+<span class="fc" id="L247">            keys.remove(k);</span>
+<span class="fc" id="L248">        }</span>
+<span class="fc" id="L249">        assertTrue(keys.isEmpty());</span>
+<span class="fc" id="L250">    }</span>
+
+    @Test
+    public void testClear()
+    {
+<span class="fc" id="L255">        final Configuration config = new BaseConfiguration();</span>
+<span class="fc" id="L256">        config.setProperty(&quot;test.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L257">        config.setProperty(&quot;testing.key2&quot;, &quot;value1&quot;);</span>
+
+<span class="fc" id="L259">        final Configuration subset = config.subset(&quot;test&quot;);</span>
+<span class="fc" id="L260">        subset.clear();</span>
+
+<span class="fc" id="L262">        assertTrue(&quot;the subset is not empty&quot;, subset.isEmpty());</span>
+<span class="fc" id="L263">        assertFalse(&quot;the parent configuration is empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L264">    }</span>
+
+    /**
+     * Tests whether a list delimiter handler is used correctly.
+     */
+    @Test
+    public void testListDelimiterHandling()
+    {
+<span class="fc" id="L272">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L273">        final Configuration subset = config.subset(&quot;prefix&quot;);</span>
+<span class="fc" id="L274">        config.setListDelimiterHandler(new DefaultListDelimiterHandler('/'));</span>
+<span class="fc" id="L275">        subset.addProperty(&quot;list&quot;, &quot;a/b/c&quot;);</span>
+<span class="fc" id="L276">        assertEquals(&quot;Wrong size of list&quot;, 3, config.getList(&quot;prefix.list&quot;)</span>
+<span class="fc" id="L277">                .size());</span>
+
+<span class="fc" id="L279">        ((AbstractConfiguration) subset)</span>
+<span class="fc" id="L280">                .setListDelimiterHandler(new DefaultListDelimiterHandler(';'));</span>
+<span class="fc" id="L281">        subset.addProperty(&quot;list2&quot;, &quot;a;b;c&quot;);</span>
+<span class="fc" id="L282">        assertEquals(&quot;Wrong size of list2&quot;, 3, config.getList(&quot;prefix.list2&quot;)</span>
+<span class="fc" id="L283">                .size());</span>
+<span class="fc" id="L284">    }</span>
+
+    /**
+     * Tests whether the list delimiter handler is also set for the parent
+     * configuration.
+     */
+    @Test
+    public void testSetListDelimiterHandlerInParent()
+    {
+<span class="fc" id="L293">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L294">        final AbstractConfiguration subset =</span>
+<span class="fc" id="L295">                (AbstractConfiguration) config.subset(&quot;prefix&quot;);</span>
+<span class="fc" id="L296">        final ListDelimiterHandler listHandler = new DefaultListDelimiterHandler(',');</span>
+<span class="fc" id="L297">        subset.setListDelimiterHandler(listHandler);</span>
+<span class="fc" id="L298">        assertSame(&quot;Handler not passed to parent&quot;, listHandler,</span>
+<span class="fc" id="L299">                config.getListDelimiterHandler());</span>
+<span class="fc" id="L300">    }</span>
+
+    /**
+     * Tests whether the list delimiter handler from the parent configuration is
+     * used.
+     */
+    @Test
+    public void testGetListDelimiterHandlerFromParent()
+    {
+<span class="fc" id="L309">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L310">        final AbstractConfiguration subset =</span>
+<span class="fc" id="L311">                (AbstractConfiguration) config.subset(&quot;prefix&quot;);</span>
+<span class="fc" id="L312">        final ListDelimiterHandler listHandler = new DefaultListDelimiterHandler(',');</span>
+<span class="fc" id="L313">        config.setListDelimiterHandler(listHandler);</span>
+<span class="fc" id="L314">        assertSame(&quot;Not list handler from parent&quot;, listHandler,</span>
+<span class="fc" id="L315">                subset.getListDelimiterHandler());</span>
+<span class="fc" id="L316">    }</span>
+
+    /**
+     * Tests the case that the parent configuration is not derived from
+     * AbstractConfiguration and thus does not support a list delimiter handler.
+     */
+    @Test
+    public void testSetListDelimiterHandlerParentNotSupported()
+    {
+<span class="fc" id="L325">        final Configuration config = EasyMock.createNiceMock(Configuration.class);</span>
+<span class="fc" id="L326">        EasyMock.replay(config);</span>
+<span class="fc" id="L327">        final SubsetConfiguration subset = new SubsetConfiguration(config, &quot;prefix&quot;);</span>
+<span class="fc" id="L328">        final ListDelimiterHandler listHandler = new DefaultListDelimiterHandler(',');</span>
+<span class="fc" id="L329">        subset.setListDelimiterHandler(listHandler);</span>
+<span class="fc" id="L330">        assertSame(&quot;List delimiter handler not set&quot;, listHandler,</span>
+<span class="fc" id="L331">                subset.getListDelimiterHandler());</span>
+<span class="fc" id="L332">    }</span>
+
+    /**
+     * Tests manipulating the interpolator.
+     */
+    @Test
+    public void testInterpolator()
+    {
+<span class="fc" id="L340">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L341">        final AbstractConfiguration subset = (AbstractConfiguration) config</span>
+<span class="fc" id="L342">                .subset(&quot;prefix&quot;);</span>
+<span class="fc" id="L343">        InterpolationTestHelper.testGetInterpolator(subset);</span>
+<span class="fc" id="L344">    }</span>
+
+    @Test
+    public void testLocalLookupsInInterpolatorAreInherited() {
+<span class="fc" id="L348">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L349">        final ConfigurationInterpolator interpolator = config.getInterpolator();</span>
+<span class="fc" id="L350">        interpolator.registerLookup(&quot;brackets&quot;, new Lookup(){</span>
+
+            @Override
+            public String lookup(final String key) {
+<span class="fc" id="L354">                return &quot;(&quot; + key +&quot;)&quot;;</span>
+            }
+
+        });
+<span class="fc" id="L358">        config.setProperty(&quot;prefix.var&quot;, &quot;${brackets:x}&quot;);</span>
+<span class="fc" id="L359">        final AbstractConfiguration subset = (AbstractConfiguration) config</span>
+<span class="fc" id="L360">                .subset(&quot;prefix&quot;);</span>
+<span class="fc" id="L361">        assertEquals(&quot;Local lookup was not inherited&quot;, &quot;(x)&quot;, subset</span>
+<span class="fc" id="L362">                .getString(&quot;var&quot;, &quot;&quot;));</span>
+<span class="fc" id="L363">    }</span>
+
+    @Test
+    public void testInterpolationForKeysOfTheParent() {
+<span class="fc" id="L367">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L368">        config.setProperty(&quot;test&quot;, &quot;junit&quot;);</span>
+<span class="fc" id="L369">        config.setProperty(&quot;prefix.key&quot;, &quot;${test}&quot;);</span>
+<span class="fc" id="L370">        final AbstractConfiguration subset = (AbstractConfiguration) config</span>
+<span class="fc" id="L371">                .subset(&quot;prefix&quot;);</span>
+<span class="fc" id="L372">        assertEquals(&quot;Interpolation does not resolve parent keys&quot;, &quot;junit&quot;,</span>
+<span class="fc" id="L373">                subset.getString(&quot;key&quot;, &quot;&quot;));</span>
+<span class="fc" id="L374">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

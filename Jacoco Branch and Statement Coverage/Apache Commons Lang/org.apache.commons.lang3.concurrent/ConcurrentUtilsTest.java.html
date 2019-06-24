@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConcurrentUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">ConcurrentUtilsTest.java</span></div><h1>ConcurrentUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.easymock.EasyMock;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for {@link ConcurrentUtils}.
+ */
+<span class="fc" id="L39">public class ConcurrentUtilsTest {</span>
+    /**
+     * Tests creating a ConcurrentException with a runtime exception as cause.
+     */
+    @Test
+    public void testConcurrentExceptionCauseUnchecked() {
+<span class="pc" id="L45">        assertThrows(IllegalArgumentException.class, () -&gt; new ConcurrentException(new RuntimeException()));</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Tests creating a ConcurrentException with an error as cause.
+     */
+    @Test
+    public void testConcurrentExceptionCauseError() {
+<span class="pc" id="L53">        assertThrows(IllegalArgumentException.class, () -&gt; new ConcurrentException(&quot;An error&quot;, new Error()));</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Tests creating a ConcurrentException with null as cause.
+     */
+    @Test
+    public void testConcurrentExceptionCauseNull() {
+<span class="pc" id="L61">        assertThrows(IllegalArgumentException.class, () -&gt; new ConcurrentException(null));</span>
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Tries to create a ConcurrentRuntimeException with a runtime as cause.
+     */
+    @Test
+    public void testConcurrentRuntimeExceptionCauseUnchecked() {
+<span class="pc" id="L69">        assertThrows(IllegalArgumentException.class, () -&gt; new ConcurrentRuntimeException(new RuntimeException()));</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Tries to create a ConcurrentRuntimeException with an error as cause.
+     */
+    @Test
+    public void testConcurrentRuntimeExceptionCauseError() {
+<span class="pc" id="L77">        assertThrows(IllegalArgumentException.class, () -&gt; new ConcurrentRuntimeException(&quot;An error&quot;, new Error()));</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Tries to create a ConcurrentRuntimeException with null as cause.
+     */
+    @Test
+    public void testConcurrentRuntimeExceptionCauseNull() {
+<span class="pc" id="L85">        assertThrows(IllegalArgumentException.class, () -&gt; new ConcurrentRuntimeException(null));</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Tests extractCause() for a null exception.
+     */
+    @Test
+    public void testExtractCauseNull() {
+<span class="fc" id="L93">        assertNull(ConcurrentUtils.extractCause(null), &quot;Non null result&quot;);</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Tests extractCause() if the cause of the passed in exception is null.
+     */
+    @Test
+    public void testExtractCauseNullCause() {
+<span class="fc" id="L101">        assertNull(ConcurrentUtils.extractCause(new ExecutionException(&quot;Test&quot;, null)), &quot;Non null result&quot;);</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Tests extractCause() if the cause is an error.
+     */
+    @Test
+    public void testExtractCauseError() {
+<span class="fc" id="L109">        final Error err = new AssertionError(&quot;Test&quot;);</span>
+<span class="fc" id="L110">        AssertionError e =</span>
+<span class="pc" id="L111">                assertThrows(AssertionError.class, () -&gt; ConcurrentUtils.extractCause(new ExecutionException(err)));</span>
+<span class="fc" id="L112">        assertEquals(err, e, &quot;Wrong error&quot;);</span>
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Tests extractCause() if the cause is an unchecked exception.
+     */
+    @Test
+    public void testExtractCauseUncheckedException() {
+<span class="fc" id="L120">        final RuntimeException rex = new RuntimeException(&quot;Test&quot;);</span>
+<span class="pc" id="L121">        assertThrows(RuntimeException.class, () -&gt; ConcurrentUtils.extractCause(new ExecutionException(rex)));</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Tests extractCause() if the cause is a checked exception.
+     */
+    @Test
+    public void testExtractCauseChecked() {
+<span class="fc" id="L129">        final Exception ex = new Exception(&quot;Test&quot;);</span>
+<span class="fc" id="L130">        final ConcurrentException cex = ConcurrentUtils</span>
+<span class="fc" id="L131">                .extractCause(new ExecutionException(ex));</span>
+<span class="fc" id="L132">        assertSame(ex, cex.getCause(), &quot;Wrong cause&quot;);</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Tests extractCauseUnchecked() for a null exception.
+     */
+    @Test
+    public void testExtractCauseUncheckedNull() {
+<span class="fc" id="L140">        assertNull(ConcurrentUtils.extractCauseUnchecked(null), &quot;Non null result&quot;);</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Tests extractCauseUnchecked() if the cause of the passed in exception is null.
+     */
+    @Test
+    public void testExtractCauseUncheckedNullCause() {
+<span class="fc" id="L148">        assertNull(ConcurrentUtils.extractCauseUnchecked(new ExecutionException(&quot;Test&quot;, null)), &quot;Non null result&quot;);</span>
+<span class="fc" id="L149">    }</span>
+
+    /**
+     * Tests extractCauseUnchecked() if the cause is an error.
+     */
+    @Test
+    public void testExtractCauseUncheckedError() {
+<span class="fc" id="L156">        final Error err = new AssertionError(&quot;Test&quot;);</span>
+<span class="pc" id="L157">        Error e = assertThrows(Error.class, () -&gt; ConcurrentUtils.extractCauseUnchecked(new ExecutionException(err)));</span>
+<span class="fc" id="L158">        assertEquals(err, e, &quot;Wrong error&quot;);</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Tests extractCauseUnchecked() if the cause is an unchecked exception.
+     */
+    @Test
+    public void testExtractCauseUncheckedUncheckedException() {
+<span class="fc" id="L166">        final RuntimeException rex = new RuntimeException(&quot;Test&quot;);</span>
+<span class="fc" id="L167">        RuntimeException r =</span>
+<span class="pc" id="L168">                assertThrows(RuntimeException.class, () -&gt; ConcurrentUtils.extractCauseUnchecked(new ExecutionException(rex)));</span>
+<span class="fc" id="L169">        assertEquals(rex, r, &quot;Wrong exception&quot;);</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Tests extractCauseUnchecked() if the cause is a checked exception.
+     */
+    @Test
+    public void testExtractCauseUncheckedChecked() {
+<span class="fc" id="L177">        final Exception ex = new Exception(&quot;Test&quot;);</span>
+<span class="fc" id="L178">        final ConcurrentRuntimeException cex = ConcurrentUtils</span>
+<span class="fc" id="L179">                .extractCauseUnchecked(new ExecutionException(ex));</span>
+<span class="fc" id="L180">        assertSame(ex, cex.getCause(), &quot;Wrong cause&quot;);</span>
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Tests handleCause() if the cause is an error.
+     */
+    @Test
+    public void testHandleCauseError() {
+<span class="fc" id="L188">        final Error err = new AssertionError(&quot;Test&quot;);</span>
+<span class="pc" id="L189">        Error e = assertThrows(Error.class, () -&gt; ConcurrentUtils.handleCause(new ExecutionException(err)));</span>
+<span class="fc" id="L190">        assertEquals(err, e, &quot;Wrong error&quot;);</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Tests handleCause() if the cause is an unchecked exception.
+     */
+    @Test
+    public void testHandleCauseUncheckedException() {
+<span class="fc" id="L198">        final RuntimeException rex = new RuntimeException(&quot;Test&quot;);</span>
+<span class="fc" id="L199">        RuntimeException r =</span>
+<span class="pc" id="L200">                assertThrows(RuntimeException.class, () -&gt; ConcurrentUtils.handleCause(new ExecutionException(rex)));</span>
+<span class="fc" id="L201">        assertEquals(rex, r, &quot;Wrong exception&quot;);</span>
+<span class="fc" id="L202">    }</span>
+
+    /**
+     * Tests handleCause() if the cause is a checked exception.
+     */
+    @Test
+    public void testHandleCauseChecked() {
+<span class="fc" id="L209">        final Exception ex = new Exception(&quot;Test&quot;);</span>
+<span class="fc" id="L210">        ConcurrentException cex =</span>
+<span class="pc" id="L211">                assertThrows(ConcurrentException.class, () -&gt; ConcurrentUtils.handleCause(new ExecutionException(ex)));</span>
+<span class="fc" id="L212">        assertEquals(ex, cex.getCause(), &quot;Wrong cause&quot;);</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * Tests handleCause() for a null parameter or a null cause. In this case
+     * the method should do nothing. We can only test that no exception is
+     * thrown.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testHandleCauseNull() throws ConcurrentException {
+<span class="fc" id="L224">        ConcurrentUtils.handleCause(null);</span>
+<span class="fc" id="L225">        ConcurrentUtils.handleCause(new ExecutionException(&quot;Test&quot;, null));</span>
+<span class="fc" id="L226">    }</span>
+
+    /**
+     * Tests handleCauseUnchecked() if the cause is an error.
+     */
+    @Test
+    public void testHandleCauseUncheckedError() {
+<span class="fc" id="L233">        final Error err = new AssertionError(&quot;Test&quot;);</span>
+<span class="pc" id="L234">        Error e = assertThrows(Error.class, () -&gt; ConcurrentUtils.handleCauseUnchecked(new ExecutionException(err)));</span>
+<span class="fc" id="L235">        assertEquals(err, e, &quot;Wrong error&quot;);</span>
+<span class="fc" id="L236">    }</span>
+
+    /**
+     * Tests handleCauseUnchecked() if the cause is an unchecked exception.
+     */
+    @Test
+    public void testHandleCauseUncheckedUncheckedException() {
+<span class="fc" id="L243">        final RuntimeException rex = new RuntimeException(&quot;Test&quot;);</span>
+<span class="fc" id="L244">        RuntimeException r =</span>
+<span class="pc" id="L245">                assertThrows(RuntimeException.class, () -&gt; ConcurrentUtils.handleCauseUnchecked(new ExecutionException(rex)));</span>
+<span class="fc" id="L246">        assertEquals(rex, r, &quot;Wrong exception&quot;);</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Tests handleCauseUnchecked() if the cause is a checked exception.
+     */
+    @Test
+    public void testHandleCauseUncheckedChecked() {
+<span class="fc" id="L254">        final Exception ex = new Exception(&quot;Test&quot;);</span>
+<span class="fc" id="L255">        ConcurrentRuntimeException crex =</span>
+<span class="pc" id="L256">                assertThrows(ConcurrentRuntimeException.class, () -&gt; ConcurrentUtils.handleCauseUnchecked(new ExecutionException(ex)));</span>
+<span class="fc" id="L257">        assertEquals(ex, crex.getCause(), &quot;Wrong cause&quot;);</span>
+<span class="fc" id="L258">    }</span>
+
+    /**
+     * Tests handleCauseUnchecked() for a null parameter or a null cause. In
+     * this case the method should do nothing. We can only test that no
+     * exception is thrown.
+     */
+    @Test
+    public void testHandleCauseUncheckedNull() {
+<span class="fc" id="L267">        ConcurrentUtils.handleCauseUnchecked(null);</span>
+<span class="fc" id="L268">        ConcurrentUtils.handleCauseUnchecked(new ExecutionException(&quot;Test&quot;,</span>
+                null));
+<span class="fc" id="L270">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests initialize() for a null argument.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testInitializeNull() throws ConcurrentException {
+<span class="fc" id="L280">        assertNull(ConcurrentUtils.initialize(null), &quot;Got a result&quot;);</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Tests a successful initialize() operation.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testInitialize() throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L292">        ConcurrentInitializer&lt;Object&gt; init = EasyMock</span>
+<span class="fc" id="L293">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L294">        final Object result = new Object();</span>
+<span class="fc" id="L295">        EasyMock.expect(init.get()).andReturn(result);</span>
+<span class="fc" id="L296">        EasyMock.replay(init);</span>
+<span class="fc" id="L297">        assertSame(result, ConcurrentUtils.initialize(init), &quot;Wrong result object&quot;);</span>
+<span class="fc" id="L298">        EasyMock.verify(init);</span>
+<span class="fc" id="L299">    }</span>
+
+    /**
+     * Tests initializeUnchecked() for a null argument.
+     */
+    @Test
+    public void testInitializeUncheckedNull() {
+<span class="fc" id="L306">        assertNull(ConcurrentUtils.initializeUnchecked(null), &quot;Got a result&quot;);</span>
+<span class="fc" id="L307">    }</span>
+
+    /**
+     * Tests creating ConcurrentRuntimeException with no arguments.
+     */
+    @Test
+    public void testUninitializedConcurrentRuntimeException() {
+<span class="fc" id="L314">        assertNotNull(new ConcurrentRuntimeException(), &quot;Error creating empty ConcurrentRuntimeException&quot;);</span>
+<span class="fc" id="L315">    }</span>
+
+    /**
+     * Tests a successful initializeUnchecked() operation.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testInitializeUnchecked() throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L326">        ConcurrentInitializer&lt;Object&gt; init = EasyMock</span>
+<span class="fc" id="L327">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L328">        final Object result = new Object();</span>
+<span class="fc" id="L329">        EasyMock.expect(init.get()).andReturn(result);</span>
+<span class="fc" id="L330">        EasyMock.replay(init);</span>
+<span class="fc" id="L331">        assertSame(result, ConcurrentUtils.initializeUnchecked(init), &quot;Wrong result object&quot;);</span>
+<span class="fc" id="L332">        EasyMock.verify(init);</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * Tests whether exceptions are correctly handled by initializeUnchecked().
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testInitializeUncheckedEx() throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L344">        ConcurrentInitializer&lt;Object&gt; init = EasyMock</span>
+<span class="fc" id="L345">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L346">        final Exception cause = new Exception();</span>
+<span class="fc" id="L347">        EasyMock.expect(init.get()).andThrow(new ConcurrentException(cause));</span>
+<span class="fc" id="L348">        EasyMock.replay(init);</span>
+<span class="fc" id="L349">        ConcurrentRuntimeException crex =</span>
+<span class="pc" id="L350">                assertThrows(ConcurrentRuntimeException.class, () -&gt; ConcurrentUtils.initializeUnchecked(init));</span>
+<span class="fc" id="L351">        assertSame(cause, crex.getCause(), &quot;Wrong cause&quot;);</span>
+<span class="fc" id="L352">        EasyMock.verify(init);</span>
+<span class="fc" id="L353">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests constant future.
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testConstantFuture_Integer() throws Exception {
+<span class="fc" id="L363">        final Integer value = Integer.valueOf(5);</span>
+<span class="fc" id="L364">        final Future&lt;Integer&gt; test = ConcurrentUtils.constantFuture(value);</span>
+<span class="fc" id="L365">        assertTrue(test.isDone());</span>
+<span class="fc" id="L366">        assertSame(value, test.get());</span>
+<span class="fc" id="L367">        assertSame(value, test.get(1000, TimeUnit.SECONDS));</span>
+<span class="fc" id="L368">        assertSame(value, test.get(1000, null));</span>
+<span class="fc" id="L369">        assertFalse(test.isCancelled());</span>
+<span class="fc" id="L370">        assertFalse(test.cancel(true));</span>
+<span class="fc" id="L371">        assertFalse(test.cancel(false));</span>
+<span class="fc" id="L372">    }</span>
+
+    /**
+     * Tests constant future.
+     *
+     * @throws java.lang.Exception so we don't have to catch it
+     */
+    @Test
+    public void testConstantFuture_null() throws Exception {
+<span class="fc" id="L381">        final Integer value = null;</span>
+<span class="fc" id="L382">        final Future&lt;Integer&gt; test = ConcurrentUtils.constantFuture(value);</span>
+<span class="fc" id="L383">        assertTrue(test.isDone());</span>
+<span class="fc" id="L384">        assertSame(value, test.get());</span>
+<span class="fc" id="L385">        assertSame(value, test.get(1000, TimeUnit.SECONDS));</span>
+<span class="fc" id="L386">        assertSame(value, test.get(1000, null));</span>
+<span class="fc" id="L387">        assertFalse(test.isCancelled());</span>
+<span class="fc" id="L388">        assertFalse(test.cancel(true));</span>
+<span class="fc" id="L389">        assertFalse(test.cancel(false));</span>
+<span class="fc" id="L390">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests putIfAbsent() if the map contains the key in question.
+     */
+    @Test
+    public void testPutIfAbsentKeyPresent() {
+<span class="fc" id="L398">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L399">        final Integer value = 42;</span>
+<span class="fc" id="L400">        final ConcurrentMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L401">        map.put(key, value);</span>
+<span class="fc" id="L402">        assertEquals(value, ConcurrentUtils.putIfAbsent(map, key, 0), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L403">        assertEquals(value, map.get(key), &quot;Wrong value in map&quot;);</span>
+<span class="fc" id="L404">    }</span>
+
+    /**
+     * Tests putIfAbsent() if the map does not contain the key in question.
+     */
+    @Test
+    public void testPutIfAbsentKeyNotPresent() {
+<span class="fc" id="L411">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L412">        final Integer value = 42;</span>
+<span class="fc" id="L413">        final ConcurrentMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L414">        assertEquals(value, ConcurrentUtils.putIfAbsent(map, key, value), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L415">        assertEquals(value, map.get(key), &quot;Wrong value in map&quot;);</span>
+<span class="fc" id="L416">    }</span>
+
+    /**
+     * Tests putIfAbsent() if a null map is passed in.
+     */
+    @Test
+    public void testPutIfAbsentNullMap() {
+<span class="fc" id="L423">        assertNull(ConcurrentUtils.putIfAbsent(null, &quot;test&quot;, 100), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L424">    }</span>
+
+    /**
+     * Tests createIfAbsent() if the key is found in the map.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testCreateIfAbsentKeyPresent() throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L435">        ConcurrentInitializer&lt;Integer&gt; init = EasyMock</span>
+<span class="fc" id="L436">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L437">        EasyMock.replay(init);</span>
+<span class="fc" id="L438">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L439">        final Integer value = 42;</span>
+<span class="fc" id="L440">        final ConcurrentMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L441">        map.put(key, value);</span>
+<span class="fc" id="L442">        assertEquals(value, ConcurrentUtils.createIfAbsent(map, key, init), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L443">        assertEquals(value, map.get(key), &quot;Wrong value in map&quot;);</span>
+<span class="fc" id="L444">        EasyMock.verify(init);</span>
+<span class="fc" id="L445">    }</span>
+
+    /**
+     * Tests createIfAbsent() if the map does not contain the key in question.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testCreateIfAbsentKeyNotPresent() throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L456">        ConcurrentInitializer&lt;Integer&gt; init = EasyMock</span>
+<span class="fc" id="L457">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L458">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L459">        final Integer value = 42;</span>
+<span class="fc" id="L460">        EasyMock.expect(init.get()).andReturn(value);</span>
+<span class="fc" id="L461">        EasyMock.replay(init);</span>
+<span class="fc" id="L462">        final ConcurrentMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L463">        assertEquals(value, ConcurrentUtils.createIfAbsent(map, key, init), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L464">        assertEquals(value, map.get(key), &quot;Wrong value in map&quot;);</span>
+<span class="fc" id="L465">        EasyMock.verify(init);</span>
+<span class="fc" id="L466">    }</span>
+
+    /**
+     * Tests createIfAbsent() if a null map is passed in.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testCreateIfAbsentNullMap() throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L477">        ConcurrentInitializer&lt;Integer&gt; init = EasyMock</span>
+<span class="fc" id="L478">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L479">        EasyMock.replay(init);</span>
+<span class="fc" id="L480">        assertNull(ConcurrentUtils.createIfAbsent(null, &quot;test&quot;, init), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L481">        EasyMock.verify(init);</span>
+<span class="fc" id="L482">    }</span>
+
+    /**
+     * Tests createIfAbsent() if a null initializer is passed in.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testCreateIfAbsentNullInit() throws ConcurrentException {
+<span class="fc" id="L491">        final ConcurrentMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L492">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L493">        final Integer value = 42;</span>
+<span class="fc" id="L494">        map.put(key, value);</span>
+<span class="fc" id="L495">        assertNull(ConcurrentUtils.createIfAbsent(map, key, null), &quot;Wrong result&quot;);</span>
+<span class="fc" id="L496">        assertEquals(value, map.get(key), &quot;Map was changed&quot;);</span>
+<span class="fc" id="L497">    }</span>
+
+    /**
+     * Tests createIfAbsentUnchecked() if no exception is thrown.
+     */
+    @Test
+    public void testCreateIfAbsentUncheckedSuccess() {
+<span class="fc" id="L504">        final String key = &quot;testKey&quot;;</span>
+<span class="fc" id="L505">        final Integer value = 42;</span>
+<span class="fc" id="L506">        final ConcurrentMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L507">        assertEquals(value, ConcurrentUtils.createIfAbsentUnchecked(map, key, new ConstantInitializer&lt;&gt;(value)),</span>
+                &quot;Wrong result&quot;);
+<span class="fc" id="L509">        assertEquals(value, map.get(key), &quot;Wrong value in map&quot;);</span>
+<span class="fc" id="L510">    }</span>
+
+    /**
+     * Tests createIfAbsentUnchecked() if an exception is thrown.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     */
+    @Test
+    public void testCreateIfAbsentUncheckedException()
+            throws ConcurrentException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L522">        ConcurrentInitializer&lt;Integer&gt; init = EasyMock</span>
+<span class="fc" id="L523">                .createMock(ConcurrentInitializer.class);</span>
+<span class="fc" id="L524">        final Exception ex = new Exception();</span>
+<span class="fc" id="L525">        EasyMock.expect(init.get()).andThrow(new ConcurrentException(ex));</span>
+<span class="fc" id="L526">        EasyMock.replay(init);</span>
+<span class="fc" id="L527">        ConcurrentRuntimeException crex =</span>
+<span class="fc" id="L528">                assertThrows(</span>
+                        ConcurrentRuntimeException.class,
+<span class="nc" id="L530">                        () -&gt; ConcurrentUtils.createIfAbsentUnchecked(new ConcurrentHashMap&lt;&gt;(), &quot;test&quot;, init));</span>
+<span class="fc" id="L531">        assertEquals(ex, crex.getCause(), &quot;Wrong cause&quot;);</span>
+<span class="fc" id="L532">        EasyMock.verify(init);</span>
+<span class="fc" id="L533">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

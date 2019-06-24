@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDynamicCombinedConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestDynamicCombinedConfiguration.java</span></div><h1>TestDynamicCombinedConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Random;
+
+import org.apache.commons.configuration2.SynchronizerTestImpl.Methods;
+import org.apache.commons.configuration2.builder.BuilderConfigurationWrapperFactory;
+import org.apache.commons.configuration2.builder.ConfigurationBuilder;
+import org.apache.commons.configuration2.builder.CopyObjectDefaultHandler;
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.FileBasedBuilderProperties;
+import org.apache.commons.configuration2.builder.combined.CombinedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.combined.MultiFileConfigurationBuilder;
+import org.apache.commons.configuration2.builder.combined.ReloadingCombinedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.Lookup;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.sync.LockMode;
+import org.apache.commons.configuration2.sync.ReadWriteSynchronizer;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
+<span class="fc" id="L58">public class TestDynamicCombinedConfiguration</span>
+{
+<span class="fc" id="L60">    private static String PATTERN = &quot;${sys:Id}&quot;;</span>
+<span class="fc" id="L61">    private static String PATTERN1 = &quot;target/test-classes/testMultiConfiguration_${sys:Id}.xml&quot;;</span>
+<span class="fc" id="L62">    private static String DEFAULT_FILE = &quot;target/test-classes/testMultiConfiguration_default.xml&quot;;</span>
+<span class="fc" id="L63">    private static final File MULTI_TENENT_FILE = ConfigurationAssert</span>
+<span class="fc" id="L64">            .getTestFile(&quot;testMultiTenentConfigurationBuilder4.xml&quot;);</span>
+<span class="fc" id="L65">    private static final File MULTI_DYNAMIC_FILE = ConfigurationAssert</span>
+<span class="fc" id="L66">            .getTestFile(&quot;testMultiTenentConfigurationBuilder5.xml&quot;);</span>
+
+    /** Constant for the number of test threads. */
+    private static final int THREAD_COUNT = 3;
+
+    /** Constant for the number of loops in the multi-thread tests. */
+    private static final int LOOP_COUNT = 100;
+
+    /** A helper object for creating builder parameters. */
+    private static Parameters parameters;
+
+    /** Helper object for creating temporary files. */
+<span class="fc" id="L78">    @Rule</span>
+    public TemporaryFolder folder = new TemporaryFolder();
+
+    @BeforeClass
+    public static void setUpOnce()
+    {
+<span class="fc" id="L84">        parameters = new Parameters();</span>
+<span class="fc" id="L85">    }</span>
+
+    @Test
+    public void testConfiguration() throws Exception
+    {
+<span class="fc" id="L90">        final DynamicCombinedConfiguration config = new DynamicCombinedConfiguration();</span>
+<span class="fc" id="L91">        final DefaultListDelimiterHandler listHandler = new DefaultListDelimiterHandler(',');</span>
+<span class="fc" id="L92">        config.setListDelimiterHandler(listHandler);</span>
+<span class="fc" id="L93">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L94">        config.setExpressionEngine(engine);</span>
+<span class="fc" id="L95">        config.setKeyPattern(PATTERN);</span>
+<span class="fc" id="L96">        final ConfigurationBuilder&lt;XMLConfiguration&gt; multiBuilder =</span>
+                new MultiFileConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L98">                        XMLConfiguration.class).configure(parameters</span>
+<span class="fc" id="L99">                        .multiFile()</span>
+<span class="fc" id="L100">                        .setFilePattern(PATTERN1)</span>
+<span class="fc" id="L101">                        .setPrefixLookups(</span>
+                                ConfigurationInterpolator
+<span class="fc" id="L103">                                        .getDefaultPrefixLookups())</span>
+<span class="fc" id="L104">                        .setManagedBuilderParameters(</span>
+<span class="fc" id="L105">                                parameters.xml().setExpressionEngine(engine)</span>
+<span class="fc" id="L106">                                        .setListDelimiterHandler(listHandler)));</span>
+<span class="fc" id="L107">        final BuilderConfigurationWrapperFactory wrapFactory =</span>
+                new BuilderConfigurationWrapperFactory();
+<span class="fc" id="L109">        config.addConfiguration(wrapFactory.createBuilderConfigurationWrapper(</span>
+                HierarchicalConfiguration.class, multiBuilder), &quot;Multi&quot;);
+<span class="fc" id="L111">        final XMLConfiguration xml = new XMLConfiguration();</span>
+<span class="fc" id="L112">        xml.setExpressionEngine(engine);</span>
+<span class="fc" id="L113">        final FileHandler handler = new FileHandler(xml);</span>
+<span class="fc" id="L114">        handler.setFile(new File(DEFAULT_FILE));</span>
+<span class="fc" id="L115">        handler.load();</span>
+<span class="fc" id="L116">        config.addConfiguration(xml, &quot;Default&quot;);</span>
+
+<span class="fc" id="L118">        verify(&quot;1001&quot;, config, 15);</span>
+<span class="fc" id="L119">        verify(&quot;1002&quot;, config, 25);</span>
+<span class="fc" id="L120">        verify(&quot;1003&quot;, config, 35);</span>
+<span class="fc" id="L121">        verify(&quot;1004&quot;, config, 50);</span>
+<span class="fc" id="L122">        assertEquals(&quot;a,b,c&quot;, config.getString(&quot;split/list3/@values&quot;));</span>
+<span class="fc" id="L123">        assertEquals(0, config.getMaxIndex(&quot;split/list3/@values&quot;));</span>
+<span class="fc" id="L124">        assertEquals(&quot;a\\,b\\,c&quot;, config.getString(&quot;split/list4/@values&quot;));</span>
+<span class="fc" id="L125">        assertEquals(&quot;OK-1&quot;, config.getString(&quot;buttons/name&quot;));</span>
+<span class="fc" id="L126">        assertEquals(3, config.getMaxIndex(&quot;buttons/name&quot;));</span>
+<span class="fc" id="L127">        assertEquals(&quot;a\\,b\\,c&quot;, config.getString(&quot;split/list2&quot;));</span>
+<span class="fc" id="L128">        assertEquals(&quot;Wrong size&quot;, 18, config.size());</span>
+<span class="fc" id="L129">        config.addProperty(&quot;listDelimiterTest&quot;, &quot;1,2,3&quot;);</span>
+<span class="fc" id="L130">        assertEquals(&quot;List delimiter not detected&quot;, &quot;1&quot;, config.getString(&quot;listDelimiterTest&quot;));</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests whether a configuration can be updated.
+     */
+    @Test
+    public void testUpdateConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L139">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="fc" id="L140">        final CombinedConfigurationBuilder builder =</span>
+                new CombinedConfigurationBuilder();
+<span class="fc" id="L142">        builder.configure(parameters.fileBased().setFile(MULTI_TENENT_FILE)</span>
+<span class="fc" id="L143">                .setSynchronizer(new ReadWriteSynchronizer()));</span>
+<span class="fc" id="L144">        final CombinedConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L145">        config.getConfiguration(1).setProperty(&quot;rowsPerPage&quot;, &quot;25&quot;);</span>
+<span class="fc" id="L146">        assertEquals(&quot;Value not changed&quot;, &quot;25&quot;, config.getString(&quot;rowsPerPage&quot;));</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Prepares a test for calling the Synchronizer. This method creates a test
+     * Synchronizer, installs it at the configuration and returns it.
+     *
+     * @param config the configuration
+     * @return the test Synchronizer
+     */
+    private SynchronizerTestImpl prepareSynchronizerTest(final Configuration config)
+    {
+<span class="fc" id="L158">        final SynchronizerTestImpl sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L159">        config.setSynchronizer(sync);</span>
+<span class="fc" id="L160">        config.lock(LockMode.READ);</span>
+<span class="fc" id="L161">        config.unlock(LockMode.READ); // ensure that root node is constructed</span>
+<span class="fc" id="L162">        sync.clear();</span>
+<span class="fc" id="L163">        return sync;</span>
+    }
+
+    /**
+     * Tests whether adding a configuration is synchronized.
+     */
+    @Test
+    public void testAddConfigurationSynchronized()
+    {
+<span class="fc" id="L172">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L174">        final SynchronizerTestImpl sync = prepareSynchronizerTest(config);</span>
+<span class="fc" id="L175">        config.addConfiguration(new PropertiesConfiguration());</span>
+<span class="fc" id="L176">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Tests whether querying the number of configurations is synchronized.
+     */
+    @Test
+    public void testGetNumberOfConfigurationsSynchronized()
+    {
+<span class="fc" id="L185">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L187">        final SynchronizerTestImpl sync = prepareSynchronizerTest(config);</span>
+<span class="fc" id="L188">        config.getNumberOfConfigurations();</span>
+<span class="fc" id="L189">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L190">    }</span>
+
+    /**
+     * Tests whether querying a configuration by index is synchronized.
+     */
+    @Test
+    public void testGetConfigurationByIdxSynchronized()
+    {
+<span class="fc" id="L198">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L200">        final Configuration child = new PropertiesConfiguration();</span>
+<span class="fc" id="L201">        config.addConfiguration(child);</span>
+<span class="fc" id="L202">        final SynchronizerTestImpl sync = prepareSynchronizerTest(config);</span>
+<span class="fc" id="L203">        assertSame(&quot;Wrong configuration&quot;, child, config.getConfiguration(0));</span>
+<span class="fc" id="L204">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L205">    }</span>
+
+    /**
+     * Tests whether querying a configuration by name is synchronized.
+     */
+    @Test
+    public void testGetConfigurationByNameSynchronized()
+    {
+<span class="fc" id="L213">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L215">        final SynchronizerTestImpl sync = prepareSynchronizerTest(config);</span>
+<span class="fc" id="L216">        assertNull(&quot;Wrong result&quot;, config.getConfiguration(&quot;unknown config&quot;));</span>
+<span class="fc" id="L217">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Tests whether querying the set of configuration names is synchronized.
+     */
+    @Test
+    public void testGetConfigurationNamesSynchronized()
+    {
+<span class="fc" id="L226">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L228">        final SynchronizerTestImpl sync = prepareSynchronizerTest(config);</span>
+<span class="fc" id="L229">        config.getConfigurationNames();</span>
+<span class="fc" id="L230">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * Tests whether removing a child configuration is synchronized.
+     */
+    @Test
+    public void testRemoveConfigurationSynchronized()
+    {
+<span class="fc" id="L239">        final DynamicCombinedConfiguration config =</span>
+                new DynamicCombinedConfiguration();
+<span class="fc" id="L241">        final String configName = &quot;testConfig&quot;;</span>
+<span class="fc" id="L242">        config.addConfiguration(new PropertiesConfiguration(), configName);</span>
+<span class="fc" id="L243">        final SynchronizerTestImpl sync = prepareSynchronizerTest(config);</span>
+<span class="fc" id="L244">        config.removeConfiguration(configName);</span>
+<span class="fc" id="L245">        sync.verifyContains(Methods.BEGIN_WRITE);</span>
+<span class="fc" id="L246">    }</span>
+
+    @Test
+    public void testConcurrentGetAndReload() throws Exception
+    {
+<span class="fc" id="L251">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="fc" id="L252">        final CombinedConfigurationBuilder builder = new CombinedConfigurationBuilder();</span>
+<span class="fc" id="L253">        builder.configure(parameters.fileBased().setFile(MULTI_TENENT_FILE)</span>
+<span class="fc" id="L254">                .setSynchronizer(new ReadWriteSynchronizer()));</span>
+<span class="fc" id="L255">        final CombinedConfiguration config = builder.getConfiguration();</span>
+
+<span class="fc" id="L257">        assertEquals(&quot;Wrong value&quot;, &quot;50&quot;, config.getString(&quot;rowsPerPage&quot;));</span>
+<span class="fc" id="L258">        final Thread testThreads[] = new Thread[THREAD_COUNT];</span>
+<span class="fc" id="L259">        final int failures[] = new int[THREAD_COUNT];</span>
+
+<span class="fc bfc" id="L261" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L263">            testThreads[i] = new ReloadThread(builder, failures, i, LOOP_COUNT, false, null, &quot;50&quot;);</span>
+<span class="fc" id="L264">            testThreads[i].start();</span>
+        }
+
+<span class="fc" id="L267">        int totalFailures = 0;</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L270">            testThreads[i].join();</span>
+<span class="fc" id="L271">            totalFailures += failures[i];</span>
+        }
+<span class="fc" id="L273">        assertEquals(totalFailures + &quot; failures Occurred&quot;, 0, totalFailures);</span>
+<span class="fc" id="L274">    }</span>
+
+    @Test
+    public void testConcurrentGetAndReload2() throws Exception
+    {
+<span class="fc" id="L279">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="fc" id="L280">        final CombinedConfigurationBuilder builder = new CombinedConfigurationBuilder();</span>
+<span class="fc" id="L281">        builder.configure(parameters.fileBased().setFile(MULTI_TENENT_FILE)</span>
+<span class="fc" id="L282">                .setSynchronizer(new ReadWriteSynchronizer()));</span>
+<span class="fc" id="L283">        final CombinedConfiguration config = builder.getConfiguration();</span>
+
+<span class="fc" id="L285">        assertEquals(config.getString(&quot;rowsPerPage&quot;), &quot;50&quot;);</span>
+
+<span class="fc" id="L287">        final Thread testThreads[] = new Thread[THREAD_COUNT];</span>
+<span class="fc" id="L288">        final int failures[] = new int[THREAD_COUNT];</span>
+<span class="fc" id="L289">        System.setProperty(&quot;Id&quot;, &quot;2002&quot;);</span>
+<span class="fc" id="L290">        assertEquals(&quot;Wrong value&quot;, &quot;25&quot;, config.getString(&quot;rowsPerPage&quot;));</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L293">            testThreads[i] = new ReloadThread(builder, failures, i, LOOP_COUNT, false, null, &quot;25&quot;);</span>
+<span class="fc" id="L294">            testThreads[i].start();</span>
+        }
+
+<span class="fc" id="L297">        int totalFailures = 0;</span>
+<span class="fc bfc" id="L298" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L300">            testThreads[i].join();</span>
+<span class="fc" id="L301">            totalFailures += failures[i];</span>
+        }
+<span class="fc" id="L303">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="fc" id="L304">        assertEquals(totalFailures + &quot; failures Occurred&quot;, 0, totalFailures);</span>
+<span class="fc" id="L305">    }</span>
+
+    @Test
+    public void testConcurrentGetAndReloadMultipleClients() throws Exception
+    {
+<span class="fc" id="L310">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="fc" id="L311">        final CombinedConfigurationBuilder builder = new CombinedConfigurationBuilder();</span>
+<span class="fc" id="L312">        builder.configure(parameters.fileBased().setFile(MULTI_TENENT_FILE)</span>
+<span class="fc" id="L313">                .setSynchronizer(new ReadWriteSynchronizer()));</span>
+<span class="fc" id="L314">        final CombinedConfiguration config = builder.getConfiguration();</span>
+
+<span class="fc" id="L316">        assertEquals(config.getString(&quot;rowsPerPage&quot;), &quot;50&quot;);</span>
+
+<span class="fc" id="L318">        final Thread testThreads[] = new Thread[THREAD_COUNT];</span>
+<span class="fc" id="L319">        final int failures[] = new int[THREAD_COUNT];</span>
+<span class="fc" id="L320">        final String[] ids = new String[] {null, &quot;2002&quot;, &quot;3001&quot;, &quot;3002&quot;, &quot;3003&quot;};</span>
+<span class="fc" id="L321">        final String[] expected = new String[] {&quot;50&quot;, &quot;25&quot;, &quot;15&quot;, &quot;25&quot;, &quot;50&quot;};</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L324">            testThreads[i] = new ReloadThread(builder, failures, i, LOOP_COUNT, true, ids[i], expected[i]);</span>
+<span class="fc" id="L325">            testThreads[i].start();</span>
+        }
+
+<span class="fc" id="L328">        int totalFailures = 0;</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L331">            testThreads[i].join();</span>
+<span class="fc" id="L332">            totalFailures += failures[i];</span>
+        }
+<span class="fc" id="L334">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">        if (totalFailures != 0)</span>
+        {
+<span class="nc" id="L337">            System.out.println(&quot;Failures:&quot;);</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">            for (int i = 0; i &lt; testThreads.length; ++i)</span>
+            {
+<span class="nc" id="L340">                System.out.println(&quot;Thread &quot; + i + &quot; &quot; + failures[i]);</span>
+            }
+        }
+<span class="fc" id="L343">        assertEquals(totalFailures + &quot; failures Occurred&quot;, 0, totalFailures);</span>
+<span class="fc" id="L344">    }</span>
+
+    @Test
+    public void testConcurrentGetAndReloadFile() throws Exception
+    {
+<span class="fc" id="L349">        final int threadCount = 25;</span>
+<span class="fc" id="L350">        System.getProperties().remove(&quot;Id&quot;);</span>
+<span class="fc" id="L351">        System.setProperty(&quot;TemporaryFolder&quot;, folder.getRoot().getAbsolutePath());</span>
+        // create a new configuration
+<span class="fc" id="L353">        File input = new File(&quot;target/test-classes/testMultiDynamic_default.xml&quot;);</span>
+<span class="fc" id="L354">        final File output = folder.newFile(&quot;testMultiDynamic_default.xml&quot;);</span>
+<span class="fc" id="L355">        output.delete();</span>
+<span class="fc" id="L356">        output.getParentFile().mkdir();</span>
+<span class="fc" id="L357">        copyFile(input, output);</span>
+
+<span class="fc" id="L359">        final ReloadingCombinedConfigurationBuilder builder =</span>
+                new ReloadingCombinedConfigurationBuilder();
+<span class="fc" id="L361">        builder.configure(parameters</span>
+<span class="fc" id="L362">                .combined()</span>
+<span class="fc" id="L363">                .setSynchronizer(new ReadWriteSynchronizer())</span>
+<span class="fc" id="L364">                .setDefinitionBuilderParameters(</span>
+                        new FileBasedBuilderParametersImpl()
+<span class="fc" id="L366">                                .setFile(MULTI_DYNAMIC_FILE))</span>
+<span class="fc" id="L367">                .registerChildDefaultsHandler(</span>
+                        FileBasedBuilderProperties.class,
+                        new CopyObjectDefaultHandler(
+                                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L371">                                        .setReloadingRefreshDelay(1L))));</span>
+<span class="fc" id="L372">        CombinedConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L373">        assertEquals(&quot;Wrong property value (1)&quot;, &quot;ID0001&quot;,</span>
+<span class="fc" id="L374">                config.getString(&quot;Product/FIIndex/FI[@id='123456781']&quot;));</span>
+
+<span class="fc" id="L376">        final ReaderThread testThreads[] = new ReaderThread[threadCount];</span>
+<span class="fc bfc" id="L377" title="All 2 branches covered.">        for (int i = 0; i &lt; testThreads.length; ++i)</span>
+        {
+<span class="fc" id="L379">            testThreads[i] = new ReaderThread(builder);</span>
+<span class="fc" id="L380">            testThreads[i].start();</span>
+        }
+
+<span class="fc" id="L383">        builder.getReloadingController().checkForReloading(null);</span>
+<span class="fc" id="L384">        Thread.sleep(2000);</span>
+
+<span class="fc" id="L386">        input = new File(&quot;target/test-classes/testMultiDynamic_default2.xml&quot;);</span>
+<span class="fc" id="L387">        copyFile(input, output);</span>
+
+<span class="fc" id="L389">        Thread.sleep(2000);</span>
+<span class="fc" id="L390">        assertTrue(&quot;Changed file not detected&quot;, builder</span>
+<span class="fc" id="L391">                .getReloadingController().checkForReloading(null));</span>
+<span class="fc" id="L392">        config = builder.getConfiguration();</span>
+<span class="fc" id="L393">        final String id = config.getString(&quot;Product/FIIndex/FI[@id='123456782']&quot;);</span>
+<span class="fc" id="L394">        assertNotNull(&quot;File did not reload, id is null&quot;, id);</span>
+<span class="fc" id="L395">        final String rows = config.getString(&quot;rowsPerPage&quot;);</span>
+<span class="fc" id="L396">        assertEquals(&quot;Incorrect value for rowsPerPage&quot;, &quot;25&quot;, rows);</span>
+
+<span class="fc bfc" id="L398" title="All 2 branches covered.">        for (final ReaderThread testThread : testThreads) {</span>
+<span class="fc" id="L399">            testThread.shutdown();</span>
+<span class="fc" id="L400">            testThread.join();</span>
+        }
+<span class="fc bfc" id="L402" title="All 2 branches covered.">        for (final ReaderThread testThread : testThreads) {</span>
+<span class="fc" id="L403">            assertFalse(testThread.failed());</span>
+        }
+<span class="fc" id="L405">        assertEquals(&quot;ID0002&quot;, config.getString(&quot;Product/FIIndex/FI[@id='123456782']&quot;));</span>
+<span class="fc" id="L406">        output.delete();</span>
+<span class="fc" id="L407">    }</span>
+
+
+    private class ReloadThread extends Thread
+    {
+        private final CombinedConfigurationBuilder builder;
+        private final int[] failures;
+        private final int index;
+        private final int count;
+        private final String expected;
+        private final String id;
+        private final boolean useId;
+        private final Random random;
+
+        ReloadThread(final CombinedConfigurationBuilder b, final int[] failures, final int index, final int count,
+                     final boolean useId, final String id, final String expected)
+<span class="fc" id="L423">        {</span>
+<span class="fc" id="L424">            builder = b;</span>
+<span class="fc" id="L425">            this.failures = failures;</span>
+<span class="fc" id="L426">            this.index = index;</span>
+<span class="fc" id="L427">            this.count = count;</span>
+<span class="fc" id="L428">            this.expected = expected;</span>
+<span class="fc" id="L429">            this.id = id;</span>
+<span class="fc" id="L430">            this.useId = useId;</span>
+<span class="fc" id="L431">            random = new Random();</span>
+<span class="fc" id="L432">        }</span>
+
+        @Override
+        public void run()
+        {
+<span class="fc" id="L437">            failures[index] = 0;</span>
+
+<span class="fc bfc" id="L439" title="All 2 branches covered.">            if (useId)</span>
+            {
+<span class="fc" id="L441">                ThreadLookup.setId(id);</span>
+            }
+<span class="fc bfc" id="L443" title="All 2 branches covered.">            for (int i = 0; i &lt; count; i++)</span>
+            {
+                try
+                {
+<span class="fc bfc" id="L447" title="All 2 branches covered.">                    if(random.nextBoolean())</span>
+                    {
+                        // simulate a reload
+<span class="fc" id="L450">                        builder.resetResult();</span>
+                    }
+<span class="fc" id="L452">                    final CombinedConfiguration combined = builder.getConfiguration();</span>
+<span class="fc" id="L453">                    final String value = combined.getString(&quot;rowsPerPage&quot;, null);</span>
+<span class="pc bpc" id="L454" title="2 of 4 branches missed.">                    if (value == null || !value.equals(expected))</span>
+                    {
+<span class="nc" id="L456">                        ++failures[index];</span>
+                    }
+                }
+<span class="nc" id="L459">                catch (final Exception ex)</span>
+                {
+<span class="nc" id="L461">                    ++failures[index];</span>
+<span class="fc" id="L462">                }</span>
+            }
+<span class="fc" id="L464">        }</span>
+    }
+
+    private class ReaderThread extends Thread
+    {
+<span class="fc" id="L469">        private volatile boolean running = true;</span>
+<span class="fc" id="L470">        private volatile boolean failed = false;</span>
+        private final CombinedConfigurationBuilder builder;
+        private final Random random;
+
+        public ReaderThread(final CombinedConfigurationBuilder b)
+<span class="fc" id="L475">        {</span>
+<span class="fc" id="L476">            builder = b;</span>
+<span class="fc" id="L477">            random = new Random();</span>
+<span class="fc" id="L478">        }</span>
+
+        @Override
+        public void run()
+        {
+            try
+            {
+<span class="pc bpc" id="L485" title="1 of 2 branches missed.">                while (running)</span>
+                {
+<span class="fc" id="L487">                    final CombinedConfiguration combined = builder.getConfiguration();</span>
+<span class="fc" id="L488">                    final String bcId =</span>
+<span class="fc" id="L489">                            combined.getString(&quot;Product/FIIndex/FI[@id='123456781']&quot;);</span>
+<span class="pc bpc" id="L490" title="1 of 2 branches missed.">                    if (&quot;ID0001&quot;.equalsIgnoreCase(bcId))</span>
+                    {
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">                        if (failed)</span>
+                        {
+<span class="nc" id="L494">                            System.out.println(&quot;Thread failed, but recovered&quot;);</span>
+                        }
+<span class="fc" id="L496">                        failed = false;</span>
+                    }
+                    else
+                    {
+<span class="nc" id="L500">                        failed = true;</span>
+                    }
+<span class="fc" id="L502">                    final int sleepTime = random.nextInt(75);</span>
+<span class="fc" id="L503">                    Thread.sleep(sleepTime);</span>
+<span class="fc" id="L504">                }</span>
+            }
+<span class="nc" id="L506">            catch (final ConfigurationException cex)</span>
+            {
+<span class="nc" id="L508">                failed = true;</span>
+            }
+<span class="fc" id="L510">            catch(final InterruptedException iex)</span>
+            {
+<span class="fc" id="L512">                Thread.currentThread().interrupt();</span>
+<span class="nc" id="L513">            }</span>
+<span class="fc" id="L514">        }</span>
+
+        public boolean failed()
+        {
+<span class="fc" id="L518">            return failed;</span>
+        }
+
+        public void shutdown()
+        {
+<span class="fc" id="L523">            running = false;</span>
+<span class="fc" id="L524">            interrupt();</span>
+<span class="fc" id="L525">        }</span>
+
+    }
+
+    private void verify(final String key, final DynamicCombinedConfiguration config, final int rows)
+    {
+<span class="fc" id="L531">        System.setProperty(&quot;Id&quot;, key);</span>
+<span class="pc bpc" id="L532" title="1 of 2 branches missed.">        assertTrue(config.getInt(&quot;rowsPerPage&quot;) == rows);</span>
+<span class="fc" id="L533">    }</span>
+
+    private void copyFile(final File input, final File output) throws IOException
+    {
+<span class="fc" id="L537">        final Reader reader = new FileReader(input);</span>
+<span class="fc" id="L538">        final Writer writer = new FileWriter(output);</span>
+<span class="fc" id="L539">        final char[] buffer = new char[4096];</span>
+<span class="fc" id="L540">        int n = 0;</span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">        while (-1 != (n = reader.read(buffer)))</span>
+        {
+<span class="fc" id="L543">            writer.write(buffer, 0, n);</span>
+        }
+<span class="fc" id="L545">        reader.close();</span>
+<span class="fc" id="L546">        writer.close();</span>
+<span class="fc" id="L547">    }</span>
+
+    public static class ThreadLookup implements Lookup
+    {
+<span class="fc" id="L551">        private static ThreadLocal&lt;String&gt; id = new ThreadLocal&lt;&gt;();</span>
+
+        public ThreadLookup()
+<span class="fc" id="L554">        {</span>
+<span class="fc" id="L555">        }</span>
+
+        public static void setId(final String value)
+        {
+<span class="fc" id="L559">            id.set(value);</span>
+<span class="fc" id="L560">        }</span>
+
+        @Override
+        public String lookup(final String key)
+        {
+<span class="pc bpc" id="L565" title="2 of 4 branches missed.">            if (key == null || !key.equals(&quot;Id&quot;))</span>
+            {
+<span class="nc" id="L567">                return null;</span>
+            }
+<span class="fc" id="L569">            final String value = System.getProperty(&quot;Id&quot;);</span>
+<span class="fc bfc" id="L570" title="All 2 branches covered.">            if (value != null)</span>
+            {
+<span class="fc" id="L572">                return value;</span>
+            }
+<span class="fc" id="L574">            return id.get();</span>
+
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

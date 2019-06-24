@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCatalogResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestCatalogResolver.java</span></div><h1>TestCatalogResolver.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.ConfigurationLogger;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.resolver.CatalogResolver;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for CatalogResolver.
+ *
+ */
+<span class="fc" id="L35">public class TestCatalogResolver</span>
+{
+    private static final String CATALOG_FILES = &quot;catalog.xml&quot;;
+    private static final String PUBLIC_FILE = &quot;testResolver.xml&quot;;
+    private static final String REWRITE_SYSTEM_FILE = &quot;test.properties.xml&quot;;
+    private static final String REWRITE_SCHEMA_FILE = &quot;sample.xml&quot;;
+
+    private CatalogResolver resolver;
+    private XMLConfiguration config;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L48">        resolver = new CatalogResolver();</span>
+<span class="fc" id="L49">        resolver.setCatalogFiles(CATALOG_FILES);</span>
+        // resolver.setDebug(true);
+<span class="fc" id="L51">        config = new XMLConfiguration();</span>
+<span class="fc" id="L52">        config.setEntityResolver(resolver);</span>
+<span class="fc" id="L53">    }</span>
+
+    @After
+    public void tearDown() throws Exception
+    {
+<span class="fc" id="L58">        resolver = null;</span>
+<span class="fc" id="L59">        config = null;</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Loads the test configuration from the specified file.
+     *
+     * @param fileName the file name
+     * @throws ConfigurationException if an error occurs
+     */
+    private void load(final String fileName) throws ConfigurationException
+    {
+<span class="fc" id="L70">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L71">        handler.load(fileName);</span>
+<span class="fc" id="L72">    }</span>
+
+    @Test
+    public void testPublic() throws ConfigurationException
+    {
+<span class="fc" id="L77">        load(PUBLIC_FILE);</span>
+<span class="fc" id="L78">    }</span>
+
+    @Test
+    public void testRewriteSystem() throws ConfigurationException
+    {
+<span class="fc" id="L83">        load(REWRITE_SYSTEM_FILE);</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Tests that the schema can be resolved and that XMLConfiguration will
+     * validate the file using the schema.
+     * @throws Exception
+     */
+    @Test
+    public void testSchemaResolver() throws ConfigurationException
+    {
+<span class="fc" id="L94">        load(REWRITE_SCHEMA_FILE);</span>
+<span class="fc" id="L95">    }</span>
+
+    @Test
+    public void testDebug() throws Exception
+    {
+<span class="fc" id="L100">        resolver.setDebug(true);</span>
+        // There is no really good way to check this except to do something
+        // that causes debug output.
+<span class="fc" id="L103">    }</span>
+
+    @Test
+    public void testLogger() throws Exception
+    {
+<span class="fc" id="L108">        final ConfigurationLogger log = new ConfigurationLogger(this.getClass());</span>
+<span class="fc" id="L109">        resolver.setLogger(log);</span>
+<span class="fc" id="L110">        assertNotNull(&quot;No Logger returned&quot;, resolver.getLogger());</span>
+<span class="fc" id="L111">        assertSame(&quot;Incorrect Logger&quot;, log, resolver.getLogger());</span>
+<span class="fc" id="L112">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestHierarchicalXMLConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestHierarchicalXMLConfiguration.java</span></div><h1>TestHierarchicalXMLConfiguration.java</h1><pre class="source lang-java linenums">package org.apache.commons.configuration2;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
+
+import org.apache.commons.configuration2.io.FileHandler;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/**
+ * Test class for XMLConfiguration. In addition to TestXMLConfiguration this
+ * class especially tests the hierarchical nature of this class and structured
+ * data access.
+ *
+ * @author Emmanuel Bourg
+ * @author Mark Woodman
+ */
+<span class="fc" id="L42">public class TestHierarchicalXMLConfiguration</span>
+{
+    /** Test resources directory. */
+    private static final String TEST_DIR = &quot;conf&quot;;
+
+    /** Test file #1 **/
+    private static final String TEST_FILENAME = &quot;testHierarchicalXMLConfiguration.xml&quot;;
+
+    /** Test file #2 **/
+    private static final String TEST_FILENAME2 = &quot;testHierarchicalXMLConfiguration2.xml&quot;;
+
+    /** Test file path #1 **/
+<span class="fc" id="L54">    private static final String TEST_FILE = ConfigurationAssert.getTestFile(TEST_FILENAME).getAbsolutePath();</span>
+
+    /** Test file path #2 **/
+<span class="fc" id="L57">    private static final String TEST_FILE2 = ConfigurationAssert.getTestFile(TEST_FILENAME2).getAbsolutePath();</span>
+
+    /** Test file path #3.*/
+<span class="fc" id="L60">    private static final String TEST_FILE3 = ConfigurationAssert.getTestFile(&quot;test.xml&quot;).getAbsolutePath();</span>
+
+    /** File name for saving.*/
+    private static final String TEST_SAVENAME = &quot;testhierarchicalsave.xml&quot;;
+
+    /** Helper object for creating temporary files. */
+<span class="fc" id="L66">    @Rule</span>
+    public TemporaryFolder folder = new TemporaryFolder();
+
+    /** Instance config used for tests. */
+    private XMLConfiguration config;
+
+    /** Fixture setup. */
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L76">        config = new XMLConfiguration();</span>
+<span class="fc" id="L77">    }</span>
+
+    private void configTest(final XMLConfiguration config)
+    {
+<span class="fc" id="L81">        assertEquals(1, config.getMaxIndex(&quot;tables.table&quot;));</span>
+<span class="fc" id="L82">        assertEquals(&quot;system&quot;, config.getProperty(&quot;tables.table(0)[@tableType]&quot;));</span>
+<span class="fc" id="L83">        assertEquals(&quot;application&quot;, config.getProperty(&quot;tables.table(1)[@tableType]&quot;));</span>
+
+<span class="fc" id="L85">        assertEquals(&quot;users&quot;, config.getProperty(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L86">        assertEquals(&quot;documents&quot;, config.getProperty(&quot;tables.table(1).name&quot;));</span>
+
+<span class="fc" id="L88">        Object prop = config.getProperty(&quot;tables.table.fields.field.name&quot;);</span>
+<span class="fc" id="L89">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L90">        assertEquals(10, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L92">        prop = config.getProperty(&quot;tables.table(0).fields.field.type&quot;);</span>
+<span class="fc" id="L93">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L94">        assertEquals(5, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L96">        prop = config.getProperty(&quot;tables.table(1).fields.field.type&quot;);</span>
+<span class="fc" id="L97">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L98">        assertEquals(5, ((Collection&lt;?&gt;) prop).size());</span>
+<span class="fc" id="L99">    }</span>
+
+    @Test
+    public void testGetProperty() throws Exception
+    {
+<span class="fc" id="L104">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L105">        handler.setFileName(TEST_FILE);</span>
+<span class="fc" id="L106">        handler.load();</span>
+
+<span class="fc" id="L108">        configTest(config);</span>
+<span class="fc" id="L109">    }</span>
+
+    @Test
+    public void testLoadURL() throws Exception
+    {
+<span class="fc" id="L114">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L115">        handler.load(new File(TEST_FILE).getAbsoluteFile().toURI().toURL());</span>
+<span class="fc" id="L116">        configTest(config);</span>
+<span class="fc" id="L117">    }</span>
+
+    @Test
+    public void testLoadBasePath1() throws Exception
+    {
+<span class="fc" id="L122">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L123">        handler.setBasePath(TEST_DIR);</span>
+<span class="fc" id="L124">        handler.setFileName(TEST_FILENAME);</span>
+<span class="fc" id="L125">        handler.load();</span>
+<span class="fc" id="L126">        configTest(config);</span>
+<span class="fc" id="L127">    }</span>
+
+    @Test
+    public void testLoadBasePath2() throws Exception
+    {
+<span class="fc" id="L132">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L133">        handler.setBasePath(new File(TEST_FILE).getAbsoluteFile().toURI().toURL().toString());</span>
+<span class="fc" id="L134">        handler.setFileName(TEST_FILENAME);</span>
+<span class="fc" id="L135">        handler.load();</span>
+<span class="fc" id="L136">        configTest(config);</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Ensure various node types are correctly processed in config.
+     */
+    @Test
+    public void testXmlNodeTypes() throws Exception
+    {
+        // Number of keys expected from test configuration file
+<span class="fc" id="L146">        final int KEY_COUNT = 5;</span>
+
+        // Load the configuration file
+<span class="fc" id="L149">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L150">        handler.load(new File(TEST_FILE2).getAbsoluteFile().toURI().toURL());</span>
+
+        // Validate comment in element ignored
+<span class="fc" id="L153">        assertEquals(&quot;Comment in element must not change element value.&quot;, &quot;Case1Text&quot;, config</span>
+<span class="fc" id="L154">                .getString(&quot;case1&quot;));</span>
+
+        // Validate sibling comment ignored
+<span class="fc" id="L157">        assertEquals(&quot;Comment as sibling must not change element value.&quot;, &quot;Case2Text&quot;, config</span>
+<span class="fc" id="L158">                .getString(&quot;case2.child&quot;));</span>
+
+        // Validate comment ignored, CDATA processed
+<span class="fc" id="L161">        assertEquals(&quot;Comment and use of CDATA must not change element value.&quot;, &quot;Case3Text&quot;, config</span>
+<span class="fc" id="L162">                .getString(&quot;case3&quot;));</span>
+
+        // Validate comment and processing instruction ignored
+<span class="fc" id="L165">        assertEquals(&quot;Comment and use of PI must not change element value.&quot;, &quot;Case4Text&quot;, config</span>
+<span class="fc" id="L166">                .getString(&quot;case4&quot;));</span>
+
+        // Validate comment ignored in parent attribute
+<span class="fc" id="L169">        assertEquals(&quot;Comment must not change attribute node value.&quot;, &quot;Case5Text&quot;, config</span>
+<span class="fc" id="L170">                .getString(&quot;case5[@attr]&quot;));</span>
+
+        // Validate non-text nodes haven't snuck in as keys
+<span class="fc" id="L173">        final Iterator&lt;String&gt; iter = config.getKeys();</span>
+<span class="fc" id="L174">        int count = 0;</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        while (iter.hasNext())</span>
+        {
+<span class="fc" id="L177">            iter.next();</span>
+<span class="fc" id="L178">            count++;</span>
+        }
+<span class="fc" id="L180">        assertEquals(&quot;Config must contain only &quot; + KEY_COUNT + &quot; keys.&quot;, KEY_COUNT, count);</span>
+<span class="fc" id="L181">    }</span>
+
+    @Test
+    public void testSave() throws Exception
+    {
+<span class="fc" id="L186">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L187">        handler.setFileName(TEST_FILE3);</span>
+<span class="fc" id="L188">        handler.load();</span>
+<span class="fc" id="L189">        final File saveFile = folder.newFile(TEST_SAVENAME);</span>
+<span class="fc" id="L190">        handler.save(saveFile);</span>
+
+<span class="fc" id="L192">        config = new XMLConfiguration();</span>
+<span class="fc" id="L193">        final FileHandler handler2 = new FileHandler(config);</span>
+<span class="fc" id="L194">        handler2.load(saveFile.toURI().toURL());</span>
+<span class="fc" id="L195">        assertEquals(&quot;value&quot;, config.getProperty(&quot;element&quot;));</span>
+<span class="fc" id="L196">        assertEquals(&quot;I'm complex!&quot;, config.getProperty(&quot;element2.subelement.subsubelement&quot;));</span>
+<span class="fc" id="L197">        assertEquals(8, config.getInt(&quot;test.short&quot;));</span>
+<span class="fc" id="L198">        assertEquals(&quot;one&quot;, config.getString(&quot;list(0).item(0)[@name]&quot;));</span>
+<span class="fc" id="L199">        assertEquals(&quot;two&quot;, config.getString(&quot;list(0).item(1)&quot;));</span>
+<span class="fc" id="L200">        assertEquals(&quot;six&quot;, config.getString(&quot;list(1).sublist.item(1)&quot;));</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * Tests to save a newly created configuration.
+     */
+    @Test
+    public void testSaveNew() throws Exception
+    {
+<span class="fc" id="L209">        config.addProperty(&quot;connection.url&quot;, &quot;jdbc://mydb:1234&quot;);</span>
+<span class="fc" id="L210">        config.addProperty(&quot;connection.user&quot;, &quot;scott&quot;);</span>
+<span class="fc" id="L211">        config.addProperty(&quot;connection.passwd&quot;, &quot;tiger&quot;);</span>
+<span class="fc" id="L212">        config.addProperty(&quot;connection[@type]&quot;, &quot;system&quot;);</span>
+<span class="fc" id="L213">        config.addProperty(&quot;tables.table.name&quot;, &quot;tests&quot;);</span>
+<span class="fc" id="L214">        config.addProperty(&quot;tables.table(0).fields.field.name&quot;, &quot;test_id&quot;);</span>
+<span class="fc" id="L215">        config.addProperty(&quot;tables.table(0).fields.field(-1).name&quot;, &quot;test_name&quot;);</span>
+<span class="fc" id="L216">        config.addProperty(&quot;tables.table(-1).name&quot;, &quot;results&quot;);</span>
+<span class="fc" id="L217">        config.addProperty(&quot;tables.table(1).fields.field.name&quot;, &quot;res_id&quot;);</span>
+<span class="fc" id="L218">        config.addProperty(&quot;tables.table(1).fields.field(0).type&quot;, &quot;int&quot;);</span>
+<span class="fc" id="L219">        config.addProperty(&quot;tables.table(1).fields.field(-1).name&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L220">        config.addProperty(&quot;tables.table(1).fields.field(1).type&quot;, &quot;string&quot;);</span>
+<span class="fc" id="L221">        config.addProperty(&quot;tables.table(1).fields.field(1)[@null]&quot;, &quot;true&quot;);</span>
+
+<span class="fc" id="L223">        config.setRootElementName(&quot;myconfig&quot;);</span>
+<span class="fc" id="L224">        final File saveFile = folder.newFile(TEST_SAVENAME);</span>
+<span class="fc" id="L225">        FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L226">        handler.setFile(saveFile);</span>
+<span class="fc" id="L227">        handler.save();</span>
+
+<span class="fc" id="L229">        config = new XMLConfiguration();</span>
+<span class="fc" id="L230">        handler = new FileHandler(config);</span>
+<span class="fc" id="L231">        handler.load(saveFile);</span>
+<span class="fc" id="L232">        assertEquals(1, config.getMaxIndex(&quot;tables.table.name&quot;));</span>
+<span class="fc" id="L233">        assertEquals(&quot;tests&quot;, config.getString(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L234">        assertEquals(&quot;test_name&quot;, config.getString(&quot;tables.table(0).fields.field(1).name&quot;));</span>
+<span class="fc" id="L235">        assertEquals(&quot;int&quot;, config.getString(&quot;tables.table(1).fields.field(0).type&quot;));</span>
+<span class="fc" id="L236">        assertTrue(config.getBoolean(&quot;tables.table(1).fields.field(1)[@null]&quot;));</span>
+<span class="fc" id="L237">        assertEquals(&quot;tiger&quot;, config.getString(&quot;connection.passwd&quot;));</span>
+<span class="fc" id="L238">        assertEquals(&quot;system&quot;, config.getProperty(&quot;connection[@type]&quot;));</span>
+<span class="fc" id="L239">        assertEquals(&quot;myconfig&quot;, config.getRootElementName());</span>
+<span class="fc" id="L240">    }</span>
+
+    /**
+     * Tests to save a modified configuration.
+     */
+    @Test
+    public void testSaveModified() throws Exception
+    {
+<span class="fc" id="L248">        FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L249">        handler.setFile(new File(TEST_FILE3));</span>
+<span class="fc" id="L250">        handler.load();</span>
+
+<span class="fc" id="L252">        assertTrue(config.getString(&quot;mean&quot;).startsWith(&quot;This is\n A long story...&quot;));</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">        assertTrue(config.getString(&quot;mean&quot;).indexOf(&quot;And even longer&quot;) &gt; 0);</span>
+<span class="fc" id="L254">        config.clearProperty(&quot;test.entity[@name]&quot;);</span>
+<span class="fc" id="L255">        config.setProperty(&quot;element&quot;, &quot;new value&quot;);</span>
+<span class="fc" id="L256">        config.setProperty(&quot;test(0)&quot;, &quot;A &lt;new&gt; value&quot;);</span>
+<span class="fc" id="L257">        config.addProperty(&quot;test(1).int&quot;, new Integer(9));</span>
+<span class="fc" id="L258">        config.addProperty(&quot;list(1).sublist.item&quot;, &quot;seven&quot;);</span>
+<span class="fc" id="L259">        config.setProperty(&quot;clear&quot;, &quot;yes&quot;);</span>
+<span class="fc" id="L260">        config.setProperty(&quot;mean&quot;, &quot;now it's simple&quot;);</span>
+<span class="fc" id="L261">        config.addProperty(&quot;[@topattr]&quot;, &quot;available&quot;);</span>
+<span class="fc" id="L262">        config.addProperty(&quot;[@topattr_other]&quot;, &quot;successfull&quot;);</span>
+
+<span class="fc" id="L264">        final File saveFile = folder.newFile(TEST_SAVENAME);</span>
+<span class="fc" id="L265">        handler.save(saveFile);</span>
+<span class="fc" id="L266">        config = new XMLConfiguration();</span>
+<span class="fc" id="L267">        handler = new FileHandler(config);</span>
+<span class="fc" id="L268">        handler.load(saveFile.getAbsolutePath());</span>
+<span class="fc" id="L269">        assertFalse(config.containsKey(&quot;test.entity[@name]&quot;));</span>
+<span class="fc" id="L270">        assertEquals(&quot;1&lt;2&quot;, config.getProperty(&quot;test.entity&quot;));</span>
+<span class="fc" id="L271">        assertEquals(&quot;new value&quot;, config.getString(&quot;element&quot;));</span>
+<span class="fc" id="L272">        assertEquals(&quot;A &lt;new&gt; value&quot;, config.getProperty(&quot;test(0)&quot;));</span>
+<span class="fc" id="L273">        assertEquals((short) 8, config.getShort(&quot;test(1).short&quot;));</span>
+<span class="fc" id="L274">        assertEquals(9, config.getInt(&quot;test(1).int&quot;));</span>
+<span class="fc" id="L275">        assertEquals(&quot;six&quot;, config.getProperty(&quot;list(1).sublist.item(1)&quot;));</span>
+<span class="fc" id="L276">        assertEquals(&quot;seven&quot;, config.getProperty(&quot;list(1).sublist.item(2)&quot;));</span>
+<span class="fc" id="L277">        assertEquals(&quot;yes&quot;, config.getProperty(&quot;clear&quot;));</span>
+<span class="fc" id="L278">        assertEquals(&quot;now it's simple&quot;, config.getString(&quot;mean&quot;));</span>
+<span class="fc" id="L279">        assertEquals(&quot;available&quot;, config.getString(&quot;[@topattr](0)&quot;));</span>
+<span class="fc" id="L280">        assertEquals(&quot;successfull&quot;, config.getString(&quot;[@topattr_other]&quot;));</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Tests manipulation of the root element's name.
+     */
+    @Test
+    public void testRootElement() throws Exception
+    {
+<span class="fc" id="L289">        assertEquals(&quot;configuration&quot;, config.getRootElementName());</span>
+<span class="fc" id="L290">        config.setRootElementName(&quot;newRootName&quot;);</span>
+<span class="fc" id="L291">        assertEquals(&quot;newRootName&quot;, config.getRootElementName());</span>
+<span class="fc" id="L292">    }</span>
+
+    /**
+     * Tests that it is not allowed to change the root element name when the
+     * configuration was loaded from a file.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetRootElementNameWhenLoadedFromFile() throws Exception
+    {
+<span class="fc" id="L301">        final FileHandler handler = new FileHandler(config);</span>
+<span class="fc" id="L302">        handler.setFile(new File(TEST_FILE3));</span>
+<span class="fc" id="L303">        handler.load();</span>
+<span class="fc" id="L304">        assertEquals(&quot;testconfig&quot;, config.getRootElementName());</span>
+<span class="nc" id="L305">        config.setRootElementName(&quot;anotherRootElement&quot;);</span>
+<span class="nc" id="L306">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

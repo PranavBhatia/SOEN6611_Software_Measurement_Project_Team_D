@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonToStringStyleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">JsonToStringStyleTest.java</span></div><h1>JsonToStringStyleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+
+import org.apache.commons.lang3.builder.ToStringStyleTest.Person;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.builder.JsonToStringStyleTest}.
+ */
+<span class="fc" id="L34">public class JsonToStringStyleTest {</span>
+
+<span class="fc" id="L36">    private final Integer base = Integer.valueOf(5);</span>
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L40">        ToStringBuilder.setDefaultStyle(ToStringStyle.JSON_STYLE);</span>
+<span class="fc" id="L41">    }</span>
+
+    @AfterEach
+    public void tearDown() {
+<span class="fc" id="L45">        ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);</span>
+<span class="fc" id="L46">    }</span>
+
+    // ----------------------------------------------------------------
+
+    @Test
+    public void testNull() {
+<span class="fc" id="L52">        assertEquals(&quot;null&quot;, new ToStringBuilder(null).toString());</span>
+<span class="fc" id="L53">    }</span>
+
+    @Test
+    public void testBlank() {
+<span class="fc" id="L57">        assertEquals(&quot;{}&quot;, new ToStringBuilder(base).toString());</span>
+<span class="fc" id="L58">    }</span>
+
+    @Test
+    public void testAppendSuper() {
+<span class="fc" id="L62">        assertEquals(</span>
+                &quot;{}&quot;,
+<span class="fc" id="L64">                new ToStringBuilder(base).appendSuper(</span>
+<span class="fc" id="L65">                        &quot;Integer@8888[&quot; + System.lineSeparator() + &quot;]&quot;)</span>
+<span class="fc" id="L66">                        .toString());</span>
+<span class="fc" id="L67">        assertEquals(</span>
+                &quot;{}&quot;,
+<span class="fc" id="L69">                new ToStringBuilder(base).appendSuper(</span>
+<span class="fc" id="L70">                        &quot;Integer@8888[&quot; + System.lineSeparator() + &quot;  null&quot;</span>
+<span class="fc" id="L71">                                + System.lineSeparator() + &quot;]&quot;).toString());</span>
+<span class="fc" id="L72">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:\&quot;hello\&quot;}&quot;,
+                new ToStringBuilder(base)
+<span class="fc" id="L75">                        .appendSuper(</span>
+<span class="fc" id="L76">                                &quot;Integer@8888[&quot; + System.lineSeparator()</span>
+<span class="fc" id="L77">                                        + &quot;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L78">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:\&quot;hello\&quot;}&quot;,
+                new ToStringBuilder(base)
+<span class="fc" id="L81">                        .appendSuper(</span>
+<span class="fc" id="L82">                                &quot;Integer@8888[&quot; + System.lineSeparator()</span>
+<span class="fc" id="L83">                                        + &quot;  null&quot; + System.lineSeparator()</span>
+<span class="fc" id="L84">                                        + &quot;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L85">        assertEquals(&quot;{\&quot;a\&quot;:\&quot;hello\&quot;}&quot;, new ToStringBuilder(base)</span>
+<span class="fc" id="L86">                .appendSuper(null).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+
+<span class="fc" id="L88">        assertEquals(&quot;{\&quot;a\&quot;:\&quot;hello\&quot;,\&quot;b\&quot;:\&quot;world\&quot;}&quot;, new ToStringBuilder(base)</span>
+<span class="fc" id="L89">                .appendSuper(&quot;{\&quot;a\&quot;:\&quot;hello\&quot;}&quot;).append(&quot;b&quot;, &quot;world&quot;).toString());</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testChar() {
+<span class="pc" id="L94">        assertThrows(UnsupportedOperationException.class, () -&gt; new ToStringBuilder(base).append('A').toString());</span>
+
+<span class="fc" id="L96">        assertEquals(&quot;{\&quot;a\&quot;:\&quot;A\&quot;}&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 'A')</span>
+<span class="fc" id="L97">                .toString());</span>
+<span class="fc" id="L98">        assertEquals(&quot;{\&quot;a\&quot;:\&quot;A\&quot;,\&quot;b\&quot;:\&quot;B\&quot;}&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 'A').append(&quot;b&quot;, 'B')</span>
+<span class="fc" id="L99">                .toString());</span>
+<span class="fc" id="L100">    }</span>
+
+    @Test
+    public void testDate() {
+<span class="fc" id="L104">        final Date now = new Date();</span>
+<span class="fc" id="L105">        final Date afterNow = new Date(System.currentTimeMillis() + 1);</span>
+
+<span class="pc" id="L107">        assertThrows(UnsupportedOperationException.class, () -&gt; new ToStringBuilder(base).append(now).toString());</span>
+
+<span class="fc" id="L109">        assertEquals(&quot;{\&quot;now\&quot;:\&quot;&quot; + now.toString() +&quot;\&quot;}&quot;, new ToStringBuilder(base).append(&quot;now&quot;, now)</span>
+<span class="fc" id="L110">                .toString());</span>
+<span class="fc" id="L111">        assertEquals(&quot;{\&quot;now\&quot;:\&quot;&quot; + now.toString() +&quot;\&quot;,\&quot;after\&quot;:\&quot;&quot; + afterNow.toString() + &quot;\&quot;}&quot;, new ToStringBuilder(base).append(&quot;now&quot;, now).append(&quot;after&quot;, afterNow)</span>
+<span class="fc" id="L112">                .toString());</span>
+<span class="fc" id="L113">    }</span>
+
+    @Test
+    public void testObject() {
+
+<span class="fc" id="L118">        final Integer i3 = Integer.valueOf(3);</span>
+<span class="fc" id="L119">        final Integer i4 = Integer.valueOf(4);</span>
+
+<span class="fc" id="L121">        assertThrows(</span>
+<span class="nc" id="L122">                UnsupportedOperationException.class, () -&gt; new ToStringBuilder(base).append((Object) null).toString());</span>
+
+<span class="pc" id="L124">        assertThrows(UnsupportedOperationException.class, () -&gt; new ToStringBuilder(base).append(i3).toString());</span>
+
+<span class="fc" id="L126">        assertEquals(&quot;{\&quot;a\&quot;:null}&quot;,</span>
+<span class="fc" id="L127">                new ToStringBuilder(base).append(&quot;a&quot;, (Object) null).toString());</span>
+<span class="fc" id="L128">        assertEquals(&quot;{\&quot;a\&quot;:3}&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3)</span>
+<span class="fc" id="L129">                .toString());</span>
+<span class="fc" id="L130">        assertEquals(&quot;{\&quot;a\&quot;:3,\&quot;b\&quot;:4}&quot;,</span>
+<span class="fc" id="L131">                new ToStringBuilder(base).append(&quot;a&quot;, i3).append(&quot;b&quot;, i4)</span>
+<span class="fc" id="L132">                        .toString());</span>
+
+<span class="fc" id="L134">        assertThrows(</span>
+<span class="nc" id="L135">                UnsupportedOperationException.class, () -&gt; new ToStringBuilder(base).append(&quot;a&quot;, i3, false).toString());</span>
+
+<span class="fc" id="L137">        assertThrows(</span>
+                UnsupportedOperationException.class,
+<span class="nc" id="L139">                () -&gt; new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), false).toString());</span>
+
+<span class="fc" id="L141">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:[]}&quot;,
+<span class="fc" id="L143">                new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(),</span>
+<span class="fc" id="L144">                        true).toString());</span>
+
+<span class="fc" id="L146">        assertThrows(</span>
+                UnsupportedOperationException.class,
+<span class="nc" id="L148">                () -&gt; new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), false).toString());</span>
+
+<span class="fc" id="L150">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:{}}&quot;,
+<span class="fc" id="L152">                new ToStringBuilder(base).append(&quot;a&quot;,</span>
+<span class="fc" id="L153">                        new HashMap&lt;&gt;(), true).toString());</span>
+
+<span class="fc" id="L155">        assertThrows(</span>
+                UnsupportedOperationException.class,
+<span class="nc" id="L157">                () -&gt; new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], false).toString());</span>
+
+<span class="fc" id="L159">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:[]}&quot;,
+<span class="fc" id="L161">                new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0],</span>
+<span class="fc" id="L162">                        true).toString());</span>
+
+<span class="fc" id="L164">        assertThrows(</span>
+                UnsupportedOperationException.class,
+<span class="nc" id="L166">                () -&gt; new ToStringBuilder(base).append(&quot;a&quot;, (Object) new int[]{1, 2, 3}, false).toString());</span>
+
+<span class="fc" id="L168">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:[1,2,3]}&quot;,
+<span class="fc" id="L170">                new ToStringBuilder(base).append(&quot;a&quot;,</span>
+<span class="fc" id="L171">                        (Object) new int[]{1, 2, 3}, true).toString());</span>
+
+<span class="fc" id="L173">        assertThrows(</span>
+                UnsupportedOperationException.class,
+<span class="nc" id="L175">                () -&gt; new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[]{&quot;v&quot;, &quot;x&quot;, &quot;y&quot;, &quot;z&quot;}, false).toString());</span>
+
+<span class="fc" id="L177">        assertEquals(</span>
+                &quot;{\&quot;a\&quot;:[\&quot;v\&quot;,\&quot;x\&quot;,\&quot;y\&quot;,\&quot;z\&quot;]}&quot;,
+<span class="fc" id="L179">                new ToStringBuilder(base).append(&quot;a&quot;,</span>
+                        (Object) new String[]{&quot;v&quot;, &quot;x&quot;, &quot;y&quot;, &quot;z&quot;}, true)
+<span class="fc" id="L181">                        .toString());</span>
+<span class="fc" id="L182">    }</span>
+
+    @Test
+    public void testPerson() {
+<span class="fc" id="L186">        final Person p = new Person();</span>
+<span class="fc" id="L187">        p.name = &quot;Jane Doe&quot;;</span>
+<span class="fc" id="L188">        p.age = 25;</span>
+<span class="fc" id="L189">        p.smoker = true;</span>
+
+<span class="fc" id="L191">        assertEquals(</span>
+                &quot;{\&quot;name\&quot;:\&quot;Jane Doe\&quot;,\&quot;age\&quot;:25,\&quot;smoker\&quot;:true}&quot;,
+<span class="fc" id="L193">                new ToStringBuilder(p).append(&quot;name&quot;, p.name)</span>
+<span class="fc" id="L194">                        .append(&quot;age&quot;, p.age).append(&quot;smoker&quot;, p.smoker)</span>
+<span class="fc" id="L195">                        .toString());</span>
+<span class="fc" id="L196">    }</span>
+
+    @Test
+    public void testNestingPerson() {
+<span class="fc" id="L200">        final Person p = new Person() {</span>
+            @Override
+            public String toString() {
+<span class="fc" id="L203">                return new ToStringBuilder(this).append(&quot;name&quot;, this.name)</span>
+<span class="fc" id="L204">                    .append(&quot;age&quot;, this.age).append(&quot;smoker&quot;, this.smoker)</span>
+<span class="fc" id="L205">                    .toString();</span>
+            }
+        };
+<span class="fc" id="L208">        p.name = &quot;Jane Doe&quot;;</span>
+<span class="fc" id="L209">        p.age = 25;</span>
+<span class="fc" id="L210">        p.smoker = true;</span>
+
+<span class="fc" id="L212">        final NestingPerson nestP = new NestingPerson();</span>
+<span class="fc" id="L213">        nestP.pid=&quot;#1@Jane&quot;;</span>
+<span class="fc" id="L214">        nestP.person = p;</span>
+
+<span class="fc" id="L216">        assertEquals(</span>
+                &quot;{\&quot;pid\&quot;:\&quot;#1@Jane\&quot;,\&quot;person\&quot;:{\&quot;name\&quot;:\&quot;Jane Doe\&quot;,\&quot;age\&quot;:25,\&quot;smoker\&quot;:true}}&quot;,
+<span class="fc" id="L218">                new ToStringBuilder(nestP).append(&quot;pid&quot;, nestP.pid)</span>
+<span class="fc" id="L219">                        .append(&quot;person&quot;, nestP.person)</span>
+<span class="fc" id="L220">                        .toString());</span>
+<span class="fc" id="L221">    }</span>
+
+    @Test
+    public void testLong() {
+<span class="pc" id="L225">        assertThrows(UnsupportedOperationException.class, () -&gt; new ToStringBuilder(base).append(3L).toString());</span>
+
+<span class="fc" id="L227">        assertEquals(&quot;{\&quot;a\&quot;:3}&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L)</span>
+<span class="fc" id="L228">                .toString());</span>
+<span class="fc" id="L229">        assertEquals(&quot;{\&quot;a\&quot;:3,\&quot;b\&quot;:4}&quot;,</span>
+<span class="fc" id="L230">                new ToStringBuilder(base).append(&quot;a&quot;, 3L).append(&quot;b&quot;, 4L)</span>
+<span class="fc" id="L231">                        .toString());</span>
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L236">        final Object[] array = new Object[]{null, base, new int[]{3, 6}};</span>
+
+<span class="fc" id="L238">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L239">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L241">        assertEquals(&quot;{\&quot;objectArray\&quot;:[null,5,[3,6]]}&quot;, toStringBuilder.append(&quot;objectArray&quot;, array)</span>
+<span class="fc" id="L242">                .toString());</span>
+
+<span class="fc" id="L244">        assertThrows(</span>
+<span class="nc" id="L245">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L247">        assertThrows(</span>
+<span class="nc" id="L248">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object[]) null).toString());</span>
+
+<span class="fc" id="L250">        assertThrows(</span>
+<span class="nc" id="L251">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L252">    }</span>
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L256">        final long[] array = new long[]{1, 2, -3, 4};</span>
+
+<span class="fc" id="L258">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L259">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L261">        assertEquals(&quot;{\&quot;longArray\&quot;:[1,2,-3,4]}&quot;, toStringBuilder.append(&quot;longArray&quot;, array)</span>
+<span class="fc" id="L262">                .toString());</span>
+
+<span class="fc" id="L264">        assertThrows(</span>
+<span class="nc" id="L265">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L267">        assertThrows(</span>
+<span class="nc" id="L268">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L270">        assertThrows(</span>
+<span class="nc" id="L271">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L272">    }</span>
+
+    @Test
+    public void testIntArray() {
+<span class="fc" id="L276">        final int[] array = new int[]{1, 2, -3, 4};</span>
+
+<span class="fc" id="L278">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L279">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L281">        assertEquals(&quot;{\&quot;intArray\&quot;:[1,2,-3,4]}&quot;, toStringBuilder.append(&quot;intArray&quot;, array)</span>
+<span class="fc" id="L282">                .toString());</span>
+
+<span class="fc" id="L284">        assertThrows(</span>
+<span class="nc" id="L285">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L287">        assertThrows(</span>
+<span class="nc" id="L288">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L290">        assertThrows(</span>
+<span class="nc" id="L291">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L292">    }</span>
+
+    @Test
+    public void testByteArray() {
+<span class="fc" id="L296">        final byte[] array = new byte[]{1, 2, -3, 4};</span>
+
+<span class="fc" id="L298">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L299">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L301">        assertEquals(&quot;{\&quot;byteArray\&quot;:[1,2,-3,4]}&quot;, toStringBuilder.append(&quot;byteArray&quot;, array)</span>
+<span class="fc" id="L302">                .toString());</span>
+
+<span class="fc" id="L304">        assertThrows(</span>
+<span class="nc" id="L305">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L307">        assertThrows(</span>
+<span class="nc" id="L308">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L310">        assertThrows(</span>
+<span class="nc" id="L311">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L312">    }</span>
+
+    @Test
+    public void testShortArray() {
+<span class="fc" id="L316">        final short[] array = new short[]{1, 2, -3, 4};</span>
+
+<span class="fc" id="L318">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L319">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L321">        assertEquals(&quot;{\&quot;shortArray\&quot;:[1,2,-3,4]}&quot;, toStringBuilder.append(&quot;shortArray&quot;, array)</span>
+<span class="fc" id="L322">                .toString());</span>
+
+<span class="fc" id="L324">        assertThrows(</span>
+<span class="nc" id="L325">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L327">        assertThrows(</span>
+<span class="nc" id="L328">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L330">        assertThrows(</span>
+<span class="nc" id="L331">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L332">    }</span>
+
+    @Test
+    public void testDoubleArray() {
+<span class="fc" id="L336">        final double[] array = new double[]{1, 2, -3, 4};</span>
+
+<span class="fc" id="L338">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L339">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L341">        assertEquals(&quot;{\&quot;doubleArray\&quot;:[1.0,2.0,-3.0,4.0]}&quot;, toStringBuilder.append(&quot;doubleArray&quot;, array)</span>
+<span class="fc" id="L342">                .toString());</span>
+
+<span class="fc" id="L344">        assertThrows(</span>
+<span class="nc" id="L345">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L347">        assertThrows(</span>
+<span class="nc" id="L348">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L350">        assertThrows(</span>
+<span class="nc" id="L351">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L352">    }</span>
+
+    @Test
+    public void testFloatArray() {
+<span class="fc" id="L356">        final float[] array = new float[]{1, 2, -3, 4};</span>
+
+<span class="fc" id="L358">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L359">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L361">        assertEquals(&quot;{\&quot;floatArray\&quot;:[1.0,2.0,-3.0,4.0]}&quot;, toStringBuilder.append(&quot;floatArray&quot;, array)</span>
+<span class="fc" id="L362">                .toString());</span>
+
+<span class="fc" id="L364">        assertThrows(</span>
+<span class="nc" id="L365">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L367">        assertThrows(</span>
+<span class="nc" id="L368">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L370">        assertThrows(</span>
+<span class="nc" id="L371">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L372">    }</span>
+
+    @Test
+    public void testCharArray() {
+<span class="fc" id="L376">        final char[] array = new char[]{'1', '2', '3', '4'};</span>
+
+<span class="fc" id="L378">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L379">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L381">        assertEquals(&quot;{\&quot;charArray\&quot;:[\&quot;1\&quot;,\&quot;2\&quot;,\&quot;3\&quot;,\&quot;4\&quot;]}&quot;, toStringBuilder.append(&quot;charArray&quot;, array)</span>
+<span class="fc" id="L382">                .toString());</span>
+
+<span class="fc" id="L384">        assertThrows(</span>
+<span class="nc" id="L385">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L387">        assertThrows(</span>
+<span class="nc" id="L388">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L390">        assertThrows(</span>
+<span class="nc" id="L391">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L392">    }</span>
+
+    @Test
+    public void testBooleanArray() {
+<span class="fc" id="L396">        final boolean[] array = new boolean[]{true, false};</span>
+
+<span class="fc" id="L398">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L399">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L401">        assertEquals(&quot;{\&quot;booleanArray\&quot;:[true,false]}&quot;, toStringBuilder.append(&quot;booleanArray&quot;, array)</span>
+<span class="fc" id="L402">                .toString());</span>
+
+<span class="fc" id="L404">        assertThrows(</span>
+<span class="nc" id="L405">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L407">        assertThrows(</span>
+<span class="nc" id="L408">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[]) null).toString());</span>
+
+<span class="fc" id="L410">        assertThrows(</span>
+<span class="nc" id="L411">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L412">    }</span>
+
+    @Test
+    public void testLongArrayArray() {
+<span class="fc" id="L416">        final long[][] array = new long[][]{{1, 2}, null, {5}};</span>
+
+<span class="fc" id="L418">        final ToStringBuilder toStringBuilder = new ToStringBuilder(base);</span>
+<span class="pc" id="L419">        assertThrows(UnsupportedOperationException.class, () -&gt; toStringBuilder.append(array).toString());</span>
+
+<span class="fc" id="L421">        assertThrows(</span>
+<span class="nc" id="L422">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+
+<span class="fc" id="L424">        assertThrows(</span>
+<span class="nc" id="L425">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((long[][]) null).toString());</span>
+
+<span class="fc" id="L427">        assertThrows(</span>
+<span class="nc" id="L428">                UnsupportedOperationException.class, () -&gt; toStringBuilder.append((Object) array).toString());</span>
+<span class="fc" id="L429">    }</span>
+
+    @Test
+    public void testArray() {
+<span class="fc" id="L433">        final Person p = new Person();</span>
+<span class="fc" id="L434">        p.name = &quot;Jane Doe&quot;;</span>
+<span class="fc" id="L435">        p.age = 25;</span>
+<span class="fc" id="L436">        p.smoker = true;</span>
+
+<span class="fc" id="L438">        assertEquals(</span>
+                &quot;{\&quot;name\&quot;:\&quot;Jane Doe\&quot;,\&quot;age\&quot;:25,\&quot;smoker\&quot;:true,\&quot;groups\&quot;:['admin', 'manager', 'user']}&quot;,
+<span class="fc" id="L440">                new ToStringBuilder(p).append(&quot;name&quot;, p.name)</span>
+<span class="fc" id="L441">                        .append(&quot;age&quot;, p.age).append(&quot;smoker&quot;, p.smoker)</span>
+<span class="fc" id="L442">                        .append(&quot;groups&quot;, new Object() {</span>
+                            @Override
+                            public String toString() {
+<span class="fc" id="L445">                                return &quot;['admin', 'manager', 'user']&quot;;</span>
+                            }
+                        })
+<span class="fc" id="L448">                        .toString());</span>
+<span class="fc" id="L449">    }</span>
+
+    @Test
+    public void testLANG1395() {
+<span class="fc" id="L453">        assertEquals(&quot;{\&quot;name\&quot;:\&quot;value\&quot;}&quot;, new ToStringBuilder(base).append(&quot;name&quot;, &quot;value&quot;).toString());</span>
+<span class="fc" id="L454">        assertEquals(&quot;{\&quot;name\&quot;:\&quot;\&quot;}&quot;, new ToStringBuilder(base).append(&quot;name&quot;, &quot;&quot;).toString());</span>
+<span class="fc" id="L455">        assertEquals(&quot;{\&quot;name\&quot;:\&quot;\\\&quot;\&quot;}&quot;, new ToStringBuilder(base).append(&quot;name&quot;, '&quot;').toString());</span>
+<span class="fc" id="L456">        assertEquals(&quot;{\&quot;name\&quot;:\&quot;\\\\\&quot;}&quot;, new ToStringBuilder(base).append(&quot;name&quot;, '\\').toString());</span>
+<span class="fc" id="L457">        assertEquals(&quot;{\&quot;name\&quot;:\&quot;Let's \\\&quot;quote\\\&quot; this\&quot;}&quot;, new ToStringBuilder(base).append(&quot;name&quot;, &quot;Let's \&quot;quote\&quot; this&quot;).toString());</span>
+<span class="fc" id="L458">    }</span>
+
+    @Test
+    public void testLANG1396() {
+<span class="fc" id="L462">        assertEquals(&quot;{\&quot;Let's \\\&quot;quote\\\&quot; this\&quot;:\&quot;value\&quot;}&quot;, new ToStringBuilder(base).append(&quot;Let's \&quot;quote\&quot; this&quot;, &quot;value&quot;).toString());</span>
+<span class="fc" id="L463">    }</span>
+
+    /**
+     * An object with nested object structures used to test {@link ToStringStyle.JsonToStringStyle}.
+     *
+     */
+<span class="fc" id="L469">    static class NestingPerson {</span>
+        /**
+         * Test String field.
+         */
+        String pid;
+
+        /**
+         * Test nested object field.
+         */
+        Person person;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

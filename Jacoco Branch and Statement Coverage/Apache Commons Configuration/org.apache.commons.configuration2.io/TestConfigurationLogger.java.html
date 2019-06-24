@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationLogger.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.io</a> &gt; <span class="el_source">TestConfigurationLogger.java</span></div><h1>TestConfigurationLogger.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2.io;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.impl.NoOpLog;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ConfigurationLogger}.
+ *
+ */
+<span class="fc" id="L40">public class TestConfigurationLogger</span>
+{
+    /** Constant for a message to be logged. */
+    private static final String MSG = &quot;Interesting log output&quot;;
+
+    /**
+     * Tries to create an instance without passing in a logger name.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoLoggerName()
+    {
+<span class="nc" id="L51">        new ConfigurationLogger((String) null);</span>
+<span class="nc" id="L52">    }</span>
+
+    /**
+     * Tries to create an instance without passing a logger class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoLoggerClass()
+    {
+<span class="nc" id="L60">        new ConfigurationLogger((Class&lt;?&gt;) null);</span>
+<span class="nc" id="L61">    }</span>
+
+    /**
+     * Tests whether a correct internal logger is created.
+     */
+    @Test
+    public void testInitWithLoggerSpec()
+    {
+<span class="fc" id="L69">        final ConfigurationLogger logger1 =</span>
+<span class="fc" id="L70">                new ConfigurationLogger(getClass().getName());</span>
+<span class="fc" id="L71">        final ConfigurationLogger logger2 = new ConfigurationLogger(getClass());</span>
+
+<span class="fc" id="L73">        assertNotNull(&quot;No internal logger&quot;, logger1.getLog());</span>
+<span class="fc" id="L74">        assertEquals(&quot;Different internal loggers&quot;, logger1.getLog(),</span>
+<span class="fc" id="L75">                logger2.getLog());</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Tests whether the debug status can be queried.
+     */
+    @Test
+    public void testIsDebugEnabled()
+    {
+<span class="fc" id="L84">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L85">        EasyMock.expect(log.isDebugEnabled()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L86">        EasyMock.replay(log);</span>
+<span class="fc" id="L87">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L89">        assertTrue(&quot;No debug log&quot;, logger.isDebugEnabled());</span>
+<span class="fc" id="L90">        EasyMock.verify(log);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Tests whether the info status can be queried.
+     */
+    @Test
+    public void testIsInfoEnabled()
+    {
+<span class="fc" id="L99">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L100">        EasyMock.expect(log.isInfoEnabled()).andReturn(Boolean.FALSE);</span>
+<span class="fc" id="L101">        EasyMock.replay(log);</span>
+<span class="fc" id="L102">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L104">        assertFalse(&quot;Wrong info log&quot;, logger.isInfoEnabled());</span>
+<span class="fc" id="L105">        EasyMock.verify(log);</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Tests whether debug logging is possible.
+     */
+    @Test
+    public void testDebug()
+    {
+<span class="fc" id="L114">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L115">        log.debug(MSG);</span>
+<span class="fc" id="L116">        EasyMock.replay(log);</span>
+<span class="fc" id="L117">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L119">        logger.debug(MSG);</span>
+<span class="fc" id="L120">        EasyMock.verify(log);</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Tests whether info logging is possible.
+     */
+    @Test
+    public void testInfo()
+    {
+<span class="fc" id="L129">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L130">        log.info(MSG);</span>
+<span class="fc" id="L131">        EasyMock.replay(log);</span>
+<span class="fc" id="L132">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L134">        logger.info(MSG);</span>
+<span class="fc" id="L135">        EasyMock.verify(log);</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Tests whether warn logging is possible.
+     */
+    @Test
+    public void testWarn()
+    {
+<span class="fc" id="L144">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L145">        log.warn(MSG);</span>
+<span class="fc" id="L146">        EasyMock.replay(log);</span>
+<span class="fc" id="L147">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L149">        logger.warn(MSG);</span>
+<span class="fc" id="L150">        EasyMock.verify(log);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests whether an exception can be logged on warn level.
+     */
+    @Test
+    public void testWarnWithException()
+    {
+<span class="fc" id="L159">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L160">        final Throwable ex = new Exception(&quot;Test exception&quot;);</span>
+<span class="fc" id="L161">        log.warn(MSG, ex);</span>
+<span class="fc" id="L162">        EasyMock.replay(log);</span>
+<span class="fc" id="L163">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L165">        logger.warn(MSG, ex);</span>
+<span class="fc" id="L166">        EasyMock.verify(log);</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Tests whether error logging is possible.
+     */
+    @Test
+    public void testError()
+    {
+<span class="fc" id="L175">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L176">        log.error(MSG);</span>
+<span class="fc" id="L177">        EasyMock.replay(log);</span>
+<span class="fc" id="L178">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L180">        logger.error(MSG);</span>
+<span class="fc" id="L181">        EasyMock.verify(log);</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Tests whether an exception can be logged on error level.
+     */
+    @Test
+    public void testErrorWithException()
+    {
+<span class="fc" id="L190">        final Log log = EasyMock.createMock(Log.class);</span>
+<span class="fc" id="L191">        final Throwable ex = new Exception(&quot;Test exception&quot;);</span>
+<span class="fc" id="L192">        log.error(MSG, ex);</span>
+<span class="fc" id="L193">        EasyMock.replay(log);</span>
+<span class="fc" id="L194">        final ConfigurationLogger logger = new ConfigurationLogger(log);</span>
+
+<span class="fc" id="L196">        logger.error(MSG, ex);</span>
+<span class="fc" id="L197">        EasyMock.verify(log);</span>
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Tests whether a dummy logger can be created.
+     */
+    @Test
+    public void testDummyLogger()
+    {
+<span class="fc" id="L206">        final ConfigurationLogger logger = ConfigurationLogger.newDummyLogger();</span>
+
+<span class="fc" id="L208">        assertThat(&quot;Wrong internal logger&quot;, logger.getLog(),</span>
+<span class="fc" id="L209">                instanceOf(NoOpLog.class));</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Tests that a derived class can be created for a logger.
+     */
+    @Test
+    public void testSubClass()
+    {
+<span class="fc" id="L218">        final StringBuilder buf = new StringBuilder();</span>
+<span class="fc" id="L219">        final ConfigurationLogger logger = new ConfigurationLogger()</span>
+<span class="fc" id="L220">        {</span>
+            @Override
+            public void info(final String msg)
+            {
+<span class="fc" id="L224">                buf.append(msg);</span>
+<span class="fc" id="L225">            }</span>
+        };
+
+<span class="fc" id="L228">        assertNull(&quot;Got an internal logger&quot;, logger.getLog());</span>
+<span class="fc" id="L229">        logger.info(MSG);</span>
+<span class="fc" id="L230">        assertEquals(&quot;Message not logged&quot;, MSG, buf.toString());</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * Tests the logger set per default.
+     */
+    @Test
+    public void testAbstractConfigurationDefaultLogger()
+    {
+<span class="fc" id="L239">        final AbstractConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L240">        assertThat(&quot;Wrong default logger&quot;, config.getLogger().getLog(), instanceOf(NoOpLog.class));</span>
+<span class="fc" id="L241">    }</span>
+
+    /**
+     * Tests whether the logger can be set.
+     */
+    @Test
+    public void testAbstractConfigurationSetLogger()
+    {
+<span class="fc" id="L249">        final ConfigurationLogger logger = new ConfigurationLogger(getClass());</span>
+<span class="fc" id="L250">        final AbstractConfiguration config = new BaseConfiguration();</span>
+
+<span class="fc" id="L252">        config.setLogger(logger);</span>
+<span class="fc" id="L253">        assertThat(&quot;Logger not set&quot;, config.getLogger(), sameInstance(logger));</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Tests that the logger can be disabled by setting it to null.
+     */
+    @Test
+    public void testAbstractConfigurationSetLoggerNull()
+    {
+<span class="fc" id="L262">        final AbstractConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L263">        config.setLogger(new ConfigurationLogger(getClass()));</span>
+
+<span class="fc" id="L265">        config.setLogger(null);</span>
+<span class="fc" id="L266">        assertThat(&quot;Logger not disabled&quot;, config.getLogger().getLog(), instanceOf(NoOpLog.class));</span>
+<span class="fc" id="L267">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

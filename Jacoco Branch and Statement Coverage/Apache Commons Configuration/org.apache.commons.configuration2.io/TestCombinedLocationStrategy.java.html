@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCombinedLocationStrategy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.io</a> &gt; <span class="el_source">TestCombinedLocationStrategy.java</span></div><h1>TestCombinedLocationStrategy.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.io;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code CombinedLocationStrategy}.
+ *
+ */
+<span class="fc" id="L37">public class TestCombinedLocationStrategy</span>
+{
+    /** A test locator. */
+    private static FileLocator locator;
+
+    /** A URL indicating a successful locate() operation. */
+    private static URL locateURL;
+
+    /** A mock for the file system. */
+    private FileSystem fileSystem;
+
+    /** An array with mock sub strategies. */
+    private FileLocationStrategy[] subStrategies;
+
+    @BeforeClass
+    public static void setUpOnce() throws Exception
+    {
+        locator =
+<span class="fc" id="L55">                FileLocatorUtils.fileLocator().fileName(&quot;testFile.tst&quot;)</span>
+<span class="fc" id="L56">                        .create();</span>
+<span class="fc" id="L57">        locateURL = ConfigurationAssert.getTestURL(&quot;test.xml&quot;);</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Returns the mock file system. It is created on demand.
+     *
+     * @return the mock file system
+     */
+    private FileSystem getFileSystem()
+    {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (fileSystem == null)</span>
+        {
+<span class="fc" id="L69">            fileSystem = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L70">            EasyMock.replay(fileSystem);</span>
+        }
+<span class="fc" id="L72">        return fileSystem;</span>
+    }
+
+    /**
+     * Returns an array with mock objects for sub strategies.
+     *
+     * @return the array with mock strategies
+     */
+    private FileLocationStrategy[] getSubStrategies()
+    {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (subStrategies == null)</span>
+        {
+<span class="fc" id="L84">            subStrategies = new FileLocationStrategy[2];</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            for (int i = 0; i &lt; subStrategies.length; i++)</span>
+            {
+<span class="fc" id="L87">                subStrategies[i] =</span>
+<span class="fc" id="L88">                        EasyMock.createMock(FileLocationStrategy.class);</span>
+            }
+        }
+<span class="fc" id="L91">        return subStrategies;</span>
+    }
+
+    /**
+     * Replays the mock objects for the sub strategies.
+     */
+    private void replaySubStrategies()
+    {
+<span class="fc" id="L99">        EasyMock.replay((Object[]) getSubStrategies());</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Verifies the mock objects for the sub strategies.
+     */
+    private void verifySubStrategies()
+    {
+<span class="fc" id="L107">        EasyMock.verify((Object[]) getSubStrategies());</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Checks whether the passed in combined strategy contains the expected sub
+     * strategies.
+     *
+     * @param strategy the combined strategy to check
+     */
+    private void checkSubStrategies(final CombinedLocationStrategy strategy)
+    {
+<span class="fc" id="L118">        final Collection&lt;FileLocationStrategy&gt; subs = strategy.getSubStrategies();</span>
+<span class="fc" id="L119">        assertEquals(&quot;Wrong number of strategies&quot;, getSubStrategies().length,</span>
+<span class="fc" id="L120">                subs.size());</span>
+<span class="fc" id="L121">        int idx = 0;</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        for (final FileLocationStrategy strat : subs)</span>
+        {
+<span class="fc" id="L124">            assertEquals(&quot;Wrong sub strategy at &quot; + idx,</span>
+<span class="fc" id="L125">                    getSubStrategies()[idx++], strat);</span>
+<span class="fc" id="L126">        }</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Helper method for creating a combined strategy with the mock sub
+     * strategies.
+     *
+     * @return the newly created combined strategy
+     */
+    private CombinedLocationStrategy createCombinedStrategy()
+    {
+<span class="fc" id="L137">        return new CombinedLocationStrategy(Arrays.asList(getSubStrategies()));</span>
+    }
+
+    /**
+     * Tries to create an instance with a null collection.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNullCollection()
+    {
+<span class="nc" id="L146">        new CombinedLocationStrategy(null);</span>
+<span class="nc" id="L147">    }</span>
+
+    /**
+     * Tries to create an instance containing a null element.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitCollectionWithNullEntries()
+    {
+<span class="fc" id="L155">        final Collection&lt;FileLocationStrategy&gt; col =</span>
+                new LinkedList&lt;&gt;(
+<span class="fc" id="L157">                        Arrays.asList(getSubStrategies()));</span>
+<span class="fc" id="L158">        col.add(null);</span>
+<span class="nc" id="L159">        new CombinedLocationStrategy(col);</span>
+<span class="nc" id="L160">    }</span>
+
+    /**
+     * Tests whether a defensive copy of the collection with sub strategies is
+     * made.
+     */
+    @Test
+    public void testInitDefensiveCopy()
+    {
+<span class="fc" id="L169">        final Collection&lt;FileLocationStrategy&gt; col =</span>
+                new LinkedList&lt;&gt;(
+<span class="fc" id="L171">                        Arrays.asList(getSubStrategies()));</span>
+<span class="fc" id="L172">        final CombinedLocationStrategy strategy = new CombinedLocationStrategy(col);</span>
+<span class="fc" id="L173">        col.add(EasyMock.createMock(FileLocationStrategy.class));</span>
+<span class="fc" id="L174">        checkSubStrategies(strategy);</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Tests that the collection with sub strategies cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetSubStrategiesModify()
+    {
+<span class="fc" id="L183">        final CombinedLocationStrategy strategy = createCombinedStrategy();</span>
+<span class="nc" id="L184">        strategy.getSubStrategies().clear();</span>
+<span class="nc" id="L185">    }</span>
+
+    /**
+     * Tests a successful locate() operation if the first sub strategy can
+     * locate the file.
+     */
+    @Test
+    public void testLocateSuccessFirstSubStrategy()
+    {
+<span class="fc" id="L194">        EasyMock.expect(getSubStrategies()[0].locate(getFileSystem(), locator))</span>
+<span class="fc" id="L195">                .andReturn(locateURL);</span>
+<span class="fc" id="L196">        replaySubStrategies();</span>
+<span class="fc" id="L197">        final CombinedLocationStrategy strategy = createCombinedStrategy();</span>
+<span class="fc" id="L198">        assertSame(&quot;Wrong result&quot;, locateURL,</span>
+<span class="fc" id="L199">                strategy.locate(getFileSystem(), locator));</span>
+<span class="fc" id="L200">        verifySubStrategies();</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * Tests a successful locate() operation if the 2nd sub strategy can locate
+     * the file.
+     */
+    @Test
+    public void testLocateSuccessSecondSubStrategy()
+    {
+<span class="fc" id="L210">        EasyMock.expect(getSubStrategies()[0].locate(getFileSystem(), locator))</span>
+<span class="fc" id="L211">                .andReturn(null);</span>
+<span class="fc" id="L212">        EasyMock.expect(getSubStrategies()[1].locate(getFileSystem(), locator))</span>
+<span class="fc" id="L213">                .andReturn(locateURL);</span>
+<span class="fc" id="L214">        replaySubStrategies();</span>
+<span class="fc" id="L215">        final CombinedLocationStrategy strategy = createCombinedStrategy();</span>
+<span class="fc" id="L216">        assertSame(&quot;Wrong result&quot;, locateURL,</span>
+<span class="fc" id="L217">                strategy.locate(getFileSystem(), locator));</span>
+<span class="fc" id="L218">        verifySubStrategies();</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Tests a failed locate() operation.
+     */
+    @Test
+    public void testLocateFailed()
+    {
+<span class="fc" id="L227">        EasyMock.expect(getSubStrategies()[0].locate(getFileSystem(), locator))</span>
+<span class="fc" id="L228">                .andReturn(null);</span>
+<span class="fc" id="L229">        EasyMock.expect(getSubStrategies()[1].locate(getFileSystem(), locator))</span>
+<span class="fc" id="L230">                .andReturn(null);</span>
+<span class="fc" id="L231">        replaySubStrategies();</span>
+<span class="fc" id="L232">        final CombinedLocationStrategy strategy = createCombinedStrategy();</span>
+<span class="fc" id="L233">        assertNull(&quot;Got a URL&quot;, strategy.locate(getFileSystem(), locator));</span>
+<span class="fc" id="L234">        verifySubStrategies();</span>
+<span class="fc" id="L235">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

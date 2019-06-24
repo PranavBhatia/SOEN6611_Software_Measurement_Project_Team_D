@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutableShortTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.mutable</a> &gt; <span class="el_source">MutableShortTest.java</span></div><h1>MutableShortTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.mutable;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+/**
+ * JUnit tests.
+ *
+ * @see MutableShort
+ */
+<span class="fc" id="L30">public class MutableShortTest {</span>
+
+    // ----------------------------------------------------------------
+    @Test
+    public void testConstructors() {
+<span class="fc" id="L35">        assertEquals((short) 0, new MutableShort().shortValue());</span>
+
+<span class="fc" id="L37">        assertEquals((short) 1, new MutableShort((short) 1).shortValue());</span>
+
+<span class="fc" id="L39">        assertEquals((short) 2, new MutableShort(Short.valueOf((short) 2)).shortValue());</span>
+<span class="fc" id="L40">        assertEquals((short) 3, new MutableShort(new MutableShort((short) 3)).shortValue());</span>
+
+<span class="fc" id="L42">        assertEquals((short) 2, new MutableShort(&quot;2&quot;).shortValue());</span>
+
+<span class="pc" id="L44">        assertThrows(NullPointerException.class, () -&gt; new MutableShort((Number) null));</span>
+<span class="fc" id="L45">    }</span>
+
+    @Test
+    public void testGetSet() {
+<span class="fc" id="L49">        final MutableShort mutNum = new MutableShort((short) 0);</span>
+<span class="fc" id="L50">        assertEquals((short) 0, new MutableShort().shortValue());</span>
+<span class="fc" id="L51">        assertEquals(Short.valueOf((short) 0), new MutableShort().getValue());</span>
+
+<span class="fc" id="L53">        mutNum.setValue((short) 1);</span>
+<span class="fc" id="L54">        assertEquals((short) 1, mutNum.shortValue());</span>
+<span class="fc" id="L55">        assertEquals(Short.valueOf((short) 1), mutNum.getValue());</span>
+
+<span class="fc" id="L57">        mutNum.setValue(Short.valueOf((short) 2));</span>
+<span class="fc" id="L58">        assertEquals((short) 2, mutNum.shortValue());</span>
+<span class="fc" id="L59">        assertEquals(Short.valueOf((short) 2), mutNum.getValue());</span>
+
+<span class="fc" id="L61">        mutNum.setValue(new MutableShort((short) 3));</span>
+<span class="fc" id="L62">        assertEquals((short) 3, mutNum.shortValue());</span>
+<span class="fc" id="L63">        assertEquals(Short.valueOf((short) 3), mutNum.getValue());</span>
+<span class="pc" id="L64">        assertThrows(NullPointerException.class, () -&gt; mutNum.setValue(null));</span>
+<span class="fc" id="L65">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L69">        final MutableShort mutNumA = new MutableShort((short) 0);</span>
+<span class="fc" id="L70">        final MutableShort mutNumB = new MutableShort((short) 0);</span>
+<span class="fc" id="L71">        final MutableShort mutNumC = new MutableShort((short) 1);</span>
+
+<span class="fc" id="L73">        assertEquals(mutNumA, mutNumA);</span>
+<span class="fc" id="L74">        assertEquals(mutNumA, mutNumB);</span>
+<span class="fc" id="L75">        assertEquals(mutNumB, mutNumA);</span>
+<span class="fc" id="L76">        assertEquals(mutNumB, mutNumB);</span>
+<span class="fc" id="L77">        assertNotEquals(mutNumA, mutNumC);</span>
+<span class="fc" id="L78">        assertNotEquals(mutNumB, mutNumC);</span>
+<span class="fc" id="L79">        assertEquals(mutNumC, mutNumC);</span>
+<span class="fc" id="L80">        assertNotEquals(null, mutNumA);</span>
+<span class="fc" id="L81">        assertNotEquals(mutNumA, Short.valueOf((short) 0));</span>
+<span class="fc" id="L82">        assertNotEquals(&quot;0&quot;, mutNumA);</span>
+<span class="fc" id="L83">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L87">        final MutableShort mutNumA = new MutableShort((short) 0);</span>
+<span class="fc" id="L88">        final MutableShort mutNumB = new MutableShort((short) 0);</span>
+<span class="fc" id="L89">        final MutableShort mutNumC = new MutableShort((short) 1);</span>
+
+<span class="fc" id="L91">        assertEquals(mutNumA.hashCode(), mutNumA.hashCode());</span>
+<span class="fc" id="L92">        assertEquals(mutNumA.hashCode(), mutNumB.hashCode());</span>
+<span class="fc" id="L93">        assertNotEquals(mutNumA.hashCode(), mutNumC.hashCode());</span>
+<span class="fc" id="L94">        assertEquals(mutNumA.hashCode(), Short.valueOf((short) 0).hashCode());</span>
+<span class="fc" id="L95">    }</span>
+
+    @Test
+    public void testCompareTo() {
+<span class="fc" id="L99">        final MutableShort mutNum = new MutableShort((short) 0);</span>
+
+<span class="fc" id="L101">        assertEquals((short) 0, mutNum.compareTo(new MutableShort((short) 0)));</span>
+<span class="fc" id="L102">        assertEquals((short) +1, mutNum.compareTo(new MutableShort((short) -1)));</span>
+<span class="fc" id="L103">        assertEquals((short) -1, mutNum.compareTo(new MutableShort((short) 1)));</span>
+<span class="pc" id="L104">        assertThrows(NullPointerException.class, () -&gt; mutNum.compareTo(null));</span>
+<span class="fc" id="L105">    }</span>
+
+    @Test
+    public void testPrimitiveValues() {
+<span class="fc" id="L109">        final MutableShort mutNum = new MutableShort( (short) 1 );</span>
+<span class="fc" id="L110">        assertEquals(1.0F, mutNum.floatValue());</span>
+<span class="fc" id="L111">        assertEquals(1.0, mutNum.doubleValue());</span>
+<span class="fc" id="L112">        assertEquals( (byte) 1, mutNum.byteValue() );</span>
+<span class="fc" id="L113">        assertEquals( (short) 1, mutNum.shortValue() );</span>
+<span class="fc" id="L114">        assertEquals( 1, mutNum.intValue() );</span>
+<span class="fc" id="L115">        assertEquals( 1L, mutNum.longValue() );</span>
+<span class="fc" id="L116">    }</span>
+
+    @Test
+    public void testToShort() {
+<span class="fc" id="L120">        assertEquals(Short.valueOf((short) 0), new MutableShort((short) 0).toShort());</span>
+<span class="fc" id="L121">        assertEquals(Short.valueOf((short) 123), new MutableShort((short) 123).toShort());</span>
+<span class="fc" id="L122">    }</span>
+
+    @Test
+    public void testIncrement() {
+<span class="fc" id="L126">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L127">        mutNum.increment();</span>
+
+<span class="fc" id="L129">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L130">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L131">    }</span>
+
+    @Test
+    public void testIncrementAndGet() {
+<span class="fc" id="L135">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L136">        final short result = mutNum.incrementAndGet();</span>
+
+<span class="fc" id="L138">        assertEquals(2, result);</span>
+<span class="fc" id="L139">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L140">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L141">    }</span>
+
+    @Test
+    public void testGetAndIncrement() {
+<span class="fc" id="L145">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L146">        final short result = mutNum.getAndIncrement();</span>
+
+<span class="fc" id="L148">        assertEquals(1, result);</span>
+<span class="fc" id="L149">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L150">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L151">    }</span>
+
+    @Test
+    public void testDecrement() {
+<span class="fc" id="L155">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L156">        mutNum.decrement();</span>
+
+<span class="fc" id="L158">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L159">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L160">    }</span>
+
+    @Test
+    public void testDecrementAndGet() {
+<span class="fc" id="L164">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L165">        final short result = mutNum.decrementAndGet();</span>
+
+<span class="fc" id="L167">        assertEquals(0, result);</span>
+<span class="fc" id="L168">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L169">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L170">    }</span>
+
+    @Test
+    public void testGetAndDecrement() {
+<span class="fc" id="L174">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L175">        final short result = mutNum.getAndDecrement();</span>
+
+<span class="fc" id="L177">        assertEquals(1, result);</span>
+<span class="fc" id="L178">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L179">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L180">    }</span>
+
+    @Test
+    public void testAddValuePrimitive() {
+<span class="fc" id="L184">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L185">        mutNum.add((short) 1);</span>
+
+<span class="fc" id="L187">        assertEquals((short) 2, mutNum.shortValue());</span>
+<span class="fc" id="L188">    }</span>
+
+    @Test
+    public void testAddValueObject() {
+<span class="fc" id="L192">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L193">        mutNum.add(Short.valueOf((short) 1));</span>
+
+<span class="fc" id="L195">        assertEquals((short) 2, mutNum.shortValue());</span>
+<span class="fc" id="L196">    }</span>
+
+    @Test
+    public void testGetAndAddValuePrimitive() {
+<span class="fc" id="L200">        final MutableShort mutableShort = new MutableShort((short) 0);</span>
+<span class="fc" id="L201">        final short result = mutableShort.getAndAdd((short) 1);</span>
+
+<span class="fc" id="L203">        assertEquals((short) 0, result);</span>
+<span class="fc" id="L204">        assertEquals((short) 1, mutableShort.shortValue());</span>
+<span class="fc" id="L205">    }</span>
+
+    @Test
+    public void testGetAndAddValueObject() {
+<span class="fc" id="L209">        final MutableShort mutableShort = new MutableShort((short) 0);</span>
+<span class="fc" id="L210">        final short result = mutableShort.getAndAdd(Short.valueOf((short) 1));</span>
+
+<span class="fc" id="L212">        assertEquals((short) 0, result);</span>
+<span class="fc" id="L213">        assertEquals((short) 1, mutableShort.shortValue());</span>
+<span class="fc" id="L214">    }</span>
+
+    @Test
+    public void testAddAndGetValuePrimitive() {
+<span class="fc" id="L218">        final MutableShort mutableShort = new MutableShort((short) 0);</span>
+<span class="fc" id="L219">        final short result = mutableShort.addAndGet((short) 1);</span>
+
+<span class="fc" id="L221">        assertEquals((short) 1, result);</span>
+<span class="fc" id="L222">        assertEquals((short) 1, mutableShort.shortValue());</span>
+<span class="fc" id="L223">    }</span>
+
+    @Test
+    public void testAddAndGetValueObject() {
+<span class="fc" id="L227">        final MutableShort mutableShort = new MutableShort((short) 0);</span>
+<span class="fc" id="L228">        final short result = mutableShort.addAndGet(Short.valueOf((short) 1));</span>
+
+<span class="fc" id="L230">        assertEquals((short) 1, result);</span>
+<span class="fc" id="L231">        assertEquals((short) 1, mutableShort.shortValue());</span>
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testSubtractValuePrimitive() {
+<span class="fc" id="L236">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L237">        mutNum.subtract((short) 1);</span>
+
+<span class="fc" id="L239">        assertEquals((short) 0, mutNum.shortValue());</span>
+<span class="fc" id="L240">    }</span>
+
+    @Test
+    public void testSubtractValueObject() {
+<span class="fc" id="L244">        final MutableShort mutNum = new MutableShort((short) 1);</span>
+<span class="fc" id="L245">        mutNum.subtract(Short.valueOf((short) 1));</span>
+
+<span class="fc" id="L247">        assertEquals((short) 0, mutNum.shortValue());</span>
+<span class="fc" id="L248">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L252">        assertEquals(&quot;0&quot;, new MutableShort((short) 0).toString());</span>
+<span class="fc" id="L253">        assertEquals(&quot;10&quot;, new MutableShort((short) 10).toString());</span>
+<span class="fc" id="L254">        assertEquals(&quot;-123&quot;, new MutableShort((short) -123).toString());</span>
+<span class="fc" id="L255">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

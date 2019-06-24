@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JavaVersionTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">JavaVersionTest.java</span></div><h1>JavaVersionTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.commons.lang3;
+
+import org.junit.jupiter.api.Test;
+
+import static org.apache.commons.lang3.JavaVersion.JAVA_0_9;
+import static org.apache.commons.lang3.JavaVersion.JAVA_10;
+import static org.apache.commons.lang3.JavaVersion.JAVA_11;
+import static org.apache.commons.lang3.JavaVersion.JAVA_12;
+import static org.apache.commons.lang3.JavaVersion.JAVA_13;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_1;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_2;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_3;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_5;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_6;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_7;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.commons.lang3.JavaVersion.get;
+import static org.apache.commons.lang3.JavaVersion.getJavaVersion;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.JavaVersion}.
+ */
+<span class="fc" id="L47">public class JavaVersionTest {</span>
+
+    @Test
+    public void testGetJavaVersion() {
+<span class="fc" id="L51">        assertEquals(JAVA_0_9, get(&quot;0.9&quot;), &quot;0.9 failed&quot;);</span>
+<span class="fc" id="L52">        assertEquals(JAVA_1_1, get(&quot;1.1&quot;), &quot;1.1 failed&quot;);</span>
+<span class="fc" id="L53">        assertEquals(JAVA_1_2, get(&quot;1.2&quot;), &quot;1.2 failed&quot;);</span>
+<span class="fc" id="L54">        assertEquals(JAVA_1_3, get(&quot;1.3&quot;), &quot;1.3 failed&quot;);</span>
+<span class="fc" id="L55">        assertEquals(JAVA_1_4, get(&quot;1.4&quot;), &quot;1.4 failed&quot;);</span>
+<span class="fc" id="L56">        assertEquals(JAVA_1_5, get(&quot;1.5&quot;), &quot;1.5 failed&quot;);</span>
+<span class="fc" id="L57">        assertEquals(JAVA_1_6, get(&quot;1.6&quot;), &quot;1.6 failed&quot;);</span>
+<span class="fc" id="L58">        assertEquals(JAVA_1_7, get(&quot;1.7&quot;), &quot;1.7 failed&quot;);</span>
+<span class="fc" id="L59">        assertEquals(JAVA_1_8, get(&quot;1.8&quot;), &quot;1.8 failed&quot;);</span>
+<span class="fc" id="L60">        assertEquals(JAVA_9, get(&quot;9&quot;), &quot;9 failed&quot;);</span>
+<span class="fc" id="L61">        assertEquals(JAVA_10, get(&quot;10&quot;), &quot;10 failed&quot;);</span>
+<span class="fc" id="L62">        assertEquals(JAVA_11, get(&quot;11&quot;), &quot;11 failed&quot;);</span>
+<span class="fc" id="L63">        assertEquals(JAVA_12, get(&quot;12&quot;), &quot;12 failed&quot;);</span>
+<span class="fc" id="L64">        assertEquals(JAVA_13, get(&quot;13&quot;), &quot;13 failed&quot;);</span>
+<span class="fc" id="L65">        assertEquals(JAVA_RECENT, get(&quot;1.10&quot;), &quot;1.10 failed&quot;);</span>
+        // assertNull(&quot;2.10 unexpectedly worked&quot;, get(&quot;2.10&quot;));
+<span class="fc" id="L67">        assertEquals(get(&quot;1.5&quot;), getJavaVersion(&quot;1.5&quot;), &quot;Wrapper method failed&quot;);</span>
+<span class="fc" id="L68">        assertEquals(JAVA_RECENT, get(&quot;14&quot;), &quot;Unhandled&quot;); // LANG-1384</span>
+<span class="fc" id="L69">    }</span>
+
+    @Test
+    public void testAtLeast() {
+<span class="fc" id="L73">        assertFalse(JAVA_1_2.atLeast(JAVA_1_5), &quot;1.2 at least 1.5 passed&quot;);</span>
+<span class="fc" id="L74">        assertTrue(JAVA_1_5.atLeast(JAVA_1_2), &quot;1.5 at least 1.2 failed&quot;);</span>
+<span class="fc" id="L75">        assertFalse(JAVA_1_6.atLeast(JAVA_1_7), &quot;1.6 at least 1.7 passed&quot;);</span>
+
+<span class="fc" id="L77">        assertTrue(JAVA_0_9.atLeast(JAVA_1_5), &quot;0.9 at least 1.5 failed&quot;);</span>
+<span class="fc" id="L78">        assertFalse(JAVA_0_9.atLeast(JAVA_1_6), &quot;0.9 at least 1.6 passed&quot;);</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L83">        assertEquals(&quot;1.2&quot;, JAVA_1_2.toString());</span>
+<span class="fc" id="L84">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

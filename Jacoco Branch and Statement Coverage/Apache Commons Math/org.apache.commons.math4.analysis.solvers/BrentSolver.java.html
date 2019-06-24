@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BrentSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_math4$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math4.analysis.solvers</a> &gt; <span class="el_source">BrentSolver.java</span></div><h1>BrentSolver.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math4.analysis.solvers;
+
+
+import org.apache.commons.math4.exception.NoBracketingException;
+import org.apache.commons.math4.exception.NumberIsTooLargeException;
+import org.apache.commons.math4.exception.TooManyEvaluationsException;
+import org.apache.commons.math4.util.FastMath;
+import org.apache.commons.numbers.core.Precision;
+
+/**
+ * This class implements the &lt;a href=&quot;http://mathworld.wolfram.com/BrentsMethod.html&quot;&gt;
+ * Brent algorithm&lt;/a&gt; for finding zeros of real univariate functions.
+ * The function should be continuous but not necessarily smooth.
+ * The {@code solve} method returns a zero {@code x} of the function {@code f}
+ * in the given interval {@code [a, b]} to within a tolerance
+ * {@code 2 eps abs(x) + t} where {@code eps} is the relative accuracy and
+ * {@code t} is the absolute accuracy.
+ * &lt;p&gt;The given interval must bracket the root.&lt;/p&gt;
+ * &lt;p&gt;
+ *  The reference implementation is given in chapter 4 of
+ *  &lt;blockquote&gt;
+ *   &lt;b&gt;Algorithms for Minimization Without Derivatives&lt;/b&gt;,
+ *   &lt;em&gt;Richard P. Brent&lt;/em&gt;,
+ *   Dover, 2002
+ *  &lt;/blockquote&gt;
+ *
+ * @see BaseAbstractUnivariateSolver
+ */
+public class BrentSolver extends AbstractUnivariateSolver {
+
+    /** Default absolute accuracy. */
+    private static final double DEFAULT_ABSOLUTE_ACCURACY = 1e-6;
+
+    /**
+     * Construct a solver with default absolute accuracy (1e-6).
+     */
+    public BrentSolver() {
+<span class="fc" id="L54">        this(DEFAULT_ABSOLUTE_ACCURACY);</span>
+<span class="fc" id="L55">    }</span>
+    /**
+     * Construct a solver.
+     *
+     * @param absoluteAccuracy Absolute accuracy.
+     */
+    public BrentSolver(double absoluteAccuracy) {
+<span class="fc" id="L62">        super(absoluteAccuracy);</span>
+<span class="fc" id="L63">    }</span>
+    /**
+     * Construct a solver.
+     *
+     * @param relativeAccuracy Relative accuracy.
+     * @param absoluteAccuracy Absolute accuracy.
+     */
+    public BrentSolver(double relativeAccuracy,
+                       double absoluteAccuracy) {
+<span class="nc" id="L72">        super(relativeAccuracy, absoluteAccuracy);</span>
+<span class="nc" id="L73">    }</span>
+    /**
+     * Construct a solver.
+     *
+     * @param relativeAccuracy Relative accuracy.
+     * @param absoluteAccuracy Absolute accuracy.
+     * @param functionValueAccuracy Function value accuracy.
+     *
+     * @see BaseAbstractUnivariateSolver#BaseAbstractUnivariateSolver(double,double,double)
+     */
+    public BrentSolver(double relativeAccuracy,
+                       double absoluteAccuracy,
+                       double functionValueAccuracy) {
+<span class="nc" id="L86">        super(relativeAccuracy, absoluteAccuracy, functionValueAccuracy);</span>
+<span class="nc" id="L87">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected double doSolve()
+        throws NoBracketingException,
+               TooManyEvaluationsException,
+               NumberIsTooLargeException {
+<span class="fc" id="L97">        final double min = getMin();</span>
+<span class="fc" id="L98">        final double max = getMax();</span>
+<span class="fc" id="L99">        final double initial = getStartValue();</span>
+
+<span class="fc" id="L101">        final org.apache.commons.numbers.rootfinder.BrentSolver rf =</span>
+<span class="fc" id="L102">            new org.apache.commons.numbers.rootfinder.BrentSolver(getRelativeAccuracy(),</span>
+<span class="fc" id="L103">                                                                  getAbsoluteAccuracy(),</span>
+<span class="fc" id="L104">                                                                  getFunctionValueAccuracy());</span>
+
+<span class="fc" id="L106">        double root = Double.NaN;</span>
+        try {
+<span class="fc" id="L108">            root = rf.findRoot(arg -&gt; computeObjectiveValue(arg),</span>
+                               min, initial, max);
+<span class="fc" id="L110">        } catch (IllegalArgumentException e) {</span>
+            // Redundant calls in order to throw the expected exceptions.
+<span class="fc" id="L112">            verifySequence(min, initial, max);</span>
+<span class="nc" id="L113">            verifyBracketing(min, max);</span>
+<span class="fc" id="L114">        }</span>
+
+<span class="fc" id="L116">        return root;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

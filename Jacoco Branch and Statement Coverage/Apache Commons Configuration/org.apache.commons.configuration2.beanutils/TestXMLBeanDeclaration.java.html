@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestXMLBeanDeclaration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.beanutils</a> &gt; <span class="el_source">TestXMLBeanDeclaration.java</span></div><h1>TestXMLBeanDeclaration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.beanutils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.junit.Test;
+
+/**
+ * Test class for XMLBeanDeclaration.
+ *
+ * @since 1.3
+ * @author &lt;a
+ * href=&quot;http://commons.apache.org/configuration/team-list.html&quot;&gt;Commons
+ * Configuration team&lt;/a&gt;
+ */
+<span class="fc" id="L42">public class TestXMLBeanDeclaration</span>
+{
+    /** An array with some test properties. */
+<span class="fc" id="L45">    private static final String[] TEST_PROPS =</span>
+    { &quot;firstName&quot;, &quot;lastName&quot;, &quot;department&quot;, &quot;age&quot;, &quot;hobby&quot;};
+
+    /** An array with the values for the test properties. */
+<span class="fc" id="L49">    private static final String[] TEST_VALUES =</span>
+    { &quot;John&quot;, &quot;Smith&quot;, &quot;Engineering&quot;, &quot;42&quot;, &quot;TV&quot;};
+
+    /** An array with the names of nested (complex) properties. */
+<span class="fc" id="L53">    private static final String[] COMPLEX_PROPS =</span>
+    { &quot;address&quot;, &quot;car&quot;};
+
+    /** An array with the names of the classes of the complex properties. */
+<span class="fc" id="L57">    private static final String[] COMPLEX_CLASSES =</span>
+    { &quot;org.apache.commons.configuration.test.AddressTest&quot;,
+            &quot;org.apache.commons.configuration.test.CarTest&quot;};
+
+    /** An array with the property names of the complex properties. */
+<span class="fc" id="L62">    private static final String[][] COMPLEX_ATTRIBUTES =</span>
+    {
+    { &quot;street&quot;, &quot;zip&quot;, &quot;city&quot;, &quot;country&quot;},
+    { &quot;brand&quot;, &quot;color&quot;}};
+
+    /** An array with the values of the complex properties. */
+<span class="fc" id="L68">    private static final String[][] COMPLEX_VALUES =</span>
+    {
+    { &quot;Baker Street&quot;, &quot;12354&quot;, &quot;London&quot;, &quot;UK&quot;},
+    { &quot;Bentley&quot;, &quot;silver&quot;}};
+
+    /** An array with property names for a complex constructor argument. */
+<span class="fc" id="L74">    private static final String[] CTOR_COMPLEX_ATTRIBUTES = {</span>
+            &quot;secCode&quot;, &quot;validTo&quot;
+    };
+
+    /** An array with values of a complex constructor argument. */
+<span class="fc" id="L79">    private static final String[] CTOR_COMPLEX_VALUES = {</span>
+            &quot;20121110181559&quot;, &quot;2015-01-31&quot;
+    };
+
+    /** Constant for an ID value passed as constructor argument. */
+    private static final String CTOR_ID = &quot;20121110182006&quot;;
+
+    /** Constant for the key with the bean declaration. */
+    private static final String KEY = &quot;myBean&quot;;
+
+    /** Constant for the section with the variables.*/
+    private static final String VARS = &quot;variables.&quot;;
+
+    /**
+     * Tests creating a declaration from a null configuration. This should cause
+     * an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitFromNullConfiguration()
+    {
+<span class="nc" id="L99">        new XMLBeanDeclaration(null);</span>
+<span class="nc" id="L100">    }</span>
+
+    /**
+     * Tests creating a declaration from a null configuration with a key. This
+     * should cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitFromNullConfigurationAndKey()
+    {
+<span class="nc" id="L109">        new XMLBeanDeclaration(null, KEY);</span>
+<span class="nc" id="L110">    }</span>
+
+    /**
+     * Tests fetching the bean's class name.
+     */
+    @Test
+    public void testGetBeanClassName()
+    {
+<span class="fc" id="L118">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L119">        config.addProperty(KEY + &quot;[@config-class]&quot;, getClass().getName());</span>
+<span class="fc" id="L120">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L121">        assertEquals(&quot;Wrong class name&quot;, getClass().getName(), decl</span>
+<span class="fc" id="L122">                .getBeanClassName());</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Tests fetching the bean's class name if it is undefined.
+     */
+    @Test
+    public void testGetBeanClassNameUndefined()
+    {
+<span class="fc" id="L131">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(new BaseHierarchicalConfiguration());</span>
+<span class="fc" id="L132">        assertNull(decl.getBeanClassName());</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Tests that a missing bean class name does not cause an exception.
+     */
+    @Test
+    public void testGetBeanClassNameUndefinedWithEx()
+    {
+<span class="fc" id="L141">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L142">        config.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L143">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config);</span>
+<span class="fc" id="L144">        assertNull(&quot;Got a bean class name&quot;, decl.getBeanClassName());</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * Tests whether a default bean class name is taken into account.
+     */
+    @Test
+    public void testGetBeanClassNameFromDefault()
+    {
+<span class="fc" id="L153">        final BaseHierarchicalConfiguration config =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L155">        config.addProperty(KEY + &quot;[@someProperty]&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L156">        final XMLBeanDeclaration decl =</span>
+<span class="fc" id="L157">                new XMLBeanDeclaration(config, KEY, false, getClass().getName());</span>
+<span class="fc" id="L158">        assertEquals(&quot;Wrong class name&quot;, getClass().getName(),</span>
+<span class="fc" id="L159">                decl.getBeanClassName());</span>
+<span class="fc" id="L160">    }</span>
+
+    /**
+     * Tests whether a default bean class name is overridden by a value in the
+     * configuration.
+     */
+    @Test
+    public void tetGetBeanClassNameDefaultOverride()
+    {
+<span class="fc" id="L169">        final BaseHierarchicalConfiguration config =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L171">        config.addProperty(KEY + &quot;[@config-class]&quot;, getClass().getName());</span>
+<span class="fc" id="L172">        final XMLBeanDeclaration decl =</span>
+                new XMLBeanDeclaration(config, KEY, false,
+                        &quot;someDefaultClassName&quot;);
+<span class="fc" id="L175">        assertEquals(&quot;Wrong class name&quot;, getClass().getName(),</span>
+<span class="fc" id="L176">                decl.getBeanClassName());</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Tests fetching the name of the bean factory.
+     */
+    @Test
+    public void testGetBeanFactoryName()
+    {
+<span class="fc" id="L185">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L186">        config.addProperty(KEY + &quot;[@config-factory]&quot;, &quot;myFactory&quot;);</span>
+<span class="fc" id="L187">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L188">        assertEquals(&quot;Wrong factory name&quot;, &quot;myFactory&quot;, decl</span>
+<span class="fc" id="L189">                .getBeanFactoryName());</span>
+<span class="fc" id="L190">    }</span>
+
+    /**
+     * Tests fetching the name of the bean factory if it is undefined.
+     */
+    @Test
+    public void testGetBeanFactoryNameUndefined()
+    {
+<span class="fc" id="L198">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(new BaseHierarchicalConfiguration());</span>
+<span class="fc" id="L199">        assertNull(decl.getBeanFactoryName());</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Tests that a missing bean factory name does not throw an exception.
+     */
+    @Test
+    public void testGetBeanFactoryNameUndefinedWithEx()
+    {
+<span class="fc" id="L208">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L209">        config.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L210">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config);</span>
+<span class="fc" id="L211">        assertNull(&quot;Got a factory name&quot;, decl.getBeanFactoryName());</span>
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Tests fetching the parameter for the bean factory.
+     */
+    @Test
+    public void testGetBeanFactoryParameter()
+    {
+<span class="fc" id="L220">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L221">        config</span>
+<span class="fc" id="L222">                .addProperty(KEY + &quot;[@config-factoryParam]&quot;,</span>
+                        &quot;myFactoryParameter&quot;);
+<span class="fc" id="L224">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L225">        assertEquals(&quot;Wrong factory parameter&quot;, &quot;myFactoryParameter&quot;, decl</span>
+<span class="fc" id="L226">                .getBeanFactoryParameter());</span>
+<span class="fc" id="L227">    }</span>
+
+    /**
+     * Tests fetching the parameter for the bean factory if it is undefined.
+     */
+    @Test
+    public void testGetBeanFactoryParameterUndefined()
+    {
+<span class="fc" id="L235">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(new BaseHierarchicalConfiguration());</span>
+<span class="fc" id="L236">        assertNull(decl.getBeanFactoryParameter());</span>
+<span class="fc" id="L237">    }</span>
+
+    /**
+     * Tests that an undefined bean factory parameter does not cause an exception.
+     */
+    @Test
+    public void testGetBeanFactoryParameterUndefinedWithEx()
+    {
+<span class="fc" id="L245">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L246">        config.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L247">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config);</span>
+<span class="fc" id="L248">        assertNull(&quot;Got a factory parameter&quot;, decl.getBeanFactoryParameter());</span>
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * Tests if the bean's properties are correctly extracted from the
+     * configuration object.
+     */
+    @Test
+    public void testGetBeanProperties()
+    {
+<span class="fc" id="L258">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L259">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L260">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L261">        checkProperties(decl, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Tests obtaining the bean's properties when reserved attributes are
+     * involved. These should be ignored.
+     */
+    @Test
+    public void testGetBeanPropertiesWithReservedAttributes()
+    {
+<span class="fc" id="L271">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L272">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L273">        config.addProperty(KEY + &quot;[@config-testattr]&quot;, &quot;yes&quot;);</span>
+<span class="fc" id="L274">        config.addProperty(KEY + &quot;[@config-anothertest]&quot;, &quot;this, too&quot;);</span>
+<span class="fc" id="L275">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L276">        checkProperties(decl, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L277">    }</span>
+
+    /**
+     * Tests fetching properties if none are defined.
+     */
+    @Test
+    public void testGetBeanPropertiesEmpty()
+    {
+<span class="fc" id="L285">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(new BaseHierarchicalConfiguration());</span>
+<span class="fc" id="L286">        final Map&lt;String, Object&gt; props = decl.getBeanProperties();</span>
+<span class="pc bpc" id="L287" title="2 of 4 branches missed.">        assertTrue(&quot;Properties found&quot;, props == null || props.isEmpty());</span>
+<span class="fc" id="L288">    }</span>
+
+    /**
+     * Creates a configuration with data for testing nested bean declarations
+     * including constructor arguments.
+     *
+     * @return the initialized test configuration
+     */
+    private static BaseHierarchicalConfiguration prepareNestedBeanDeclarations()
+    {
+<span class="fc" id="L298">        final BaseHierarchicalConfiguration config =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L300">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L301">        final String keyCtorArg = KEY + &quot;.config-constrarg&quot;;</span>
+<span class="fc" id="L302">        setupBeanDeclaration(config, keyCtorArg, CTOR_COMPLEX_ATTRIBUTES,</span>
+                CTOR_COMPLEX_VALUES);
+<span class="fc" id="L304">        config.addProperty(keyCtorArg + &quot;[@config-class]&quot;, &quot;TestClass&quot;);</span>
+<span class="fc" id="L305">        config.addProperty(keyCtorArg + &quot;(-1)[@config-value]&quot;, CTOR_ID);</span>
+<span class="fc" id="L306">        config.addProperty(keyCtorArg + &quot;[@config-type]&quot;, &quot;long&quot;);</span>
+<span class="fc bfc" id="L307" title="All 2 branches covered.">        for (int i = 0; i &lt; COMPLEX_PROPS.length; i++)</span>
+        {
+<span class="fc" id="L309">            setupBeanDeclaration(config, KEY + '.' + COMPLEX_PROPS[i],</span>
+                    COMPLEX_ATTRIBUTES[i], COMPLEX_VALUES[i]);
+<span class="fc" id="L311">            config.addProperty(</span>
+                    KEY + '.' + COMPLEX_PROPS[i] + &quot;[@config-class]&quot;,
+                    COMPLEX_CLASSES[i]);
+        }
+<span class="fc" id="L315">        return config;</span>
+    }
+
+    /**
+     * Tests fetching nested bean declarations.
+     */
+    @Test
+    public void testGetNestedBeanDeclarations()
+    {
+<span class="fc" id="L324">        final BaseHierarchicalConfiguration config = prepareNestedBeanDeclarations();</span>
+<span class="fc" id="L325">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L326">        checkProperties(decl, TEST_PROPS, TEST_VALUES);</span>
+
+<span class="fc" id="L328">        final Map&lt;String, Object&gt; nested = decl.getNestedBeanDeclarations();</span>
+<span class="fc" id="L329">        assertEquals(&quot;Wrong number of nested declarations&quot;,</span>
+<span class="fc" id="L330">                COMPLEX_PROPS.length, nested.size());</span>
+<span class="fc bfc" id="L331" title="All 2 branches covered.">        for (int i = 0; i &lt; COMPLEX_PROPS.length; i++)</span>
+        {
+<span class="fc" id="L333">            final XMLBeanDeclaration d = (XMLBeanDeclaration) nested</span>
+<span class="fc" id="L334">                    .get(COMPLEX_PROPS[i]);</span>
+<span class="fc" id="L335">            assertNotNull(&quot;No declaration found for &quot; + COMPLEX_PROPS[i], d);</span>
+<span class="fc" id="L336">            checkProperties(d, COMPLEX_ATTRIBUTES[i], COMPLEX_VALUES[i]);</span>
+<span class="fc" id="L337">            assertEquals(&quot;Wrong bean class&quot;, COMPLEX_CLASSES[i], d</span>
+<span class="fc" id="L338">                    .getBeanClassName());</span>
+        }
+<span class="fc" id="L340">    }</span>
+
+    /**
+     * Tests whether reserved characters in the node names of nested bean declarations
+     * are handled correctly. This is related to CONFIGURATION-567.
+     */
+    @Test
+    public void testGetNestedBeanDeclarationsReservedCharacter()
+    {
+<span class="fc" id="L349">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L350">        final String key = KEY + &quot;.address..private&quot;;</span>
+<span class="fc" id="L351">        setupBeanDeclaration(config, key, COMPLEX_ATTRIBUTES[0], COMPLEX_VALUES[0]);</span>
+<span class="fc" id="L352">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+
+<span class="fc" id="L354">        final Map&lt;String, Object&gt; nested = decl.getNestedBeanDeclarations();</span>
+<span class="fc" id="L355">        assertTrue(&quot;Key not found&quot;, nested.containsKey(&quot;address.private&quot;));</span>
+<span class="fc" id="L356">    }</span>
+
+    /**
+     * Tests whether the factory method for creating nested bean declarations
+     * gets called.
+     */
+    @Test
+    public void testGetNestedBeanDeclarationsFactoryMethod()
+    {
+<span class="fc" id="L365">        final BaseHierarchicalConfiguration config = prepareNestedBeanDeclarations();</span>
+<span class="fc" id="L366">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY)</span>
+<span class="fc" id="L367">        {</span>
+            @Override
+            BeanDeclaration createBeanDeclaration(final NodeData&lt;?&gt; node)
+            {
+<span class="fc" id="L371">                return new XMLBeanDeclarationTestImpl(getConfiguration()</span>
+<span class="fc" id="L372">                        .configurationAt(node.nodeName()), node);</span>
+            }
+        };
+<span class="fc" id="L375">        final Map&lt;String, Object&gt; nested = decl.getNestedBeanDeclarations();</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">        for (final String element : COMPLEX_PROPS) {</span>
+<span class="fc" id="L377">            final Object d = nested.get(element);</span>
+<span class="fc" id="L378">            assertTrue(&quot;Wrong class for bean declaration: &quot; + d,</span>
+                    d instanceof XMLBeanDeclarationTestImpl);
+        }
+<span class="fc" id="L381">    }</span>
+
+    /**
+     * Tests fetching nested bean declarations if none are defined.
+     */
+    @Test
+    public void testGetNestedBeanDeclarationsEmpty()
+    {
+<span class="fc" id="L389">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L390">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L391">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L392">        final Map&lt;String, Object&gt; nested = decl.getNestedBeanDeclarations();</span>
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">        assertTrue(&quot;Found nested declarations&quot;, nested == null</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">                || nested.isEmpty());</span>
+<span class="fc" id="L395">    }</span>
+
+    /**
+     * Tests whether interpolation of bean properties works.
+     */
+    @Test
+    public void testGetInterpolatedBeanProperties()
+    {
+<span class="fc" id="L403">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L404">        final String[] varValues = new String[TEST_PROPS.length];</span>
+<span class="fc bfc" id="L405" title="All 2 branches covered.">        for(int i = 0; i &lt; TEST_PROPS.length; i++)</span>
+        {
+<span class="fc" id="L407">            varValues[i] = &quot;${&quot; + VARS + TEST_PROPS[i] + &quot;}&quot;;</span>
+<span class="fc" id="L408">            config.addProperty(VARS + TEST_PROPS[i], TEST_VALUES[i]);</span>
+        }
+<span class="fc" id="L410">        setupBeanDeclaration(config, KEY, TEST_PROPS, varValues);</span>
+<span class="fc" id="L411">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L412">        checkProperties(decl, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L413">    }</span>
+
+    /**
+     * Tests constructing a bean declaration from an undefined key. This should
+     * cause an exception.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testInitFromUndefinedKey()
+    {
+<span class="fc" id="L422">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L423">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="nc" id="L424">        new XMLBeanDeclaration(config, &quot;undefined_key&quot;);</span>
+<span class="nc" id="L425">    }</span>
+
+    /**
+     * Tests constructing a bean declaration from a key, which is undefined when
+     * the optional flag is set. In this case an empty declaration should be
+     * created, which can be used for creating beans as long as a default class
+     * is provided.
+     */
+    @Test
+    public void testInitFromUndefinedKeyOptional()
+    {
+<span class="fc" id="L436">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L437">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L438">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, &quot;undefined_key&quot;, true);</span>
+<span class="fc" id="L439">        assertNull(&quot;Found a bean class&quot;, decl.getBeanClassName());</span>
+<span class="fc" id="L440">    }</span>
+
+    /**
+     * Tests constructing a bean declaration from a key with multiple values.
+     * This should cause an exception because keys must be unique.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testInitFromMultiValueKey()
+    {
+<span class="fc" id="L449">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L450">        config.addProperty(KEY, &quot;myFirstKey&quot;);</span>
+<span class="fc" id="L451">        config.addProperty(KEY, &quot;mySecondKey&quot;);</span>
+<span class="nc" id="L452">        new XMLBeanDeclaration(config, KEY);</span>
+<span class="nc" id="L453">    }</span>
+
+    /**
+     * Tests whether constructor arguments can be queried.
+     */
+    @Test
+    public void testGetConstructorArgs()
+    {
+<span class="fc" id="L461">        final BaseHierarchicalConfiguration config = prepareNestedBeanDeclarations();</span>
+<span class="fc" id="L462">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L463">        final Collection&lt;ConstructorArg&gt; args = decl.getConstructorArgs();</span>
+<span class="fc" id="L464">        assertEquals(&quot;Wrong number of constructor arguments&quot;, 2, args.size());</span>
+<span class="fc" id="L465">        final Iterator&lt;ConstructorArg&gt; it = args.iterator();</span>
+<span class="fc" id="L466">        final ConstructorArg arg1 = it.next();</span>
+<span class="fc" id="L467">        assertTrue(&quot;No bean declaration&quot;, arg1.isNestedBeanDeclaration());</span>
+<span class="fc" id="L468">        checkProperties(arg1.getBeanDeclaration(), CTOR_COMPLEX_ATTRIBUTES,</span>
+                CTOR_COMPLEX_VALUES);
+<span class="fc" id="L470">        assertNull(&quot;Got a type&quot;, arg1.getTypeName());</span>
+<span class="fc" id="L471">        assertEquals(&quot;Wrong class name&quot;, &quot;TestClass&quot;, arg1.getBeanDeclaration()</span>
+<span class="fc" id="L472">                .getBeanClassName());</span>
+<span class="fc" id="L473">        final ConstructorArg arg2 = it.next();</span>
+<span class="fc" id="L474">        assertFalse(&quot;A bean declaration&quot;, arg2.isNestedBeanDeclaration());</span>
+<span class="fc" id="L475">        assertEquals(&quot;Wrong value&quot;, CTOR_ID, arg2.getValue());</span>
+<span class="fc" id="L476">        assertEquals(&quot;Wrong type&quot;, &quot;long&quot;, arg2.getTypeName());</span>
+<span class="fc" id="L477">    }</span>
+
+    /**
+     * Tests whether a constructor argument with a null value can be defined.
+     */
+    @Test
+    public void testGetConstructorArgsNullArg()
+    {
+<span class="fc" id="L485">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L486">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L487">        config.addProperty(KEY + &quot;.config-constrarg&quot;, &quot;&quot;);</span>
+<span class="fc" id="L488">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L489">        final Collection&lt;ConstructorArg&gt; args = decl.getConstructorArgs();</span>
+<span class="fc" id="L490">        assertEquals(&quot;Wrong number of constructor arguments&quot;, 1, args.size());</span>
+<span class="fc" id="L491">        final ConstructorArg arg = args.iterator().next();</span>
+<span class="fc" id="L492">        assertFalse(&quot;A bean declaration&quot;, arg.isNestedBeanDeclaration());</span>
+<span class="fc" id="L493">        assertNull(&quot;Got a value&quot;, arg.getValue());</span>
+<span class="fc" id="L494">    }</span>
+
+    /**
+     * Tests whether interpolation is done on constructor arguments.
+     */
+    @Test
+    public void testGetInterpolatedConstructorArgs()
+    {
+<span class="fc" id="L502">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L503">        final String expectedValue = &quot;ctorArg&quot;;</span>
+<span class="fc" id="L504">        config.addProperty(&quot;value&quot;, expectedValue);</span>
+<span class="fc" id="L505">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L506">        config.addProperty(KEY + &quot;.config-constrarg[@config-value]&quot;, &quot;${value}&quot;);</span>
+<span class="fc" id="L507">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L508">        final Collection&lt;ConstructorArg&gt; args = decl.getConstructorArgs();</span>
+<span class="fc" id="L509">        final ConstructorArg arg = args.iterator().next();</span>
+<span class="fc" id="L510">        assertEquals(&quot;Wrong interpolated value&quot;, expectedValue, arg.getValue());</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tests interpolate() if no ConfigurationInterpolator is available.
+     */
+    @Test
+    public void testInterpolateNoInterpolator()
+    {
+<span class="fc" id="L519">        final BaseHierarchicalConfiguration config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L520">        config.addProperty(&quot;value&quot;, &quot;expectedValue&quot;);</span>
+<span class="fc" id="L521">        setupBeanDeclaration(config, KEY, TEST_PROPS, TEST_VALUES);</span>
+<span class="fc" id="L522">        final String value = &quot;${value}&quot;;</span>
+<span class="fc" id="L523">        config.addProperty(KEY + &quot;.config-constrarg[@config-value]&quot;, value);</span>
+<span class="fc" id="L524">        config.setInterpolator(null);</span>
+<span class="fc" id="L525">        final XMLBeanDeclaration decl = new XMLBeanDeclaration(config, KEY);</span>
+<span class="fc" id="L526">        final Collection&lt;ConstructorArg&gt; args = decl.getConstructorArgs();</span>
+<span class="fc" id="L527">        final ConstructorArg arg = args.iterator().next();</span>
+<span class="fc" id="L528">        assertEquals(&quot;Value was changed&quot;, value, arg.getValue());</span>
+<span class="fc" id="L529">    }</span>
+
+    /**
+     * Initializes a configuration object with a bean declaration. Under the
+     * specified key the given properties will be added.
+     *
+     * @param config the configuration to initialize
+     * @param key the key of the bean declaration
+     * @param names an array with the names of the properties
+     * @param values an array with the corresponding values
+     */
+    private static void setupBeanDeclaration(final HierarchicalConfiguration&lt;?&gt; config,
+            final String key, final String[] names, final String[] values)
+    {
+<span class="fc bfc" id="L543" title="All 2 branches covered.">        for (int i = 0; i &lt; names.length; i++)</span>
+        {
+<span class="fc" id="L545">            config.addProperty(key + &quot;[@&quot; + names[i] + &quot;]&quot;, values[i]);</span>
+        }
+<span class="fc" id="L547">    }</span>
+
+    /**
+     * Checks the properties returned by a bean declaration.
+     *
+     * @param beanDecl the bean declaration
+     * @param names an array with the expected property names
+     * @param values an array with the expected property values
+     */
+    private static void checkProperties(final BeanDeclaration beanDecl, final String[] names,
+            final String[] values)
+    {
+<span class="fc" id="L559">        final Map&lt;String, Object&gt; props = beanDecl.getBeanProperties();</span>
+<span class="fc" id="L560">        assertEquals(&quot;Wrong number of properties&quot;, names.length, props.size());</span>
+<span class="fc bfc" id="L561" title="All 2 branches covered.">        for (int i = 0; i &lt; names.length; i++)</span>
+        {
+<span class="fc" id="L563">            assertTrue(&quot;Property &quot; + names[i] + &quot; not contained&quot;, props</span>
+<span class="fc" id="L564">                    .containsKey(names[i]));</span>
+<span class="fc" id="L565">            assertEquals(&quot;Wrong value for property &quot; + names[i], values[i],</span>
+<span class="fc" id="L566">                    props.get(names[i]));</span>
+        }
+<span class="fc" id="L568">    }</span>
+
+    /**
+     * A helper class used for testing the createBeanDeclaration() factory
+     * method.
+     */
+    private static class XMLBeanDeclarationTestImpl extends XMLBeanDeclaration
+    {
+        public XMLBeanDeclarationTestImpl(final HierarchicalConfiguration&lt;?&gt; config,
+                final NodeData&lt;?&gt; node)
+        {
+<span class="fc" id="L579">            super(config, node);</span>
+<span class="fc" id="L580">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCombinedBuilderParametersImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestCombinedBuilderParametersImpl.java</span></div><h1>TestCombinedBuilderParametersImpl.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.beanutils.BeanHelper;
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.BuilderParameters;
+import org.apache.commons.configuration2.builder.ConfigurationBuilder;
+import org.apache.commons.configuration2.builder.DefaultParametersHandler;
+import org.apache.commons.configuration2.builder.DefaultParametersManager;
+import org.apache.commons.configuration2.builder.XMLBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.fluent.FileBasedBuilderParameters;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code CombinedBuilderParametersImpl}.
+ *
+ */
+<span class="fc" id="L48">public class TestCombinedBuilderParametersImpl</span>
+{
+    /**
+     * Tests fromParameters() if the map does not contain an instance.
+     */
+    @Test
+    public void testFromParametersNotFound()
+    {
+<span class="fc" id="L56">        assertNull(&quot;Got an instance&quot;,</span>
+                CombinedBuilderParametersImpl
+<span class="fc" id="L58">                        .fromParameters(new HashMap&lt;String, Object&gt;()));</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * Tests whether a new instance can be created if none is found in the
+     * parameters map.
+     */
+    @Test
+    public void testFromParametersCreate()
+    {
+<span class="fc" id="L68">        final CombinedBuilderParametersImpl params =</span>
+<span class="fc" id="L69">                CombinedBuilderParametersImpl.fromParameters(</span>
+                        new HashMap&lt;String, Object&gt;(), true);
+<span class="fc" id="L71">        assertNotNull(&quot;No instance&quot;, params);</span>
+<span class="fc" id="L72">        assertNull(&quot;Got data&quot;, params.getDefinitionBuilder());</span>
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Tests whether an instance can be obtained from a parameters map.
+     */
+    @Test
+    public void testFromParametersExisting()
+    {
+<span class="fc" id="L81">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="fc" id="L82">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L83">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L84">                CombinedBuilderParametersImpl.fromParameters(map));</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Tests that inherited properties are also stored in the parameters map.
+     */
+    @Test
+    public void testGetParametersInherited()
+    {
+<span class="fc" id="L93">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L95">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L96">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L97">        assertEquals(&quot;Exception flag not found&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L98">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Tests whether the flag that controls settings inheritance can be set.
+     */
+    @Test
+    public void testSetInheritSettings()
+    {
+<span class="fc" id="L107">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L109">        assertTrue(&quot;Wrong initial value&quot;, params.isInheritSettings());</span>
+<span class="fc" id="L110">        assertSame(&quot;Wrong result&quot;, params, params.setInheritSettings(false));</span>
+<span class="fc" id="L111">        assertFalse(&quot;Property not set&quot;, params.isInheritSettings());</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Tests whether the definition builder can be set.
+     */
+    @Test
+    public void testSetDefinitionBuilder()
+    {
+<span class="fc" id="L120">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="fc" id="L121">        assertNull(&quot;Got a definition builder&quot;, params.getDefinitionBuilder());</span>
+<span class="fc" id="L122">        final ConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L125">        assertSame(&quot;Wrong result&quot;, params, params.setDefinitionBuilder(builder));</span>
+<span class="fc" id="L126">        assertSame(&quot;Builder was not set&quot;, builder,</span>
+<span class="fc" id="L127">                params.getDefinitionBuilder());</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Tests whether the map with providers is initially empty.
+     */
+    @Test
+    public void testGetProvidersInitial()
+    {
+<span class="fc" id="L136">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="fc" id="L137">        assertTrue(&quot;Got providers&quot;, params.getProviders().isEmpty());</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Tests whether a new builder provider can be registered.
+     */
+    @Test
+    public void testRegisterProvider()
+    {
+<span class="fc" id="L146">        final ConfigurationBuilderProvider provider =</span>
+<span class="fc" id="L147">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L148">        EasyMock.replay(provider);</span>
+<span class="fc" id="L149">        final String tagName = &quot;testTag&quot;;</span>
+<span class="fc" id="L150">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="fc" id="L151">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L152">                params.registerProvider(tagName, provider));</span>
+<span class="fc" id="L153">        final Map&lt;String, ConfigurationBuilderProvider&gt; providers =</span>
+<span class="fc" id="L154">                params.getProviders();</span>
+<span class="fc" id="L155">        assertEquals(&quot;Wrong number of providers&quot;, 1, providers.size());</span>
+<span class="fc" id="L156">        assertSame(&quot;Wrong provider (1)&quot;, provider, providers.get(tagName));</span>
+<span class="fc" id="L157">        assertSame(&quot;Wrong provider (2)&quot;, provider,</span>
+<span class="fc" id="L158">                params.providerForTag(tagName));</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Tries to register a provider without a tag name.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterProviderNoTag()
+    {
+<span class="pc" id="L167">        new CombinedBuilderParametersImpl().registerProvider(null,</span>
+<span class="fc" id="L168">                EasyMock.createMock(ConfigurationBuilderProvider.class));</span>
+<span class="nc" id="L169">    }</span>
+
+    /**
+     * Tries to register a null provider.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterProviderNoProvider()
+    {
+<span class="nc" id="L177">        new CombinedBuilderParametersImpl().registerProvider(&quot;aTag&quot;, null);</span>
+<span class="nc" id="L178">    }</span>
+
+    /**
+     * Tests that the map with providers cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetProvidersModify()
+    {
+<span class="fc" id="L186">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="pc" id="L187">        params.getProviders().put(&quot;tag&quot;,</span>
+<span class="fc" id="L188">                EasyMock.createMock(ConfigurationBuilderProvider.class));</span>
+<span class="nc" id="L189">    }</span>
+
+    /**
+     * Tests whether missing providers can be registered.
+     */
+    @Test
+    public void testRegisterMissingProviders()
+    {
+<span class="fc" id="L197">        final ConfigurationBuilderProvider provider1 =</span>
+<span class="fc" id="L198">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L199">        final ConfigurationBuilderProvider provider2 =</span>
+<span class="fc" id="L200">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L201">        final ConfigurationBuilderProvider provider3 =</span>
+<span class="fc" id="L202">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L203">        final String tagPrefix = &quot;testTag&quot;;</span>
+<span class="fc" id="L204">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="fc" id="L205">        params.registerProvider(tagPrefix, provider1);</span>
+<span class="fc" id="L206">        final Map&lt;String, ConfigurationBuilderProvider&gt; map =</span>
+                new HashMap&lt;&gt;();
+<span class="fc" id="L208">        map.put(tagPrefix, provider2);</span>
+<span class="fc" id="L209">        map.put(tagPrefix + 1, provider3);</span>
+<span class="fc" id="L210">        assertSame(&quot;Wrong result&quot;, params, params.registerMissingProviders(map));</span>
+<span class="fc" id="L211">        assertEquals(&quot;Wrong number of providers&quot;, 2, params.getProviders()</span>
+<span class="fc" id="L212">                .size());</span>
+<span class="fc" id="L213">        assertSame(&quot;Wrong provider (1)&quot;, provider1,</span>
+<span class="fc" id="L214">                params.providerForTag(tagPrefix));</span>
+<span class="fc" id="L215">        assertSame(&quot;Wrong provider (2)&quot;, provider3,</span>
+<span class="fc" id="L216">                params.providerForTag(tagPrefix + 1));</span>
+<span class="fc" id="L217">    }</span>
+
+    /**
+     * Tries to register a null map with missing providers.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterMissingProvidersNullMap()
+    {
+<span class="fc" id="L225">        final Map&lt;String, ConfigurationBuilderProvider&gt; map = null;</span>
+<span class="nc" id="L226">        new CombinedBuilderParametersImpl().registerMissingProviders(map);</span>
+<span class="nc" id="L227">    }</span>
+
+    /**
+     * Tries to register a map with missing providers containing a null entry.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterMissingProvidersNullEntry()
+    {
+<span class="fc" id="L235">        final Map&lt;String, ConfigurationBuilderProvider&gt; map =</span>
+                new HashMap&lt;&gt;();
+<span class="fc" id="L237">        map.put(&quot;tag&quot;, null);</span>
+<span class="nc" id="L238">        new CombinedBuilderParametersImpl().registerMissingProviders(map);</span>
+<span class="nc" id="L239">    }</span>
+
+    /**
+     * Tests whether missing providers can be copied from a parameters object.
+     */
+    @Test
+    public void testRegisterMissingProvidersParams()
+    {
+<span class="fc" id="L247">        final ConfigurationBuilderProvider provider1 =</span>
+<span class="fc" id="L248">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L249">        final ConfigurationBuilderProvider provider2 =</span>
+<span class="fc" id="L250">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L251">        final ConfigurationBuilderProvider provider3 =</span>
+<span class="fc" id="L252">                EasyMock.createMock(ConfigurationBuilderProvider.class);</span>
+<span class="fc" id="L253">        final String tagPrefix = &quot;testTag&quot;;</span>
+<span class="fc" id="L254">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L256">        final CombinedBuilderParametersImpl params2 =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L258">        params.registerProvider(tagPrefix, provider1);</span>
+<span class="fc" id="L259">        params2.registerProvider(tagPrefix, provider2);</span>
+<span class="fc" id="L260">        params2.registerProvider(tagPrefix + 1, provider3);</span>
+<span class="fc" id="L261">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L262">                params.registerMissingProviders(params2));</span>
+<span class="fc" id="L263">        assertEquals(&quot;Wrong number of providers&quot;, 2, params.getProviders()</span>
+<span class="fc" id="L264">                .size());</span>
+<span class="fc" id="L265">        assertSame(&quot;Wrong provider (1)&quot;, provider1,</span>
+<span class="fc" id="L266">                params.providerForTag(tagPrefix));</span>
+<span class="fc" id="L267">        assertSame(&quot;Wrong provider (2)&quot;, provider3,</span>
+<span class="fc" id="L268">                params.providerForTag(tagPrefix + 1));</span>
+<span class="fc" id="L269">    }</span>
+
+    /**
+     * Tries to copy providers from a null parameters object.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterMissingProvidersParamsNull()
+    {
+<span class="fc" id="L277">        new CombinedBuilderParametersImpl()</span>
+<span class="nc" id="L278">                .registerMissingProviders((CombinedBuilderParametersImpl) null);</span>
+<span class="nc" id="L279">    }</span>
+
+    /**
+     * Tests the result for an unknown provider.
+     */
+    @Test
+    public void testProviderForUnknown()
+    {
+<span class="fc" id="L287">        final CombinedBuilderParametersImpl params = new CombinedBuilderParametersImpl();</span>
+<span class="fc" id="L288">        assertNull(&quot;Got a provider&quot;, params.providerForTag(&quot;someTag&quot;));</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * Tests whether the base path can be set.
+     */
+    @Test
+    public void testSetBasePath()
+    {
+<span class="fc" id="L297">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L299">        final String basePath = ConfigurationAssert.OUT_DIR.getAbsolutePath();</span>
+<span class="fc" id="L300">        assertSame(&quot;Wrong result&quot;, params, params.setBasePath(basePath));</span>
+<span class="fc" id="L301">        assertEquals(&quot;Wrong base path&quot;, basePath, params.getBasePath());</span>
+<span class="fc" id="L302">    }</span>
+
+    /**
+     * Tests whether a parameters object for the definition builder can be set.
+     */
+    @Test
+    public void testSetDefinitionBuilderParameters()
+    {
+<span class="fc" id="L310">        final BuilderParameters defparams =</span>
+<span class="fc" id="L311">                EasyMock.createMock(BuilderParameters.class);</span>
+<span class="fc" id="L312">        EasyMock.replay(defparams);</span>
+<span class="fc" id="L313">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L315">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L316">                params.setDefinitionBuilderParameters(defparams));</span>
+<span class="fc" id="L317">        assertSame(&quot;Wrong parameters object&quot;, defparams,</span>
+<span class="fc" id="L318">                params.getDefinitionBuilderParameters());</span>
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Tests whether properties can be set using BeanUtils.
+     */
+    @Test
+    public void testSetBeanProperties() throws Exception
+    {
+<span class="fc" id="L327">        final BuilderParameters defparams =</span>
+<span class="fc" id="L328">                EasyMock.createMock(BuilderParameters.class);</span>
+<span class="fc" id="L329">        EasyMock.replay(defparams);</span>
+<span class="fc" id="L330">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L332">        BeanHelper.setProperty(params, &quot;basePath&quot;, &quot;testPath&quot;);</span>
+<span class="fc" id="L333">        BeanHelper.setProperty(params, &quot;definitionBuilderParameters&quot;,</span>
+                defparams);
+<span class="fc" id="L335">        BeanHelper.setProperty(params, &quot;inheritSettings&quot;, false);</span>
+<span class="fc" id="L336">        assertEquals(&quot;Wrong path&quot;, &quot;testPath&quot;, params.getBasePath());</span>
+<span class="fc" id="L337">        assertSame(&quot;Wrong def parameters&quot;, defparams,</span>
+<span class="fc" id="L338">                params.getDefinitionBuilderParameters());</span>
+<span class="fc" id="L339">        assertFalse(&quot;Wrong inherit flag&quot;, params.isInheritSettings());</span>
+<span class="fc" id="L340">    }</span>
+
+    /**
+     * Tests whether cloning works as expected.
+     */
+    @Test
+    public void testClone()
+    {
+<span class="fc" id="L348">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L350">        params.setBasePath(&quot;some base path&quot;);</span>
+<span class="fc" id="L351">        final XMLBuilderParametersImpl defParams = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L352">        defParams.setSystemID(&quot;someSysID&quot;);</span>
+<span class="fc" id="L353">        params.setDefinitionBuilderParameters(defParams);</span>
+<span class="fc" id="L354">        final CombinedBuilderParametersImpl clone = params.clone();</span>
+<span class="fc" id="L355">        assertEquals(&quot;Wrong field value&quot;, params.getBasePath(),</span>
+<span class="fc" id="L356">                clone.getBasePath());</span>
+<span class="fc" id="L357">        assertNotSame(&quot;Parameters object not cloned&quot;,</span>
+<span class="fc" id="L358">                params.getDefinitionBuilderParameters(),</span>
+<span class="fc" id="L359">                clone.getDefinitionBuilderParameters());</span>
+<span class="fc" id="L360">        assertEquals(</span>
+                &quot;Wrong field value in parameters object&quot;,
+<span class="fc" id="L362">                params.getDefinitionBuilderParameters().getParameters()</span>
+<span class="fc" id="L363">                        .get(&quot;systemID&quot;),</span>
+<span class="fc" id="L364">                clone.getDefinitionBuilderParameters().getParameters()</span>
+<span class="fc" id="L365">                        .get(&quot;systemID&quot;));</span>
+<span class="fc" id="L366">    }</span>
+
+    /**
+     * Tests whether a default parameters manager is dynamically created if it
+     * has not been set.
+     */
+    @Test
+    public void testGetChildDefaultParametersManagerUndefined()
+    {
+<span class="fc" id="L375">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L377">        assertNotNull(&quot;No default manager&quot;,</span>
+<span class="fc" id="L378">                params.getChildDefaultParametersManager());</span>
+<span class="fc" id="L379">    }</span>
+
+    /**
+     * Tests whether a default parameters manager can be set and queried.
+     */
+    @Test
+    public void testGetChildDefaultParametersManagerSpecific()
+    {
+<span class="fc" id="L387">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L388">                EasyMock.createMock(DefaultParametersManager.class);</span>
+<span class="fc" id="L389">        EasyMock.replay(manager);</span>
+<span class="fc" id="L390">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L392">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L393">                params.setChildDefaultParametersManager(manager));</span>
+<span class="fc" id="L394">        assertSame(&quot;Wrong manager&quot;, manager,</span>
+<span class="fc" id="L395">                params.getChildDefaultParametersManager());</span>
+<span class="fc" id="L396">    }</span>
+
+    /**
+     * Creates a mock for a defaults handler.
+     *
+     * @return the handler mock
+     */
+    private static DefaultParametersHandler&lt;BuilderParameters&gt; createDefaultsHandlerMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L407">        DefaultParametersHandler&lt;BuilderParameters&gt; mock =</span>
+<span class="fc" id="L408">                EasyMock.createMock(DefaultParametersHandler.class);</span>
+<span class="fc" id="L409">        return mock;</span>
+    }
+
+    /**
+     * Tests whether a defaults handler for a child source can be registered.
+     */
+    @Test
+    public void testRegisterChildDefaultsHandler()
+    {
+<span class="fc" id="L418">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L419">                EasyMock.createMock(DefaultParametersManager.class);</span>
+        final DefaultParametersHandler&lt;BuilderParameters&gt; handler =
+<span class="fc" id="L421">                createDefaultsHandlerMock();</span>
+<span class="fc" id="L422">        manager.registerDefaultsHandler(BuilderParameters.class, handler);</span>
+<span class="fc" id="L423">        EasyMock.replay(manager, handler);</span>
+<span class="fc" id="L424">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L426">        params.setChildDefaultParametersManager(manager);</span>
+<span class="fc" id="L427">        assertSame(&quot;Wrong result&quot;, params, params.registerChildDefaultsHandler(</span>
+                BuilderParameters.class, handler));
+<span class="fc" id="L429">        EasyMock.verify(manager);</span>
+<span class="fc" id="L430">    }</span>
+
+    /**
+     * Tests whether a defaults handler for a child source with a class
+     * restriction can be registered.
+     */
+    @Test
+    public void testRegisterChildDefaultsHandlerWithStartClass()
+    {
+<span class="fc" id="L439">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L440">                EasyMock.createMock(DefaultParametersManager.class);</span>
+        final DefaultParametersHandler&lt;BuilderParameters&gt; handler =
+<span class="fc" id="L442">                createDefaultsHandlerMock();</span>
+<span class="fc" id="L443">        manager.registerDefaultsHandler(BuilderParameters.class, handler,</span>
+                FileBasedBuilderParameters.class);
+<span class="fc" id="L445">        EasyMock.replay(manager, handler);</span>
+<span class="fc" id="L446">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L448">        params.setChildDefaultParametersManager(manager);</span>
+<span class="fc" id="L449">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L450">                params.registerChildDefaultsHandler(BuilderParameters.class,</span>
+                        handler, FileBasedBuilderParameters.class));
+<span class="fc" id="L452">        EasyMock.verify(manager);</span>
+<span class="fc" id="L453">    }</span>
+
+    /**
+     * Tests whether properties can be inherited.
+     */
+    @Test
+    public void testInheritFrom()
+    {
+<span class="fc" id="L461">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L462">                EasyMock.createMock(DefaultParametersManager.class);</span>
+<span class="fc" id="L463">        final CombinedBuilderParametersImpl params =</span>
+<span class="fc" id="L464">                new CombinedBuilderParametersImpl().setInheritSettings(false)</span>
+<span class="fc" id="L465">                        .setChildDefaultParametersManager(manager);</span>
+<span class="fc" id="L466">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L467">        final CombinedBuilderParametersImpl params2 =</span>
+                new CombinedBuilderParametersImpl();
+
+<span class="fc" id="L470">        params2.inheritFrom(params.getParameters());</span>
+<span class="fc" id="L471">        final Map&lt;String, Object&gt; parameters = params2.getParameters();</span>
+<span class="fc" id="L472">        assertEquals(&quot;Exception flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L473">                parameters.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L474">        assertEquals(&quot;Default manager not set&quot;, manager,</span>
+<span class="fc" id="L475">                params2.getChildDefaultParametersManager());</span>
+<span class="fc" id="L476">        assertFalse(&quot;Inherit flag not set&quot;, params2.isInheritSettings());</span>
+<span class="fc" id="L477">    }</span>
+
+    /**
+     * Tests that inheritFrom() can handle a map which does not contain a
+     * parameters object.
+     */
+    @Test
+    public void testInheritFromNoParametersInMap()
+    {
+<span class="fc" id="L486">        final BasicBuilderParameters params =</span>
+<span class="fc" id="L487">                new BasicBuilderParameters().setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L488">        final CombinedBuilderParametersImpl params2 =</span>
+                new CombinedBuilderParametersImpl();
+
+<span class="fc" id="L491">        params2.inheritFrom(params.getParameters());</span>
+<span class="fc" id="L492">        final Map&lt;String, Object&gt; parameters = params2.getParameters();</span>
+<span class="fc" id="L493">        assertEquals(&quot;Exception flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L494">                parameters.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L495">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
