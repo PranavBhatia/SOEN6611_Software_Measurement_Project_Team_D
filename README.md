@@ -13,10 +13,10 @@
     
 
 ### Team Information
-| Name (Student Id) | Email-Id | 
-|--|--|
-| Ashish Sharma (40050452) | ashish.sharma5293@gmail.com |
-| Kritika Sharma (40056951) | sh.kritika01@gmail.com |
-| Mandeep Kaur (40059801) | kaur.mandeep2295@gmail.com |
-| Pranav Bhatia (40056384) | bhatiapranav1996@gmail.com |
-| Rodolfo Miranda (40042111) | rodolfomotamiranda@gmail.com |
+| Name | Student Id | Email-Id |
+|--|--|--|
+| Ashish Sharma | 40050452 | ashish.sharma5293@gmail.com |
+| Kritika Sharma | 40056951 | sh.kritika01@gmail.com |
+| Mandeep Kaur | 40059801 | kaur.mandeep2295@gmail.com |
+| Pranav Bhatia | 40056384 | bhatiapranav1996@gmail.com |
+| Rodolfo Miranda | 40042111 | rodolfomotamiranda@gmail.com |
