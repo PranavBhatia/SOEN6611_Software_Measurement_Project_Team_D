@@ -1,6 +1,6 @@
 # Correlation b/w Software Metrics (Team D)
 
-#### Repository Structure
+### Repository Structure
     .
     ├── CLOC Analysis                      		# Description 1
     ├── Class/Code Change Proneness        		# Description 2    
@@ -10,7 +10,9 @@
     ├── Mutation Coverage 				# Description 4
     ├── Post-Release-Defect-Density.PNG		# Description 5
     └── README.md
+    
 
+### Team Information
 | Name (Student Id) | Email-Id | 
 |--|--|
 | Ashish Sharma (40050452) | ashish.sharma5293@gmail.com |
