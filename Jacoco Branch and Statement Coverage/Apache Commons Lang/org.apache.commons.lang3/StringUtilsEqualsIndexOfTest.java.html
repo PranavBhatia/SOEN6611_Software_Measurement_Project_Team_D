@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringUtilsEqualsIndexOfTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">StringUtilsEqualsIndexOfTest.java</span></div><h1>StringUtilsEqualsIndexOfTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Locale;
+
+import org.hamcrest.core.IsNot;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.StringUtils} - Equals/IndexOf methods
+ */
+<span class="fc" id="L32">public class StringUtilsEqualsIndexOfTest  {</span>
+    private static final String BAR = &quot;bar&quot;;
+    /**
+     * Supplementary character U+20000
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    private static final String CharU20000 = &quot;\uD840\uDC00&quot;;
+    /**
+     * Supplementary character U+20001
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    private static final String CharU20001 = &quot;\uD840\uDC01&quot;;
+
+    private static final String FOO = &quot;foo&quot;;
+
+    private static final String FOOBAR = &quot;foobar&quot;;
+
+<span class="fc" id="L49">    private static final String[] FOOBAR_SUB_ARRAY = new String[] {&quot;ob&quot;, &quot;ba&quot;};</span>
+
+    // The purpose of this class is to test StringUtils#equals(CharSequence, CharSequence)
+    // with a CharSequence implementation whose equals(Object) override requires that the
+    // other object be an instance of CustomCharSequence, even though, as char sequences,
+    // `seq` may equal the other object.
+    private static class CustomCharSequence implements CharSequence {
+        private final CharSequence seq;
+
+<span class="fc" id="L58">        CustomCharSequence(final CharSequence seq) {</span>
+<span class="fc" id="L59">            this.seq = seq;</span>
+<span class="fc" id="L60">        }</span>
+
+        @Override
+        public char charAt(final int index) {
+<span class="fc" id="L64">            return seq.charAt(index);</span>
+        }
+
+        @Override
+        public int length() {
+<span class="fc" id="L69">            return seq.length();</span>
+        }
+
+        @Override
+        public CharSequence subSequence(final int start, final int end) {
+<span class="nc" id="L74">            return new CustomCharSequence(seq.subSequence(start, end));</span>
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+<span class="pc bpc" id="L79" title="1 of 4 branches missed.">            if (obj == null || !(obj instanceof CustomCharSequence)) {</span>
+<span class="fc" id="L80">                return false;</span>
+            }
+<span class="fc" id="L82">            final CustomCharSequence other = (CustomCharSequence) obj;</span>
+<span class="fc" id="L83">            return seq.equals(other.seq);</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L88">            return seq.hashCode();</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L93">            return seq.toString();</span>
+        }
+    }
+
+    @Test
+    public void testCustomCharSequence() {
+<span class="fc" id="L99">        assertThat(new CustomCharSequence(FOO), IsNot.&lt;CharSequence&gt;not(FOO));</span>
+<span class="fc" id="L100">        assertThat(FOO, IsNot.&lt;CharSequence&gt;not(new CustomCharSequence(FOO)));</span>
+<span class="fc" id="L101">        assertEquals(new CustomCharSequence(FOO), new CustomCharSequence(FOO));</span>
+<span class="fc" id="L102">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L106">        final CharSequence fooCs = new StringBuilder(FOO), barCs = new StringBuilder(BAR), foobarCs = new StringBuilder(FOOBAR);</span>
+<span class="fc" id="L107">        assertTrue(StringUtils.equals(null, null));</span>
+<span class="fc" id="L108">        assertTrue(StringUtils.equals(fooCs, fooCs));</span>
+<span class="fc" id="L109">        assertTrue(StringUtils.equals(fooCs, new StringBuilder(FOO)));</span>
+<span class="fc" id="L110">        assertTrue(StringUtils.equals(fooCs, new String(new char[] { 'f', 'o', 'o' })));</span>
+<span class="fc" id="L111">        assertTrue(StringUtils.equals(fooCs, new CustomCharSequence(FOO)));</span>
+<span class="fc" id="L112">        assertTrue(StringUtils.equals(new CustomCharSequence(FOO), fooCs));</span>
+<span class="fc" id="L113">        assertFalse(StringUtils.equals(fooCs, new String(new char[] { 'f', 'O', 'O' })));</span>
+<span class="fc" id="L114">        assertFalse(StringUtils.equals(fooCs, barCs));</span>
+<span class="fc" id="L115">        assertFalse(StringUtils.equals(fooCs, null));</span>
+<span class="fc" id="L116">        assertFalse(StringUtils.equals(null, fooCs));</span>
+<span class="fc" id="L117">        assertFalse(StringUtils.equals(fooCs, foobarCs));</span>
+<span class="fc" id="L118">        assertFalse(StringUtils.equals(foobarCs, fooCs));</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    public void testEqualsOnStrings() {
+<span class="fc" id="L123">        assertTrue(StringUtils.equals(null, null));</span>
+<span class="fc" id="L124">        assertTrue(StringUtils.equals(FOO, FOO));</span>
+<span class="fc" id="L125">        assertTrue(StringUtils.equals(FOO, new String(new char[] { 'f', 'o', 'o' })));</span>
+<span class="fc" id="L126">        assertFalse(StringUtils.equals(FOO, new String(new char[] { 'f', 'O', 'O' })));</span>
+<span class="fc" id="L127">        assertFalse(StringUtils.equals(FOO, BAR));</span>
+<span class="fc" id="L128">        assertFalse(StringUtils.equals(FOO, null));</span>
+<span class="fc" id="L129">        assertFalse(StringUtils.equals(null, FOO));</span>
+<span class="fc" id="L130">        assertFalse(StringUtils.equals(FOO, FOOBAR));</span>
+<span class="fc" id="L131">        assertFalse(StringUtils.equals(FOOBAR, FOO));</span>
+<span class="fc" id="L132">    }</span>
+
+    @Test
+    public void testEqualsIgnoreCase() {
+<span class="fc" id="L136">        assertTrue(StringUtils.equalsIgnoreCase(null, null));</span>
+<span class="fc" id="L137">        assertTrue(StringUtils.equalsIgnoreCase(FOO, FOO));</span>
+<span class="fc" id="L138">        assertTrue(StringUtils.equalsIgnoreCase(FOO, new String(new char[] { 'f', 'o', 'o' })));</span>
+<span class="fc" id="L139">        assertTrue(StringUtils.equalsIgnoreCase(FOO, new String(new char[] { 'f', 'O', 'O' })));</span>
+<span class="fc" id="L140">        assertFalse(StringUtils.equalsIgnoreCase(FOO, BAR));</span>
+<span class="fc" id="L141">        assertFalse(StringUtils.equalsIgnoreCase(FOO, null));</span>
+<span class="fc" id="L142">        assertFalse(StringUtils.equalsIgnoreCase(null, FOO));</span>
+<span class="fc" id="L143">        assertTrue(StringUtils.equalsIgnoreCase(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L144">        assertFalse(StringUtils.equalsIgnoreCase(&quot;abcd&quot;, &quot;abcd &quot;));</span>
+<span class="fc" id="L145">    }</span>
+
+    @Test
+    public void testEqualsAny() {
+<span class="fc" id="L149">        assertFalse(StringUtils.equalsAny(FOO));</span>
+<span class="fc" id="L150">        assertFalse(StringUtils.equalsAny(FOO, new String[]{}));</span>
+
+<span class="fc" id="L152">        assertTrue(StringUtils.equalsAny(FOO, FOO));</span>
+<span class="fc" id="L153">        assertTrue(StringUtils.equalsAny(FOO, BAR, new String(new char[] { 'f', 'o', 'o' })));</span>
+<span class="fc" id="L154">        assertFalse(StringUtils.equalsAny(FOO, BAR, new String(new char[] { 'f', 'O', 'O' })));</span>
+<span class="fc" id="L155">        assertFalse(StringUtils.equalsAny(FOO, BAR));</span>
+<span class="fc" id="L156">        assertFalse(StringUtils.equalsAny(FOO, BAR, null));</span>
+<span class="fc" id="L157">        assertFalse(StringUtils.equalsAny(null, FOO));</span>
+<span class="fc" id="L158">        assertFalse(StringUtils.equalsAny(FOO, FOOBAR));</span>
+<span class="fc" id="L159">        assertFalse(StringUtils.equalsAny(FOOBAR, FOO));</span>
+
+<span class="fc" id="L161">        assertTrue(StringUtils.equalsAny(null, null, null));</span>
+<span class="fc" id="L162">        assertFalse(StringUtils.equalsAny(null, FOO, BAR, FOOBAR));</span>
+<span class="fc" id="L163">        assertFalse(StringUtils.equalsAny(FOO, null, BAR));</span>
+<span class="fc" id="L164">        assertTrue(StringUtils.equalsAny(FOO, BAR, null, &quot;&quot;, FOO, BAR));</span>
+<span class="fc" id="L165">        assertFalse(StringUtils.equalsAny(FOO, FOO.toUpperCase(Locale.ROOT)));</span>
+
+<span class="fc" id="L167">        assertFalse(StringUtils.equalsAny(null, (CharSequence[]) null));</span>
+<span class="fc" id="L168">        assertTrue(StringUtils.equalsAny(FOO, new CustomCharSequence(&quot;foo&quot;)));</span>
+<span class="fc" id="L169">        assertTrue(StringUtils.equalsAny(FOO, new StringBuilder(&quot;foo&quot;)));</span>
+<span class="fc" id="L170">        assertFalse(StringUtils.equalsAny(FOO, new CustomCharSequence(&quot;fOo&quot;)));</span>
+<span class="fc" id="L171">        assertFalse(StringUtils.equalsAny(FOO, new StringBuilder(&quot;fOo&quot;)));</span>
+<span class="fc" id="L172">    }</span>
+
+    @Test
+    public void testEqualsAnyIgnoreCase() {
+<span class="fc" id="L176">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOO));</span>
+<span class="fc" id="L177">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOO, new String[]{}));</span>
+
+<span class="fc" id="L179">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, FOO));</span>
+<span class="fc" id="L180">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, FOO.toUpperCase(Locale.ROOT)));</span>
+<span class="fc" id="L181">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, FOO, new String(new char[]{'f', 'o', 'o'})));</span>
+<span class="fc" id="L182">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, BAR, new String(new char[]{'f', 'O', 'O'})));</span>
+<span class="fc" id="L183">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOO, BAR));</span>
+<span class="fc" id="L184">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOO, BAR, null));</span>
+<span class="fc" id="L185">        assertFalse(StringUtils.equalsAnyIgnoreCase(null, FOO));</span>
+<span class="fc" id="L186">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOO, FOOBAR));</span>
+<span class="fc" id="L187">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOOBAR, FOO));</span>
+
+<span class="fc" id="L189">        assertTrue(StringUtils.equalsAnyIgnoreCase(null, null, null));</span>
+<span class="fc" id="L190">        assertFalse(StringUtils.equalsAnyIgnoreCase(null, FOO, BAR, FOOBAR));</span>
+<span class="fc" id="L191">        assertFalse(StringUtils.equalsAnyIgnoreCase(FOO, null, BAR));</span>
+<span class="fc" id="L192">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, BAR, null, &quot;&quot;, FOO.toUpperCase(Locale.ROOT), BAR));</span>
+<span class="fc" id="L193">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, FOO.toUpperCase(Locale.ROOT)));</span>
+
+<span class="fc" id="L195">        assertFalse(StringUtils.equalsAnyIgnoreCase(null, (CharSequence[]) null));</span>
+<span class="fc" id="L196">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, new CustomCharSequence(&quot;fOo&quot;)));</span>
+<span class="fc" id="L197">        assertTrue(StringUtils.equalsAnyIgnoreCase(FOO, new StringBuilder(&quot;fOo&quot;)));</span>
+<span class="fc" id="L198">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testCompare_StringString() {
+<span class="fc" id="L203">        assertEquals(0, StringUtils.compare(null, null));</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(null, &quot;a&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, null) &gt; 0);</span>
+<span class="fc" id="L206">        assertEquals(0, StringUtils.compare(&quot;abc&quot;, &quot;abc&quot;));</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, &quot;b&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;b&quot;, &quot;a&quot;) &gt; 0);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, &quot;B&quot;) &gt; 0);</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;abc&quot;, &quot;abd&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;ab&quot;, &quot;abc&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;ab&quot;, &quot;ab &quot;) &lt; 0);</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;abc&quot;, &quot;ab &quot;) &gt; 0);</span>
+<span class="fc" id="L214">    }</span>
+
+    @Test
+    public void testCompare_StringStringBoolean() {
+<span class="fc" id="L218">        assertEquals(0, StringUtils.compare(null, null, false));</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(null, &quot;a&quot;, true) &lt; 0);</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(null, &quot;a&quot;, false) &gt; 0);</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, null, true) &gt; 0);</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, null, false) &lt; 0);</span>
+<span class="fc" id="L223">        assertEquals(0, StringUtils.compare(&quot;abc&quot;, &quot;abc&quot;, false));</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, &quot;b&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;b&quot;, &quot;a&quot;, false) &gt; 0);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;a&quot;, &quot;B&quot;, false) &gt; 0);</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;abc&quot;, &quot;abd&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;ab&quot;, &quot;abc&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;ab&quot;, &quot;ab &quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        assertTrue(StringUtils.compare(&quot;abc&quot;, &quot;ab &quot;, false) &gt; 0);</span>
+<span class="fc" id="L231">    }</span>
+
+    @Test
+    public void testCompareIgnoreCase_StringString() {
+<span class="fc" id="L235">        assertEquals(0, StringUtils.compareIgnoreCase(null, null));</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(null, &quot;a&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, null) &gt; 0);</span>
+<span class="fc" id="L238">        assertEquals(0, StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L239">        assertEquals(0, StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;ABC&quot;));</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, &quot;b&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;b&quot;, &quot;a&quot;) &gt; 0);</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, &quot;B&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;A&quot;, &quot;b&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;ABD&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;ab&quot;, &quot;ABC&quot;) &lt; 0);</span>
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;ab&quot;, &quot;AB &quot;) &lt; 0);</span>
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;AB &quot;) &gt; 0);</span>
+<span class="fc" id="L248">    }</span>
+
+    @Test
+    public void testCompareIgnoreCase_StringStringBoolean() {
+<span class="fc" id="L252">        assertEquals(0, StringUtils.compareIgnoreCase(null, null, false));</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(null, &quot;a&quot;, true) &lt; 0);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(null, &quot;a&quot;, false) &gt; 0);</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, null, true) &gt; 0);</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, null, false) &lt; 0);</span>
+<span class="fc" id="L257">        assertEquals(0, StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;abc&quot;, false));</span>
+<span class="fc" id="L258">        assertEquals(0, StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;ABC&quot;, false));</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, &quot;b&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;b&quot;, &quot;a&quot;, false) &gt; 0);</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;a&quot;, &quot;B&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;A&quot;, &quot;b&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;ABD&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;ab&quot;, &quot;ABC&quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;ab&quot;, &quot;AB &quot;, false) &lt; 0);</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        assertTrue(StringUtils.compareIgnoreCase(&quot;abc&quot;, &quot;AB &quot;, false) &gt; 0);</span>
+<span class="fc" id="L267">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIndexOf_char() {
+<span class="fc" id="L272">        assertEquals(-1, StringUtils.indexOf(null, ' '));</span>
+<span class="fc" id="L273">        assertEquals(-1, StringUtils.indexOf(&quot;&quot;, ' '));</span>
+<span class="fc" id="L274">        assertEquals(0, StringUtils.indexOf(&quot;aabaabaa&quot;, 'a'));</span>
+<span class="fc" id="L275">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, 'b'));</span>
+
+<span class="fc" id="L277">        assertEquals(2, StringUtils.indexOf(new StringBuilder(&quot;aabaabaa&quot;), 'b'));</span>
+<span class="fc" id="L278">    }</span>
+
+    @Test
+    public void testIndexOf_charInt() {
+<span class="fc" id="L282">        assertEquals(-1, StringUtils.indexOf(null, ' ', 0));</span>
+<span class="fc" id="L283">        assertEquals(-1, StringUtils.indexOf(null, ' ', -1));</span>
+<span class="fc" id="L284">        assertEquals(-1, StringUtils.indexOf(&quot;&quot;, ' ', 0));</span>
+<span class="fc" id="L285">        assertEquals(-1, StringUtils.indexOf(&quot;&quot;, ' ', -1));</span>
+<span class="fc" id="L286">        assertEquals(0, StringUtils.indexOf(&quot;aabaabaa&quot;, 'a', 0));</span>
+<span class="fc" id="L287">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, 'b', 0));</span>
+<span class="fc" id="L288">        assertEquals(5, StringUtils.indexOf(&quot;aabaabaa&quot;, 'b', 3));</span>
+<span class="fc" id="L289">        assertEquals(-1, StringUtils.indexOf(&quot;aabaabaa&quot;, 'b', 9));</span>
+<span class="fc" id="L290">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, 'b', -1));</span>
+
+<span class="fc" id="L292">        assertEquals(5, StringUtils.indexOf(new StringBuilder(&quot;aabaabaa&quot;), 'b', 3));</span>
+
+        //LANG-1300 tests go here
+<span class="fc" id="L295">        final int CODE_POINT = 0x2070E;</span>
+<span class="fc" id="L296">        StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L297">        builder.appendCodePoint(CODE_POINT);</span>
+<span class="fc" id="L298">        assertEquals(0, StringUtils.indexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L299">        assertEquals(0, StringUtils.indexOf(builder.toString(), CODE_POINT, 0));</span>
+<span class="fc" id="L300">        builder.appendCodePoint(CODE_POINT);</span>
+<span class="fc" id="L301">        assertEquals(2, StringUtils.indexOf(builder, CODE_POINT, 1));</span>
+<span class="fc" id="L302">        assertEquals(2, StringUtils.indexOf(builder.toString(), CODE_POINT, 1));</span>
+        // inner branch on the supplementary character block
+<span class="fc" id="L304">        final char[] tmp = { (char) 55361 };</span>
+<span class="fc" id="L305">        builder = new StringBuilder();</span>
+<span class="fc" id="L306">        builder.append(tmp);</span>
+<span class="fc" id="L307">        assertEquals(-1, StringUtils.indexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L308">        assertEquals(-1, StringUtils.indexOf(builder.toString(), CODE_POINT, 0));</span>
+<span class="fc" id="L309">        builder.appendCodePoint(CODE_POINT);</span>
+<span class="fc" id="L310">        assertEquals(1, StringUtils.indexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L311">        assertEquals(1, StringUtils.indexOf(builder.toString(), CODE_POINT, 0));</span>
+<span class="fc" id="L312">        assertEquals(-1, StringUtils.indexOf(builder, CODE_POINT, 2));</span>
+<span class="fc" id="L313">        assertEquals(-1, StringUtils.indexOf(builder.toString(), CODE_POINT, 2));</span>
+<span class="fc" id="L314">    }</span>
+
+    @Test
+    public void testIndexOf_String() {
+<span class="fc" id="L318">        assertEquals(-1, StringUtils.indexOf(null, null));</span>
+<span class="fc" id="L319">        assertEquals(-1, StringUtils.indexOf(&quot;&quot;, null));</span>
+<span class="fc" id="L320">        assertEquals(0, StringUtils.indexOf(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L321">        assertEquals(0, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L322">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L323">        assertEquals(1, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L324">        assertEquals(0, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;&quot;));</span>
+
+<span class="fc" id="L326">        assertEquals(2, StringUtils.indexOf(new StringBuilder(&quot;aabaabaa&quot;), &quot;b&quot;));</span>
+<span class="fc" id="L327">    }</span>
+
+    @Test
+    public void testIndexOf_StringInt() {
+<span class="fc" id="L331">        assertEquals(-1, StringUtils.indexOf(null, null, 0));</span>
+<span class="fc" id="L332">        assertEquals(-1, StringUtils.indexOf(null, null, -1));</span>
+<span class="fc" id="L333">        assertEquals(-1, StringUtils.indexOf(null, &quot;&quot;, 0));</span>
+<span class="fc" id="L334">        assertEquals(-1, StringUtils.indexOf(null, &quot;&quot;, -1));</span>
+<span class="fc" id="L335">        assertEquals(-1, StringUtils.indexOf(&quot;&quot;, null, 0));</span>
+<span class="fc" id="L336">        assertEquals(-1, StringUtils.indexOf(&quot;&quot;, null, -1));</span>
+<span class="fc" id="L337">        assertEquals(0, StringUtils.indexOf(&quot;&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L338">        assertEquals(0, StringUtils.indexOf(&quot;&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L339">        assertEquals(0, StringUtils.indexOf(&quot;&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L340">        assertEquals(0, StringUtils.indexOf(&quot;abc&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L341">        assertEquals(0, StringUtils.indexOf(&quot;abc&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L342">        assertEquals(3, StringUtils.indexOf(&quot;abc&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L343">        assertEquals(3, StringUtils.indexOf(&quot;abc&quot;, &quot;&quot;, 3));</span>
+<span class="fc" id="L344">        assertEquals(0, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 0));</span>
+<span class="fc" id="L345">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 0));</span>
+<span class="fc" id="L346">        assertEquals(1, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 0));</span>
+<span class="fc" id="L347">        assertEquals(5, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 3));</span>
+<span class="fc" id="L348">        assertEquals(-1, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 9));</span>
+<span class="fc" id="L349">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;b&quot;, -1));</span>
+<span class="fc" id="L350">        assertEquals(2, StringUtils.indexOf(&quot;aabaabaa&quot;, &quot;&quot;, 2));</span>
+
+        // Test that startIndex works correctly, i.e. cannot match before startIndex
+<span class="fc" id="L353">        assertEquals(7, StringUtils.indexOf(&quot;12345678&quot;, &quot;8&quot;, 5));</span>
+<span class="fc" id="L354">        assertEquals(7, StringUtils.indexOf(&quot;12345678&quot;, &quot;8&quot;, 6));</span>
+<span class="fc" id="L355">        assertEquals(7, StringUtils.indexOf(&quot;12345678&quot;, &quot;8&quot;, 7)); // 7 is last index</span>
+<span class="fc" id="L356">        assertEquals(-1, StringUtils.indexOf(&quot;12345678&quot;, &quot;8&quot;, 8));</span>
+
+<span class="fc" id="L358">        assertEquals(5, StringUtils.indexOf(new StringBuilder(&quot;aabaabaa&quot;), &quot;b&quot;, 3));</span>
+<span class="fc" id="L359">    }</span>
+
+    @Test
+    public void testIndexOfAny_StringCharArray() {
+<span class="fc" id="L363">        assertEquals(-1, StringUtils.indexOfAny(null, (char[]) null));</span>
+<span class="fc" id="L364">        assertEquals(-1, StringUtils.indexOfAny(null, new char[0]));</span>
+<span class="fc" id="L365">        assertEquals(-1, StringUtils.indexOfAny(null, 'a', 'b'));</span>
+
+<span class="fc" id="L367">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, (char[]) null));</span>
+<span class="fc" id="L368">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, new char[0]));</span>
+<span class="fc" id="L369">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, 'a', 'b'));</span>
+
+<span class="fc" id="L371">        assertEquals(-1, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, (char[]) null));</span>
+<span class="fc" id="L372">        assertEquals(-1, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, new char[0]));</span>
+<span class="fc" id="L373">        assertEquals(0, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, 'z', 'a'));</span>
+<span class="fc" id="L374">        assertEquals(3, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, 'b', 'y'));</span>
+<span class="fc" id="L375">        assertEquals(-1, StringUtils.indexOfAny(&quot;ab&quot;, 'z'));</span>
+<span class="fc" id="L376">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testIndexOfAny_StringCharArrayWithSupplementaryChars() {
+<span class="fc" id="L383">        assertEquals(0, StringUtils.indexOfAny(CharU20000 + CharU20001, CharU20000.toCharArray()));</span>
+<span class="fc" id="L384">        assertEquals(2, StringUtils.indexOfAny(CharU20000 + CharU20001, CharU20001.toCharArray()));</span>
+<span class="fc" id="L385">        assertEquals(0, StringUtils.indexOfAny(CharU20000, CharU20000.toCharArray()));</span>
+<span class="fc" id="L386">        assertEquals(-1, StringUtils.indexOfAny(CharU20000, CharU20001.toCharArray()));</span>
+<span class="fc" id="L387">    }</span>
+
+    @Test
+    public void testIndexOfAny_StringString() {
+<span class="fc" id="L391">        assertEquals(-1, StringUtils.indexOfAny(null, (String) null));</span>
+<span class="fc" id="L392">        assertEquals(-1, StringUtils.indexOfAny(null, &quot;&quot;));</span>
+<span class="fc" id="L393">        assertEquals(-1, StringUtils.indexOfAny(null, &quot;ab&quot;));</span>
+
+<span class="fc" id="L395">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L396">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L397">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, &quot;ab&quot;));</span>
+
+<span class="fc" id="L399">        assertEquals(-1, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, (String) null));</span>
+<span class="fc" id="L400">        assertEquals(-1, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, &quot;&quot;));</span>
+<span class="fc" id="L401">        assertEquals(0, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, &quot;za&quot;));</span>
+<span class="fc" id="L402">        assertEquals(3, StringUtils.indexOfAny(&quot;zzabyycdxx&quot;, &quot;by&quot;));</span>
+<span class="fc" id="L403">        assertEquals(-1, StringUtils.indexOfAny(&quot;ab&quot;, &quot;z&quot;));</span>
+<span class="fc" id="L404">    }</span>
+
+    @Test
+    public void testIndexOfAny_StringStringArray() {
+<span class="fc" id="L408">        assertEquals(-1, StringUtils.indexOfAny(null, (String[]) null));</span>
+<span class="fc" id="L409">        assertEquals(-1, StringUtils.indexOfAny(null, FOOBAR_SUB_ARRAY));</span>
+<span class="fc" id="L410">        assertEquals(-1, StringUtils.indexOfAny(FOOBAR, (String[]) null));</span>
+<span class="fc" id="L411">        assertEquals(2, StringUtils.indexOfAny(FOOBAR, FOOBAR_SUB_ARRAY));</span>
+<span class="fc" id="L412">        assertEquals(-1, StringUtils.indexOfAny(FOOBAR, new String[0]));</span>
+<span class="fc" id="L413">        assertEquals(-1, StringUtils.indexOfAny(null, new String[0]));</span>
+<span class="fc" id="L414">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, new String[0]));</span>
+<span class="fc" id="L415">        assertEquals(-1, StringUtils.indexOfAny(FOOBAR, new String[] {&quot;llll&quot;}));</span>
+<span class="fc" id="L416">        assertEquals(0, StringUtils.indexOfAny(FOOBAR, new String[] {&quot;&quot;}));</span>
+<span class="fc" id="L417">        assertEquals(0, StringUtils.indexOfAny(&quot;&quot;, new String[] {&quot;&quot;}));</span>
+<span class="fc" id="L418">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, new String[] {&quot;a&quot;}));</span>
+<span class="fc" id="L419">        assertEquals(-1, StringUtils.indexOfAny(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L420">        assertEquals(-1, StringUtils.indexOfAny(FOOBAR, new String[] {null}));</span>
+<span class="fc" id="L421">        assertEquals(-1, StringUtils.indexOfAny(null, new String[] {null}));</span>
+<span class="fc" id="L422">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testIndexOfAny_StringStringWithSupplementaryChars() {
+<span class="fc" id="L429">        assertEquals(0, StringUtils.indexOfAny(CharU20000 + CharU20001, CharU20000));</span>
+<span class="fc" id="L430">        assertEquals(2, StringUtils.indexOfAny(CharU20000 + CharU20001, CharU20001));</span>
+<span class="fc" id="L431">        assertEquals(0, StringUtils.indexOfAny(CharU20000, CharU20000));</span>
+<span class="fc" id="L432">        assertEquals(-1, StringUtils.indexOfAny(CharU20000, CharU20001));</span>
+<span class="fc" id="L433">    }</span>
+
+    @Test
+    public void testIndexOfAnyBut_StringCharArray() {
+<span class="fc" id="L437">        assertEquals(-1, StringUtils.indexOfAnyBut(null, (char[]) null));</span>
+<span class="fc" id="L438">        assertEquals(-1, StringUtils.indexOfAnyBut(null));</span>
+<span class="fc" id="L439">        assertEquals(-1, StringUtils.indexOfAnyBut(null, 'a', 'b'));</span>
+
+<span class="fc" id="L441">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;&quot;, (char[]) null));</span>
+<span class="fc" id="L442">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;&quot;));</span>
+<span class="fc" id="L443">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;&quot;, 'a', 'b'));</span>
+
+<span class="fc" id="L445">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, (char[]) null));</span>
+<span class="fc" id="L446">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;));</span>
+<span class="fc" id="L447">        assertEquals(3, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, 'z', 'a'));</span>
+<span class="fc" id="L448">        assertEquals(0, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, 'b', 'y'));</span>
+<span class="fc" id="L449">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;aba&quot;, 'a', 'b'));</span>
+<span class="fc" id="L450">        assertEquals(0, StringUtils.indexOfAnyBut(&quot;aba&quot;, 'z'));</span>
+<span class="fc" id="L451">    }</span>
+
+    @Test
+    public void testIndexOfAnyBut_StringCharArrayWithSupplementaryChars() {
+<span class="fc" id="L455">        assertEquals(2, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20000.toCharArray()));</span>
+<span class="fc" id="L456">        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20001.toCharArray()));</span>
+<span class="fc" id="L457">        assertEquals(-1, StringUtils.indexOfAnyBut(CharU20000, CharU20000.toCharArray()));</span>
+<span class="fc" id="L458">        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000, CharU20001.toCharArray()));</span>
+<span class="fc" id="L459">    }</span>
+
+    @Test
+    public void testIndexOfAnyBut_StringString() {
+<span class="fc" id="L463">        assertEquals(-1, StringUtils.indexOfAnyBut(null, (String) null));</span>
+<span class="fc" id="L464">        assertEquals(-1, StringUtils.indexOfAnyBut(null, &quot;&quot;));</span>
+<span class="fc" id="L465">        assertEquals(-1, StringUtils.indexOfAnyBut(null, &quot;ab&quot;));</span>
+
+<span class="fc" id="L467">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L468">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L469">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;&quot;, &quot;ab&quot;));</span>
+
+<span class="fc" id="L471">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, (String) null));</span>
+<span class="fc" id="L472">        assertEquals(-1, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, &quot;&quot;));</span>
+<span class="fc" id="L473">        assertEquals(3, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, &quot;za&quot;));</span>
+<span class="fc" id="L474">        assertEquals(0, StringUtils.indexOfAnyBut(&quot;zzabyycdxx&quot;, &quot;by&quot;));</span>
+<span class="fc" id="L475">        assertEquals(0, StringUtils.indexOfAnyBut(&quot;ab&quot;, &quot;z&quot;));</span>
+<span class="fc" id="L476">    }</span>
+
+    @Test
+    public void testIndexOfAnyBut_StringStringWithSupplementaryChars() {
+<span class="fc" id="L480">        assertEquals(2, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20000));</span>
+<span class="fc" id="L481">        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20001));</span>
+<span class="fc" id="L482">        assertEquals(-1, StringUtils.indexOfAnyBut(CharU20000, CharU20000));</span>
+<span class="fc" id="L483">        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000, CharU20001));</span>
+<span class="fc" id="L484">    }</span>
+
+    @Test
+    public void testIndexOfIgnoreCase_String() {
+<span class="fc" id="L488">        assertEquals(-1, StringUtils.indexOfIgnoreCase(null, null));</span>
+<span class="fc" id="L489">        assertEquals(-1, StringUtils.indexOfIgnoreCase(null, &quot;&quot;));</span>
+<span class="fc" id="L490">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;&quot;, null));</span>
+<span class="fc" id="L491">        assertEquals(0, StringUtils.indexOfIgnoreCase(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L492">        assertEquals(0, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L493">        assertEquals(0, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;A&quot;));</span>
+<span class="fc" id="L494">        assertEquals(2, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L495">        assertEquals(2, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;));</span>
+<span class="fc" id="L496">        assertEquals(1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L497">        assertEquals(1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;));</span>
+<span class="fc" id="L498">        assertEquals(0, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;&quot;));</span>
+<span class="fc" id="L499">    }</span>
+
+    @Test
+    public void testIndexOfIgnoreCase_StringInt() {
+<span class="fc" id="L503">        assertEquals(1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, -1));</span>
+<span class="fc" id="L504">        assertEquals(1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 0));</span>
+<span class="fc" id="L505">        assertEquals(1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 1));</span>
+<span class="fc" id="L506">        assertEquals(4, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 2));</span>
+<span class="fc" id="L507">        assertEquals(4, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 3));</span>
+<span class="fc" id="L508">        assertEquals(4, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 4));</span>
+<span class="fc" id="L509">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 5));</span>
+<span class="fc" id="L510">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 6));</span>
+<span class="fc" id="L511">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 7));</span>
+<span class="fc" id="L512">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 8));</span>
+<span class="fc" id="L513">        assertEquals(1, StringUtils.indexOfIgnoreCase(&quot;aab&quot;, &quot;AB&quot;, 1));</span>
+<span class="fc" id="L514">        assertEquals(5, StringUtils.indexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;&quot;, 5));</span>
+<span class="fc" id="L515">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;ab&quot;, &quot;AAB&quot;, 0));</span>
+<span class="fc" id="L516">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;aab&quot;, &quot;AAB&quot;, 1));</span>
+<span class="fc" id="L517">        assertEquals(-1, StringUtils.indexOfIgnoreCase(&quot;abc&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L518">    }</span>
+
+    @Test
+    public void testLastIndexOf_char() {
+<span class="fc" id="L522">        assertEquals(-1, StringUtils.lastIndexOf(null, ' '));</span>
+<span class="fc" id="L523">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, ' '));</span>
+<span class="fc" id="L524">        assertEquals(7, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'a'));</span>
+<span class="fc" id="L525">        assertEquals(5, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'b'));</span>
+
+<span class="fc" id="L527">        assertEquals(5, StringUtils.lastIndexOf(new StringBuilder(&quot;aabaabaa&quot;), 'b'));</span>
+<span class="fc" id="L528">    }</span>
+
+    @Test
+    public void testLastIndexOf_charInt() {
+<span class="fc" id="L532">        assertEquals(-1, StringUtils.lastIndexOf(null, ' ', 0));</span>
+<span class="fc" id="L533">        assertEquals(-1, StringUtils.lastIndexOf(null, ' ', -1));</span>
+<span class="fc" id="L534">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, ' ', 0));</span>
+<span class="fc" id="L535">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, ' ', -1));</span>
+<span class="fc" id="L536">        assertEquals(7, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'a', 8));</span>
+<span class="fc" id="L537">        assertEquals(5, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'b', 8));</span>
+<span class="fc" id="L538">        assertEquals(2, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'b', 3));</span>
+<span class="fc" id="L539">        assertEquals(5, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'b', 9));</span>
+<span class="fc" id="L540">        assertEquals(-1, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'b', -1));</span>
+<span class="fc" id="L541">        assertEquals(0, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, 'a', 0));</span>
+
+<span class="fc" id="L543">        assertEquals(2, StringUtils.lastIndexOf(new StringBuilder(&quot;aabaabaa&quot;), 'b', 2));</span>
+
+        //LANG-1300 addition test
+<span class="fc" id="L546">        final int CODE_POINT = 0x2070E;</span>
+<span class="fc" id="L547">        StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L548">        builder.appendCodePoint(CODE_POINT);</span>
+<span class="fc" id="L549">        assertEquals(0, StringUtils.lastIndexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L550">        builder.appendCodePoint(CODE_POINT);</span>
+<span class="fc" id="L551">        assertEquals(0, StringUtils.lastIndexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L552">        assertEquals(0, StringUtils.lastIndexOf(builder, CODE_POINT, 1));</span>
+<span class="fc" id="L553">        assertEquals(2, StringUtils.lastIndexOf(builder, CODE_POINT, 2));</span>
+
+<span class="fc" id="L555">        builder.append(&quot;aaaaa&quot;);</span>
+<span class="fc" id="L556">        assertEquals(2, StringUtils.lastIndexOf(builder, CODE_POINT, 4));</span>
+        // inner branch on the supplementary character block
+<span class="fc" id="L558">        final char[] tmp = { (char) 55361 };</span>
+<span class="fc" id="L559">        builder = new StringBuilder();</span>
+<span class="fc" id="L560">        builder.append(tmp);</span>
+<span class="fc" id="L561">        assertEquals(-1, StringUtils.lastIndexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L562">        builder.appendCodePoint(CODE_POINT);</span>
+<span class="fc" id="L563">        assertEquals(-1, StringUtils.lastIndexOf(builder, CODE_POINT, 0));</span>
+<span class="fc" id="L564">        assertEquals(1, StringUtils.lastIndexOf(builder, CODE_POINT, 1 ));</span>
+<span class="fc" id="L565">        assertEquals(-1, StringUtils.lastIndexOf(builder.toString(), CODE_POINT, 0));</span>
+<span class="fc" id="L566">        assertEquals(1, StringUtils.lastIndexOf(builder.toString(), CODE_POINT, 1));</span>
+<span class="fc" id="L567">    }</span>
+
+    @Test
+    public void testLastIndexOf_String() {
+<span class="fc" id="L571">        assertEquals(-1, StringUtils.lastIndexOf(null, null));</span>
+<span class="fc" id="L572">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, null));</span>
+<span class="fc" id="L573">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L574">        assertEquals(0, StringUtils.lastIndexOf(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L575">        assertEquals(8, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;&quot;));</span>
+<span class="fc" id="L576">        assertEquals(7, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L577">        assertEquals(5, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L578">        assertEquals(4, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;));</span>
+
+<span class="fc" id="L580">        assertEquals(4, StringUtils.lastIndexOf(new StringBuilder(&quot;aabaabaa&quot;), &quot;ab&quot;));</span>
+<span class="fc" id="L581">    }</span>
+
+    @Test
+    public void testLastIndexOf_StringInt() {
+<span class="fc" id="L585">        assertEquals(-1, StringUtils.lastIndexOf(null, null, 0));</span>
+<span class="fc" id="L586">        assertEquals(-1, StringUtils.lastIndexOf(null, null, -1));</span>
+<span class="fc" id="L587">        assertEquals(-1, StringUtils.lastIndexOf(null, &quot;&quot;, 0));</span>
+<span class="fc" id="L588">        assertEquals(-1, StringUtils.lastIndexOf(null, &quot;&quot;, -1));</span>
+<span class="fc" id="L589">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, null, 0));</span>
+<span class="fc" id="L590">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, null, -1));</span>
+<span class="fc" id="L591">        assertEquals(0, StringUtils.lastIndexOf(&quot;&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L592">        assertEquals(-1, StringUtils.lastIndexOf(&quot;&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L593">        assertEquals(0, StringUtils.lastIndexOf(&quot;&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L594">        assertEquals(0, StringUtils.lastIndexOf(&quot;abc&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L595">        assertEquals(-1, StringUtils.lastIndexOf(&quot;abc&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L596">        assertEquals(3, StringUtils.lastIndexOf(&quot;abc&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L597">        assertEquals(7, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 8));</span>
+<span class="fc" id="L598">        assertEquals(5, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 8));</span>
+<span class="fc" id="L599">        assertEquals(4, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 8));</span>
+<span class="fc" id="L600">        assertEquals(2, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 3));</span>
+<span class="fc" id="L601">        assertEquals(5, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 9));</span>
+<span class="fc" id="L602">        assertEquals(-1, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, -1));</span>
+<span class="fc" id="L603">        assertEquals(-1, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 0));</span>
+<span class="fc" id="L604">        assertEquals(0, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 0));</span>
+<span class="fc" id="L605">        assertEquals(-1, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, -1));</span>
+
+        // Test that fromIndex works correctly, i.e. cannot match after fromIndex
+<span class="fc" id="L608">        assertEquals(7, StringUtils.lastIndexOf(&quot;12345678&quot;, &quot;8&quot;, 9));</span>
+<span class="fc" id="L609">        assertEquals(7, StringUtils.lastIndexOf(&quot;12345678&quot;, &quot;8&quot;, 8));</span>
+<span class="fc" id="L610">        assertEquals(7, StringUtils.lastIndexOf(&quot;12345678&quot;, &quot;8&quot;, 7)); // 7 is last index</span>
+<span class="fc" id="L611">        assertEquals(-1, StringUtils.lastIndexOf(&quot;12345678&quot;, &quot;8&quot;, 6));</span>
+
+<span class="fc" id="L613">        assertEquals(-1, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 1));</span>
+<span class="fc" id="L614">        assertEquals(2, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 2));</span>
+<span class="fc" id="L615">        assertEquals(2, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;ba&quot;, 2));</span>
+<span class="fc" id="L616">        assertEquals(2, StringUtils.lastIndexOf(&quot;aabaabaa&quot;, &quot;ba&quot;, 3));</span>
+
+<span class="fc" id="L618">        assertEquals(2, StringUtils.lastIndexOf(new StringBuilder(&quot;aabaabaa&quot;), &quot;b&quot;, 3));</span>
+<span class="fc" id="L619">    }</span>
+
+    @Test
+    public void testLastIndexOfAny_StringStringArray() {
+<span class="fc" id="L623">        assertEquals(-1, StringUtils.lastIndexOfAny(null, (CharSequence) null));   // test both types of ...</span>
+<span class="fc" id="L624">        assertEquals(-1, StringUtils.lastIndexOfAny(null, (CharSequence[]) null)); // ... varargs invocation</span>
+<span class="fc" id="L625">        assertEquals(-1, StringUtils.lastIndexOfAny(null)); // Missing varag</span>
+<span class="fc" id="L626">        assertEquals(-1, StringUtils.lastIndexOfAny(null, FOOBAR_SUB_ARRAY));</span>
+<span class="fc" id="L627">        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, (CharSequence) null));   // test both types of ...</span>
+<span class="fc" id="L628">        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, (CharSequence[]) null)); // ... varargs invocation</span>
+<span class="fc" id="L629">        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR)); // Missing vararg</span>
+<span class="fc" id="L630">        assertEquals(3, StringUtils.lastIndexOfAny(FOOBAR, FOOBAR_SUB_ARRAY));</span>
+<span class="fc" id="L631">        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, new String[0]));</span>
+<span class="fc" id="L632">        assertEquals(-1, StringUtils.lastIndexOfAny(null, new String[0]));</span>
+<span class="fc" id="L633">        assertEquals(-1, StringUtils.lastIndexOfAny(&quot;&quot;, new String[0]));</span>
+<span class="fc" id="L634">        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, new String[] {&quot;llll&quot;}));</span>
+<span class="fc" id="L635">        assertEquals(6, StringUtils.lastIndexOfAny(FOOBAR, new String[] {&quot;&quot;}));</span>
+<span class="fc" id="L636">        assertEquals(0, StringUtils.lastIndexOfAny(&quot;&quot;, new String[] {&quot;&quot;}));</span>
+<span class="fc" id="L637">        assertEquals(-1, StringUtils.lastIndexOfAny(&quot;&quot;, new String[] {&quot;a&quot;}));</span>
+<span class="fc" id="L638">        assertEquals(-1, StringUtils.lastIndexOfAny(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L639">        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, new String[] {null}));</span>
+<span class="fc" id="L640">        assertEquals(-1, StringUtils.lastIndexOfAny(null, new String[] {null}));</span>
+<span class="fc" id="L641">    }</span>
+
+    @Test
+    public void testLastIndexOfIgnoreCase_String() {
+<span class="fc" id="L645">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(null, null));</span>
+<span class="fc" id="L646">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, null));</span>
+<span class="fc" id="L647">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(null, &quot;&quot;));</span>
+<span class="fc" id="L648">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L649">        assertEquals(0, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L650">        assertEquals(8, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;&quot;));</span>
+<span class="fc" id="L651">        assertEquals(7, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L652">        assertEquals(7, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;A&quot;));</span>
+<span class="fc" id="L653">        assertEquals(5, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L654">        assertEquals(5, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;));</span>
+<span class="fc" id="L655">        assertEquals(4, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;ab&quot;));</span>
+<span class="fc" id="L656">        assertEquals(4, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;));</span>
+<span class="fc" id="L657">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;ab&quot;, &quot;AAB&quot;));</span>
+<span class="fc" id="L658">        assertEquals(0, StringUtils.lastIndexOfIgnoreCase(&quot;aab&quot;, &quot;AAB&quot;));</span>
+<span class="fc" id="L659">    }</span>
+
+    @Test
+    public void testLastIndexOfIgnoreCase_StringInt() {
+<span class="fc" id="L663">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(null, null, 0));</span>
+<span class="fc" id="L664">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(null, null, -1));</span>
+<span class="fc" id="L665">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(null, &quot;&quot;, 0));</span>
+<span class="fc" id="L666">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(null, &quot;&quot;, -1));</span>
+<span class="fc" id="L667">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, null, 0));</span>
+<span class="fc" id="L668">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, null, -1));</span>
+<span class="fc" id="L669">        assertEquals(0, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L670">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L671">        assertEquals(0, StringUtils.lastIndexOfIgnoreCase(&quot;&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L672">        assertEquals(0, StringUtils.lastIndexOfIgnoreCase(&quot;abc&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L673">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;abc&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L674">        assertEquals(3, StringUtils.lastIndexOfIgnoreCase(&quot;abc&quot;, &quot;&quot;, 9));</span>
+<span class="fc" id="L675">        assertEquals(7, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;A&quot;, 8));</span>
+<span class="fc" id="L676">        assertEquals(5, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;, 8));</span>
+<span class="fc" id="L677">        assertEquals(4, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;AB&quot;, 8));</span>
+<span class="fc" id="L678">        assertEquals(2, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;, 3));</span>
+<span class="fc" id="L679">        assertEquals(5, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;, 9));</span>
+<span class="fc" id="L680">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;, -1));</span>
+<span class="fc" id="L681">        assertEquals(-1, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;B&quot;, 0));</span>
+<span class="fc" id="L682">        assertEquals(0, StringUtils.lastIndexOfIgnoreCase(&quot;aabaabaa&quot;, &quot;A&quot;, 0));</span>
+<span class="fc" id="L683">        assertEquals(1, StringUtils.lastIndexOfIgnoreCase(&quot;aab&quot;, &quot;AB&quot;, 1));</span>
+<span class="fc" id="L684">    }</span>
+
+    @Test
+    public void testLastOrdinalIndexOf() {
+<span class="fc" id="L688">        assertEquals(-1, StringUtils.lastOrdinalIndexOf(null, &quot;*&quot;, 42) );</span>
+<span class="fc" id="L689">        assertEquals(-1, StringUtils.lastOrdinalIndexOf(&quot;*&quot;, null, 42) );</span>
+<span class="fc" id="L690">        assertEquals(0, StringUtils.lastOrdinalIndexOf(&quot;&quot;, &quot;&quot;, 42) );</span>
+<span class="fc" id="L691">        assertEquals(7, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 1) );</span>
+<span class="fc" id="L692">        assertEquals(6, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 2) );</span>
+<span class="fc" id="L693">        assertEquals(5, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 1) );</span>
+<span class="fc" id="L694">        assertEquals(2, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 2) );</span>
+<span class="fc" id="L695">        assertEquals(4, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 1) );</span>
+<span class="fc" id="L696">        assertEquals(1, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 2) );</span>
+<span class="fc" id="L697">        assertEquals(8, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, 1) );</span>
+<span class="fc" id="L698">        assertEquals(8, StringUtils.lastOrdinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, 2) );</span>
+<span class="fc" id="L699">    }</span>
+
+    @Test
+    public void testOrdinalIndexOf() {
+<span class="fc" id="L703">        assertEquals(-1, StringUtils.ordinalIndexOf(null, null, Integer.MIN_VALUE));</span>
+<span class="fc" id="L704">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, null, Integer.MIN_VALUE));</span>
+<span class="fc" id="L705">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, &quot;&quot;, Integer.MIN_VALUE));</span>
+<span class="fc" id="L706">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, Integer.MIN_VALUE));</span>
+<span class="fc" id="L707">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, Integer.MIN_VALUE));</span>
+<span class="fc" id="L708">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, Integer.MIN_VALUE));</span>
+<span class="fc" id="L709">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, Integer.MIN_VALUE));</span>
+
+<span class="fc" id="L711">        assertEquals(-1, StringUtils.ordinalIndexOf(null, null, -1));</span>
+<span class="fc" id="L712">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, null, -1));</span>
+<span class="fc" id="L713">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, &quot;&quot;, -1));</span>
+<span class="fc" id="L714">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, -1));</span>
+<span class="fc" id="L715">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, -1));</span>
+<span class="fc" id="L716">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, -1));</span>
+<span class="fc" id="L717">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, -1));</span>
+
+<span class="fc" id="L719">        assertEquals(-1, StringUtils.ordinalIndexOf(null, null, 0));</span>
+<span class="fc" id="L720">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, null, 0));</span>
+<span class="fc" id="L721">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, &quot;&quot;, 0));</span>
+<span class="fc" id="L722">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 0));</span>
+<span class="fc" id="L723">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 0));</span>
+<span class="fc" id="L724">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 0));</span>
+<span class="fc" id="L725">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, 0));</span>
+
+<span class="fc" id="L727">        assertEquals(-1, StringUtils.ordinalIndexOf(null, null, 1));</span>
+<span class="fc" id="L728">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, null, 1));</span>
+<span class="fc" id="L729">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;&quot;, &quot;&quot;, 1));</span>
+<span class="fc" id="L730">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 1));</span>
+<span class="fc" id="L731">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 1));</span>
+<span class="fc" id="L732">        assertEquals(1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 1));</span>
+<span class="fc" id="L733">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, 1));</span>
+
+<span class="fc" id="L735">        assertEquals(-1, StringUtils.ordinalIndexOf(null, null, 2));</span>
+<span class="fc" id="L736">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, null, 2));</span>
+<span class="fc" id="L737">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;&quot;, &quot;&quot;, 2));</span>
+<span class="fc" id="L738">        assertEquals(1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, 2));</span>
+<span class="fc" id="L739">        assertEquals(5, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, 2));</span>
+<span class="fc" id="L740">        assertEquals(4, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, 2));</span>
+<span class="fc" id="L741">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, 2));</span>
+
+<span class="fc" id="L743">        assertEquals(-1, StringUtils.ordinalIndexOf(null, null, Integer.MAX_VALUE));</span>
+<span class="fc" id="L744">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;&quot;, null, Integer.MAX_VALUE));</span>
+<span class="fc" id="L745">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;&quot;, &quot;&quot;, Integer.MAX_VALUE));</span>
+<span class="fc" id="L746">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;a&quot;, Integer.MAX_VALUE));</span>
+<span class="fc" id="L747">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;b&quot;, Integer.MAX_VALUE));</span>
+<span class="fc" id="L748">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;ab&quot;, Integer.MAX_VALUE));</span>
+<span class="fc" id="L749">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;aabaabaa&quot;, &quot;&quot;, Integer.MAX_VALUE));</span>
+
+<span class="fc" id="L751">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 0));</span>
+<span class="fc" id="L752">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 1));</span>
+<span class="fc" id="L753">        assertEquals(1, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 2));</span>
+<span class="fc" id="L754">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 3));</span>
+<span class="fc" id="L755">        assertEquals(3, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 4));</span>
+<span class="fc" id="L756">        assertEquals(4, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 5));</span>
+<span class="fc" id="L757">        assertEquals(5, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 6));</span>
+<span class="fc" id="L758">        assertEquals(6, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 7));</span>
+<span class="fc" id="L759">        assertEquals(7, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 8));</span>
+<span class="fc" id="L760">        assertEquals(8, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 9));</span>
+<span class="fc" id="L761">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aaaaaaaaa&quot;, &quot;a&quot;, 10));</span>
+
+        // match at each possible position
+<span class="fc" id="L764">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;aaaaaa&quot;, &quot;aa&quot;, 1));</span>
+<span class="fc" id="L765">        assertEquals(1, StringUtils.ordinalIndexOf(&quot;aaaaaa&quot;, &quot;aa&quot;, 2));</span>
+<span class="fc" id="L766">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;aaaaaa&quot;, &quot;aa&quot;, 3));</span>
+<span class="fc" id="L767">        assertEquals(3, StringUtils.ordinalIndexOf(&quot;aaaaaa&quot;, &quot;aa&quot;, 4));</span>
+<span class="fc" id="L768">        assertEquals(4, StringUtils.ordinalIndexOf(&quot;aaaaaa&quot;, &quot;aa&quot;, 5));</span>
+<span class="fc" id="L769">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;aaaaaa&quot;, &quot;aa&quot;, 6));</span>
+
+<span class="fc" id="L771">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;ababab&quot;, &quot;aba&quot;, 1));</span>
+<span class="fc" id="L772">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;ababab&quot;, &quot;aba&quot;, 2));</span>
+<span class="fc" id="L773">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;ababab&quot;, &quot;aba&quot;, 3));</span>
+
+<span class="fc" id="L775">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 1));</span>
+<span class="fc" id="L776">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 2));</span>
+<span class="fc" id="L777">        assertEquals(4, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 3));</span>
+<span class="fc" id="L778">        assertEquals(-1, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 4));</span>
+<span class="fc" id="L779">    }</span>
+
+    @Test
+    public void testLANG1193() {
+<span class="fc" id="L783">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;abc&quot;, &quot;ab&quot;, 1));</span>
+<span class="fc" id="L784">    }</span>
+
+    @Test
+    // Non-overlapping test
+    public void testLANG1241_1() {
+        //                                          0  3  6
+<span class="fc" id="L790">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;abaabaab&quot;, &quot;ab&quot;, 1));</span>
+<span class="fc" id="L791">        assertEquals(3, StringUtils.ordinalIndexOf(&quot;abaabaab&quot;, &quot;ab&quot;, 2));</span>
+<span class="fc" id="L792">        assertEquals(6, StringUtils.ordinalIndexOf(&quot;abaabaab&quot;, &quot;ab&quot;, 3));</span>
+<span class="fc" id="L793">    }</span>
+
+    @Test
+    // Overlapping matching test
+    public void testLANG1241_2() {
+        //                                          0 2 4
+<span class="fc" id="L799">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;abababa&quot;, &quot;aba&quot;, 1));</span>
+<span class="fc" id="L800">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;abababa&quot;, &quot;aba&quot;, 2));</span>
+<span class="fc" id="L801">        assertEquals(4, StringUtils.ordinalIndexOf(&quot;abababa&quot;, &quot;aba&quot;, 3));</span>
+<span class="fc" id="L802">        assertEquals(0, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 1));</span>
+<span class="fc" id="L803">        assertEquals(2, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 2));</span>
+<span class="fc" id="L804">        assertEquals(4, StringUtils.ordinalIndexOf(&quot;abababab&quot;, &quot;abab&quot;, 3));</span>
+<span class="fc" id="L805">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

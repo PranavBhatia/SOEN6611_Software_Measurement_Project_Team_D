@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBaseConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestBaseConfiguration.java</span></div><h1>TestBaseConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.Lookup;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+import junitx.framework.ListAssert;
+
+/**
+ * Tests some basic functions of the BaseConfiguration class. Missing keys will
+ * throw Exceptions
+ *
+ */
+<span class="fc" id="L56">public class TestBaseConfiguration</span>
+{
+    /** Constant for the number key.*/
+    static final String KEY_NUMBER = &quot;number&quot;;
+
+<span class="fc" id="L61">    protected BaseConfiguration config = null;</span>
+
+<span class="fc" id="L63">    protected static Class&lt;?&gt; missingElementException = NoSuchElementException.class;</span>
+<span class="fc" id="L64">    protected static Class&lt;?&gt; incompatibleElementException = ConversionException.class;</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L69">        config = new BaseConfiguration();</span>
+<span class="fc" id="L70">        config.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L71">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L72">    }</span>
+
+    @Test
+    public void testThrowExceptionOnMissing()
+    {
+<span class="fc" id="L77">        assertTrue(&quot;Throw Exception Property is not set!&quot;, config.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L78">    }</span>
+
+    @Test
+    public void testGetProperty()
+    {
+        /* should be empty and return null */
+<span class="fc" id="L84">        assertEquals(&quot;This returns null&quot;, config.getProperty(&quot;foo&quot;), null);</span>
+
+        /* add a real value, and get it two different ways */
+<span class="fc" id="L87">        config.setProperty(&quot;number&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L88">        assertEquals(&quot;This returns '1'&quot;, config.getProperty(&quot;number&quot;), &quot;1&quot;);</span>
+<span class="fc" id="L89">        assertEquals(&quot;This returns '1'&quot;, config.getString(&quot;number&quot;), &quot;1&quot;);</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testGetByte()
+    {
+<span class="fc" id="L95">        config.setProperty(&quot;number&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L96">        final byte oneB = 1;</span>
+<span class="fc" id="L97">        final byte twoB = 2;</span>
+<span class="fc" id="L98">        assertEquals(&quot;This returns 1(byte)&quot;, oneB, config.getByte(&quot;number&quot;));</span>
+<span class="fc" id="L99">        assertEquals(&quot;This returns 1(byte)&quot;, oneB, config.getByte(&quot;number&quot;, twoB));</span>
+<span class="fc" id="L100">        assertEquals(&quot;This returns 2(default byte)&quot;, twoB, config.getByte(&quot;numberNotInConfig&quot;, twoB));</span>
+<span class="fc" id="L101">        assertEquals(&quot;This returns 1(Byte)&quot;, new Byte(oneB), config.getByte(&quot;number&quot;, new Byte(&quot;2&quot;)));</span>
+<span class="fc" id="L102">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetByteUnknown()
+    {
+<span class="nc" id="L107">        config.getByte(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L108">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetByteIncompatibleType()
+    {
+<span class="fc" id="L113">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L114">        config.getByte(&quot;test.empty&quot;);</span>
+<span class="nc" id="L115">    }</span>
+
+    @Test
+    public void testGetShort()
+    {
+<span class="fc" id="L120">        config.setProperty(&quot;numberS&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L121">        final short oneS = 1;</span>
+<span class="fc" id="L122">        final short twoS = 2;</span>
+<span class="fc" id="L123">        assertEquals(&quot;This returns 1(short)&quot;, oneS, config.getShort(&quot;numberS&quot;));</span>
+<span class="fc" id="L124">        assertEquals(&quot;This returns 1(short)&quot;, oneS, config.getShort(&quot;numberS&quot;, twoS));</span>
+<span class="fc" id="L125">        assertEquals(&quot;This returns 2(default short)&quot;, twoS, config.getShort(&quot;numberNotInConfig&quot;, twoS));</span>
+<span class="fc" id="L126">        assertEquals(&quot;This returns 1(Short)&quot;, new Short(oneS), config.getShort(&quot;numberS&quot;, new Short(&quot;2&quot;)));</span>
+<span class="fc" id="L127">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetShortUnknown()
+    {
+<span class="nc" id="L132">        config.getShort(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L133">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetShortIncompatibleType()
+    {
+<span class="fc" id="L138">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L139">        config.getShort(&quot;test.empty&quot;);</span>
+<span class="nc" id="L140">    }</span>
+
+    @Test
+    public void testGetLong()
+    {
+<span class="fc" id="L145">        config.setProperty(&quot;numberL&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L146">        final long oneL = 1;</span>
+<span class="fc" id="L147">        final long twoL = 2;</span>
+<span class="fc" id="L148">        assertEquals(&quot;This returns 1(long)&quot;, oneL, config.getLong(&quot;numberL&quot;));</span>
+<span class="fc" id="L149">        assertEquals(&quot;This returns 1(long)&quot;, oneL, config.getLong(&quot;numberL&quot;, twoL));</span>
+<span class="fc" id="L150">        assertEquals(&quot;This returns 2(default long)&quot;, twoL, config.getLong(&quot;numberNotInConfig&quot;, twoL));</span>
+<span class="fc" id="L151">        assertEquals(&quot;This returns 1(Long)&quot;, new Long(oneL), config.getLong(&quot;numberL&quot;, new Long(&quot;2&quot;)));</span>
+<span class="fc" id="L152">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetLongUnknown()
+    {
+<span class="nc" id="L157">        config.getLong(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L158">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetLongIncompatibleTypes()
+    {
+<span class="fc" id="L163">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L164">        config.getLong(&quot;test.empty&quot;);</span>
+<span class="nc" id="L165">    }</span>
+
+    @Test
+    public void testGetFloat()
+    {
+<span class="fc" id="L170">        config.setProperty(&quot;numberF&quot;, &quot;1.0&quot;);</span>
+<span class="fc" id="L171">        final float oneF = 1;</span>
+<span class="fc" id="L172">        final float twoF = 2;</span>
+<span class="fc" id="L173">        assertEquals(&quot;This returns 1(float)&quot;, oneF, config.getFloat(&quot;numberF&quot;), 0);</span>
+<span class="fc" id="L174">        assertEquals(&quot;This returns 1(float)&quot;, oneF, config.getFloat(&quot;numberF&quot;, twoF), 0);</span>
+<span class="fc" id="L175">        assertEquals(&quot;This returns 2(default float)&quot;, twoF, config.getFloat(&quot;numberNotInConfig&quot;, twoF), 0);</span>
+<span class="fc" id="L176">        assertEquals(&quot;This returns 1(Float)&quot;, new Float(oneF), config.getFloat(&quot;numberF&quot;, new Float(&quot;2&quot;)));</span>
+<span class="fc" id="L177">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetFloatUnknown()
+    {
+<span class="nc" id="L182">        config.getFloat(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L183">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetFloatIncompatibleType()
+    {
+<span class="fc" id="L188">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L189">        config.getFloat(&quot;test.empty&quot;);</span>
+<span class="nc" id="L190">    }</span>
+
+    @Test
+    public void testGetDouble()
+    {
+<span class="fc" id="L195">        config.setProperty(&quot;numberD&quot;, &quot;1.0&quot;);</span>
+<span class="fc" id="L196">        final double oneD = 1;</span>
+<span class="fc" id="L197">        final double twoD = 2;</span>
+<span class="fc" id="L198">        assertEquals(&quot;This returns 1(double)&quot;, oneD, config.getDouble(&quot;numberD&quot;), 0);</span>
+<span class="fc" id="L199">        assertEquals(&quot;This returns 1(double)&quot;, oneD, config.getDouble(&quot;numberD&quot;, twoD), 0);</span>
+<span class="fc" id="L200">        assertEquals(&quot;This returns 2(default double)&quot;, twoD, config.getDouble(&quot;numberNotInConfig&quot;, twoD), 0);</span>
+<span class="fc" id="L201">        assertEquals(&quot;This returns 1(Double)&quot;, new Double(oneD), config.getDouble(&quot;numberD&quot;, new Double(&quot;2&quot;)));</span>
+<span class="fc" id="L202">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetDoubleUnknown()
+    {
+<span class="nc" id="L207">        config.getDouble(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L208">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetDoubleIncompatibleType()
+    {
+<span class="fc" id="L213">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L214">        config.getDouble(&quot;test.empty&quot;);</span>
+<span class="nc" id="L215">    }</span>
+
+    @Test
+    public void testGetBigDecimal()
+    {
+<span class="fc" id="L220">        config.setProperty(&quot;numberBigD&quot;, &quot;123.456&quot;);</span>
+<span class="fc" id="L221">        final BigDecimal number = new BigDecimal(&quot;123.456&quot;);</span>
+<span class="fc" id="L222">        final BigDecimal defaultValue = new BigDecimal(&quot;654.321&quot;);</span>
+
+<span class="fc" id="L224">        assertEquals(&quot;Existing key&quot;, number, config.getBigDecimal(&quot;numberBigD&quot;));</span>
+<span class="fc" id="L225">        assertEquals(&quot;Existing key with default value&quot;, number, config.getBigDecimal(&quot;numberBigD&quot;, defaultValue));</span>
+<span class="fc" id="L226">        assertEquals(&quot;Missing key with default value&quot;, defaultValue, config.getBigDecimal(&quot;numberNotInConfig&quot;, defaultValue));</span>
+<span class="fc" id="L227">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetBigDecimalUnknown()
+    {
+<span class="nc" id="L232">        config.getBigDecimal(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L233">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetBigDecimalIncompatibleType()
+    {
+<span class="fc" id="L238">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L239">        config.getBigDecimal(&quot;test.empty&quot;);</span>
+<span class="nc" id="L240">    }</span>
+
+    @Test
+    public void testGetBigInteger()
+    {
+<span class="fc" id="L245">        config.setProperty(&quot;numberBigI&quot;, &quot;1234567890&quot;);</span>
+<span class="fc" id="L246">        final BigInteger number = new BigInteger(&quot;1234567890&quot;);</span>
+<span class="fc" id="L247">        final BigInteger defaultValue = new BigInteger(&quot;654321&quot;);</span>
+
+<span class="fc" id="L249">        assertEquals(&quot;Existing key&quot;, number, config.getBigInteger(&quot;numberBigI&quot;));</span>
+<span class="fc" id="L250">        assertEquals(&quot;Existing key with default value&quot;, number, config.getBigInteger(&quot;numberBigI&quot;, defaultValue));</span>
+<span class="fc" id="L251">        assertEquals(&quot;Missing key with default value&quot;, defaultValue, config.getBigInteger(&quot;numberNotInConfig&quot;, defaultValue));</span>
+<span class="fc" id="L252">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetBigIntegerUnknown()
+    {
+<span class="nc" id="L257">        config.getBigInteger(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L258">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetBigIntegerIncompatibleType()
+    {
+<span class="fc" id="L263">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L264">        config.getBigInteger(&quot;test.empty&quot;);</span>
+<span class="nc" id="L265">    }</span>
+
+    @Test
+    public void testGetString()
+    {
+<span class="fc" id="L270">        config.setProperty(&quot;testString&quot;, &quot;The quick brown fox&quot;);</span>
+<span class="fc" id="L271">        final String string = &quot;The quick brown fox&quot;;</span>
+<span class="fc" id="L272">        final String defaultValue = &quot;jumps over the lazy dog&quot;;</span>
+
+<span class="fc" id="L274">        assertEquals(&quot;Existing key&quot;, string, config.getString(&quot;testString&quot;));</span>
+<span class="fc" id="L275">        assertEquals(&quot;Existing key with default value&quot;, string, config.getString(&quot;testString&quot;, defaultValue));</span>
+<span class="fc" id="L276">        assertEquals(&quot;Missing key with default value&quot;, defaultValue, config.getString(&quot;stringNotInConfig&quot;, defaultValue));</span>
+<span class="fc" id="L277">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetStringUnknown()
+    {
+<span class="nc" id="L282">        config.getString(&quot;stringNotInConfig&quot;);</span>
+<span class="nc" id="L283">    }</span>
+
+    @Test
+    public void testGetBoolean()
+    {
+<span class="fc" id="L288">        config.setProperty(&quot;boolA&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L289">        final boolean boolT = true, boolF = false;</span>
+<span class="fc" id="L290">        assertEquals(&quot;This returns true&quot;, boolT, config.getBoolean(&quot;boolA&quot;));</span>
+<span class="fc" id="L291">        assertEquals(&quot;This returns true, not the default&quot;, boolT, config.getBoolean(&quot;boolA&quot;, boolF));</span>
+<span class="fc" id="L292">        assertEquals(&quot;This returns false(default)&quot;, boolF, config.getBoolean(&quot;boolNotInConfig&quot;, boolF));</span>
+<span class="fc" id="L293">        assertEquals(&quot;This returns true(Boolean)&quot;, new Boolean(boolT), config.getBoolean(&quot;boolA&quot;, new Boolean(boolF)));</span>
+<span class="fc" id="L294">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetBooleanUnknown()
+    {
+<span class="nc" id="L299">        config.getBoolean(&quot;numberNotInConfig&quot;);</span>
+<span class="nc" id="L300">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetBooleanIncompatibleType()
+    {
+<span class="fc" id="L305">        config.setProperty(&quot;test.empty&quot;, &quot;&quot;);</span>
+<span class="nc" id="L306">        config.getBoolean(&quot;test.empty&quot;);</span>
+<span class="nc" id="L307">    }</span>
+
+    @Test
+    public void testGetList()
+    {
+<span class="fc" id="L312">        config.addProperty(&quot;number&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L313">        config.addProperty(&quot;number&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L314">        final List&lt;Object&gt; list = config.getList(&quot;number&quot;);</span>
+<span class="fc" id="L315">        assertNotNull(&quot;The list is null&quot;, list);</span>
+<span class="fc" id="L316">        assertEquals(&quot;List size&quot;, 2, list.size());</span>
+<span class="fc" id="L317">        assertTrue(&quot;The number 1 is missing from the list&quot;, list.contains(&quot;1&quot;));</span>
+<span class="fc" id="L318">        assertTrue(&quot;The number 2 is missing from the list&quot;, list.contains(&quot;2&quot;));</span>
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Tests that the first scalar of a list is returned.
+     */
+    @Test
+    public void testGetStringForListValue()
+    {
+<span class="fc" id="L327">        config.addProperty(&quot;number&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L328">        config.addProperty(&quot;number&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L329">        assertEquals(&quot;Wrong result&quot;, &quot;1&quot;, config.getString(&quot;number&quot;));</span>
+<span class="fc" id="L330">    }</span>
+
+    @Test
+    public void testGetInterpolatedList()
+    {
+<span class="fc" id="L335">        config.addProperty(&quot;number&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L336">        config.addProperty(&quot;array&quot;, &quot;${number}&quot;);</span>
+<span class="fc" id="L337">        config.addProperty(&quot;array&quot;, &quot;${number}&quot;);</span>
+
+<span class="fc" id="L339">        final List&lt;String&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L340">        list.add(&quot;1&quot;);</span>
+<span class="fc" id="L341">        list.add(&quot;1&quot;);</span>
+
+<span class="fc" id="L343">        ListAssert.assertEquals(&quot;'array' property&quot;, list, config.getList(&quot;array&quot;));</span>
+<span class="fc" id="L344">    }</span>
+
+    @Test
+    public void testGetInterpolatedPrimitives()
+    {
+<span class="fc" id="L349">        config.addProperty(&quot;number&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L350">        config.addProperty(&quot;value&quot;, &quot;${number}&quot;);</span>
+
+<span class="fc" id="L352">        config.addProperty(&quot;boolean&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L353">        config.addProperty(&quot;booleanValue&quot;, &quot;${boolean}&quot;);</span>
+
+        // primitive types
+<span class="fc" id="L356">        assertEquals(&quot;boolean interpolation&quot;, true, config.getBoolean(&quot;booleanValue&quot;));</span>
+<span class="fc" id="L357">        assertEquals(&quot;byte interpolation&quot;, 1, config.getByte(&quot;value&quot;));</span>
+<span class="fc" id="L358">        assertEquals(&quot;short interpolation&quot;, 1, config.getShort(&quot;value&quot;));</span>
+<span class="fc" id="L359">        assertEquals(&quot;int interpolation&quot;, 1, config.getInt(&quot;value&quot;));</span>
+<span class="fc" id="L360">        assertEquals(&quot;long interpolation&quot;, 1, config.getLong(&quot;value&quot;));</span>
+<span class="fc" id="L361">        assertEquals(&quot;float interpolation&quot;, 1, config.getFloat(&quot;value&quot;), 0);</span>
+<span class="fc" id="L362">        assertEquals(&quot;double interpolation&quot;, 1, config.getDouble(&quot;value&quot;), 0);</span>
+
+        // primitive wrappers
+<span class="fc" id="L365">        assertEquals(&quot;Boolean interpolation&quot;, Boolean.TRUE, config.getBoolean(&quot;booleanValue&quot;, null));</span>
+<span class="fc" id="L366">        assertEquals(&quot;Byte interpolation&quot;, new Byte(&quot;1&quot;), config.getByte(&quot;value&quot;, null));</span>
+<span class="fc" id="L367">        assertEquals(&quot;Short interpolation&quot;, new Short(&quot;1&quot;), config.getShort(&quot;value&quot;, null));</span>
+<span class="fc" id="L368">        assertEquals(&quot;Integer interpolation&quot;, new Integer(&quot;1&quot;), config.getInteger(&quot;value&quot;, null));</span>
+<span class="fc" id="L369">        assertEquals(&quot;Long interpolation&quot;, new Long(&quot;1&quot;), config.getLong(&quot;value&quot;, null));</span>
+<span class="fc" id="L370">        assertEquals(&quot;Float interpolation&quot;, new Float(&quot;1&quot;), config.getFloat(&quot;value&quot;, null));</span>
+<span class="fc" id="L371">        assertEquals(&quot;Double interpolation&quot;, new Double(&quot;1&quot;), config.getDouble(&quot;value&quot;, null));</span>
+
+<span class="fc" id="L373">        assertEquals(&quot;BigInteger interpolation&quot;, new BigInteger(&quot;1&quot;), config.getBigInteger(&quot;value&quot;, null));</span>
+<span class="fc" id="L374">        assertEquals(&quot;BigDecimal interpolation&quot;, new BigDecimal(&quot;1&quot;), config.getBigDecimal(&quot;value&quot;, null));</span>
+<span class="fc" id="L375">    }</span>
+
+    @Test
+    public void testCommaSeparatedString()
+    {
+<span class="fc" id="L380">        final String prop = &quot;hey, that's a test&quot;;</span>
+<span class="fc" id="L381">        config.setProperty(&quot;prop.string&quot;, prop);</span>
+<span class="fc" id="L382">        final List&lt;Object&gt; list = config.getList(&quot;prop.string&quot;);</span>
+<span class="fc" id="L383">        assertEquals(&quot;Wrong number of list elements&quot;, 2, list.size());</span>
+<span class="fc" id="L384">        assertEquals(&quot;Wrong element 1&quot;, &quot;hey&quot;, list.get(0));</span>
+<span class="fc" id="L385">    }</span>
+
+    @Test
+    public void testCommaSeparatedStringEscaped()
+    {
+<span class="fc" id="L390">        final String prop2 = &quot;hey\\, that's a test&quot;;</span>
+<span class="fc" id="L391">        config.setProperty(&quot;prop.string&quot;, prop2);</span>
+<span class="fc" id="L392">        assertEquals(&quot;Wrong value&quot;, &quot;hey, that's a test&quot;, config.getString(&quot;prop.string&quot;));</span>
+<span class="fc" id="L393">    }</span>
+
+    @Test
+    public void testAddProperty() throws Exception
+    {
+<span class="fc" id="L398">        Collection&lt;Object&gt; props = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L399">        props.add(&quot;one&quot;);</span>
+<span class="fc" id="L400">        props.add(&quot;two,three,four&quot;);</span>
+<span class="fc" id="L401">        props.add(new String[] { &quot;5.1&quot;, &quot;5.2&quot;, &quot;5.3,5.4&quot;, &quot;5.5&quot; });</span>
+<span class="fc" id="L402">        props.add(&quot;six&quot;);</span>
+<span class="fc" id="L403">        config.addProperty(&quot;complex.property&quot;, props);</span>
+
+<span class="fc" id="L405">        Object val = config.getProperty(&quot;complex.property&quot;);</span>
+<span class="fc" id="L406">        assertTrue(val instanceof Collection);</span>
+<span class="fc" id="L407">        Collection&lt;?&gt; col = (Collection&lt;?&gt;) val;</span>
+<span class="fc" id="L408">        assertEquals(10, col.size());</span>
+
+<span class="fc" id="L410">        props = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L411">        props.add(&quot;quick&quot;);</span>
+<span class="fc" id="L412">        props.add(&quot;brown&quot;);</span>
+<span class="fc" id="L413">        props.add(&quot;fox,jumps&quot;);</span>
+<span class="fc" id="L414">        final Object[] data = new Object[] {</span>
+                &quot;The&quot;, props, &quot;over,the&quot;, &quot;lazy&quot;, &quot;dog.&quot;
+        };
+<span class="fc" id="L417">        config.setProperty(&quot;complex.property&quot;, data);</span>
+<span class="fc" id="L418">        val = config.getProperty(&quot;complex.property&quot;);</span>
+<span class="fc" id="L419">        assertTrue(val instanceof Collection);</span>
+<span class="fc" id="L420">        col = (Collection&lt;?&gt;) val;</span>
+<span class="fc" id="L421">        final Iterator&lt;?&gt; it = col.iterator();</span>
+<span class="fc" id="L422">        final StringTokenizer tok = new StringTokenizer(&quot;The quick brown fox jumps over the lazy dog.&quot;, &quot; &quot;);</span>
+<span class="fc bfc" id="L423" title="All 2 branches covered.">        while(tok.hasMoreTokens())</span>
+        {
+<span class="fc" id="L425">            assertTrue(it.hasNext());</span>
+<span class="fc" id="L426">            assertEquals(tok.nextToken(), it.next());</span>
+        }
+<span class="fc" id="L428">        assertFalse(it.hasNext());</span>
+
+<span class="fc" id="L430">        config.setProperty(&quot;complex.property&quot;, null);</span>
+<span class="fc" id="L431">        assertFalse(config.containsKey(&quot;complex.property&quot;));</span>
+<span class="fc" id="L432">    }</span>
+
+    @Test
+    public void testPropertyAccess()
+    {
+<span class="fc" id="L437">        config.clearProperty(&quot;prop.properties&quot;);</span>
+<span class="fc" id="L438">        config.setProperty(&quot;prop.properties&quot;, &quot;&quot;);</span>
+<span class="fc" id="L439">        assertEquals(</span>
+                &quot;This returns an empty Properties object&quot;,
+<span class="fc" id="L441">                config.getProperties(&quot;prop.properties&quot;),</span>
+                new Properties());
+<span class="fc" id="L443">        config.clearProperty(&quot;prop.properties&quot;);</span>
+<span class="fc" id="L444">        config.setProperty(&quot;prop.properties&quot;, &quot;foo=bar, baz=moo, seal=clubber&quot;);</span>
+
+<span class="fc" id="L446">        final Properties p = new Properties();</span>
+<span class="fc" id="L447">        p.setProperty(&quot;foo&quot;, &quot;bar&quot;);</span>
+<span class="fc" id="L448">        p.setProperty(&quot;baz&quot;, &quot;moo&quot;);</span>
+<span class="fc" id="L449">        p.setProperty(&quot;seal&quot;, &quot;clubber&quot;);</span>
+<span class="fc" id="L450">        assertEquals(</span>
+                &quot;This returns a filled in Properties object&quot;,
+<span class="fc" id="L452">                config.getProperties(&quot;prop.properties&quot;),</span>
+                p);
+<span class="fc" id="L454">    }</span>
+
+    @Test
+    public void testSubset()
+    {
+        /*
+         * test subset : assure we don't reprocess the data elements
+         * when generating the subset
+         */
+
+<span class="fc" id="L464">        final String prop = &quot;hey, that's a test&quot;;</span>
+<span class="fc" id="L465">        final String prop2 = &quot;hey\\, that's a test&quot;;</span>
+<span class="fc" id="L466">        config.setProperty(&quot;prop.string&quot;, prop2);</span>
+<span class="fc" id="L467">        config.setProperty(&quot;property.string&quot;, &quot;hello&quot;);</span>
+
+<span class="fc" id="L469">        Configuration subEprop = config.subset(&quot;prop&quot;);</span>
+
+<span class="fc" id="L471">        assertEquals(</span>
+                &quot;Returns the full string&quot;,
+                prop,
+<span class="fc" id="L474">                subEprop.getString(&quot;string&quot;));</span>
+<span class="fc" id="L475">        assertEquals(&quot;Wrong list size&quot;, 1, subEprop.getList(&quot;string&quot;).size());</span>
+
+<span class="fc" id="L477">        Iterator&lt;String&gt; it = subEprop.getKeys();</span>
+<span class="fc" id="L478">        it.next();</span>
+<span class="fc" id="L479">        assertFalse(it.hasNext());</span>
+
+<span class="fc" id="L481">        subEprop = config.subset(&quot;prop.&quot;);</span>
+<span class="fc" id="L482">        it = subEprop.getKeys();</span>
+<span class="fc" id="L483">        assertFalse(it.hasNext());</span>
+<span class="fc" id="L484">    }</span>
+
+    @Test
+    public void testInterpolation()
+    {
+<span class="fc" id="L489">        InterpolationTestHelper.testInterpolation(config);</span>
+<span class="fc" id="L490">    }</span>
+
+    @Test
+    public void testMultipleInterpolation()
+    {
+<span class="fc" id="L495">        InterpolationTestHelper.testMultipleInterpolation(config);</span>
+<span class="fc" id="L496">    }</span>
+
+    @Test
+    public void testInterpolationLoop()
+    {
+<span class="fc" id="L501">        InterpolationTestHelper.testInterpolationLoop(config);</span>
+<span class="fc" id="L502">    }</span>
+
+    /**
+     * Tests interpolation when a subset configuration is involved.
+     */
+    @Test
+    public void testInterpolationSubset()
+    {
+<span class="fc" id="L510">        InterpolationTestHelper.testInterpolationSubset(config);</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tests interpolation when the referred property is not found.
+     */
+    @Test
+    public void testInterpolationUnknownProperty()
+    {
+<span class="fc" id="L519">        InterpolationTestHelper.testInterpolationUnknownProperty(config);</span>
+<span class="fc" id="L520">    }</span>
+
+    /**
+     * Tests interpolation of system properties.
+     */
+    @Test
+    public void testInterpolationSystemProperties()
+    {
+<span class="fc" id="L528">        InterpolationTestHelper.testInterpolationSystemProperties(config);</span>
+<span class="fc" id="L529">    }</span>
+
+    /**
+     * Tests interpolation of environment properties.
+     */
+    @Test
+    public void testInterpolationEnvironment()
+    {
+<span class="fc" id="L537">        InterpolationTestHelper.testInterpolationEnvironment(config);</span>
+<span class="fc" id="L538">    }</span>
+
+    /**
+     * Tests interpolation of constant values.
+     */
+    @Test
+    public void testInterpolationConstants()
+    {
+<span class="fc" id="L546">        InterpolationTestHelper.testInterpolationConstants(config);</span>
+<span class="fc" id="L547">    }</span>
+
+    /**
+     * Tests whether a variable can be escaped, so that it won't be
+     * interpolated.
+     */
+    @Test
+    public void testInterpolationEscaped()
+    {
+<span class="fc" id="L556">        InterpolationTestHelper.testInterpolationEscaped(config);</span>
+<span class="fc" id="L557">    }</span>
+
+    /**
+     * Tests interpolation with localhost values.
+     */
+    @Test
+    public void testInterpolationLocalhost()
+    {
+<span class="fc" id="L565">        InterpolationTestHelper.testInterpolationLocalhost(config);</span>
+<span class="fc" id="L566">    }</span>
+
+    /**
+     * Tests accessing and manipulating the interpolator object.
+     */
+    @Test
+    public void testGetInterpolator()
+    {
+<span class="fc" id="L574">        InterpolationTestHelper.testGetInterpolator(config);</span>
+<span class="fc" id="L575">    }</span>
+
+    /**
+     * Tests obtaining a configuration with all variables replaced by their
+     * actual values.
+     */
+    @Test
+    public void testInterpolatedConfiguration()
+    {
+<span class="fc" id="L584">        InterpolationTestHelper.testInterpolatedConfiguration(config);</span>
+<span class="fc" id="L585">    }</span>
+
+    /**
+     * Tests whether a {@code ConfigurationInterpolator} can be set.
+     */
+    @Test
+    public void testSetInterpolator()
+    {
+<span class="fc" id="L593">        final ConfigurationInterpolator interpolator =</span>
+<span class="fc" id="L594">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L595">        EasyMock.replay(interpolator);</span>
+<span class="fc" id="L596">        config.setInterpolator(interpolator);</span>
+<span class="fc" id="L597">        assertSame(&quot;Interpolator not set&quot;, interpolator,</span>
+<span class="fc" id="L598">                config.getInterpolator());</span>
+<span class="fc" id="L599">    }</span>
+
+    /**
+     * Tests whether a {@code ConfigurationInterpolator} can be created and
+     * installed.
+     */
+    @Test
+    public void testInstallInterpolator()
+    {
+<span class="fc" id="L608">        final Lookup prefixLookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L609">        final Lookup defLookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L610">        EasyMock.replay(prefixLookup, defLookup);</span>
+<span class="fc" id="L611">        final Map&lt;String, Lookup&gt; prefixLookups = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L612">        prefixLookups.put(&quot;test&quot;, prefixLookup);</span>
+<span class="fc" id="L613">        final List&lt;Lookup&gt; defLookups = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L614">        defLookups.add(defLookup);</span>
+<span class="fc" id="L615">        config.installInterpolator(prefixLookups, defLookups);</span>
+<span class="fc" id="L616">        final ConfigurationInterpolator interpolator = config.getInterpolator();</span>
+<span class="fc" id="L617">        assertEquals(&quot;Wrong prefix lookups&quot;, prefixLookups,</span>
+<span class="fc" id="L618">                interpolator.getLookups());</span>
+<span class="fc" id="L619">        final List&lt;Lookup&gt; defLookups2 = interpolator.getDefaultLookups();</span>
+<span class="fc" id="L620">        assertEquals(&quot;Wrong number of default lookups&quot;, 2, defLookups2.size());</span>
+<span class="fc" id="L621">        assertSame(&quot;Wrong default lookup 1&quot;, defLookup, defLookups2.get(0));</span>
+<span class="fc" id="L622">        final String var = &quot;testVariable&quot;;</span>
+<span class="fc" id="L623">        final Object value = 42;</span>
+<span class="fc" id="L624">        config.addProperty(var, value);</span>
+<span class="fc" id="L625">        assertEquals(&quot;Wrong lookup result&quot;, value,</span>
+<span class="fc" id="L626">                defLookups2.get(1).lookup(var));</span>
+<span class="fc" id="L627">    }</span>
+
+    /**
+     * Tests whether property access is possible without a
+     * {@code ConfigurationInterpolator}.
+     */
+    @Test
+    public void testNoInterpolator()
+    {
+<span class="fc" id="L636">        config.setProperty(&quot;test&quot;, &quot;${value}&quot;);</span>
+<span class="fc" id="L637">        config.setInterpolator(null);</span>
+<span class="fc" id="L638">        assertEquals(&quot;Wrong result&quot;, &quot;${value}&quot;, config.getString(&quot;test&quot;));</span>
+<span class="fc" id="L639">    }</span>
+
+    @Test
+    public void testGetHexadecimalValue()
+    {
+<span class="fc" id="L644">        config.setProperty(&quot;number&quot;, &quot;0xFF&quot;);</span>
+<span class="fc" id="L645">        assertEquals(&quot;byte value&quot;, (byte) 0xFF, config.getByte(&quot;number&quot;));</span>
+
+<span class="fc" id="L647">        config.setProperty(&quot;number&quot;, &quot;0xFFFF&quot;);</span>
+<span class="fc" id="L648">        assertEquals(&quot;short value&quot;, (short) 0xFFFF, config.getShort(&quot;number&quot;));</span>
+
+<span class="fc" id="L650">        config.setProperty(&quot;number&quot;, &quot;0xFFFFFFFF&quot;);</span>
+<span class="fc" id="L651">        assertEquals(&quot;int value&quot;, 0xFFFFFFFF, config.getInt(&quot;number&quot;));</span>
+
+<span class="fc" id="L653">        config.setProperty(&quot;number&quot;, &quot;0xFFFFFFFFFFFFFFFF&quot;);</span>
+<span class="fc" id="L654">        assertEquals(&quot;long value&quot;, 0xFFFFFFFFFFFFFFFFL, config.getLong(&quot;number&quot;));</span>
+
+<span class="fc" id="L656">        assertEquals(&quot;long value&quot;, 0xFFFFFFFFFFFFFFFFL, config.getBigInteger(&quot;number&quot;).longValue());</span>
+<span class="fc" id="L657">    }</span>
+
+    @Test
+    public void testGetBinaryValue()
+    {
+<span class="fc" id="L662">        config.setProperty(&quot;number&quot;, &quot;0b11111111&quot;);</span>
+<span class="fc" id="L663">        assertEquals(&quot;byte value&quot;, (byte) 0xFF, config.getByte(&quot;number&quot;));</span>
+
+<span class="fc" id="L665">        config.setProperty(&quot;number&quot;, &quot;0b1111111111111111&quot;);</span>
+<span class="fc" id="L666">        assertEquals(&quot;short value&quot;, (short) 0xFFFF, config.getShort(&quot;number&quot;));</span>
+
+<span class="fc" id="L668">        config.setProperty(&quot;number&quot;, &quot;0b11111111111111111111111111111111&quot;);</span>
+<span class="fc" id="L669">        assertEquals(&quot;int value&quot;, 0xFFFFFFFF, config.getInt(&quot;number&quot;));</span>
+
+<span class="fc" id="L671">        config.setProperty(&quot;number&quot;, &quot;0b1111111111111111111111111111111111111111111111111111111111111111&quot;);</span>
+<span class="fc" id="L672">        assertEquals(&quot;long value&quot;, 0xFFFFFFFFFFFFFFFFL, config.getLong(&quot;number&quot;));</span>
+
+<span class="fc" id="L674">        assertEquals(&quot;long value&quot;, 0xFFFFFFFFFFFFFFFFL, config.getBigInteger(&quot;number&quot;).longValue());</span>
+<span class="fc" id="L675">    }</span>
+
+    /**
+     * Tests if conversion between number types is possible.
+     */
+    @Test
+    public void testNumberConversions()
+    {
+<span class="fc" id="L683">        config.setProperty(KEY_NUMBER, new Integer(42));</span>
+<span class="fc" id="L684">        assertEquals(&quot;Wrong int returned&quot;, 42, config.getInt(KEY_NUMBER));</span>
+<span class="fc" id="L685">        assertEquals(&quot;Wrong long returned&quot;, 42L, config.getLong(KEY_NUMBER));</span>
+<span class="fc" id="L686">        assertEquals(&quot;Wrong byte returned&quot;, (byte) 42, config</span>
+<span class="fc" id="L687">                .getByte(KEY_NUMBER));</span>
+<span class="fc" id="L688">        assertEquals(&quot;Wrong float returned&quot;, 42.0f,</span>
+<span class="fc" id="L689">                config.getFloat(KEY_NUMBER), 0.01f);</span>
+<span class="fc" id="L690">        assertEquals(&quot;Wrong double returned&quot;, 42.0, config</span>
+<span class="fc" id="L691">                .getDouble(KEY_NUMBER), 0.001);</span>
+
+<span class="fc" id="L693">        assertEquals(&quot;Wrong Long returned&quot;, new Long(42L), config.getLong(</span>
+                KEY_NUMBER, null));
+<span class="fc" id="L695">        assertEquals(&quot;Wrong BigInt returned&quot;, new BigInteger(&quot;42&quot;), config</span>
+<span class="fc" id="L696">                .getBigInteger(KEY_NUMBER));</span>
+<span class="fc" id="L697">        assertEquals(&quot;Wrong DigDecimal returned&quot;, new BigDecimal(&quot;42&quot;), config</span>
+<span class="fc" id="L698">                .getBigDecimal(KEY_NUMBER));</span>
+<span class="fc" id="L699">    }</span>
+
+    /**
+     * Tests cloning a BaseConfiguration.
+     */
+    @Test
+    public void testClone()
+    {
+<span class="fc bfc" id="L707" title="All 2 branches covered.">        for (int i = 0; i &lt; 10; i++)</span>
+        {
+<span class="fc" id="L709">            config.addProperty(&quot;key&quot; + i, new Integer(i));</span>
+        }
+<span class="fc" id="L711">        final BaseConfiguration config2 = (BaseConfiguration) config.clone();</span>
+
+<span class="fc bfc" id="L713" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = config.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L715">            final String key = it.next();</span>
+<span class="fc" id="L716">            assertTrue(&quot;Key not found: &quot; + key, config2.containsKey(key));</span>
+<span class="fc" id="L717">            assertEquals(&quot;Wrong value for key &quot; + key, config.getProperty(key),</span>
+<span class="fc" id="L718">                    config2.getProperty(key));</span>
+<span class="fc" id="L719">        }</span>
+<span class="fc" id="L720">    }</span>
+
+    /**
+     * Tests whether a cloned configuration is decoupled from its original.
+     */
+    @Test
+    public void testCloneModify()
+    {
+<span class="fc" id="L728">        final EventListener&lt;ConfigurationEvent&gt; l = new EventListenerTestImpl(config);</span>
+<span class="fc" id="L729">        config.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L730">        config.addProperty(&quot;original&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L731">        final BaseConfiguration config2 = (BaseConfiguration) config.clone();</span>
+
+<span class="fc" id="L733">        config2.addProperty(&quot;clone&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L734">        assertFalse(&quot;New key appears in original&quot;, config.containsKey(&quot;clone&quot;));</span>
+<span class="fc" id="L735">        config2.setProperty(&quot;original&quot;, Boolean.FALSE);</span>
+<span class="fc" id="L736">        assertTrue(&quot;Wrong value of original property&quot;, config</span>
+<span class="fc" id="L737">                .getBoolean(&quot;original&quot;));</span>
+
+<span class="fc" id="L739">        assertTrue(&quot;Event listener was copied&quot;, config2</span>
+<span class="fc" id="L740">                .getEventListeners(ConfigurationEvent.ANY).isEmpty());</span>
+<span class="fc" id="L741">    }</span>
+
+    /**
+     * Tests the clone() method if a list property is involved.
+     */
+    @Test
+    public void testCloneListProperty()
+    {
+<span class="fc" id="L749">        final String key = &quot;list&quot;;</span>
+<span class="fc" id="L750">        config.addProperty(key, &quot;value1&quot;);</span>
+<span class="fc" id="L751">        config.addProperty(key, &quot;value2&quot;);</span>
+<span class="fc" id="L752">        final BaseConfiguration config2 = (BaseConfiguration) config.clone();</span>
+<span class="fc" id="L753">        config2.addProperty(key, &quot;value3&quot;);</span>
+<span class="fc" id="L754">        assertEquals(&quot;Wrong number of original properties&quot;, 2, config.getList(</span>
+<span class="fc" id="L755">                key).size());</span>
+<span class="fc" id="L756">    }</span>
+
+    /**
+     * Tests whether interpolation works as expected after cloning.
+     */
+    @Test
+    public void testCloneInterpolation()
+    {
+<span class="fc" id="L764">        final String keyAnswer = &quot;answer&quot;;</span>
+<span class="fc" id="L765">        config.addProperty(keyAnswer, &quot;The answer is ${&quot; + KEY_NUMBER + &quot;}.&quot;);</span>
+<span class="fc" id="L766">        config.addProperty(KEY_NUMBER, 42);</span>
+<span class="fc" id="L767">        final BaseConfiguration clone = (BaseConfiguration) config.clone();</span>
+<span class="fc" id="L768">        clone.setProperty(KEY_NUMBER, 43);</span>
+<span class="fc" id="L769">        assertEquals(&quot;Wrong interpolation in original&quot;, &quot;The answer is 42.&quot;,</span>
+<span class="fc" id="L770">                config.getString(keyAnswer));</span>
+<span class="fc" id="L771">        assertEquals(&quot;Wrong interpolation in clone&quot;, &quot;The answer is 43.&quot;,</span>
+<span class="fc" id="L772">                clone.getString(keyAnswer));</span>
+<span class="fc" id="L773">    }</span>
+
+    /**
+     * Tests the specific size() implementation.
+     */
+    @Test
+    public void testSize()
+    {
+<span class="fc" id="L781">        final int count = 16;</span>
+<span class="fc bfc" id="L782" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++)</span>
+        {
+<span class="fc" id="L784">            config.addProperty(&quot;key&quot; + i, &quot;value&quot; + i);</span>
+        }
+<span class="fc" id="L786">        assertEquals(&quot;Wrong size&quot;, count, config.size());</span>
+<span class="fc" id="L787">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestEqualBehavior.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestEqualBehavior.java</span></div><h1>TestEqualBehavior.java</h1><pre class="source lang-java linenums">package org.apache.commons.configuration2;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.combined.CombinedConfigurationBuilder;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.junit.Test;
+
+/**
+ * Compare the behavior of various methods between CompositeConfiguration
+ * and normal (Properties) Configuration
+ *
+ */
+<span class="fc" id="L38">public class TestEqualBehavior</span>
+{
+    private Configuration setupSimpleConfiguration()
+            throws Exception
+    {
+<span class="fc" id="L43">        final String simpleConfigurationFile = ConfigurationAssert.getTestFile(&quot;testEqual.properties&quot;).getAbsolutePath();</span>
+<span class="fc" id="L44">        final PropertiesConfiguration c = new PropertiesConfiguration();</span>
+<span class="fc" id="L45">        final FileHandler handler = new FileHandler(c);</span>
+<span class="fc" id="L46">        handler.setFileName(simpleConfigurationFile);</span>
+<span class="fc" id="L47">        handler.load();</span>
+<span class="fc" id="L48">        return c;</span>
+    }
+
+    private Configuration setupCompositeConfiguration()
+            throws ConfigurationException
+    {
+<span class="fc" id="L54">        final CombinedConfigurationBuilder builder =</span>
+                new CombinedConfigurationBuilder();
+<span class="fc" id="L56">        builder.configure(new FileBasedBuilderParametersImpl()</span>
+<span class="fc" id="L57">                .setFile(ConfigurationAssert</span>
+<span class="fc" id="L58">                        .getTestFile(&quot;testEqualDigester.xml&quot;)));</span>
+<span class="fc" id="L59">        return builder.getConfiguration();</span>
+    }
+
+    /**
+     * Checks whether two configurations have the same size,
+     * the same key sequence and contain the same key -&gt; value mappings
+     */
+    private void checkEquality(final String msg, final Configuration c1, final Configuration c2)
+    {
+<span class="fc" id="L68">        final Iterator&lt;String&gt; it1 = c1.getKeys();</span>
+<span class="fc" id="L69">        final Iterator&lt;String&gt; it2 = c2.getKeys();</span>
+
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">        while(it1.hasNext() &amp;&amp; it2.hasNext())</span>
+        {
+<span class="fc" id="L73">            final String key1 = it1.next();</span>
+<span class="fc" id="L74">            final String key2 = it2.next();</span>
+<span class="fc" id="L75">            assertEquals(msg + &quot;, Keys: &quot;, key1, key2);</span>
+<span class="fc" id="L76">            assertEquals(msg + &quot;, Contains: &quot;, c1.containsKey(key1), c2.containsKey(key2));</span>
+<span class="fc" id="L77">        }</span>
+<span class="fc" id="L78">        assertEquals(msg + &quot;, Iterator: &quot;, it1.hasNext(), it2.hasNext());</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Checks whether two configurations have the same key -&gt; value mapping
+     */
+    private void checkSameKey(final String msg, final String key, final Configuration c1, final Configuration c2)
+    {
+<span class="fc" id="L86">        final String [] s1 = c1.getStringArray(key);</span>
+<span class="fc" id="L87">        final String [] s2 = c2.getStringArray(key);</span>
+
+<span class="fc" id="L89">        assertEquals(msg + &quot;, length: &quot;, s1.length, s2.length);</span>
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (int i = 0; i &lt; s1.length ; i++)</span>
+        {
+<span class="fc" id="L93">            assertEquals(msg + &quot;, String Array: &quot;, s1[i], s2[i]);</span>
+        }
+
+<span class="fc" id="L96">        final List&lt;Object&gt; list1 = c1.getList(key);</span>
+<span class="fc" id="L97">        final List&lt;Object&gt; list2 = c2.getList(key);</span>
+
+<span class="fc" id="L99">        assertEquals(msg + &quot;, Size: &quot;, list1.size(), list2.size());</span>
+
+<span class="fc" id="L101">        final Iterator&lt;Object&gt; it1 = list1.iterator();</span>
+<span class="fc" id="L102">        final Iterator&lt;Object&gt; it2 = list2.iterator();</span>
+
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">        while(it1.hasNext() &amp;&amp; it2.hasNext())</span>
+        {
+<span class="fc" id="L106">            final String val1 = (String) it1.next();</span>
+<span class="fc" id="L107">            final String val2 = (String) it2.next();</span>
+<span class="fc" id="L108">            assertEquals(msg + &quot;, List: &quot;, val1, val2);</span>
+<span class="fc" id="L109">        }</span>
+<span class="fc" id="L110">        assertEquals(msg + &quot;, Iterator End: &quot;, it1.hasNext(), it2.hasNext());</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Are both configurations equal after loading?
+     */
+    @Test
+    public void testLoading() throws Exception
+    {
+<span class="fc" id="L119">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L120">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L122">        checkEquality(&quot;testLoading&quot;, simple, composite);</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * If we delete a key, does it vanish? Does it leave all
+     * the other keys unchanged? How about an unset key?
+     */
+    @Test
+    public void testDeletingExisting() throws Exception
+    {
+<span class="fc" id="L132">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L133">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L135">        final String key = &quot;clear.property&quot;;</span>
+
+<span class="fc" id="L137">        assertTrue(simple.containsKey(key));</span>
+<span class="fc" id="L138">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L140">        simple.clearProperty(key);</span>
+<span class="fc" id="L141">        composite.clearProperty(key);</span>
+
+<span class="fc" id="L143">        assertFalse(simple.containsKey(key));</span>
+<span class="fc" id="L144">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L146">        checkEquality(&quot;testDeletingExisting&quot;, simple, composite);</span>
+<span class="fc" id="L147">    }</span>
+
+    @Test
+    public void testDeletingNonExisting() throws Exception
+    {
+<span class="fc" id="L152">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L153">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L155">        final String key = &quot;nonexisting.clear.property&quot;;</span>
+
+<span class="fc" id="L157">        assertFalse(simple.containsKey(key));</span>
+<span class="fc" id="L158">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L160">        simple.clearProperty(key);</span>
+<span class="fc" id="L161">        composite.clearProperty(key);</span>
+
+<span class="fc" id="L163">        assertFalse(simple.containsKey(key));</span>
+<span class="fc" id="L164">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L166">        checkEquality(&quot;testDeletingNonExisting&quot;, simple, composite);</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * If we set a key, does it work? How about an existing
+     * key? Can we change it?
+     */
+    @Test
+    public void testSettingNonExisting() throws Exception
+    {
+<span class="fc" id="L176">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L177">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L179">        final String key = &quot;nonexisting.property&quot;;</span>
+<span class="fc" id="L180">        final String value = &quot;new value&quot;;</span>
+
+<span class="fc" id="L182">        assertFalse(simple.containsKey(key));</span>
+<span class="fc" id="L183">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L185">        simple.setProperty(key, value);</span>
+<span class="fc" id="L186">        composite.setProperty(key, value);</span>
+
+<span class="fc" id="L188">        assertTrue(simple.containsKey(key));</span>
+<span class="fc" id="L189">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L191">        checkSameKey(&quot;testSettingNonExisting&quot;, key, simple, composite);</span>
+<span class="fc" id="L192">        checkEquality(&quot;testSettingNonExisting&quot;, simple, composite);</span>
+<span class="fc" id="L193">    }</span>
+
+    @Test
+    public void testSettingExisting() throws Exception
+    {
+<span class="fc" id="L198">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L199">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L201">        final String key = &quot;existing.property&quot;;</span>
+<span class="fc" id="L202">        final String value = &quot;new value&quot;;</span>
+
+<span class="fc" id="L204">        assertTrue(simple.containsKey(key));</span>
+<span class="fc" id="L205">        assertFalse(simple.getString(key).equals(value));</span>
+<span class="fc" id="L206">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L208">        simple.setProperty(key, value);</span>
+<span class="fc" id="L209">        composite.setProperty(key, value);</span>
+
+<span class="fc" id="L211">        assertTrue(simple.containsKey(key));</span>
+<span class="fc" id="L212">        assertEquals(simple.getString(key), value);</span>
+<span class="fc" id="L213">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L215">        checkSameKey(&quot;testSettingExisting&quot;, key, simple, composite);</span>
+<span class="fc" id="L216">        checkEquality(&quot;testSettingExisting&quot;, simple, composite);</span>
+<span class="fc" id="L217">    }</span>
+
+    /**
+     * If we add a key, does it work?
+     */
+    @Test
+    public void testAddingUnset() throws Exception
+    {
+<span class="fc" id="L225">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L226">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L228">        final String key = &quot;nonexisting.property&quot;;</span>
+<span class="fc" id="L229">        final String value = &quot;new value&quot;;</span>
+
+<span class="fc" id="L231">        assertFalse(simple.containsKey(key));</span>
+<span class="fc" id="L232">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L234">        simple.addProperty(key, value);</span>
+<span class="fc" id="L235">        composite.addProperty(key, value);</span>
+
+<span class="fc" id="L237">        checkSameKey(&quot;testAddingUnset&quot;, key, simple, composite);</span>
+<span class="fc" id="L238">        checkEquality(&quot;testAddingUnset&quot;, simple, composite);</span>
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * If we add a to an existing key, does it work?
+     */
+    @Test
+    public void testAddingSet() throws Exception
+    {
+<span class="fc" id="L247">        final Configuration simple = setupSimpleConfiguration();</span>
+<span class="fc" id="L248">        final Configuration composite = setupCompositeConfiguration();</span>
+
+<span class="fc" id="L250">        final String key = &quot;existing.property&quot;;</span>
+<span class="fc" id="L251">        final String value = &quot;new value&quot;;</span>
+
+<span class="fc" id="L253">        assertTrue(simple.containsKey(key));</span>
+<span class="fc" id="L254">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L256">        simple.addProperty(key, value);</span>
+<span class="fc" id="L257">        composite.addProperty(key, value);</span>
+
+<span class="fc" id="L259">        assertTrue(simple.containsKey(key));</span>
+<span class="fc" id="L260">        assertEquals(simple.containsKey(key), composite.containsKey(key));</span>
+
+<span class="fc" id="L262">        checkSameKey(&quot;testAddingSet&quot;, key, simple, composite);</span>
+<span class="fc" id="L263">        checkEquality(&quot;testAddingSet&quot;, simple, composite);</span>
+<span class="fc" id="L264">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

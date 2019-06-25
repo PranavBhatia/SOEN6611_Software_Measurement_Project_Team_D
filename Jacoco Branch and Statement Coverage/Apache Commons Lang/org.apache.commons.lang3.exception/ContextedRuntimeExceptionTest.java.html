@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContextedRuntimeExceptionTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.exception</a> &gt; <span class="el_source">ContextedRuntimeExceptionTest.java</span></div><h1>ContextedRuntimeExceptionTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.exception;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Date;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * JUnit tests for ContextedRuntimeException.
+ */
+<span class="fc" id="L33">public class ContextedRuntimeExceptionTest extends AbstractExceptionContextTest&lt;ContextedRuntimeException&gt; {</span>
+
+    @BeforeEach
+    @Override
+    public void setUp() throws Exception {
+<span class="fc" id="L38">        exceptionContext = new ContextedRuntimeException(new Exception(TEST_MESSAGE));</span>
+<span class="fc" id="L39">        super.setUp();</span>
+<span class="fc" id="L40">    }</span>
+
+    @Test
+    public void testContextedException() {
+<span class="fc" id="L44">        exceptionContext = new ContextedRuntimeException();</span>
+<span class="fc" id="L45">        final String message = exceptionContext.getMessage();</span>
+<span class="fc" id="L46">        final String trace = ExceptionUtils.getStackTrace(exceptionContext);</span>
+<span class="fc" id="L47">        assertTrue(trace.contains(&quot;ContextedException&quot;));</span>
+<span class="fc" id="L48">        assertTrue(StringUtils.isEmpty(message));</span>
+<span class="fc" id="L49">    }</span>
+
+    @Test
+    public void testContextedExceptionString() {
+<span class="fc" id="L53">        exceptionContext = new ContextedRuntimeException(TEST_MESSAGE);</span>
+<span class="fc" id="L54">        assertEquals(TEST_MESSAGE, exceptionContext.getMessage());</span>
+
+<span class="fc" id="L56">        final String trace = ExceptionUtils.getStackTrace(exceptionContext);</span>
+<span class="fc" id="L57">        assertTrue(trace.contains(TEST_MESSAGE));</span>
+<span class="fc" id="L58">    }</span>
+
+    @Test
+    public void testContextedExceptionThrowable() {
+<span class="fc" id="L62">        exceptionContext = new ContextedRuntimeException(new Exception(TEST_MESSAGE));</span>
+<span class="fc" id="L63">        final String message = exceptionContext.getMessage();</span>
+<span class="fc" id="L64">        final String trace = ExceptionUtils.getStackTrace(exceptionContext);</span>
+<span class="fc" id="L65">        assertTrue(trace.contains(&quot;ContextedException&quot;));</span>
+<span class="fc" id="L66">        assertTrue(trace.contains(TEST_MESSAGE));</span>
+<span class="fc" id="L67">        assertTrue(message.contains(TEST_MESSAGE));</span>
+<span class="fc" id="L68">    }</span>
+
+    @Test
+    public void testContextedExceptionStringThrowable() {
+<span class="fc" id="L72">        exceptionContext = new ContextedRuntimeException(TEST_MESSAGE_2, new Exception(TEST_MESSAGE));</span>
+<span class="fc" id="L73">        final String message = exceptionContext.getMessage();</span>
+<span class="fc" id="L74">        final String trace = ExceptionUtils.getStackTrace(exceptionContext);</span>
+<span class="fc" id="L75">        assertTrue(trace.contains(&quot;ContextedException&quot;));</span>
+<span class="fc" id="L76">        assertTrue(trace.contains(TEST_MESSAGE));</span>
+<span class="fc" id="L77">        assertTrue(trace.contains(TEST_MESSAGE_2));</span>
+<span class="fc" id="L78">        assertTrue(message.contains(TEST_MESSAGE_2));</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void testContextedExceptionStringThrowableContext() {
+        // Use an anonymous subclass to make sure users can provide custom implementations
+<span class="fc" id="L84">        exceptionContext = new ContextedRuntimeException(TEST_MESSAGE_2, new Exception(TEST_MESSAGE),</span>
+<span class="fc" id="L85">                new DefaultExceptionContext() {</span>
+                    private static final long serialVersionUID = 1L;
+                });
+<span class="fc" id="L88">        final String message = exceptionContext.getMessage();</span>
+<span class="fc" id="L89">        final String trace = ExceptionUtils.getStackTrace(exceptionContext);</span>
+<span class="fc" id="L90">        assertTrue(trace.contains(&quot;ContextedException&quot;));</span>
+<span class="fc" id="L91">        assertTrue(trace.contains(TEST_MESSAGE));</span>
+<span class="fc" id="L92">        assertTrue(trace.contains(TEST_MESSAGE_2));</span>
+<span class="fc" id="L93">        assertTrue(message.contains(TEST_MESSAGE_2));</span>
+<span class="fc" id="L94">    }</span>
+
+    @Test
+    public void testNullExceptionPassing() {
+<span class="fc" id="L98">        exceptionContext = new ContextedRuntimeException(TEST_MESSAGE_2, new Exception(TEST_MESSAGE), null)</span>
+<span class="fc" id="L99">        .addContextValue(&quot;test1&quot;, null)</span>
+<span class="fc" id="L100">        .addContextValue(&quot;test2&quot;, &quot;some value&quot;)</span>
+<span class="fc" id="L101">        .addContextValue(&quot;test Date&quot;, new Date())</span>
+<span class="fc" id="L102">        .addContextValue(&quot;test Nbr&quot;, Integer.valueOf(5))</span>
+<span class="fc" id="L103">        .addContextValue(&quot;test Poorly written obj&quot;, new ObjectWithFaultyToString());</span>
+
+<span class="fc" id="L105">        final String message = exceptionContext.getMessage();</span>
+<span class="fc" id="L106">        assertNotNull(message);</span>
+<span class="fc" id="L107">    }</span>
+
+    @Test
+    public void testRawMessage() {
+<span class="fc" id="L111">        assertEquals(Exception.class.getName() + &quot;: &quot; + TEST_MESSAGE, exceptionContext.getRawMessage());</span>
+<span class="fc" id="L112">        exceptionContext = new ContextedRuntimeException(TEST_MESSAGE_2, new Exception(TEST_MESSAGE), new DefaultExceptionContext());</span>
+<span class="fc" id="L113">        assertEquals(TEST_MESSAGE_2, exceptionContext.getRawMessage());</span>
+<span class="fc" id="L114">        exceptionContext = new ContextedRuntimeException(null, new Exception(TEST_MESSAGE), new DefaultExceptionContext());</span>
+<span class="fc" id="L115">        assertNull(exceptionContext.getRawMessage());</span>
+<span class="fc" id="L116">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

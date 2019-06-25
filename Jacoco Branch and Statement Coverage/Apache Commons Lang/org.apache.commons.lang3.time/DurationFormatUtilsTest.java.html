@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DurationFormatUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">DurationFormatUtilsTest.java</span></div><h1>DurationFormatUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.Calendar;
+import java.util.TimeZone;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * TestCase for DurationFormatUtils.
+ */
+<span class="fc" id="L38">public class DurationFormatUtilsTest {</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L43">        assertNotNull(new DurationFormatUtils());</span>
+<span class="fc" id="L44">        final Constructor&lt;?&gt;[] cons = DurationFormatUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L45">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L46">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L47">        assertTrue(Modifier.isPublic(DurationFormatUtils.class.getModifiers()));</span>
+<span class="fc" id="L48">        assertFalse(Modifier.isFinal(DurationFormatUtils.class.getModifiers()));</span>
+<span class="fc" id="L49">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testFormatDurationWords() {
+<span class="fc" id="L54">        String text = null;</span>
+
+<span class="fc" id="L56">        text = DurationFormatUtils.formatDurationWords(50 * 1000, true, false);</span>
+<span class="fc" id="L57">        assertEquals(&quot;50 seconds&quot;, text);</span>
+<span class="fc" id="L58">        text = DurationFormatUtils.formatDurationWords(65 * 1000, true, false);</span>
+<span class="fc" id="L59">        assertEquals(&quot;1 minute 5 seconds&quot;, text);</span>
+<span class="fc" id="L60">        text = DurationFormatUtils.formatDurationWords(120 * 1000, true, false);</span>
+<span class="fc" id="L61">        assertEquals(&quot;2 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L62">        text = DurationFormatUtils.formatDurationWords(121 * 1000, true, false);</span>
+<span class="fc" id="L63">        assertEquals(&quot;2 minutes 1 second&quot;, text);</span>
+<span class="fc" id="L64">        text = DurationFormatUtils.formatDurationWords(72 * 60 * 1000, true, false);</span>
+<span class="fc" id="L65">        assertEquals(&quot;1 hour 12 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L66">        text = DurationFormatUtils.formatDurationWords(24 * 60 * 60 * 1000, true, false);</span>
+<span class="fc" id="L67">        assertEquals(&quot;1 day 0 hours 0 minutes 0 seconds&quot;, text);</span>
+
+<span class="fc" id="L69">        text = DurationFormatUtils.formatDurationWords(50 * 1000, true, true);</span>
+<span class="fc" id="L70">        assertEquals(&quot;50 seconds&quot;, text);</span>
+<span class="fc" id="L71">        text = DurationFormatUtils.formatDurationWords(65 * 1000, true, true);</span>
+<span class="fc" id="L72">        assertEquals(&quot;1 minute 5 seconds&quot;, text);</span>
+<span class="fc" id="L73">        text = DurationFormatUtils.formatDurationWords(120 * 1000, true, true);</span>
+<span class="fc" id="L74">        assertEquals(&quot;2 minutes&quot;, text);</span>
+<span class="fc" id="L75">        text = DurationFormatUtils.formatDurationWords(121 * 1000, true, true);</span>
+<span class="fc" id="L76">        assertEquals(&quot;2 minutes 1 second&quot;, text);</span>
+<span class="fc" id="L77">        text = DurationFormatUtils.formatDurationWords(72 * 60 * 1000, true, true);</span>
+<span class="fc" id="L78">        assertEquals(&quot;1 hour 12 minutes&quot;, text);</span>
+<span class="fc" id="L79">        text = DurationFormatUtils.formatDurationWords(24 * 60 * 60 * 1000, true, true);</span>
+<span class="fc" id="L80">        assertEquals(&quot;1 day&quot;, text);</span>
+
+<span class="fc" id="L82">        text = DurationFormatUtils.formatDurationWords(50 * 1000, false, true);</span>
+<span class="fc" id="L83">        assertEquals(&quot;0 days 0 hours 0 minutes 50 seconds&quot;, text);</span>
+<span class="fc" id="L84">        text = DurationFormatUtils.formatDurationWords(65 * 1000, false, true);</span>
+<span class="fc" id="L85">        assertEquals(&quot;0 days 0 hours 1 minute 5 seconds&quot;, text);</span>
+<span class="fc" id="L86">        text = DurationFormatUtils.formatDurationWords(120 * 1000, false, true);</span>
+<span class="fc" id="L87">        assertEquals(&quot;0 days 0 hours 2 minutes&quot;, text);</span>
+<span class="fc" id="L88">        text = DurationFormatUtils.formatDurationWords(121 * 1000, false, true);</span>
+<span class="fc" id="L89">        assertEquals(&quot;0 days 0 hours 2 minutes 1 second&quot;, text);</span>
+<span class="fc" id="L90">        text = DurationFormatUtils.formatDurationWords(72 * 60 * 1000, false, true);</span>
+<span class="fc" id="L91">        assertEquals(&quot;0 days 1 hour 12 minutes&quot;, text);</span>
+<span class="fc" id="L92">        text = DurationFormatUtils.formatDurationWords(24 * 60 * 60 * 1000, false, true);</span>
+<span class="fc" id="L93">        assertEquals(&quot;1 day&quot;, text);</span>
+
+<span class="fc" id="L95">        text = DurationFormatUtils.formatDurationWords(50 * 1000, false, false);</span>
+<span class="fc" id="L96">        assertEquals(&quot;0 days 0 hours 0 minutes 50 seconds&quot;, text);</span>
+<span class="fc" id="L97">        text = DurationFormatUtils.formatDurationWords(65 * 1000, false, false);</span>
+<span class="fc" id="L98">        assertEquals(&quot;0 days 0 hours 1 minute 5 seconds&quot;, text);</span>
+<span class="fc" id="L99">        text = DurationFormatUtils.formatDurationWords(120 * 1000, false, false);</span>
+<span class="fc" id="L100">        assertEquals(&quot;0 days 0 hours 2 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L101">        text = DurationFormatUtils.formatDurationWords(121 * 1000, false, false);</span>
+<span class="fc" id="L102">        assertEquals(&quot;0 days 0 hours 2 minutes 1 second&quot;, text);</span>
+<span class="fc" id="L103">        text = DurationFormatUtils.formatDurationWords(72 * 60 * 1000, false, false);</span>
+<span class="fc" id="L104">        assertEquals(&quot;0 days 1 hour 12 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L105">        text = DurationFormatUtils.formatDurationWords(24 * 60 * 60 * 1000 + 72 * 60 * 1000, false, false);</span>
+<span class="fc" id="L106">        assertEquals(&quot;1 day 1 hour 12 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L107">        text = DurationFormatUtils.formatDurationWords(2 * 24 * 60 * 60 * 1000 + 72 * 60 * 1000, false, false);</span>
+<span class="fc" id="L108">        assertEquals(&quot;2 days 1 hour 12 minutes 0 seconds&quot;, text);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (int i = 2; i &lt; 31; i++) {</span>
+<span class="fc" id="L110">            text = DurationFormatUtils.formatDurationWords(i * 24 * 60 * 60 * 1000L, false, false);</span>
+<span class="fc" id="L111">            assertEquals(i + &quot; days 0 hours 0 minutes 0 seconds&quot;, text);</span>
+        }
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Tests that &quot;1 &amp;lt;unit&amp;gt;s&quot; gets converted to &quot;1 &amp;lt;unit&amp;gt;&quot; but that &quot;11 &amp;lt;unit&amp;gt;s&quot; is left alone.
+     */
+    @Test
+    public void testFormatDurationPluralWords() {
+<span class="fc" id="L120">        final long oneSecond = 1000;</span>
+<span class="fc" id="L121">        final long oneMinute = oneSecond * 60;</span>
+<span class="fc" id="L122">        final long oneHour = oneMinute * 60;</span>
+<span class="fc" id="L123">        final long oneDay = oneHour * 24;</span>
+<span class="fc" id="L124">        String text = null;</span>
+
+<span class="fc" id="L126">        text = DurationFormatUtils.formatDurationWords(oneSecond, false, false);</span>
+<span class="fc" id="L127">        assertEquals(&quot;0 days 0 hours 0 minutes 1 second&quot;, text);</span>
+<span class="fc" id="L128">        text = DurationFormatUtils.formatDurationWords(oneSecond * 2, false, false);</span>
+<span class="fc" id="L129">        assertEquals(&quot;0 days 0 hours 0 minutes 2 seconds&quot;, text);</span>
+<span class="fc" id="L130">        text = DurationFormatUtils.formatDurationWords(oneSecond * 11, false, false);</span>
+<span class="fc" id="L131">        assertEquals(&quot;0 days 0 hours 0 minutes 11 seconds&quot;, text);</span>
+
+<span class="fc" id="L133">        text = DurationFormatUtils.formatDurationWords(oneMinute, false, false);</span>
+<span class="fc" id="L134">        assertEquals(&quot;0 days 0 hours 1 minute 0 seconds&quot;, text);</span>
+<span class="fc" id="L135">        text = DurationFormatUtils.formatDurationWords(oneMinute * 2, false, false);</span>
+<span class="fc" id="L136">        assertEquals(&quot;0 days 0 hours 2 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L137">        text = DurationFormatUtils.formatDurationWords(oneMinute * 11, false, false);</span>
+<span class="fc" id="L138">        assertEquals(&quot;0 days 0 hours 11 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L139">        text = DurationFormatUtils.formatDurationWords(oneMinute + oneSecond, false, false);</span>
+<span class="fc" id="L140">        assertEquals(&quot;0 days 0 hours 1 minute 1 second&quot;, text);</span>
+
+<span class="fc" id="L142">        text = DurationFormatUtils.formatDurationWords(oneHour, false, false);</span>
+<span class="fc" id="L143">        assertEquals(&quot;0 days 1 hour 0 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L144">        text = DurationFormatUtils.formatDurationWords(oneHour * 2, false, false);</span>
+<span class="fc" id="L145">        assertEquals(&quot;0 days 2 hours 0 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L146">        text = DurationFormatUtils.formatDurationWords(oneHour * 11, false, false);</span>
+<span class="fc" id="L147">        assertEquals(&quot;0 days 11 hours 0 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L148">        text = DurationFormatUtils.formatDurationWords(oneHour + oneMinute + oneSecond, false, false);</span>
+<span class="fc" id="L149">        assertEquals(&quot;0 days 1 hour 1 minute 1 second&quot;, text);</span>
+
+<span class="fc" id="L151">        text = DurationFormatUtils.formatDurationWords(oneDay, false, false);</span>
+<span class="fc" id="L152">        assertEquals(&quot;1 day 0 hours 0 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L153">        text = DurationFormatUtils.formatDurationWords(oneDay * 2, false, false);</span>
+<span class="fc" id="L154">        assertEquals(&quot;2 days 0 hours 0 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L155">        text = DurationFormatUtils.formatDurationWords(oneDay * 11, false, false);</span>
+<span class="fc" id="L156">        assertEquals(&quot;11 days 0 hours 0 minutes 0 seconds&quot;, text);</span>
+<span class="fc" id="L157">        text = DurationFormatUtils.formatDurationWords(oneDay + oneHour + oneMinute + oneSecond, false, false);</span>
+<span class="fc" id="L158">        assertEquals(&quot;1 day 1 hour 1 minute 1 second&quot;, text);</span>
+<span class="fc" id="L159">    }</span>
+
+    @Test
+    public void testFormatNegativeDurationWords() {
+<span class="pc" id="L163">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.formatDurationWords(-5000, true, true));</span>
+<span class="fc" id="L164">    }</span>
+
+    @Test
+    public void testFormatDurationHMS() {
+<span class="fc" id="L168">        long time = 0;</span>
+<span class="fc" id="L169">        assertEquals(&quot;00:00:00.000&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L171">        time = 1;</span>
+<span class="fc" id="L172">        assertEquals(&quot;00:00:00.001&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L174">        time = 15;</span>
+<span class="fc" id="L175">        assertEquals(&quot;00:00:00.015&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L177">        time = 165;</span>
+<span class="fc" id="L178">        assertEquals(&quot;00:00:00.165&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L180">        time = 1675;</span>
+<span class="fc" id="L181">        assertEquals(&quot;00:00:01.675&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L183">        time = 13465;</span>
+<span class="fc" id="L184">        assertEquals(&quot;00:00:13.465&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L186">        time = 72789;</span>
+<span class="fc" id="L187">        assertEquals(&quot;00:01:12.789&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L189">        time = 12789 + 32 * 60000;</span>
+<span class="fc" id="L190">        assertEquals(&quot;00:32:12.789&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+
+<span class="fc" id="L192">        time = 12789 + 62 * 60000;</span>
+<span class="fc" id="L193">        assertEquals(&quot;01:02:12.789&quot;, DurationFormatUtils.formatDurationHMS(time));</span>
+<span class="fc" id="L194">    }</span>
+
+    @Test
+    public void testFormatNegativeDurationHMS() {
+<span class="pc" id="L198">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.formatDurationHMS(-5000));</span>
+<span class="fc" id="L199">    }</span>
+
+    @Test
+    public void testFormatDurationISO() {
+<span class="fc" id="L203">        assertEquals(&quot;P0Y0M0DT0H0M0.000S&quot;, DurationFormatUtils.formatDurationISO(0L));</span>
+<span class="fc" id="L204">        assertEquals(&quot;P0Y0M0DT0H0M0.001S&quot;, DurationFormatUtils.formatDurationISO(1L));</span>
+<span class="fc" id="L205">        assertEquals(&quot;P0Y0M0DT0H0M0.010S&quot;, DurationFormatUtils.formatDurationISO(10L));</span>
+<span class="fc" id="L206">        assertEquals(&quot;P0Y0M0DT0H0M0.100S&quot;, DurationFormatUtils.formatDurationISO(100L));</span>
+<span class="fc" id="L207">        assertEquals(&quot;P0Y0M0DT0H1M15.321S&quot;, DurationFormatUtils.formatDurationISO(75321L));</span>
+<span class="fc" id="L208">    }</span>
+
+    @Test
+    public void testFormatNegativeDurationISO() {
+<span class="pc" id="L212">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.formatDurationISO(-5000));</span>
+<span class="fc" id="L213">    }</span>
+
+    @Test
+    public void testFormatDuration() {
+<span class="fc" id="L217">        long duration = 0;</span>
+<span class="fc" id="L218">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;y&quot;));</span>
+<span class="fc" id="L219">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;M&quot;));</span>
+<span class="fc" id="L220">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;d&quot;));</span>
+<span class="fc" id="L221">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;H&quot;));</span>
+<span class="fc" id="L222">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;m&quot;));</span>
+<span class="fc" id="L223">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;s&quot;));</span>
+<span class="fc" id="L224">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;S&quot;));</span>
+<span class="fc" id="L225">        assertEquals(&quot;0000&quot;, DurationFormatUtils.formatDuration(duration, &quot;SSSS&quot;));</span>
+<span class="fc" id="L226">        assertEquals(&quot;0000&quot;, DurationFormatUtils.formatDuration(duration, &quot;yyyy&quot;));</span>
+<span class="fc" id="L227">        assertEquals(&quot;0000&quot;, DurationFormatUtils.formatDuration(duration, &quot;yyMM&quot;));</span>
+
+<span class="fc" id="L229">        duration = 60 * 1000;</span>
+<span class="fc" id="L230">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;y&quot;));</span>
+<span class="fc" id="L231">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;M&quot;));</span>
+<span class="fc" id="L232">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;d&quot;));</span>
+<span class="fc" id="L233">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(duration, &quot;H&quot;));</span>
+<span class="fc" id="L234">        assertEquals(&quot;1&quot;, DurationFormatUtils.formatDuration(duration, &quot;m&quot;));</span>
+<span class="fc" id="L235">        assertEquals(&quot;60&quot;, DurationFormatUtils.formatDuration(duration, &quot;s&quot;));</span>
+<span class="fc" id="L236">        assertEquals(&quot;60000&quot;, DurationFormatUtils.formatDuration(duration, &quot;S&quot;));</span>
+<span class="fc" id="L237">        assertEquals(&quot;01:00&quot;, DurationFormatUtils.formatDuration(duration, &quot;mm:ss&quot;));</span>
+
+<span class="fc" id="L239">        final Calendar base = Calendar.getInstance();</span>
+<span class="fc" id="L240">        base.set(2000, Calendar.JANUARY, 1, 0, 0, 0);</span>
+<span class="fc" id="L241">        base.set(Calendar.MILLISECOND, 0);</span>
+
+<span class="fc" id="L243">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L244">        cal.set(2003, Calendar.FEBRUARY, 1, 0, 0, 0);</span>
+<span class="fc" id="L245">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L246">        duration = cal.getTime().getTime() - base.getTime().getTime(); // duration from 2000-01-01 to cal</span>
+        // don't use 1970 in test as time zones were less reliable in 1970 than now
+        // remember that duration formatting ignores time zones, working on strict hour lengths
+<span class="fc" id="L249">        final int days = 366 + 365 + 365 + 31;</span>
+<span class="fc" id="L250">        assertEquals(&quot;0 0 &quot; + days, DurationFormatUtils.formatDuration(duration, &quot;y M d&quot;));</span>
+<span class="fc" id="L251">    }</span>
+
+    @Test
+    public void testFormatNegativeDuration() {
+<span class="pc" id="L255">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.formatDuration(-5000, &quot;S&quot;, true));</span>
+<span class="fc" id="L256">    }</span>
+
+    @SuppressWarnings(&quot;deprecation&quot;)
+    @Test
+    public void testFormatPeriodISO() {
+<span class="fc" id="L261">        final TimeZone timeZone = TimeZone.getTimeZone(&quot;GMT-3&quot;);</span>
+<span class="fc" id="L262">        final Calendar base = Calendar.getInstance(timeZone);</span>
+<span class="fc" id="L263">        base.set(1970, Calendar.JANUARY, 1, 0, 0, 0);</span>
+<span class="fc" id="L264">        base.set(Calendar.MILLISECOND, 0);</span>
+
+<span class="fc" id="L266">        final Calendar cal = Calendar.getInstance(timeZone);</span>
+<span class="fc" id="L267">        cal.set(2002, Calendar.FEBRUARY, 23, 9, 11, 12);</span>
+<span class="fc" id="L268">        cal.set(Calendar.MILLISECOND, 1);</span>
+        String text;
+        // repeat a test from testDateTimeISO to compare extended and not extended.
+<span class="fc" id="L271">        text = DateFormatUtils.format(cal, DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern(), timeZone);</span>
+<span class="fc" id="L272">        assertEquals(&quot;2002-02-23T09:11:12-03:00&quot;, text);</span>
+        // test fixture is the same as above, but now with extended format.
+<span class="fc" id="L274">        text = DurationFormatUtils.formatPeriod(base.getTime().getTime(), cal.getTime().getTime(),</span>
+                DurationFormatUtils.ISO_EXTENDED_FORMAT_PATTERN, false, timeZone);
+<span class="fc" id="L276">        assertEquals(&quot;P32Y1M22DT9H11M12.001S&quot;, text);</span>
+        // test fixture from example in http://www.w3.org/TR/xmlschema-2/#duration
+<span class="fc" id="L278">        cal.set(1971, Calendar.FEBRUARY, 3, 10, 30, 0);</span>
+<span class="fc" id="L279">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L280">        text = DurationFormatUtils.formatPeriod(base.getTime().getTime(), cal.getTime().getTime(),</span>
+                DurationFormatUtils.ISO_EXTENDED_FORMAT_PATTERN, false, timeZone);
+<span class="fc" id="L282">        assertEquals(&quot;P1Y1M2DT10H30M0.000S&quot;, text);</span>
+        // want a way to say 'don't print the seconds in format()' or other fields for that matter:
+        // assertEquals(&quot;P1Y2M3DT10H30M&quot;, text);
+<span class="fc" id="L285">    }</span>
+
+    @Test
+    public void testFormatPeriodISOStartGreaterEnd() {
+<span class="pc" id="L289">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.formatPeriodISO(5000, 2000));</span>
+<span class="fc" id="L290">    }</span>
+
+    @Test
+    public void testFormatPeriodISOMethod() {
+<span class="fc" id="L294">        assertEquals(&quot;P0Y0M0DT0H0M0.000S&quot;, DurationFormatUtils.formatPeriodISO(0L, 0L));</span>
+<span class="fc" id="L295">        assertEquals(&quot;P0Y0M0DT0H0M1.000S&quot;, DurationFormatUtils.formatPeriodISO(0L, 1000L));</span>
+<span class="fc" id="L296">        assertEquals(&quot;P0Y0M0DT0H1M1.000S&quot;, DurationFormatUtils.formatPeriodISO(0L, 61000L));</span>
+<span class="fc" id="L297">    }</span>
+
+    @Test
+    public void testFormatPeriod() {
+<span class="fc" id="L301">        final Calendar cal1970 = Calendar.getInstance();</span>
+<span class="fc" id="L302">        cal1970.set(1970, Calendar.JANUARY, 1, 0, 0, 0);</span>
+<span class="fc" id="L303">        cal1970.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L304">        final long time1970 = cal1970.getTime().getTime();</span>
+
+<span class="fc" id="L306">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;y&quot;));</span>
+<span class="fc" id="L307">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;M&quot;));</span>
+<span class="fc" id="L308">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;d&quot;));</span>
+<span class="fc" id="L309">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;H&quot;));</span>
+<span class="fc" id="L310">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;m&quot;));</span>
+<span class="fc" id="L311">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;s&quot;));</span>
+<span class="fc" id="L312">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;S&quot;));</span>
+<span class="fc" id="L313">        assertEquals(&quot;0000&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;SSSS&quot;));</span>
+<span class="fc" id="L314">        assertEquals(&quot;0000&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;yyyy&quot;));</span>
+<span class="fc" id="L315">        assertEquals(&quot;0000&quot;, DurationFormatUtils.formatPeriod(time1970, time1970, &quot;yyMM&quot;));</span>
+
+<span class="fc" id="L317">        long time = time1970 + 60 * 1000;</span>
+<span class="fc" id="L318">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;y&quot;));</span>
+<span class="fc" id="L319">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;M&quot;));</span>
+<span class="fc" id="L320">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;d&quot;));</span>
+<span class="fc" id="L321">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;H&quot;));</span>
+<span class="fc" id="L322">        assertEquals(&quot;1&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;m&quot;));</span>
+<span class="fc" id="L323">        assertEquals(&quot;60&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;s&quot;));</span>
+<span class="fc" id="L324">        assertEquals(&quot;60000&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;S&quot;));</span>
+<span class="fc" id="L325">        assertEquals(&quot;01:00&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;mm:ss&quot;));</span>
+
+<span class="fc" id="L327">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L328">        cal.set(1973, Calendar.JULY, 1, 0, 0, 0);</span>
+<span class="fc" id="L329">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L330">        time = cal.getTime().getTime();</span>
+<span class="fc" id="L331">        assertEquals(&quot;36&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;yM&quot;));</span>
+<span class="fc" id="L332">        assertEquals(&quot;3 years 6 months&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;y' years 'M' months'&quot;));</span>
+<span class="fc" id="L333">        assertEquals(&quot;03/06&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;yy/MM&quot;));</span>
+
+<span class="fc" id="L335">        cal.set(1973, Calendar.NOVEMBER, 1, 0, 0, 0);</span>
+<span class="fc" id="L336">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L337">        time = cal.getTime().getTime();</span>
+<span class="fc" id="L338">        assertEquals(&quot;310&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;yM&quot;));</span>
+<span class="fc" id="L339">        assertEquals(&quot;3 years 10 months&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;y' years 'M' months'&quot;));</span>
+<span class="fc" id="L340">        assertEquals(&quot;03/10&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;yy/MM&quot;));</span>
+
+<span class="fc" id="L342">        cal.set(1974, Calendar.JANUARY, 1, 0, 0, 0);</span>
+<span class="fc" id="L343">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L344">        time = cal.getTime().getTime();</span>
+<span class="fc" id="L345">        assertEquals(&quot;40&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;yM&quot;));</span>
+<span class="fc" id="L346">        assertEquals(&quot;4 years 0 months&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;y' years 'M' months'&quot;));</span>
+<span class="fc" id="L347">        assertEquals(&quot;04/00&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;yy/MM&quot;));</span>
+<span class="fc" id="L348">        assertEquals(&quot;48&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;M&quot;));</span>
+<span class="fc" id="L349">        assertEquals(&quot;48&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;MM&quot;));</span>
+<span class="fc" id="L350">        assertEquals(&quot;048&quot;, DurationFormatUtils.formatPeriod(time1970, time, &quot;MMM&quot;));</span>
+<span class="fc" id="L351">    }</span>
+
+    @Test
+    public void testFormatPeriodeStartGreaterEnd() {
+<span class="pc" id="L355">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.formatPeriod(5000, 2500, &quot;yy/MM&quot;));</span>
+<span class="fc" id="L356">    }</span>
+
+    @Test
+    public void testLexx() {
+        // tests each constant
+<span class="fc" id="L361">        assertArrayEquals(new DurationFormatUtils.Token[]{</span>
+            new DurationFormatUtils.Token(DurationFormatUtils.y, 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.M, 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.d, 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.H, 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.m, 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.s, 1),
+<span class="fc" id="L368">            new DurationFormatUtils.Token(DurationFormatUtils.S, 1)}, DurationFormatUtils.lexx(&quot;yMdHmsS&quot;));</span>
+
+        // tests the ISO 8601-like
+<span class="fc" id="L371">        assertArrayEquals(new DurationFormatUtils.Token[]{</span>
+            new DurationFormatUtils.Token(DurationFormatUtils.H, 2),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;:&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.m, 2),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;:&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.s, 2),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;.&quot;), 1),
+<span class="fc" id="L378">            new DurationFormatUtils.Token(DurationFormatUtils.S, 3)}, DurationFormatUtils.lexx(&quot;HH:mm:ss.SSS&quot;));</span>
+
+        // test the iso extended format
+<span class="fc" id="L381">        assertArrayEquals(new DurationFormatUtils.Token[]{</span>
+            new DurationFormatUtils.Token(new StringBuilder(&quot;P&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.y, 4),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;Y&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.M, 1),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;M&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.d, 1),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;DT&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.H, 1),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;H&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.m, 1),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;M&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.s, 1),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;.&quot;), 1),
+            new DurationFormatUtils.Token(DurationFormatUtils.S, 3),
+            new DurationFormatUtils.Token(new StringBuilder(&quot;S&quot;), 1)}, DurationFormatUtils
+<span class="fc" id="L397">                .lexx(DurationFormatUtils.ISO_EXTENDED_FORMAT_PATTERN));</span>
+
+        // test failures in equals
+<span class="fc" id="L400">        final DurationFormatUtils.Token token = new DurationFormatUtils.Token(DurationFormatUtils.y, 4);</span>
+<span class="fc" id="L401">        assertNotEquals(token, new Object(), &quot;Token equal to non-Token class. &quot;);</span>
+<span class="fc" id="L402">        assertNotEquals(token, new DurationFormatUtils.Token(new Object()), &quot;Token equal to Token with wrong value class. &quot;);</span>
+<span class="fc" id="L403">        assertNotEquals(token, new DurationFormatUtils.Token(DurationFormatUtils.y, 1), &quot;Token equal to Token with different count. &quot;);</span>
+<span class="fc" id="L404">        final DurationFormatUtils.Token numToken = new DurationFormatUtils.Token(Integer.valueOf(1), 4);</span>
+<span class="fc" id="L405">        assertEquals(numToken, numToken, &quot;Token with Number value not equal to itself. &quot;);</span>
+<span class="fc" id="L406">    }</span>
+
+
+    // http://issues.apache.org/bugzilla/show_bug.cgi?id=38401
+    @Test
+    public void testBugzilla38401() {
+<span class="fc" id="L412">        assertEqualDuration( &quot;0000/00/30 16:00:00 000&quot;, new int[] { 2006, 0, 26, 18, 47, 34 },</span>
+                             new int[] { 2006, 1, 26, 10, 47, 34 }, &quot;yyyy/MM/dd HH:mm:ss SSS&quot;);
+<span class="fc" id="L414">    }</span>
+
+    // https://issues.apache.org/jira/browse/LANG-281
+    @Test
+    public void testJiraLang281() {
+<span class="fc" id="L419">        assertEqualDuration( &quot;09&quot;, new int[] { 2005, 11, 31, 0, 0, 0 },</span>
+                             new int[] { 2006, 9, 6, 0, 0, 0 }, &quot;MM&quot;);
+<span class="fc" id="L421">    }</span>
+
+    @Test
+    public void testLANG815() {
+<span class="fc" id="L425">        final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L426">        calendar.set(2012, Calendar.JULY, 30, 0, 0, 0);</span>
+<span class="fc" id="L427">        final long startMillis = calendar.getTimeInMillis();</span>
+
+<span class="fc" id="L429">        calendar.set(2012, Calendar.SEPTEMBER, 8);</span>
+<span class="fc" id="L430">        final long endMillis = calendar.getTimeInMillis();</span>
+
+<span class="fc" id="L432">        assertEquals(&quot;1 9&quot;, DurationFormatUtils.formatPeriod(startMillis, endMillis, &quot;M d&quot;));</span>
+<span class="fc" id="L433">    }</span>
+
+    // Testing the under a day range in DurationFormatUtils.formatPeriod
+    @Test
+    public void testLowDurations() {
+<span class="fc bfc" id="L438" title="All 2 branches covered.">        for (int hr=0; hr &lt; 24; hr++) {</span>
+<span class="fc bfc" id="L439" title="All 2 branches covered.">            for (int min=0; min &lt; 60; min++) {</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">                for (int sec=0; sec &lt; 60; sec++) {</span>
+<span class="fc" id="L441">                    assertEqualDuration( hr + &quot;:&quot; + min + &quot;:&quot; + sec,</span>
+                                         new int[] { 2000, 0, 1, 0, 0, 0, 0 },
+                                         new int[] { 2000, 0, 1, hr, min, sec },
+                                         &quot;H:m:s&quot;
+                                       );
+                }
+            }
+        }
+<span class="fc" id="L449">    }</span>
+
+    // Attempting to test edge cases in DurationFormatUtils.formatPeriod
+    @Test
+    public void testEdgeDurations() {
+        // This test case must use a time zone without DST
+<span class="fc" id="L455">        TimeZone.setDefault(FastTimeZone.getGmtTimeZone());</span>
+<span class="fc" id="L456">        assertEqualDuration( &quot;01&quot;, new int[] { 2006, 0, 15, 0, 0, 0 },</span>
+                             new int[] { 2006, 2, 10, 0, 0, 0 }, &quot;MM&quot;);
+<span class="fc" id="L458">        assertEqualDuration( &quot;12&quot;, new int[] { 2005, 0, 15, 0, 0, 0 },</span>
+                             new int[] { 2006, 0, 15, 0, 0, 0 }, &quot;MM&quot;);
+<span class="fc" id="L460">        assertEqualDuration( &quot;12&quot;, new int[] { 2005, 0, 15, 0, 0, 0 },</span>
+                             new int[] { 2006, 0, 16, 0, 0, 0 }, &quot;MM&quot;);
+<span class="fc" id="L462">        assertEqualDuration( &quot;11&quot;, new int[] { 2005, 0, 15, 0, 0, 0 },</span>
+                             new int[] { 2006, 0, 14, 0, 0, 0 }, &quot;MM&quot;);
+
+<span class="fc" id="L465">        assertEqualDuration( &quot;01 26&quot;, new int[] { 2006, 0, 15, 0, 0, 0 },</span>
+                             new int[] { 2006, 2, 10, 0, 0, 0 }, &quot;MM dd&quot;);
+<span class="fc" id="L467">        assertEqualDuration( &quot;54&quot;, new int[] { 2006, 0, 15, 0, 0, 0 },</span>
+                             new int[] { 2006, 2, 10, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L470">        assertEqualDuration( &quot;09 12&quot;, new int[] { 2006, 1, 20, 0, 0, 0 },</span>
+                             new int[] { 2006, 11, 4, 0, 0, 0 }, &quot;MM dd&quot;);
+<span class="fc" id="L472">        assertEqualDuration( &quot;287&quot;, new int[] { 2006, 1, 20, 0, 0, 0 },</span>
+                             new int[] { 2006, 11, 4, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L475">        assertEqualDuration( &quot;11 30&quot;, new int[] { 2006, 0, 2, 0, 0, 0 },</span>
+                             new int[] { 2007, 0, 1, 0, 0, 0 }, &quot;MM dd&quot;);
+<span class="fc" id="L477">        assertEqualDuration( &quot;364&quot;, new int[] { 2006, 0, 2, 0, 0, 0 },</span>
+                             new int[] { 2007, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L480">        assertEqualDuration( &quot;12 00&quot;, new int[] { 2006, 0, 1, 0, 0, 0 },</span>
+                             new int[] { 2007, 0, 1, 0, 0, 0 }, &quot;MM dd&quot;);
+<span class="fc" id="L482">        assertEqualDuration( &quot;365&quot;, new int[] { 2006, 0, 1, 0, 0, 0 },</span>
+                             new int[] { 2007, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L485">        assertEqualDuration( &quot;31&quot;, new int[] { 2006, 0, 1, 0, 0, 0 },</span>
+                new int[] { 2006, 1, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L488">        assertEqualDuration( &quot;92&quot;, new int[] { 2005, 9, 1, 0, 0, 0 },</span>
+                new int[] { 2006, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+<span class="fc" id="L490">        assertEqualDuration( &quot;77&quot;, new int[] { 2005, 9, 16, 0, 0, 0 },</span>
+                new int[] { 2006, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+        // test month larger in start than end
+<span class="fc" id="L494">        assertEqualDuration( &quot;136&quot;, new int[] { 2005, 9, 16, 0, 0, 0 },</span>
+                new int[] { 2006, 2, 1, 0, 0, 0 }, &quot;dd&quot;);
+        // test when start in leap year
+<span class="fc" id="L497">        assertEqualDuration( &quot;136&quot;, new int[] { 2004, 9, 16, 0, 0, 0 },</span>
+                new int[] { 2005, 2, 1, 0, 0, 0 }, &quot;dd&quot;);
+        // test when end in leap year
+<span class="fc" id="L500">        assertEqualDuration( &quot;137&quot;, new int[] { 2003, 9, 16, 0, 0, 0 },</span>
+                new int[] { 2004, 2, 1, 0, 0, 0 }, &quot;dd&quot;);
+        // test when end in leap year but less than end of feb
+<span class="fc" id="L503">        assertEqualDuration( &quot;135&quot;, new int[] { 2003, 9, 16, 0, 0, 0 },</span>
+                new int[] { 2004, 1, 28, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L506">        assertEqualDuration( &quot;364&quot;, new int[] { 2007, 0, 2, 0, 0, 0 },</span>
+                new int[] { 2008, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+<span class="fc" id="L508">        assertEqualDuration( &quot;729&quot;, new int[] { 2006, 0, 2, 0, 0, 0 },</span>
+                new int[] { 2008, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L511">        assertEqualDuration( &quot;365&quot;, new int[] { 2007, 2, 2, 0, 0, 0 },</span>
+                new int[] { 2008, 2, 1, 0, 0, 0 }, &quot;dd&quot;);
+<span class="fc" id="L513">        assertEqualDuration( &quot;333&quot;, new int[] { 2007, 1, 2, 0, 0, 0 },</span>
+                new int[] { 2008, 0, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L516">        assertEqualDuration( &quot;28&quot;, new int[] { 2008, 1, 2, 0, 0, 0 },</span>
+                new int[] { 2008, 2, 1, 0, 0, 0 }, &quot;dd&quot;);
+<span class="fc" id="L518">        assertEqualDuration( &quot;393&quot;, new int[] { 2007, 1, 2, 0, 0, 0 },</span>
+                new int[] { 2008, 2, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L521">        assertEqualDuration( &quot;369&quot;, new int[] { 2004, 0, 29, 0, 0, 0 },</span>
+                new int[] { 2005, 1, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L524">        assertEqualDuration( &quot;338&quot;, new int[] { 2004, 1, 29, 0, 0, 0 },</span>
+                new int[] { 2005, 1, 1, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L527">        assertEqualDuration( &quot;28&quot;, new int[] { 2004, 2, 8, 0, 0, 0 },</span>
+                new int[] { 2004, 3, 5, 0, 0, 0 }, &quot;dd&quot;);
+
+<span class="fc" id="L530">        assertEqualDuration( &quot;48&quot;, new int[] { 1992, 1, 29, 0, 0, 0 },</span>
+                new int[] { 1996, 1, 29, 0, 0, 0 }, &quot;M&quot;);
+
+
+        // this seems odd - and will fail if I throw it in as a brute force
+        // below as it expects the answer to be 12. It's a tricky edge case
+<span class="fc" id="L536">        assertEqualDuration( &quot;11&quot;, new int[] { 1996, 1, 29, 0, 0, 0 },</span>
+                new int[] { 1997, 1, 28, 0, 0, 0 }, &quot;M&quot;);
+        // again - this seems odd
+<span class="fc" id="L539">        assertEqualDuration( &quot;11 28&quot;, new int[] { 1996, 1, 29, 0, 0, 0 },</span>
+                new int[] { 1997, 1, 28, 0, 0, 0 }, &quot;M d&quot;);
+
+<span class="fc" id="L542">    }</span>
+
+    @Test
+    public void testLANG984() { // Long durations
+<span class="fc" id="L546">        assertEquals(&quot;0&quot;, DurationFormatUtils.formatDuration(0, &quot;S&quot;));</span>
+<span class="fc" id="L547">        assertEquals(Integer.toString(Integer.MAX_VALUE), DurationFormatUtils.formatDuration(Integer.MAX_VALUE, &quot;S&quot;));</span>
+<span class="fc" id="L548">        long maxIntPlus=Integer.MAX_VALUE;</span>
+<span class="fc" id="L549">        maxIntPlus++;</span>
+<span class="fc" id="L550">        assertEquals(Long.toString(maxIntPlus), DurationFormatUtils.formatDuration(maxIntPlus, &quot;S&quot;));</span>
+<span class="fc" id="L551">        assertEquals(Long.toString(Long.MAX_VALUE), DurationFormatUtils.formatDuration(Long.MAX_VALUE, &quot;S&quot;));</span>
+<span class="fc" id="L552">    }</span>
+
+    @Test
+    public void testLANG982() { // More than 3 millisecond digits following a second
+<span class="fc" id="L556">        assertEquals(&quot;61.999&quot;, DurationFormatUtils.formatDuration(61999, &quot;s.S&quot;));</span>
+<span class="fc" id="L557">        assertEquals(&quot;1 1999&quot;, DurationFormatUtils.formatDuration(61999, &quot;m S&quot;));</span>
+<span class="fc" id="L558">        assertEquals(&quot;61.999&quot;, DurationFormatUtils.formatDuration(61999, &quot;s.SSS&quot;));</span>
+<span class="fc" id="L559">        assertEquals(&quot;1 1999&quot;, DurationFormatUtils.formatDuration(61999, &quot;m SSS&quot;));</span>
+<span class="fc" id="L560">        assertEquals(&quot;61.0999&quot;, DurationFormatUtils.formatDuration(61999, &quot;s.SSSS&quot;));</span>
+<span class="fc" id="L561">        assertEquals(&quot;1 1999&quot;, DurationFormatUtils.formatDuration(61999, &quot;m SSSS&quot;));</span>
+<span class="fc" id="L562">        assertEquals(&quot;61.00999&quot;, DurationFormatUtils.formatDuration(61999, &quot;s.SSSSS&quot;));</span>
+<span class="fc" id="L563">        assertEquals(&quot;1 01999&quot;, DurationFormatUtils.formatDuration(61999, &quot;m SSSSS&quot;));</span>
+<span class="fc" id="L564">    }</span>
+
+    @Test
+    public void testDurationsByBruteForce() {
+<span class="fc" id="L568">        bruteForce(2006, 0, 1, &quot;d&quot;, Calendar.DAY_OF_MONTH);</span>
+<span class="fc" id="L569">        bruteForce(2006, 0, 2, &quot;d&quot;, Calendar.DAY_OF_MONTH);</span>
+<span class="fc" id="L570">        bruteForce(2007, 1, 2, &quot;d&quot;, Calendar.DAY_OF_MONTH);</span>
+<span class="fc" id="L571">        bruteForce(2004, 1, 29, &quot;d&quot;, Calendar.DAY_OF_MONTH);</span>
+<span class="fc" id="L572">        bruteForce(1996, 1, 29, &quot;d&quot;, Calendar.DAY_OF_MONTH);</span>
+
+<span class="fc" id="L574">        bruteForce(1969, 1, 28, &quot;M&quot;, Calendar.MONTH);  // tests for 48 years</span>
+        //bruteForce(1996, 1, 29, &quot;M&quot;, Calendar.MONTH);  // this will fail
+<span class="fc" id="L576">    }</span>
+
+    @Test
+    public void testLANG981() { // unmatched quote char in lexx
+<span class="pc" id="L580">        assertThrows(IllegalArgumentException.class, () -&gt; DurationFormatUtils.lexx(&quot;'yMdHms''S&quot;));</span>
+<span class="fc" id="L581">    }</span>
+
+    private static final int FOUR_YEARS = 365 * 3 + 366;
+
+    // Takes a minute to run, so generally turned off
+//    public void testBrutally() {
+//        Calendar c = Calendar.getInstance();
+//        c.set(2004, 0, 1, 0, 0, 0);
+//        for (int i=0; i &lt; FOUR_YEARS; i++) {
+//            bruteForce(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), &quot;d&quot;, Calendar.DAY_OF_MONTH );
+//            c.add(Calendar.DAY_OF_MONTH, 1);
+//        }
+//    }
+
+    private void bruteForce(final int year, final int month, final int day, final String format, final int calendarType) {
+<span class="fc" id="L596">        final String msg = year + &quot;-&quot; + month + &quot;-&quot; + day + &quot; to &quot;;</span>
+<span class="fc" id="L597">        final Calendar c = Calendar.getInstance();</span>
+<span class="fc" id="L598">        c.set(year, month, day, 0, 0, 0);</span>
+<span class="fc" id="L599">        final int[] array1 = new int[] { year, month, day, 0, 0, 0 };</span>
+<span class="fc" id="L600">        final int[] array2 = new int[] { year, month, day, 0, 0, 0 };</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">        for (int i=0; i &lt; FOUR_YEARS; i++) {</span>
+<span class="fc" id="L602">            array2[0] = c.get(Calendar.YEAR);</span>
+<span class="fc" id="L603">            array2[1] = c.get(Calendar.MONTH);</span>
+<span class="fc" id="L604">            array2[2] = c.get(Calendar.DAY_OF_MONTH);</span>
+<span class="fc" id="L605">            final String tmpMsg = msg + array2[0] + &quot;-&quot; + array2[1] + &quot;-&quot; + array2[2] + &quot; at &quot;;</span>
+<span class="fc" id="L606">            assertEqualDuration( tmpMsg + i, Integer.toString(i), array1, array2, format );</span>
+<span class="fc" id="L607">            c.add(calendarType, 1);</span>
+        }
+<span class="fc" id="L609">    }</span>
+
+    private void assertEqualDuration(final String expected, final int[] start, final int[] end, final String format) {
+<span class="fc" id="L612">        assertEqualDuration(null, expected, start, end, format);</span>
+<span class="fc" id="L613">    }</span>
+    private void assertEqualDuration(final String message, final String expected, final int[] start, final int[] end, final String format) {
+<span class="fc" id="L615">        final Calendar cal1 = Calendar.getInstance();</span>
+<span class="fc" id="L616">        cal1.set(start[0], start[1], start[2], start[3], start[4], start[5]);</span>
+<span class="fc" id="L617">        cal1.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L618">        final Calendar cal2 = Calendar.getInstance();</span>
+<span class="fc" id="L619">        cal2.set(end[0], end[1], end[2], end[3], end[4], end[5]);</span>
+<span class="fc" id="L620">        cal2.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L621">        final long milli1 = cal1.getTime().getTime();</span>
+<span class="fc" id="L622">        final long milli2 = cal2.getTime().getTime();</span>
+<span class="fc" id="L623">        final String result = DurationFormatUtils.formatPeriod(milli1, milli2, format);</span>
+<span class="fc bfc" id="L624" title="All 2 branches covered.">        if (message == null) {</span>
+<span class="fc" id="L625">            assertEquals(expected, result);</span>
+        } else {
+<span class="fc" id="L627">            assertEquals(expected, result, message);</span>
+        }
+<span class="fc" id="L629">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

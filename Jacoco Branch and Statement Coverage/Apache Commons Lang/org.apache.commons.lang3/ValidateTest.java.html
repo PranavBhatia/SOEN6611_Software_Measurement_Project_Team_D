@@ -1,0 +1,1898 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidateTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">ValidateTest.java</span></div><h1>ValidateTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.commons.lang3;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.Validate}.
+ */
+<span class="fc" id="L42">class ValidateTest {</span>
+
+    @Nested
+<span class="fc" id="L45">    class IsTrue {</span>
+
+        @Nested
+<span class="fc" id="L48">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowForTrueExpression() {
+<span class="fc" id="L52">                Validate.isTrue(true);</span>
+<span class="fc" id="L53">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithDefaultMessageForFalseExpression() {
+<span class="fc" id="L57">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L59">                        () -&gt; Validate.isTrue(false));</span>
+
+<span class="fc" id="L61">                assertEquals(&quot;The validated expression is false&quot;, ex.getMessage());</span>
+<span class="fc" id="L62">            }</span>
+
+        }
+
+        @Nested
+<span class="fc" id="L67">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowForTrueExpression() {
+<span class="fc" id="L71">                Validate.isTrue(true, &quot;MSG&quot;);</span>
+<span class="fc" id="L72">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithGivenMessageForFalseExpression() {
+<span class="fc" id="L76">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L78">                        () -&gt; Validate.isTrue(false, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L80">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L81">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L85">        class WithLongTemplate {</span>
+
+            @Test
+            void shouldNotThrowForTrueExpression() {
+<span class="fc" id="L89">                Validate.isTrue(true, &quot;MSG&quot;, 6);</span>
+<span class="fc" id="L90">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithLongInsertedIntoTemplateMessageForFalseExpression() {
+<span class="fc" id="L94">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L96">                        () -&gt; Validate.isTrue(false, &quot;MSG %s&quot;, 6));</span>
+
+<span class="fc" id="L98">                assertEquals(&quot;MSG 6&quot;, ex.getMessage());</span>
+<span class="fc" id="L99">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L103">        class WithDoubleTemplate {</span>
+
+            @Test
+            void shouldNotThrowForTrueExpression() {
+<span class="fc" id="L107">                Validate.isTrue(true, &quot;MSG&quot;, 7.4d);</span>
+<span class="fc" id="L108">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithDoubleInsertedIntoTemplateMessageForFalseExpression() {
+<span class="fc" id="L112">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L114">                        () -&gt; Validate.isTrue(false, &quot;MSG %s&quot;, 7.4d));</span>
+
+<span class="fc" id="L116">                assertEquals(&quot;MSG 7.4&quot;, ex.getMessage());</span>
+<span class="fc" id="L117">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L121">        class WithObjectTemplate {</span>
+
+            @Test
+            void shouldNotThrowForTrueExpression() {
+<span class="fc" id="L125">                Validate.isTrue(true, &quot;MSG&quot;, &quot;Object 1&quot;, &quot;Object 2&quot;);</span>
+<span class="fc" id="L126">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithDoubleInsertedIntoTemplateMessageForFalseExpression() {
+<span class="fc" id="L130">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L132">                        () -&gt; Validate.isTrue(false, &quot;MSG %s %s&quot;, &quot;Object 1&quot;, &quot;Object 2&quot;));</span>
+
+<span class="fc" id="L134">                assertEquals(&quot;MSG Object 1 Object 2&quot;, ex.getMessage());</span>
+<span class="fc" id="L135">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L140">    class NotNull {</span>
+
+        @Nested
+<span class="fc" id="L143">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowForNonNullReference() {
+<span class="fc" id="L147">                Validate.notNull(new Object());</span>
+<span class="fc" id="L148">            }</span>
+
+            @Test
+            void shouldReturnTheSameInstance() {
+<span class="fc" id="L152">                final String str = &quot;Hi&quot;;</span>
+<span class="fc" id="L153">                final String result = Validate.notNull(str);</span>
+
+<span class="fc" id="L155">                assertSame(str, result);</span>
+<span class="fc" id="L156">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithDefaultMessageForNullReference() {
+<span class="fc" id="L160">                final NullPointerException ex = assertThrows(</span>
+                        NullPointerException.class,
+<span class="nc" id="L162">                        () -&gt; Validate.notNull(null));</span>
+
+<span class="fc" id="L164">                assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L165">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L169">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowForNonNullReference() {
+<span class="fc" id="L173">                Validate.notNull(new Object(), &quot;MSG&quot;);</span>
+<span class="fc" id="L174">            }</span>
+
+            @Test
+            void shouldReturnTheSameInstance() {
+<span class="fc" id="L178">                final String str = &quot;Hi&quot;;</span>
+<span class="fc" id="L179">                final String result = Validate.notNull(str, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L181">                assertSame(str, result);</span>
+<span class="fc" id="L182">            }</span>
+
+            @Test
+            void shouldThrowExceptionWithGivenMessageForNullReference() {
+<span class="fc" id="L186">                final NullPointerException ex = assertThrows(</span>
+                        NullPointerException.class,
+<span class="nc" id="L188">                        () -&gt; Validate.notNull(null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L190">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L191">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L196">    class NotEmpty {</span>
+
+        @Nested
+<span class="fc" id="L199">        class WithArray {</span>
+
+            @Nested
+<span class="fc" id="L202">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForArrayContainingNullReference() {
+<span class="fc" id="L206">                    Validate.notEmpty(new Object[]{null});</span>
+<span class="fc" id="L207">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L211">                    final String[] array = new String[]{&quot;hi&quot;};</span>
+<span class="fc" id="L212">                    final String[] result = Validate.notEmpty(array);</span>
+
+<span class="fc" id="L214">                    assertSame(array, result);</span>
+<span class="fc" id="L215">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullArray() {
+<span class="fc" id="L219">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L221">                            () -&gt; Validate.notEmpty((Object[]) null));</span>
+
+<span class="fc" id="L223">                    assertEquals(&quot;The validated array is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L224">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForEmptyArray() {
+<span class="fc" id="L228">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L230">                            () -&gt; Validate.notEmpty(new Object[0]));</span>
+
+<span class="fc" id="L232">                    assertEquals(&quot;The validated array is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L233">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L237">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForArrayContainingNullReference() {
+<span class="fc" id="L241">                    Validate.notEmpty(new Object[]{null}, &quot;MSG&quot;);</span>
+<span class="fc" id="L242">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L246">                    final String[] array = new String[]{&quot;hi&quot;};</span>
+<span class="fc" id="L247">                    final String[] result = Validate.notEmpty(array, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L249">                    assertSame(array, result);</span>
+<span class="fc" id="L250">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithGivenMessageForNullArray() {
+<span class="fc" id="L254">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L256">                            () -&gt; Validate.notEmpty((Object[]) null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L258">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L259">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForEmptyArray() {
+<span class="fc" id="L263">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L265">                            () -&gt; Validate.notEmpty(new Object[0], &quot;MSG&quot;));</span>
+
+<span class="fc" id="L267">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L268">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L273">        class WithCollection {</span>
+
+            @Nested
+<span class="fc" id="L276">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForCollectionContainingNullReference() {
+<span class="fc" id="L280">                    Validate.notEmpty(Collections.singleton(null));</span>
+<span class="fc" id="L281">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L285">                    final Set&lt;String&gt; col = Collections.singleton(&quot;Hi&quot;);</span>
+<span class="fc" id="L286">                    final Set&lt;String&gt; result = Validate.notEmpty(col);</span>
+
+<span class="fc" id="L288">                    assertSame(col, result);</span>
+<span class="fc" id="L289">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullCollection() {
+<span class="fc" id="L293">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L295">                            () -&gt; Validate.notEmpty((Collection&lt;?&gt;) null));</span>
+
+<span class="fc" id="L297">                    assertEquals(&quot;The validated collection is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L298">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForEmptyCollection() {
+<span class="fc" id="L302">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L304">                            () -&gt; Validate.notEmpty(Collections.emptySet()));</span>
+
+<span class="fc" id="L306">                    assertEquals(&quot;The validated collection is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L307">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L311">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForCollectionContainingNullReference() {
+<span class="fc" id="L315">                    Validate.notEmpty(Collections.singleton(null), &quot;MSG&quot;);</span>
+<span class="fc" id="L316">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L320">                    final Set&lt;String&gt; col = Collections.singleton(&quot;Hi&quot;);</span>
+<span class="fc" id="L321">                    final Set&lt;String&gt; result = Validate.notEmpty(col, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L323">                    assertSame(col, result);</span>
+<span class="fc" id="L324">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithGivenMessageForNullCollection() {
+<span class="fc" id="L328">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L330">                            () -&gt; Validate.notEmpty((Collection&lt;?&gt;) null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L332">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L333">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageForEmptyCollection() {
+<span class="fc" id="L337">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L339">                            () -&gt; Validate.notEmpty(Collections.emptySet(), &quot;MSG&quot;));</span>
+
+<span class="fc" id="L341">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L342">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L347">        class WithMap {</span>
+
+            @Nested
+<span class="fc" id="L350">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForMapContainingNullMapping() {
+<span class="fc" id="L354">                    Validate.notEmpty(Collections.singletonMap(&quot;key&quot;, null));</span>
+<span class="fc" id="L355">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L359">                    final Map&lt;String, String&gt; map = Collections.singletonMap(&quot;key&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L360">                    final Map&lt;String, String&gt; result = Validate.notEmpty(map);</span>
+
+<span class="fc" id="L362">                    assertSame(map, result);</span>
+<span class="fc" id="L363">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullMap() {
+<span class="fc" id="L367">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L369">                            () -&gt; Validate.notEmpty((Map&lt;?, ?&gt;) null));</span>
+
+<span class="fc" id="L371">                    assertEquals(&quot;The validated map is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L372">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForEmptyMap() {
+<span class="fc" id="L376">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L378">                            () -&gt; Validate.notEmpty(Collections.emptyMap()));</span>
+
+<span class="fc" id="L380">                    assertEquals(&quot;The validated map is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L381">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L385">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForMapContainingNullMapping() {
+<span class="fc" id="L389">                    Validate.notEmpty(Collections.singletonMap(&quot;key&quot;, null), &quot;MSG&quot;);</span>
+<span class="fc" id="L390">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L394">                    final Map&lt;String, String&gt; map = Collections.singletonMap(&quot;key&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L395">                    final Map&lt;String, String&gt; result = Validate.notEmpty(map, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L397">                    assertSame(map, result);</span>
+<span class="fc" id="L398">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithGivenMessageForNullMap() {
+<span class="fc" id="L402">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L404">                            () -&gt; Validate.notEmpty((Map&lt;?, ?&gt;) null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L406">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L407">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageForEmptyMap() {
+<span class="fc" id="L411">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L413">                            () -&gt; Validate.notEmpty(Collections.emptyMap(), &quot;MSG&quot;));</span>
+
+<span class="fc" id="L415">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L416">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L421">        class WithCharSequence {</span>
+
+            @Nested
+<span class="fc" id="L424">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForNonEmptyString() {
+<span class="fc" id="L428">                    Validate.notEmpty(&quot;Hi&quot;);</span>
+<span class="fc" id="L429">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L433">                    final String str = &quot;Hi&quot;;</span>
+<span class="fc" id="L434">                    final String result = Validate.notEmpty(str);</span>
+
+<span class="fc" id="L436">                    assertSame(str, result);</span>
+<span class="fc" id="L437">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullCharSequence() {
+<span class="fc" id="L441">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L443">                            () -&gt; Validate.notEmpty((CharSequence) null));</span>
+
+<span class="fc" id="L445">                    assertEquals(&quot;The validated character sequence is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L446">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForEmptyString() {
+<span class="fc" id="L450">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L452">                            () -&gt; Validate.notEmpty(&quot;&quot;));</span>
+
+<span class="fc" id="L454">                    assertEquals(&quot;The validated character sequence is empty&quot;, ex.getMessage());</span>
+<span class="fc" id="L455">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L459">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForNonEmptyString() {
+<span class="fc" id="L463">                    Validate.notEmpty(&quot;Hi&quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L464">                }</span>
+
+                @Test
+                void shouldReturnTheSameInstance() {
+<span class="fc" id="L468">                    final String str = &quot;Hi&quot;;</span>
+<span class="fc" id="L469">                    final String result = Validate.notEmpty(str, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L471">                    assertSame(str, result);</span>
+<span class="fc" id="L472">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithGivenMessageForNullCharSequence() {
+<span class="fc" id="L476">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L478">                            () -&gt; Validate.notEmpty((CharSequence) null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L480">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L481">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageForEmptyString() {
+<span class="fc" id="L485">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L487">                            () -&gt; Validate.notEmpty(&quot;&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L489">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L490">                }</span>
+            }
+        }
+    }
+
+    @Nested
+<span class="fc" id="L496">    class NotBlank {</span>
+
+        @Nested
+<span class="fc" id="L499">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionForNonEmptyString() {
+<span class="fc" id="L503">                Validate.notBlank(&quot;abc&quot;);</span>
+<span class="fc" id="L504">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForNonEmptyStringContainingSpaces() {
+<span class="fc" id="L508">                Validate.notBlank(&quot;  abc   &quot;);</span>
+<span class="fc" id="L509">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForNonEmptyStringContainingWhitespaceChars() {
+<span class="fc" id="L513">                Validate.notBlank(&quot; \n \t abc \r \n &quot;);</span>
+<span class="fc" id="L514">            }</span>
+
+            @Test
+            void shouldReturnNonBlankValue() {
+<span class="fc" id="L518">                final String str = &quot;abc&quot;;</span>
+<span class="fc" id="L519">                final String result = Validate.notBlank(str);</span>
+
+<span class="fc" id="L521">                assertSame(str, result);</span>
+<span class="fc" id="L522">            }</span>
+
+            @Test
+            void shouldThrowNullPointerExceptionWithDefaultMessageForNullString() {
+<span class="fc" id="L526">                final NullPointerException ex = assertThrows(</span>
+                        NullPointerException.class,
+<span class="nc" id="L528">                        () -&gt; Validate.notBlank(null));</span>
+
+<span class="fc" id="L530">                assertEquals(&quot;The validated character sequence is blank&quot;, ex.getMessage());</span>
+<span class="fc" id="L531">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForEmptyString() {
+<span class="fc" id="L535">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L537">                        () -&gt; Validate.notBlank(&quot;&quot;));</span>
+
+<span class="fc" id="L539">                assertEquals(&quot;The validated character sequence is blank&quot;, ex.getMessage());</span>
+<span class="fc" id="L540">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForBlankString() {
+<span class="fc" id="L544">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L546">                        () -&gt; Validate.notBlank(&quot;   &quot;));</span>
+
+<span class="fc" id="L548">                assertEquals(&quot;The validated character sequence is blank&quot;, ex.getMessage());</span>
+<span class="fc" id="L549">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForStringContainingOnlyWhitespaceChars() {
+<span class="fc" id="L553">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L555">                        () -&gt; Validate.notBlank(&quot; \n \t \r \n &quot;));</span>
+
+<span class="fc" id="L557">                assertEquals(&quot;The validated character sequence is blank&quot;, ex.getMessage());</span>
+<span class="fc" id="L558">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L562">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionForNonEmptyString() {
+<span class="fc" id="L566">                Validate.notBlank(&quot;abc&quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L567">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForNonEmptyStringContainingSpaces() {
+<span class="fc" id="L571">                Validate.notBlank(&quot;  abc   &quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L572">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForNonEmptyStringContainingWhitespaceChars() {
+<span class="fc" id="L576">                Validate.notBlank(&quot; \n \t abc \r \n &quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L577">            }</span>
+
+            @Test
+            void shouldReturnNonBlankValue() {
+<span class="fc" id="L581">                final String str = &quot;abc&quot;;</span>
+<span class="fc" id="L582">                final String result = Validate.notBlank(str, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L584">                assertSame(str, result);</span>
+<span class="fc" id="L585">            }</span>
+
+            @Test
+            void shouldThrowNullPointerExceptionWithGivenMessageForNullString() {
+<span class="fc" id="L589">                final NullPointerException ex = assertThrows(</span>
+                        NullPointerException.class,
+<span class="nc" id="L591">                        () -&gt; Validate.notBlank(null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L593">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L594">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGivenMessageForEmptyString() {
+<span class="fc" id="L598">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L600">                        () -&gt; Validate.notBlank(&quot;&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L602">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L603">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGivenMessageForBlankString() {
+<span class="fc" id="L607">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L609">                        () -&gt; Validate.notBlank(&quot;   &quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L611">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L612">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGivenMessageForStringContainingOnlyWhitespaceChars() {
+<span class="fc" id="L616">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L618">                        () -&gt; Validate.notBlank(&quot; \n \t \r \n &quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L620">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L621">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L626">    class NoNullElements {</span>
+
+        @Nested
+<span class="fc" id="L629">        class WithArray {</span>
+
+            @Nested
+<span class="fc" id="L632">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForNonEmptyArray() {
+<span class="fc" id="L636">                    Validate.noNullElements(new String[]{&quot;a&quot;, &quot;b&quot;});</span>
+<span class="fc" id="L637">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L641">                    final String[] array = {&quot;a&quot;, &quot;b&quot;};</span>
+<span class="fc" id="L642">                    final String[] result = Validate.noNullElements(array);</span>
+
+<span class="fc" id="L644">                    assertSame(array, result);</span>
+<span class="fc" id="L645">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullArray() {
+<span class="fc" id="L649">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L651">                            () -&gt; Validate.noNullElements((Object[]) null));</span>
+
+<span class="fc" id="L653">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L654">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForArrayWithNullElement() {
+<span class="fc" id="L658">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L660">                            () -&gt; Validate.noNullElements(new String[]{&quot;a&quot;, null}));</span>
+
+<span class="fc" id="L662">                    assertEquals(&quot;The validated array contains null element at index: 1&quot;, ex.getMessage());</span>
+<span class="fc" id="L663">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L667">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForNonEmptyArray() {
+<span class="fc" id="L671">                    Validate.noNullElements(new String[]{&quot;a&quot;, &quot;b&quot;}, &quot;MSG&quot;);</span>
+<span class="fc" id="L672">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L676">                    final String[] array = {&quot;a&quot;, &quot;b&quot;};</span>
+<span class="fc" id="L677">                    final String[] result = Validate.noNullElements(array, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L679">                    assertSame(array, result);</span>
+<span class="fc" id="L680">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullArray() {
+<span class="fc" id="L684">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L686">                            () -&gt; Validate.noNullElements((Object[]) null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L688">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L689">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageForArrayWithNullElement() {
+<span class="fc" id="L693">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L695">                            () -&gt; Validate.noNullElements(new String[]{&quot;a&quot;, null}, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L697">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L698">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L703">        class WithCollection {</span>
+
+            @Nested
+<span class="fc" id="L706">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForNonEmptyCollection() {
+<span class="fc" id="L710">                    Validate.noNullElements(Collections.singleton(&quot;a&quot;));</span>
+<span class="fc" id="L711">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L715">                    Set&lt;String&gt; col = Collections.singleton(&quot;a&quot;);</span>
+<span class="fc" id="L716">                    final Set&lt;String&gt; result = Validate.noNullElements(col);</span>
+
+<span class="fc" id="L718">                    assertSame(col, result);</span>
+<span class="fc" id="L719">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullCollection() {
+<span class="fc" id="L723">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L725">                            () -&gt; Validate.noNullElements((Collection&lt;?&gt;) null));</span>
+
+<span class="fc" id="L727">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L728">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageForCollectionWithNullElement() {
+<span class="fc" id="L732">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L734">                            () -&gt; Validate.noNullElements(Collections.singleton(null)));</span>
+
+<span class="fc" id="L736">                    assertEquals(&quot;The validated collection contains null element at index: 0&quot;, ex.getMessage());</span>
+<span class="fc" id="L737">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L741">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForNonEmptyCollection() {
+<span class="fc" id="L745">                    Validate.noNullElements(Collections.singleton(&quot;a&quot;), &quot;MSG&quot;);</span>
+<span class="fc" id="L746">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L750">                    Set&lt;String&gt; col = Collections.singleton(&quot;a&quot;);</span>
+<span class="fc" id="L751">                    final Set&lt;String&gt; result = Validate.noNullElements(col, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L753">                    assertSame(col, result);</span>
+<span class="fc" id="L754">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullCollection() {
+<span class="fc" id="L758">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L760">                            () -&gt; Validate.noNullElements((Collection&lt;?&gt;) null, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L762">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L763">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageForCollectionWithNullElement() {
+<span class="fc" id="L767">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L769">                            () -&gt; Validate.noNullElements(Collections.singleton(null), &quot;MSG&quot;));</span>
+
+<span class="fc" id="L771">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L772">                }</span>
+            }
+        }
+    }
+
+    @Nested
+<span class="fc" id="L778">    class ValidIndex {</span>
+
+        @Nested
+<span class="fc" id="L781">        class WithArray {</span>
+
+            @Nested
+<span class="fc" id="L784">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForValidIndex() {
+<span class="fc" id="L788">                    Validate.validIndex(new String[]{&quot;a&quot;}, 0);</span>
+<span class="fc" id="L789">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L793">                    final String[] array = {&quot;a&quot;};</span>
+<span class="fc" id="L794">                    final String[] result = Validate.validIndex(array, 0);</span>
+
+<span class="fc" id="L796">                    assertSame(array, result);</span>
+<span class="fc" id="L797">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultForNullArray() {
+<span class="fc" id="L801">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L803">                            () -&gt; Validate.validIndex((Object[]) null, 1));</span>
+
+<span class="fc" id="L805">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L806">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithDefaultMessageForNegativeIndex() {
+<span class="fc" id="L810">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L812">                            () -&gt; Validate.validIndex(new String[]{&quot;a&quot;}, -1));</span>
+
+<span class="fc" id="L814">                    assertEquals(&quot;The validated array index is invalid: -1&quot;, ex.getMessage());</span>
+<span class="fc" id="L815">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithDefaultMessageForIndexOutOfBounds() {
+<span class="fc" id="L819">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L821">                            () -&gt; Validate.validIndex(new String[]{&quot;a&quot;}, 1));</span>
+
+<span class="fc" id="L823">                    assertEquals(&quot;The validated array index is invalid: 1&quot;, ex.getMessage());</span>
+<span class="fc" id="L824">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L828">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForValidIndex() {
+<span class="fc" id="L832">                    Validate.validIndex(new String[]{&quot;a&quot;}, 0, &quot;MSG&quot;);</span>
+<span class="fc" id="L833">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L837">                    final String[] array = {&quot;a&quot;};</span>
+<span class="fc" id="L838">                    final String[] result = Validate.validIndex(array, 0, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L840">                    assertSame(array, result);</span>
+<span class="fc" id="L841">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullArray() {
+<span class="fc" id="L845">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L847">                            () -&gt; Validate.validIndex((Object[]) null, 1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L849">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L850">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithGivenMessageForNegativeIndex() {
+<span class="fc" id="L854">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L856">                            () -&gt; Validate.validIndex(new String[]{&quot;a&quot;}, -1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L858">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L859">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithGivenMessageForIndexOutOfBounds() {
+<span class="fc" id="L863">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L865">                            () -&gt; Validate.validIndex(new String[]{&quot;a&quot;}, 1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L867">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L868">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L873">        class WithCollection {</span>
+
+            @Nested
+<span class="fc" id="L876">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForValidIndex() {
+<span class="fc" id="L880">                    Validate.validIndex(Collections.singleton(&quot;a&quot;), 0);</span>
+<span class="fc" id="L881">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L885">                    final Set&lt;String&gt; col = Collections.singleton(&quot;a&quot;);</span>
+<span class="fc" id="L886">                    final Set&lt;String&gt; result = Validate.validIndex(col, 0);</span>
+
+<span class="fc" id="L888">                    assertSame(col, result);</span>
+<span class="fc" id="L889">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultForNullCollection() {
+<span class="fc" id="L893">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L895">                            () -&gt; Validate.validIndex((Collection&lt;?&gt;) null, 1));</span>
+
+<span class="fc" id="L897">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L898">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithDefaultMessageForNegativeIndex() {
+<span class="fc" id="L902">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L904">                            () -&gt; Validate.validIndex(Collections.singleton(&quot;a&quot;), -1));</span>
+
+<span class="fc" id="L906">                    assertEquals(&quot;The validated collection index is invalid: -1&quot;, ex.getMessage());</span>
+<span class="fc" id="L907">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithDefaultMessageForIndexOutOfBounds() {
+<span class="fc" id="L911">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L913">                            () -&gt; Validate.validIndex(Collections.singleton(&quot;a&quot;), 1));</span>
+
+<span class="fc" id="L915">                    assertEquals(&quot;The validated collection index is invalid: 1&quot;, ex.getMessage());</span>
+<span class="fc" id="L916">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L920">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForValidIndex() {
+<span class="fc" id="L924">                    Validate.validIndex(Collections.singleton(&quot;a&quot;), 0, &quot;MSG&quot;);</span>
+<span class="fc" id="L925">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L929">                    final Set&lt;String&gt; col = Collections.singleton(&quot;a&quot;);</span>
+<span class="fc" id="L930">                    final Set&lt;String&gt; result = Validate.validIndex(col, 0, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L932">                    assertSame(col, result);</span>
+<span class="fc" id="L933">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullCollection() {
+<span class="fc" id="L937">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L939">                            () -&gt; Validate.validIndex((Collection&lt;?&gt;) null, 1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L941">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L942">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithGivenMessageForNegativeIndex() {
+<span class="fc" id="L946">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L948">                            () -&gt; Validate.validIndex(Collections.singleton(&quot;a&quot;), -1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L950">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L951">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithGivenMessageForIndexOutOfBounds() {
+<span class="fc" id="L955">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L957">                            () -&gt; Validate.validIndex(Collections.singleton(&quot;a&quot;), 1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L959">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L960">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L965">        class WithCharSequence {</span>
+
+            @Nested
+<span class="fc" id="L968">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForValidIndex() {
+<span class="fc" id="L972">                    Validate.validIndex(&quot;a&quot;, 0);</span>
+<span class="fc" id="L973">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L977">                    final String str = &quot;a&quot;;</span>
+<span class="fc" id="L978">                    final String result = Validate.validIndex(str, 0);</span>
+
+<span class="fc" id="L980">                    assertSame(str, result);</span>
+<span class="fc" id="L981">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultForNullString() {
+<span class="fc" id="L985">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L987">                            () -&gt; Validate.validIndex((String) null, 1));</span>
+
+<span class="fc" id="L989">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L990">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithDefaultMessageForNegativeIndex() {
+<span class="fc" id="L994">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L996">                            () -&gt; Validate.validIndex(&quot;a&quot;, -1));</span>
+
+<span class="fc" id="L998">                    assertEquals(&quot;The validated character sequence index is invalid: -1&quot;, ex.getMessage());</span>
+<span class="fc" id="L999">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithDefaultMessageForIndexOutOfBounds() {
+<span class="fc" id="L1003">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L1005">                            () -&gt; Validate.validIndex(&quot;a&quot;, 1));</span>
+
+<span class="fc" id="L1007">                    assertEquals(&quot;The validated character sequence index is invalid: 1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1008">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1012">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionForValidIndex() {
+<span class="fc" id="L1016">                    Validate.validIndex(&quot;a&quot;, 0, &quot;MSG&quot;);</span>
+<span class="fc" id="L1017">                }</span>
+
+                @Test
+                void shouldReturnSameInstance() {
+<span class="fc" id="L1021">                    final String str = &quot;a&quot;;</span>
+<span class="fc" id="L1022">                    final String result = Validate.validIndex(str, 0, &quot;MSG&quot;);</span>
+
+<span class="fc" id="L1024">                    assertSame(str, result);</span>
+<span class="fc" id="L1025">                }</span>
+
+                @Test
+                void shouldThrowNullPointerExceptionWithDefaultMessageForNullStr() {
+<span class="fc" id="L1029">                    final NullPointerException ex = assertThrows(</span>
+                            NullPointerException.class,
+<span class="nc" id="L1031">                            () -&gt; Validate.validIndex((String) null, 1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1033">                    assertEquals(&quot;The validated object is null&quot;, ex.getMessage());</span>
+<span class="fc" id="L1034">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithGivenMessageForNegativeIndex() {
+<span class="fc" id="L1038">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L1040">                            () -&gt; Validate.validIndex(&quot;a&quot;, -1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1042">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1043">                }</span>
+
+                @Test
+                void shouldThrowIndexOutOfBoundsExceptionWithGivenMessageForIndexOutOfBounds() {
+<span class="fc" id="L1047">                    final IndexOutOfBoundsException ex = assertThrows(</span>
+                            IndexOutOfBoundsException.class,
+<span class="nc" id="L1049">                            () -&gt; Validate.validIndex(&quot;a&quot;, 1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1051">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1052">                }</span>
+            }
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1058">    class MatchesPattern {</span>
+
+        @Nested
+<span class="fc" id="L1061">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenStringMatchesPattern() {
+<span class="fc" id="L1065">                Validate.matchesPattern(&quot;hi&quot;, &quot;[a-z]*&quot;);</span>
+<span class="fc" id="L1066">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenStringDoesNotMatchPattern() {
+<span class="fc" id="L1070">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1072">                        () -&gt; Validate.matchesPattern(&quot;hi&quot;, &quot;[0-9]*&quot;));</span>
+
+<span class="fc" id="L1074">                assertEquals(&quot;The string hi does not match the pattern [0-9]*&quot;, ex.getMessage());</span>
+<span class="fc" id="L1075">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L1079">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenStringMatchesPattern() {
+<span class="fc" id="L1083">                Validate.matchesPattern(&quot;hi&quot;, &quot;[a-z]*&quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L1084">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWhenStringDoesNotMatchPattern() {
+<span class="fc" id="L1088">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1090">                        () -&gt; Validate.matchesPattern(&quot;hi&quot;, &quot;[0-9]*&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1092">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1093">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1098">    class NotNaN {</span>
+
+        @Nested
+<span class="fc" id="L1101">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionForNumber() {
+<span class="fc" id="L1105">                Validate.notNaN(0.0);</span>
+<span class="fc" id="L1106">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForPositiveInfinity() {
+<span class="fc" id="L1110">                Validate.notNaN(Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L1111">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForNegativeInfinity() {
+<span class="fc" id="L1115">                Validate.notNaN(Double.NEGATIVE_INFINITY);</span>
+<span class="fc" id="L1116">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForNaN() {
+<span class="fc" id="L1120">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1122">                        () -&gt; Validate.notNaN(Double.NaN));</span>
+
+<span class="fc" id="L1124">                assertEquals(&quot;The validated value is not a number&quot;, ex.getMessage());</span>
+<span class="fc" id="L1125">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L1129">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionForNumber() {
+<span class="fc" id="L1133">                Validate.notNaN(0.0, &quot;MSG&quot;);</span>
+<span class="fc" id="L1134">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForPositiveInfinity() {
+<span class="fc" id="L1138">                Validate.notNaN(Double.POSITIVE_INFINITY, &quot;MSG&quot;);</span>
+<span class="fc" id="L1139">            }</span>
+
+            @Test
+            void shouldNotThrowExceptionForNegativeInfinity() {
+<span class="fc" id="L1143">                Validate.notNaN(Double.NEGATIVE_INFINITY, &quot;MSG&quot;);</span>
+<span class="fc" id="L1144">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGivenMessageForNaN() {
+<span class="fc" id="L1148">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1150">                        () -&gt; Validate.notNaN(Double.NaN, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1152">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1153">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1158">    class Finite {</span>
+
+        @Nested
+<span class="fc" id="L1161">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionForFiniteValue() {
+<span class="fc" id="L1165">                Validate.finite(0.0);</span>
+<span class="fc" id="L1166">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForPositiveInfinity() {
+<span class="fc" id="L1170">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1172">                        () -&gt; Validate.finite(Double.POSITIVE_INFINITY));</span>
+
+<span class="fc" id="L1174">                assertEquals(&quot;The value is invalid: Infinity&quot;, ex.getMessage());</span>
+<span class="fc" id="L1175">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForNegativeInfinity() {
+<span class="fc" id="L1179">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1181">                        () -&gt; Validate.finite(Double.NEGATIVE_INFINITY));</span>
+
+<span class="fc" id="L1183">                assertEquals(&quot;The value is invalid: -Infinity&quot;, ex.getMessage());</span>
+<span class="fc" id="L1184">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForNaN() {
+<span class="fc" id="L1188">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1190">                        () -&gt; Validate.finite(Double.NaN));</span>
+
+<span class="fc" id="L1192">                assertEquals(&quot;The value is invalid: NaN&quot;, ex.getMessage());</span>
+<span class="fc" id="L1193">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L1197">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionForFiniteValue() {
+<span class="fc" id="L1201">                Validate.finite(0.0, &quot;MSG&quot;);</span>
+<span class="fc" id="L1202">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForPositiveInfinity() {
+<span class="fc" id="L1206">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1208">                        () -&gt; Validate.finite(Double.POSITIVE_INFINITY, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1210">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1211">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForNegativeInfinity() {
+<span class="fc" id="L1215">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1217">                        () -&gt; Validate.finite(Double.NEGATIVE_INFINITY, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1219">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1220">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageForNaN() {
+<span class="fc" id="L1224">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1226">                        () -&gt; Validate.finite(Double.NaN, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1228">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1229">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1234">    class InclusiveBetween {</span>
+
+        @Nested
+<span class="fc" id="L1237">        class WithComparable {</span>
+
+            private static final String LOWER_BOUND = &quot;1&quot;;
+            private static final String UPPER_BOUND = &quot;3&quot;;
+
+            @Nested
+<span class="fc" id="L1243">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1247">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;2&quot;);</span>
+<span class="fc" id="L1248">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsLowerBound() {
+<span class="fc" id="L1252">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND);</span>
+<span class="fc" id="L1253">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsUpperBound() {
+<span class="fc" id="L1257">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND);</span>
+<span class="fc" id="L1258">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1262">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1264">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;0&quot;));</span>
+
+<span class="fc" id="L1266">                    assertEquals(&quot;The value 0 is not in the specified inclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1267">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1271">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1273">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;4&quot;));</span>
+
+<span class="fc" id="L1275">                    assertEquals(&quot;The value 4 is not in the specified inclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1276">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1280">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1284">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;2&quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L1285">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsLowerBound() {
+<span class="fc" id="L1289">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND, &quot;MSG&quot;);</span>
+<span class="fc" id="L1290">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsUpperBound() {
+<span class="fc" id="L1294">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND, &quot;MSG&quot;);</span>
+<span class="fc" id="L1295">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1299">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1301">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;0&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1303">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1304">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1308">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1310">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;4&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1312">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1313">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L1318">        class WithLong {</span>
+
+            private static final long LOWER_BOUND = 1;
+            private static final long UPPER_BOUND = 3;
+
+            @Nested
+<span class="fc" id="L1324">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1328">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2);</span>
+<span class="fc" id="L1329">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsLowerBound() {
+<span class="fc" id="L1333">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND);</span>
+<span class="fc" id="L1334">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsUpperBound() {
+<span class="fc" id="L1338">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND);</span>
+<span class="fc" id="L1339">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1343">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1345">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0));</span>
+
+<span class="fc" id="L1347">                    assertEquals(&quot;The value 0 is not in the specified inclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1348">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1352">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1354">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4));</span>
+
+<span class="fc" id="L1356">                    assertEquals(&quot;The value 4 is not in the specified inclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1357">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1361">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1365">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2, &quot;MSG&quot;);</span>
+<span class="fc" id="L1366">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsLowerBound() {
+<span class="fc" id="L1370">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND, &quot;MSG&quot;);</span>
+<span class="fc" id="L1371">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsUpperBound() {
+<span class="fc" id="L1375">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND, &quot;MSG&quot;);</span>
+<span class="fc" id="L1376">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1380">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1382">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1384">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1385">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1389">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1391">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1393">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1394">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L1399">        class WithDouble {</span>
+
+            private static final double LOWER_BOUND = 0.1;
+            private static final double UPPER_BOUND = 3.1;
+
+            @Nested
+<span class="fc" id="L1405">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1409">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2.1);</span>
+<span class="fc" id="L1410">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsLowerBound() {
+<span class="fc" id="L1414">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND);</span>
+<span class="fc" id="L1415">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsUpperBound() {
+<span class="fc" id="L1419">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND);</span>
+<span class="fc" id="L1420">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1424">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1426">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0.01));</span>
+
+<span class="fc" id="L1428">                    assertEquals(&quot;The value 0.01 is not in the specified inclusive range of 0.1 to 3.1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1429">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1433">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1435">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4.1));</span>
+
+<span class="fc" id="L1437">                    assertEquals(&quot;The value 4.1 is not in the specified inclusive range of 0.1 to 3.1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1438">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1442">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1446">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2.1, &quot;MSG&quot;);</span>
+<span class="fc" id="L1447">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsLowerBound() {
+<span class="fc" id="L1451">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND, &quot;MSG&quot;);</span>
+<span class="fc" id="L1452">                }</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsUpperBound() {
+<span class="fc" id="L1456">                    Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND, &quot;MSG&quot;);</span>
+<span class="fc" id="L1457">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1461">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1463">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0.01, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1465">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1466">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1470">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1472">                            () -&gt; Validate.inclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4.1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1474">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1475">                }</span>
+            }
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1481">    class ExclusiveBetween {</span>
+
+        @Nested
+<span class="fc" id="L1484">        class WithComparable {</span>
+
+            private static final String LOWER_BOUND = &quot;1&quot;;
+            private static final String UPPER_BOUND = &quot;3&quot;;
+
+            @Nested
+<span class="fc" id="L1490">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1494">                    Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;2&quot;);</span>
+<span class="fc" id="L1495">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsLowerBound() {
+<span class="fc" id="L1499">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1501">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND));</span>
+
+<span class="fc" id="L1503">                    assertEquals(&quot;The value 1 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1504">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsUpperBound() {
+<span class="fc" id="L1508">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1510">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND));</span>
+
+<span class="fc" id="L1512">                    assertEquals(&quot;The value 3 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1513">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1517">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1519">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;0&quot;));</span>
+
+<span class="fc" id="L1521">                    assertEquals(&quot;The value 0 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1522">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1526">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1528">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;4&quot;));</span>
+
+<span class="fc" id="L1530">                    assertEquals(&quot;The value 4 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1531">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1535">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1539">                    Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;2&quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L1540">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsLowerBound() {
+<span class="fc" id="L1544">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1546">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1548">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1549">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsUpperBound() {
+<span class="fc" id="L1553">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1555">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1557">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1558">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1562">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1564">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;0&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1566">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1567">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1571">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1573">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, &quot;4&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1575">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1576">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L1581">        class WithLong {</span>
+
+            private static final long LOWER_BOUND = 1;
+            private static final long UPPER_BOUND = 3;
+
+            @Nested
+<span class="fc" id="L1587">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1591">                    Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2);</span>
+<span class="fc" id="L1592">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsLowerBound() {
+<span class="fc" id="L1596">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1598">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND));</span>
+
+<span class="fc" id="L1600">                    assertEquals(&quot;The value 1 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1601">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsUpperBound() {
+<span class="fc" id="L1605">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1607">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND));</span>
+
+<span class="fc" id="L1609">                    assertEquals(&quot;The value 3 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1610">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1614">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1616">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0));</span>
+
+<span class="fc" id="L1618">                    assertEquals(&quot;The value 0 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1619">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1623">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1625">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4));</span>
+
+<span class="fc" id="L1627">                    assertEquals(&quot;The value 4 is not in the specified exclusive range of 1 to 3&quot;, ex.getMessage());</span>
+<span class="fc" id="L1628">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1632">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1636">                    Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2, &quot;MSG&quot;);</span>
+<span class="fc" id="L1637">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsLowerBound() {
+<span class="fc" id="L1641">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1643">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1645">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1646">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsUpperBound() {
+<span class="fc" id="L1650">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1652">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1654">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1655">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1659">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1661">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1663">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1664">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1668">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1670">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1672">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1673">                }</span>
+            }
+        }
+
+        @Nested
+<span class="fc" id="L1678">        class WithDouble {</span>
+
+            private static final double LOWER_BOUND = 0.1;
+            private static final double UPPER_BOUND = 3.1;
+
+            @Nested
+<span class="fc" id="L1684">            class WithoutMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1688">                    Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2.1);</span>
+<span class="fc" id="L1689">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExcdeptionWhenValueIsLowerBound() {
+<span class="fc" id="L1693">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1695">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND));</span>
+
+<span class="fc" id="L1697">                    assertEquals(&quot;The value 0.1 is not in the specified exclusive range of 0.1 to 3.1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1698">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExcdeptionWhenValueIsUpperBound() {
+<span class="fc" id="L1702">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1704">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND));</span>
+
+<span class="fc" id="L1706">                    assertEquals(&quot;The value 3.1 is not in the specified exclusive range of 0.1 to 3.1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1707">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1711">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1713">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0.01));</span>
+
+<span class="fc" id="L1715">                    assertEquals(&quot;The value 0.01 is not in the specified exclusive range of 0.1 to 3.1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1716">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1720">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1722">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4.1));</span>
+
+<span class="fc" id="L1724">                    assertEquals(&quot;The value 4.1 is not in the specified exclusive range of 0.1 to 3.1&quot;, ex.getMessage());</span>
+<span class="fc" id="L1725">                }</span>
+            }
+
+            @Nested
+<span class="fc" id="L1729">            class WithMessage {</span>
+
+                @Test
+                void shouldNotThrowExceptionWhenValueIsBetweenBounds() {
+<span class="fc" id="L1733">                    Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 2.1, &quot;MSG&quot;);</span>
+<span class="fc" id="L1734">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExcdeptionWhenValueIsLowerBound() {
+<span class="fc" id="L1738">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1740">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, LOWER_BOUND, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1742">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1743">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExcdeptionWhenValueIsUpperBound() {
+<span class="fc" id="L1747">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1749">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, UPPER_BOUND, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1751">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1752">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsBelowLowerBound() {
+<span class="fc" id="L1756">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1758">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 0.01, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1760">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1761">                }</span>
+
+                @Test
+                void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsAboveUpperBound() {
+<span class="fc" id="L1765">                    final IllegalArgumentException ex = assertThrows(</span>
+                            IllegalArgumentException.class,
+<span class="nc" id="L1767">                            () -&gt; Validate.exclusiveBetween(LOWER_BOUND, UPPER_BOUND, 4.1, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1769">                    assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1770">                }</span>
+            }
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1776">    class IsInstanceOf {</span>
+
+        @Nested
+<span class="fc" id="L1779">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenValueIsInstanceOfClass() {
+<span class="fc" id="L1783">                Validate.isInstanceOf(String.class, &quot;hi&quot;);</span>
+<span class="fc" id="L1784">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenValueIsNotInstanceOfClass() {
+<span class="fc" id="L1788">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1790">                        () -&gt; Validate.isInstanceOf(List.class, &quot;hi&quot;));</span>
+
+<span class="fc" id="L1792">                assertEquals(&quot;Expected type: java.util.List, actual: java.lang.String&quot;, ex.getMessage());</span>
+<span class="fc" id="L1793">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L1797">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenValueIsInstanceOfClass() {
+<span class="fc" id="L1801">                Validate.isInstanceOf(String.class, &quot;hi&quot;, &quot;MSG&quot;);</span>
+<span class="fc" id="L1802">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsNotInstanceOfClass() {
+<span class="fc" id="L1806">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1808">                        () -&gt; Validate.isInstanceOf(List.class, &quot;hi&quot;, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1810">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1811">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L1815">        class WithMessageTemplate {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenValueIsInstanceOfClass() {
+<span class="fc" id="L1819">                Validate.isInstanceOf(String.class, &quot;hi&quot;, &quot;Error %s=%s&quot;, &quot;Name&quot;, &quot;Value&quot;);</span>
+<span class="fc" id="L1820">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGivenMessageWhenValueIsNotInstanceOfClass() {
+<span class="fc" id="L1824">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1826">                        () -&gt; Validate.isInstanceOf(List.class, &quot;hi&quot;, &quot;Error %s=%s&quot;, &quot;Name&quot;, &quot;Value&quot;));</span>
+
+<span class="fc" id="L1828">                assertEquals(&quot;Error Name=Value&quot;, ex.getMessage());</span>
+<span class="fc" id="L1829">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1834">    class IsAssignable {</span>
+
+        @Nested
+<span class="fc" id="L1837">        class WithoutMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenClassIsAssignable() {
+<span class="fc" id="L1841">                Validate.isAssignableFrom(CharSequence.class, String.class);</span>
+<span class="fc" id="L1842">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithDefaultMessageWhenClassIsNotAssignable() {
+<span class="fc" id="L1846">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1848">                        () -&gt; Validate.isAssignableFrom(List.class, String.class));</span>
+
+<span class="fc" id="L1850">                assertEquals(&quot;Cannot assign a java.lang.String to a java.util.List&quot;, ex.getMessage());</span>
+<span class="fc" id="L1851">            }</span>
+        }
+
+        @Nested
+<span class="fc" id="L1855">        class WithMessage {</span>
+
+            @Test
+            void shouldNotThrowExceptionWhenClassIsAssignable() {
+<span class="fc" id="L1859">                Validate.isAssignableFrom(CharSequence.class, String.class, &quot;MSG&quot;);</span>
+<span class="fc" id="L1860">            }</span>
+
+            @Test
+            void shouldThrowIllegalArgumentExceptionWithGiventMessageWhenClassIsNotAssignable() {
+<span class="fc" id="L1864">                final IllegalArgumentException ex = assertThrows(</span>
+                        IllegalArgumentException.class,
+<span class="nc" id="L1866">                        () -&gt; Validate.isAssignableFrom(List.class, String.class, &quot;MSG&quot;));</span>
+
+<span class="fc" id="L1868">                assertEquals(&quot;MSG&quot;, ex.getMessage());</span>
+<span class="fc" id="L1869">            }</span>
+        }
+    }
+
+    @Nested
+<span class="fc" id="L1874">    class UtilClassConventions {</span>
+
+        @Test
+        void instancesCanBeConstrcuted() {
+<span class="fc" id="L1878">            assertNotNull(new Validate());</span>
+<span class="fc" id="L1879">        }</span>
+
+        @Test
+        void hasOnlyOnePublicConstructor() {
+<span class="fc" id="L1883">            final Constructor&lt;?&gt;[] cons = Validate.class.getDeclaredConstructors();</span>
+<span class="fc" id="L1884">            assertEquals(1, cons.length);</span>
+<span class="fc" id="L1885">        }</span>
+
+        @Test
+        void isPublicClass() {
+<span class="fc" id="L1889">            assertTrue(Modifier.isPublic(Validate.class.getModifiers()));</span>
+<span class="fc" id="L1890">        }</span>
+
+        @Test
+        void isNonFinalClass() {
+<span class="fc" id="L1894">            assertFalse(Modifier.isFinal(Validate.class.getModifiers()));</span>
+<span class="fc" id="L1895">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

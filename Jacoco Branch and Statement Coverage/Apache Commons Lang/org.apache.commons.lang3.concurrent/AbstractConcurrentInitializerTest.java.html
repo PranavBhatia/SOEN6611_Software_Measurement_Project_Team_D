@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractConcurrentInitializerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">AbstractConcurrentInitializerTest.java</span></div><h1>AbstractConcurrentInitializerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * &lt;p&gt;
+ * An abstract base class for tests of concrete {@code ConcurrentInitializer}
+ * implementations.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * This class provides some basic tests for initializer implementations. Derived
+ * class have to create a {@link ConcurrentInitializer} object on which the
+ * tests are executed.
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L37">public abstract class AbstractConcurrentInitializerTest {</span>
+    /**
+     * Tests a simple invocation of the get() method.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException because the object under test may throw it
+     */
+    @Test
+    public void testGet() throws ConcurrentException {
+<span class="fc" id="L45">        assertNotNull(createInitializer().get(), &quot;No managed object&quot;);</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Tests whether sequential get() invocations always return the same
+     * instance.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException because the object under test may throw it
+     */
+    @Test
+    public void testGetMultipleTimes() throws ConcurrentException {
+<span class="fc" id="L56">        final ConcurrentInitializer&lt;Object&gt; initializer = createInitializer();</span>
+<span class="fc" id="L57">        final Object obj = initializer.get();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (int i = 0; i &lt; 10; i++) {</span>
+<span class="fc" id="L59">            assertEquals(obj, initializer.get(), &quot;Got different object at &quot; + i);</span>
+        }
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Tests whether get() can be invoked from multiple threads concurrently.
+     * Always the same object should be returned.
+     *
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException because the object under test may throw it
+     * @throws java.lang.InterruptedException because the threading API my throw it
+     */
+    @Test
+    public void testGetConcurrent() throws ConcurrentException,
+            InterruptedException {
+<span class="fc" id="L73">        final ConcurrentInitializer&lt;Object&gt; initializer = createInitializer();</span>
+<span class="fc" id="L74">        final int threadCount = 20;</span>
+<span class="fc" id="L75">        final CountDownLatch startLatch = new CountDownLatch(1);</span>
+<span class="fc" id="L76">        class GetThread extends Thread {</span>
+            Object object;
+
+            @Override
+            public void run() {
+                try {
+                    // wait until all threads are ready for maximum parallelism
+<span class="fc" id="L83">                    startLatch.await();</span>
+                    // access the initializer
+<span class="fc" id="L85">                    object = initializer.get();</span>
+<span class="nc" id="L86">                } catch (final InterruptedException iex) {</span>
+                    // ignore
+<span class="nc" id="L88">                } catch (final ConcurrentException cex) {</span>
+<span class="nc" id="L89">                    object = cex;</span>
+<span class="pc" id="L90">                }</span>
+<span class="fc" id="L91">            }</span>
+        }
+
+<span class="fc" id="L94">        final GetThread[] threads = new GetThread[threadCount];</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (int i = 0; i &lt; threadCount; i++) {</span>
+<span class="fc" id="L96">            threads[i] = new GetThread();</span>
+<span class="fc" id="L97">            threads[i].start();</span>
+        }
+
+        // fire all threads and wait until they are ready
+<span class="fc" id="L101">        startLatch.countDown();</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        for (final Thread t : threads) {</span>
+<span class="fc" id="L103">            t.join();</span>
+        }
+
+        // check results
+<span class="fc" id="L107">        final Object managedObject = initializer.get();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (final GetThread t : threads) {</span>
+<span class="fc" id="L109">            assertEquals(managedObject, t.object, &quot;Wrong object&quot;);</span>
+        }
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Creates the {@link ConcurrentInitializer} object to be tested. This
+     * method is called whenever the test fixture needs to be obtained.
+     *
+     * @return the initializer object to be tested
+     */
+    protected abstract ConcurrentInitializer&lt;Object&gt; createInitializer();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

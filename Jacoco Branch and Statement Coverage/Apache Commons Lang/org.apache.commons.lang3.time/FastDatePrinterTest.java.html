@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FastDatePrinterTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">FastDatePrinterTest.java</span></div><h1>FastDatePrinterTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.Serializable;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.DefaultLocale;
+import org.junitpioneer.jupiter.DefaultTimeZone;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.time.FastDatePrinter}.
+ *
+ * @since 3.0
+ */
+<span class="fc" id="L43">public class FastDatePrinterTest {</span>
+
+    private static final String YYYY_MM_DD = &quot;yyyy/MM/dd&quot;;
+<span class="fc" id="L46">    private static final TimeZone NEW_YORK = TimeZone.getTimeZone(&quot;America/New_York&quot;);</span>
+<span class="fc" id="L47">    private static final TimeZone GMT = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="fc" id="L48">    private static final TimeZone INDIA = TimeZone.getTimeZone(&quot;Asia/Calcutta&quot;);</span>
+<span class="fc" id="L49">    private static final Locale SWEDEN = new Locale(&quot;sv&quot;, &quot;SE&quot;);</span>
+
+    DatePrinter getInstance(final String format) {
+<span class="fc" id="L52">        return getInstance(format, TimeZone.getDefault(), Locale.getDefault());</span>
+    }
+
+    private DatePrinter getDateInstance(final int dateStyle, final Locale locale) {
+<span class="fc" id="L56">        return getInstance(FormatCache.getPatternForStyle(Integer.valueOf(dateStyle), null, locale), TimeZone.getDefault(), Locale.getDefault());</span>
+    }
+
+    private DatePrinter getInstance(final String format, final Locale locale) {
+<span class="fc" id="L60">        return getInstance(format, TimeZone.getDefault(), locale);</span>
+    }
+
+    private DatePrinter getInstance(final String format, final TimeZone timeZone) {
+<span class="fc" id="L64">        return getInstance(format, timeZone, Locale.getDefault());</span>
+    }
+
+    /**
+     * Override this method in derived tests to change the construction of instances
+     * @param format the format string to use
+     * @param timeZone the time zone to use
+     * @param locale the locale to use
+     * @return the DatePrinter to use for testing
+     */
+    protected DatePrinter getInstance(final String format, final TimeZone timeZone, final Locale locale) {
+<span class="fc" id="L75">        return new FastDatePrinter(format, timeZone, locale);</span>
+    }
+
+    @DefaultLocale(language = &quot;en&quot;, country = &quot;US&quot;)
+    @DefaultTimeZone(&quot;America/New_York&quot;)
+    @Test
+    public void testFormat() {
+<span class="fc" id="L82">        final GregorianCalendar cal1 = new GregorianCalendar(2003, 0, 10, 15, 33, 20);</span>
+<span class="fc" id="L83">        final GregorianCalendar cal2 = new GregorianCalendar(2003, 6, 10, 9, 0, 0);</span>
+<span class="fc" id="L84">        final Date date1 = cal1.getTime();</span>
+<span class="fc" id="L85">        final Date date2 = cal2.getTime();</span>
+<span class="fc" id="L86">        final long millis1 = date1.getTime();</span>
+<span class="fc" id="L87">        final long millis2 = date2.getTime();</span>
+
+<span class="fc" id="L89">        DatePrinter fdf = getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss&quot;);</span>
+<span class="fc" id="L90">        SimpleDateFormat sdf = new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss&quot;);</span>
+<span class="fc" id="L91">        assertEquals(sdf.format(date1), fdf.format(date1));</span>
+<span class="fc" id="L92">        assertEquals(&quot;2003-01-10T15:33:20&quot;, fdf.format(date1));</span>
+<span class="fc" id="L93">        assertEquals(&quot;2003-01-10T15:33:20&quot;, fdf.format(cal1));</span>
+<span class="fc" id="L94">        assertEquals(&quot;2003-01-10T15:33:20&quot;, fdf.format(millis1));</span>
+<span class="fc" id="L95">        assertEquals(&quot;2003-07-10T09:00:00&quot;, fdf.format(date2));</span>
+<span class="fc" id="L96">        assertEquals(&quot;2003-07-10T09:00:00&quot;, fdf.format(cal2));</span>
+<span class="fc" id="L97">        assertEquals(&quot;2003-07-10T09:00:00&quot;, fdf.format(millis2));</span>
+
+<span class="fc" id="L99">        fdf = getInstance(&quot;Z&quot;);</span>
+<span class="fc" id="L100">        assertEquals(&quot;-0500&quot;, fdf.format(date1));</span>
+<span class="fc" id="L101">        assertEquals(&quot;-0500&quot;, fdf.format(cal1));</span>
+<span class="fc" id="L102">        assertEquals(&quot;-0500&quot;, fdf.format(millis1));</span>
+
+<span class="fc" id="L104">        assertEquals(&quot;-0400&quot;, fdf.format(date2));</span>
+<span class="fc" id="L105">        assertEquals(&quot;-0400&quot;, fdf.format(cal2));</span>
+<span class="fc" id="L106">        assertEquals(&quot;-0400&quot;, fdf.format(millis2));</span>
+
+<span class="fc" id="L108">        fdf = getInstance(&quot;ZZ&quot;);</span>
+<span class="fc" id="L109">        assertEquals(&quot;-05:00&quot;, fdf.format(date1));</span>
+<span class="fc" id="L110">        assertEquals(&quot;-05:00&quot;, fdf.format(cal1));</span>
+<span class="fc" id="L111">        assertEquals(&quot;-05:00&quot;, fdf.format(millis1));</span>
+
+<span class="fc" id="L113">        assertEquals(&quot;-04:00&quot;, fdf.format(date2));</span>
+<span class="fc" id="L114">        assertEquals(&quot;-04:00&quot;, fdf.format(cal2));</span>
+<span class="fc" id="L115">        assertEquals(&quot;-04:00&quot;, fdf.format(millis2));</span>
+
+<span class="fc" id="L117">        final String pattern = &quot;GGGG GGG GG G yyyy yyy yy y MMMM MMM MM M&quot; +</span>
+                &quot; dddd ddd dd d DDDD DDD DD D EEEE EEE EE E aaaa aaa aa a zzzz zzz zz z&quot;;
+<span class="fc" id="L119">        fdf = getInstance(pattern);</span>
+<span class="fc" id="L120">        sdf = new SimpleDateFormat(pattern);</span>
+        // SDF bug fix starting with Java 7
+<span class="fc" id="L122">        assertEquals(sdf.format(date1).replaceAll(&quot;2003 03 03 03&quot;, &quot;2003 2003 03 2003&quot;), fdf.format(date1));</span>
+<span class="fc" id="L123">        assertEquals(sdf.format(date2).replaceAll(&quot;2003 03 03 03&quot;, &quot;2003 2003 03 2003&quot;), fdf.format(date2));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Test case for {@link FastDateParser#FastDateParser(String, TimeZone, Locale)}.
+     */
+    @Test
+    public void testShortDateStyleWithLocales() {
+<span class="fc" id="L131">        final Locale usLocale = Locale.US;</span>
+<span class="fc" id="L132">        final Locale swedishLocale = new Locale(&quot;sv&quot;, &quot;SE&quot;);</span>
+<span class="fc" id="L133">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L134">        cal.set(2004, Calendar.FEBRUARY, 3);</span>
+<span class="fc" id="L135">        DatePrinter fdf = getDateInstance(FastDateFormat.SHORT, usLocale);</span>
+<span class="fc" id="L136">        assertEquals(&quot;2/3/04&quot;, fdf.format(cal));</span>
+
+<span class="fc" id="L138">        fdf = getDateInstance(FastDateFormat.SHORT, swedishLocale);</span>
+<span class="fc" id="L139">        assertEquals(&quot;2004-02-03&quot;, fdf.format(cal));</span>
+
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Tests that pre-1000AD years get padded with yyyy
+     */
+    @Test
+    public void testLowYearPadding() {
+<span class="fc" id="L148">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L149">        final DatePrinter format = getInstance(YYYY_MM_DD);</span>
+
+<span class="fc" id="L151">        cal.set(1, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L152">        assertEquals(&quot;0001/01/01&quot;, format.format(cal));</span>
+<span class="fc" id="L153">        cal.set(10, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L154">        assertEquals(&quot;0010/01/01&quot;, format.format(cal));</span>
+<span class="fc" id="L155">        cal.set(100, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L156">        assertEquals(&quot;0100/01/01&quot;, format.format(cal));</span>
+<span class="fc" id="L157">        cal.set(999, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L158">        assertEquals(&quot;0999/01/01&quot;, format.format(cal));</span>
+<span class="fc" id="L159">    }</span>
+    /**
+     * Show Bug #39410 is solved
+     */
+    @Test
+    public void testMilleniumBug() {
+<span class="fc" id="L165">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L166">        final DatePrinter format = getInstance(&quot;dd.MM.yyyy&quot;);</span>
+
+<span class="fc" id="L168">        cal.set(1000, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L169">        assertEquals(&quot;01.01.1000&quot;, format.format(cal));</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * testLowYearPadding showed that the date was buggy
+     * This test confirms it, getting 366 back as a date
+     */
+    @Test
+    public void testSimpleDate() {
+<span class="fc" id="L178">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L179">        final DatePrinter format = getInstance(YYYY_MM_DD);</span>
+
+<span class="fc" id="L181">        cal.set(2004, Calendar.DECEMBER, 31);</span>
+<span class="fc" id="L182">        assertEquals(&quot;2004/12/31&quot;, format.format(cal));</span>
+<span class="fc" id="L183">        cal.set(999, Calendar.DECEMBER, 31);</span>
+<span class="fc" id="L184">        assertEquals(&quot;0999/12/31&quot;, format.format(cal));</span>
+<span class="fc" id="L185">        cal.set(1, Calendar.MARCH, 2);</span>
+<span class="fc" id="L186">        assertEquals(&quot;0001/03/02&quot;, format.format(cal));</span>
+<span class="fc" id="L187">    }</span>
+
+    @Test
+    public void testLang303() {
+<span class="fc" id="L191">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L192">        cal.set(2004, Calendar.DECEMBER, 31);</span>
+
+<span class="fc" id="L194">        DatePrinter format = getInstance(YYYY_MM_DD);</span>
+<span class="fc" id="L195">        final String output = format.format(cal);</span>
+
+<span class="fc" id="L197">        format = SerializationUtils.deserialize(SerializationUtils.serialize((Serializable) format));</span>
+<span class="fc" id="L198">        assertEquals(output, format.format(cal));</span>
+<span class="fc" id="L199">    }</span>
+
+    @Test
+    public void testLang538() {
+        // more commonly constructed with: cal = new GregorianCalendar(2009, 9, 16, 8, 42, 16)
+        // for the unit test to work in any time zone, constructing with GMT-8 rather than default locale time zone
+<span class="fc" id="L205">        final GregorianCalendar cal = new GregorianCalendar(TimeZone.getTimeZone(&quot;GMT-8&quot;));</span>
+<span class="fc" id="L206">        cal.clear();</span>
+<span class="fc" id="L207">        cal.set(2009, Calendar.OCTOBER, 16, 8, 42, 16);</span>
+
+<span class="fc" id="L209">        final DatePrinter format = getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss.SSS'Z'&quot;, TimeZone.getTimeZone(&quot;GMT&quot;));</span>
+<span class="fc" id="L210">        assertEquals(&quot;2009-10-16T16:42:16.000Z&quot;, format.format(cal.getTime()), &quot;dateTime&quot;);</span>
+<span class="fc" id="L211">        assertEquals(&quot;2009-10-16T16:42:16.000Z&quot;, format.format(cal), &quot;dateTime&quot;);</span>
+<span class="fc" id="L212">    }</span>
+
+    @Test
+    public void testLang645() {
+<span class="fc" id="L216">        final Locale locale = new Locale(&quot;sv&quot;, &quot;SE&quot;);</span>
+
+<span class="fc" id="L218">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L219">        cal.set(2010, Calendar.JANUARY, 1, 12, 0, 0);</span>
+<span class="fc" id="L220">        final Date d = cal.getTime();</span>
+
+<span class="fc" id="L222">        final DatePrinter fdf = getInstance(&quot;EEEE', week 'ww&quot;, locale);</span>
+
+<span class="fc" id="L224">        assertEquals(&quot;fredag, week 53&quot;, fdf.format(d));</span>
+<span class="fc" id="L225">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L229">        final DatePrinter printer1= getInstance(YYYY_MM_DD);</span>
+<span class="fc" id="L230">        final DatePrinter printer2= getInstance(YYYY_MM_DD);</span>
+
+<span class="fc" id="L232">        assertEquals(printer1, printer2);</span>
+<span class="fc" id="L233">        assertEquals(printer1.hashCode(), printer2.hashCode());</span>
+
+<span class="fc" id="L235">        assertNotEquals(printer1, new Object());</span>
+<span class="fc" id="L236">    }</span>
+
+    @Test
+    public void testToStringContainsName() {
+<span class="fc" id="L240">        final DatePrinter printer= getInstance(YYYY_MM_DD);</span>
+<span class="fc" id="L241">        assertTrue(printer.toString().startsWith(&quot;FastDate&quot;));</span>
+<span class="fc" id="L242">    }</span>
+
+    @Test
+    public void testPatternMatches() {
+<span class="fc" id="L246">        final DatePrinter printer= getInstance(YYYY_MM_DD);</span>
+<span class="fc" id="L247">        assertEquals(YYYY_MM_DD, printer.getPattern());</span>
+<span class="fc" id="L248">    }</span>
+
+    @Test
+    public void testLocaleMatches() {
+<span class="fc" id="L252">        final DatePrinter printer= getInstance(YYYY_MM_DD, SWEDEN);</span>
+<span class="fc" id="L253">        assertEquals(SWEDEN, printer.getLocale());</span>
+<span class="fc" id="L254">    }</span>
+
+    @Test
+    public void testTimeZoneMatches() {
+<span class="fc" id="L258">        final DatePrinter printer= getInstance(YYYY_MM_DD, NEW_YORK);</span>
+<span class="fc" id="L259">        assertEquals(NEW_YORK, printer.getTimeZone());</span>
+<span class="fc" id="L260">    }</span>
+
+    @DefaultTimeZone(&quot;UTC&quot;)
+    @Test
+    public void testTimeZoneAsZ() {
+<span class="fc" id="L265">        final Calendar c = Calendar.getInstance(FastTimeZone.getGmtTimeZone());</span>
+<span class="fc" id="L266">        final FastDateFormat noColonFormat = FastDateFormat.getInstance(&quot;Z&quot;);</span>
+<span class="fc" id="L267">        assertEquals(&quot;+0000&quot;, noColonFormat.format(c));</span>
+
+<span class="fc" id="L269">        final FastDateFormat isoFormat = FastDateFormat.getInstance(&quot;ZZ&quot;);</span>
+<span class="fc" id="L270">        assertEquals(&quot;Z&quot;, isoFormat.format(c));</span>
+
+<span class="fc" id="L272">        final FastDateFormat colonFormat = FastDateFormat.getInstance(&quot;ZZZ&quot;);</span>
+<span class="fc" id="L273">        assertEquals(&quot;+00:00&quot;, colonFormat.format(c));</span>
+<span class="fc" id="L274">    }</span>
+
+    private static Calendar initializeCalendar(final TimeZone tz) {
+<span class="fc" id="L277">        final Calendar cal = Calendar.getInstance(tz);</span>
+<span class="fc" id="L278">        cal.set(Calendar.YEAR, 2001);</span>
+<span class="fc" id="L279">        cal.set(Calendar.MONTH, 1); // not daylight savings</span>
+<span class="fc" id="L280">        cal.set(Calendar.DAY_OF_MONTH, 4);</span>
+<span class="fc" id="L281">        cal.set(Calendar.HOUR_OF_DAY, 12);</span>
+<span class="fc" id="L282">        cal.set(Calendar.MINUTE, 8);</span>
+<span class="fc" id="L283">        cal.set(Calendar.SECOND, 56);</span>
+<span class="fc" id="L284">        cal.set(Calendar.MILLISECOND, 235);</span>
+<span class="fc" id="L285">        return cal;</span>
+    }
+
+    @Test
+    public void test1806Argument() {
+<span class="pc" id="L290">        assertThrows(IllegalArgumentException.class, () -&gt; getInstance(&quot;XXXX&quot;));</span>
+<span class="fc" id="L291">    }</span>
+
+<span class="fc" id="L293">    private enum Expected1806 {</span>
+<span class="fc" id="L294">        India(INDIA, &quot;+05&quot;, &quot;+0530&quot;, &quot;+05:30&quot;), Greenwich(GMT, &quot;Z&quot;, &quot;Z&quot;, &quot;Z&quot;), NewYork(</span>
+<span class="fc" id="L295">                NEW_YORK, &quot;-05&quot;, &quot;-0500&quot;, &quot;-05:00&quot;);</span>
+
+<span class="fc" id="L297">        Expected1806(final TimeZone zone, final String one, final String two, final String three) {</span>
+<span class="fc" id="L298">            this.zone = zone;</span>
+<span class="fc" id="L299">            this.one = one;</span>
+<span class="fc" id="L300">            this.two = two;</span>
+<span class="fc" id="L301">            this.three = three;</span>
+<span class="fc" id="L302">        }</span>
+
+        final TimeZone zone;
+        final String one;
+        final String two;
+        final String three;
+    }
+
+    @Test
+    public void test1806() {
+<span class="fc bfc" id="L312" title="All 2 branches covered.">        for (final Expected1806 trial : Expected1806.values()) {</span>
+<span class="fc" id="L313">            final Calendar cal = initializeCalendar(trial.zone);</span>
+
+<span class="fc" id="L315">            DatePrinter printer = getInstance(&quot;X&quot;, trial.zone);</span>
+<span class="fc" id="L316">            assertEquals(trial.one, printer.format(cal));</span>
+
+<span class="fc" id="L318">            printer = getInstance(&quot;XX&quot;, trial.zone);</span>
+<span class="fc" id="L319">            assertEquals(trial.two, printer.format(cal));</span>
+
+<span class="fc" id="L321">            printer = getInstance(&quot;XXX&quot;, trial.zone);</span>
+<span class="fc" id="L322">            assertEquals(trial.three, printer.format(cal));</span>
+        }
+<span class="fc" id="L324">    }</span>
+
+    @Test
+    public void testLang1103() {
+<span class="fc" id="L328">        final Calendar cal = Calendar.getInstance(SWEDEN);</span>
+<span class="fc" id="L329">        cal.set(Calendar.DAY_OF_MONTH, 2);</span>
+
+<span class="fc" id="L331">        assertEquals(&quot;2&quot;, getInstance(&quot;d&quot;, SWEDEN).format(cal));</span>
+<span class="fc" id="L332">        assertEquals(&quot;02&quot;, getInstance(&quot;dd&quot;, SWEDEN).format(cal));</span>
+<span class="fc" id="L333">        assertEquals(&quot;002&quot;, getInstance(&quot;ddd&quot;, SWEDEN).format(cal));</span>
+<span class="fc" id="L334">        assertEquals(&quot;0002&quot;, getInstance(&quot;dddd&quot;, SWEDEN).format(cal));</span>
+<span class="fc" id="L335">        assertEquals(&quot;00002&quot;, getInstance(&quot;ddddd&quot;, SWEDEN).format(cal));</span>
+<span class="fc" id="L336">    }</span>
+
+    /**
+     * According to LANG-916 (https://issues.apache.org/jira/browse/LANG-916),
+     * the format method did contain a bug: it did not use the TimeZone data.
+     *
+     * This method test that the bug is fixed.
+     */
+    @Test
+    public void testLang916() {
+
+<span class="fc" id="L347">        final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(&quot;Europe/Paris&quot;));</span>
+<span class="fc" id="L348">        cal.clear();</span>
+<span class="fc" id="L349">        cal.set(2009, 9, 16, 8, 42, 16);</span>
+
+        // calendar fast.
+        {
+<span class="fc" id="L353">            final String value = FastDateFormat.getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss Z&quot;, TimeZone.getTimeZone(&quot;Europe/Paris&quot;)).format(cal);</span>
+<span class="fc" id="L354">            assertEquals(&quot;2009-10-16T08:42:16 +0200&quot;, value, &quot;calendar&quot;);</span>
+        }
+        {
+<span class="fc" id="L357">            final String value = FastDateFormat.getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss Z&quot;, TimeZone.getTimeZone(&quot;Asia/Kolkata&quot;)).format(cal);</span>
+<span class="fc" id="L358">            assertEquals(&quot;2009-10-16T12:12:16 +0530&quot;, value, &quot;calendar&quot;);</span>
+        }
+        {
+<span class="fc" id="L361">            final String value = FastDateFormat.getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss Z&quot;, TimeZone.getTimeZone(&quot;Europe/London&quot;)).format(cal);</span>
+<span class="fc" id="L362">            assertEquals(&quot;2009-10-16T07:42:16 +0100&quot;, value, &quot;calendar&quot;);</span>
+        }
+<span class="fc" id="L364">    }</span>
+
+    @Test
+    public void testHourFormats() {
+<span class="fc" id="L368">        final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L369">        calendar.clear();</span>
+<span class="fc" id="L370">        final DatePrinter printer = getInstance(&quot;K k H h&quot;);</span>
+
+<span class="fc" id="L372">        calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="fc" id="L373">        assertEquals(&quot;0 24 0 12&quot;, printer.format(calendar));</span>
+
+<span class="fc" id="L375">        calendar.set(Calendar.HOUR_OF_DAY, 12);</span>
+<span class="fc" id="L376">        assertEquals(&quot;0 12 12 12&quot;, printer.format(calendar));</span>
+
+<span class="fc" id="L378">        calendar.set(Calendar.HOUR_OF_DAY, 23);</span>
+<span class="fc" id="L379">        assertEquals(&quot;11 23 23 11&quot;, printer.format(calendar));</span>
+<span class="fc" id="L380">    }</span>
+
+    @SuppressWarnings(&quot;deprecation&quot;)
+    @Test
+    public void testStringBufferOptions() {
+<span class="fc" id="L385">        final DatePrinter format = getInstance(&quot;yyyy-MM-dd HH:mm:ss.SSS Z&quot;, TimeZone.getTimeZone(&quot;GMT&quot;));</span>
+<span class="fc" id="L386">        final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L387">        final StringBuffer sb = new StringBuffer();</span>
+<span class="fc" id="L388">        final String expected = format.format(calendar, sb, new FieldPosition(0)).toString();</span>
+<span class="fc" id="L389">        sb.setLength(0);</span>
+<span class="fc" id="L390">        assertEquals(expected, format.format(calendar, sb).toString());</span>
+<span class="fc" id="L391">        sb.setLength(0);</span>
+
+<span class="fc" id="L393">        final Date date = calendar.getTime();</span>
+<span class="fc" id="L394">        assertEquals(expected, format.format(date, sb, new FieldPosition(0)).toString());</span>
+<span class="fc" id="L395">        sb.setLength(0);</span>
+<span class="fc" id="L396">        assertEquals(expected, format.format(date, sb).toString());</span>
+<span class="fc" id="L397">        sb.setLength(0);</span>
+
+<span class="fc" id="L399">        final long epoch = date.getTime();</span>
+<span class="fc" id="L400">        assertEquals(expected, format.format(epoch, sb, new FieldPosition(0)).toString());</span>
+<span class="fc" id="L401">        sb.setLength(0);</span>
+<span class="fc" id="L402">        assertEquals(expected, format.format(epoch, sb).toString());</span>
+<span class="fc" id="L403">    }</span>
+
+    @Test
+    public void testAppendableOptions() {
+<span class="fc" id="L407">        final DatePrinter format = getInstance(&quot;yyyy-MM-dd HH:mm:ss.SSS Z&quot;, TimeZone.getTimeZone(&quot;GMT&quot;));</span>
+<span class="fc" id="L408">        final Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L409">        final StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L410">        final String expected = format.format(calendar, sb).toString();</span>
+<span class="fc" id="L411">        sb.setLength(0);</span>
+
+<span class="fc" id="L413">        final Date date = calendar.getTime();</span>
+<span class="fc" id="L414">        assertEquals(expected, format.format(date, sb).toString());</span>
+<span class="fc" id="L415">        sb.setLength(0);</span>
+
+<span class="fc" id="L417">        final long epoch = date.getTime();</span>
+<span class="fc" id="L418">        assertEquals(expected, format.format(epoch, sb).toString());</span>
+<span class="fc" id="L419">    }</span>
+
+    @Test
+    public void testDayNumberOfWeek() {
+<span class="fc" id="L423">        final DatePrinter printer = getInstance(&quot;u&quot;);</span>
+<span class="fc" id="L424">        final Calendar calendar = Calendar.getInstance();</span>
+
+<span class="fc" id="L426">        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);</span>
+<span class="fc" id="L427">        assertEquals(&quot;1&quot;, printer.format(calendar.getTime()));</span>
+
+<span class="fc" id="L429">        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);</span>
+<span class="fc" id="L430">        assertEquals(&quot;6&quot;, printer.format(calendar.getTime()));</span>
+
+<span class="fc" id="L432">        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);</span>
+<span class="fc" id="L433">        assertEquals(&quot;7&quot;, printer.format(calendar.getTime()));</span>
+<span class="fc" id="L434">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

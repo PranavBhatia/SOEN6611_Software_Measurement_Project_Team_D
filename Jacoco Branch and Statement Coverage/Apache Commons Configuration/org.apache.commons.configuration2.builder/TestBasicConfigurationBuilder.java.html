@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBasicConfigurationBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestBasicConfigurationBuilder.java</span></div><h1>TestBasicConfigurationBuilder.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.Initializable;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.beanutils.BeanCreationContext;
+import org.apache.commons.configuration2.beanutils.BeanDeclaration;
+import org.apache.commons.configuration2.beanutils.BeanFactory;
+import org.apache.commons.configuration2.beanutils.BeanHelper;
+import org.apache.commons.configuration2.beanutils.DefaultBeanFactory;
+import org.apache.commons.configuration2.beanutils.XMLBeanDeclaration;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationErrorEvent;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.ErrorListenerTestImpl;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.event.EventListenerRegistrationData;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.apache.commons.configuration2.reloading.ReloadingController;
+import org.apache.commons.configuration2.reloading.ReloadingDetector;
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code BasicConfigurationBuilder}.
+ *
+ */
+<span class="fc" id="L65">public class TestBasicConfigurationBuilder</span>
+{
+    /** A test list delimiter handler. */
+    private static ListDelimiterHandler listHandler;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L73">        listHandler = new DefaultListDelimiterHandler(';');</span>
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Tries to create an instance without a result class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoClass()
+    {
+<span class="nc" id="L82">        new BasicConfigurationBuilder&lt;Configuration&gt;(null);</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Creates a map with test initialization parameters.
+     *
+     * @return the map with parameters
+     */
+    private static Map&lt;String, Object&gt; createTestParameters()
+    {
+<span class="fc" id="L92">        final Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L93">        params.put(&quot;throwExceptionOnMissing&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L94">        params.put(&quot;listDelimiterHandler&quot;, listHandler);</span>
+<span class="fc" id="L95">        return params;</span>
+    }
+
+    /**
+     * Tests whether initialization parameters can be passed to the constructor.
+     */
+    @Test
+    public void testInitWithParameters()
+    {
+<span class="fc" id="L104">        final Map&lt;String, Object&gt; params = createTestParameters();</span>
+<span class="fc" id="L105">        final BasicConfigurationBuilder&lt;Configuration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, params);
+<span class="fc" id="L108">        final Map&lt;String, Object&gt; params2 =</span>
+<span class="fc" id="L109">                new HashMap&lt;&gt;(builder.getParameters());</span>
+<span class="fc" id="L110">        assertEquals(&quot;Wrong parameters&quot;, createTestParameters(), params2);</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Tests whether a copy of the passed in parameters is created.
+     */
+    @Test
+    public void testInitWithParametersDefensiveCopy()
+    {
+<span class="fc" id="L119">        final Map&lt;String, Object&gt; params = createTestParameters();</span>
+<span class="fc" id="L120">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, params);
+<span class="fc" id="L123">        params.put(&quot;anotherParameter&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L124">        final Map&lt;String, Object&gt; params2 =</span>
+<span class="fc" id="L125">                new HashMap&lt;&gt;(builder.getParameters());</span>
+<span class="fc" id="L126">        assertEquals(&quot;Wrong parameters&quot;, createTestParameters(), params2);</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests whether null parameters are handled correctly.
+     */
+    @Test
+    public void testInitWithParametersNull()
+    {
+<span class="fc" id="L135">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, null);
+<span class="fc" id="L138">        assertTrue(&quot;Got parameters&quot;, builder.getParameters().isEmpty());</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Tests that the map with parameters cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetParametersModify()
+    {
+<span class="fc" id="L147">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L149">                        PropertiesConfiguration.class, createTestParameters());</span>
+<span class="nc" id="L150">        builder.getParameters().clear();</span>
+<span class="nc" id="L151">    }</span>
+
+    /**
+     * Tests whether parameters can be set using the configure() method.
+     */
+    @Test
+    public void testConfigure()
+    {
+<span class="fc" id="L159">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class)
+<span class="fc" id="L162">                        .configure(new BasicBuilderParameters()</span>
+<span class="fc" id="L163">                                .setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L164">                                .setThrowExceptionOnMissing(true));</span>
+<span class="fc" id="L165">        final Map&lt;String, Object&gt; params2 =</span>
+<span class="fc" id="L166">                new HashMap&lt;&gt;(builder.getParameters());</span>
+<span class="fc" id="L167">        assertEquals(&quot;Wrong parameters&quot;, createTestParameters(), params2);</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * Tests whether new parameters can be set to replace existing ones.
+     */
+    @Test
+    public void testSetParameters()
+    {
+<span class="fc" id="L176">        final Map&lt;String, Object&gt; params1 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L177">        params1.put(&quot;someParameter&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L178">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, params1);
+<span class="fc" id="L181">        assertSame(&quot;Wrong result&quot;, builder,</span>
+<span class="fc" id="L182">                builder.setParameters(createTestParameters()));</span>
+<span class="fc" id="L183">        final Map&lt;String, Object&gt; params2 =</span>
+<span class="fc" id="L184">                new HashMap&lt;&gt;(builder.getParameters());</span>
+<span class="fc" id="L185">        assertEquals(&quot;Wrong parameters&quot;, createTestParameters(), params2);</span>
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Tests whether additional parameters can be added.
+     */
+    @Test
+    public void testAddParameters()
+    {
+<span class="fc" id="L194">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L196">                        PropertiesConfiguration.class, createTestParameters());</span>
+<span class="fc" id="L197">        final Map&lt;String, Object&gt; params = createTestParameters();</span>
+<span class="fc" id="L198">        params.put(&quot;anotherParameter&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L199">        assertSame(&quot;Wrong result&quot;, builder, builder.addParameters(params));</span>
+<span class="fc" id="L200">        final Map&lt;String, Object&gt; params2 = builder.getParameters();</span>
+<span class="fc" id="L201">        assertTrue(&quot;No original parameters&quot;,</span>
+<span class="fc" id="L202">                params2.keySet().containsAll(createTestParameters().keySet()));</span>
+<span class="fc" id="L203">        assertEquals(&quot;Additional parameter not found&quot;, &quot;value&quot;,</span>
+<span class="fc" id="L204">                params2.get(&quot;anotherParameter&quot;));</span>
+<span class="fc" id="L205">    }</span>
+
+    /**
+     * Tests whether null parameters are handled correctly by addParameters().
+     */
+    @Test
+    public void testAddParametersNull()
+    {
+<span class="fc" id="L213">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L215">                        PropertiesConfiguration.class, createTestParameters());</span>
+<span class="fc" id="L216">        final Map&lt;String, Object&gt; params = builder.getParameters();</span>
+<span class="fc" id="L217">        builder.addParameters(null);</span>
+<span class="fc" id="L218">        assertEquals(&quot;Parameters changed&quot;, params, builder.getParameters());</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Tests whether all parameters can be reset.
+     */
+    @Test
+    public void testResetParameters()
+    {
+<span class="fc" id="L227">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L229">                        PropertiesConfiguration.class, createTestParameters());</span>
+<span class="fc" id="L230">        builder.resetParameters();</span>
+<span class="fc" id="L231">        assertTrue(&quot;Still got parameters&quot;, builder.getParameters().isEmpty());</span>
+<span class="fc" id="L232">    }</span>
+
+    /**
+     * Tests whether the builder can create a correctly initialized
+     * configuration object.
+     */
+    @Test
+    public void testGetConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L241">        final PropertiesConfiguration config =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L243">                        PropertiesConfiguration.class).configure(</span>
+<span class="fc" id="L244">                        new BasicBuilderParameters().setListDelimiterHandler(</span>
+<span class="fc" id="L245">                                listHandler).setThrowExceptionOnMissing(true))</span>
+<span class="fc" id="L246">                        .getConfiguration();</span>
+<span class="fc" id="L247">        assertTrue(&quot;Wrong exception flag&quot;, config.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L248">        assertEquals(&quot;Wrong list delimiter handler&quot;, listHandler,</span>
+<span class="fc" id="L249">                config.getListDelimiterHandler());</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Tests whether the builder can be accessed by multiple threads and that
+     * only a single result object is produced.
+     */
+    @Test
+    public void testGetConfigurationConcurrently() throws Exception
+    {
+<span class="fc" id="L259">        final int threadCount = 32;</span>
+<span class="fc" id="L260">        final CountDownLatch startLatch = new CountDownLatch(1);</span>
+<span class="fc" id="L261">        final CountDownLatch endLatch = new CountDownLatch(threadCount);</span>
+<span class="fc" id="L262">        final ConfigurationBuilder&lt;?&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L265">        final AccessBuilderThread[] threads = new AccessBuilderThread[threadCount];</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for (int i = 0; i &lt; threadCount; i++)</span>
+        {
+<span class="fc" id="L268">            threads[i] = new AccessBuilderThread(startLatch, endLatch, builder);</span>
+<span class="fc" id="L269">            threads[i].start();</span>
+        }
+<span class="fc" id="L271">        startLatch.countDown();</span>
+<span class="fc" id="L272">        assertTrue(&quot;Timeout&quot;, endLatch.await(5, TimeUnit.SECONDS));</span>
+<span class="fc" id="L273">        final Set&lt;Object&gt; results = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">        for (final AccessBuilderThread t : threads)</span>
+        {
+<span class="fc" id="L276">            results.add(t.result);</span>
+        }
+<span class="fc" id="L278">        assertEquals(&quot;Wrong number of result objects&quot;, 1, results.size());</span>
+<span class="fc" id="L279">    }</span>
+
+    /**
+     * Tests whether a reset of the result object can be performed.
+     */
+    @Test
+    public void testResetResult() throws ConfigurationException
+    {
+<span class="fc" id="L287">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L289">                        PropertiesConfiguration.class, createTestParameters());</span>
+<span class="fc" id="L290">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L291">        builder.resetResult();</span>
+<span class="fc" id="L292">        final PropertiesConfiguration config2 = builder.getConfiguration();</span>
+<span class="fc" id="L293">        assertNotSame(&quot;No new result&quot;, config, config2);</span>
+<span class="fc" id="L294">        assertTrue(&quot;Wrong property&quot;, config2.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L295">    }</span>
+
+    /**
+     * Tests a full reset of the builder.
+     */
+    @Test
+    public void testReset() throws ConfigurationException
+    {
+<span class="fc" id="L303">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+<span class="fc" id="L305">                        PropertiesConfiguration.class, createTestParameters());</span>
+<span class="fc" id="L306">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L307">        builder.reset();</span>
+<span class="fc" id="L308">        final PropertiesConfiguration config2 = builder.getConfiguration();</span>
+<span class="fc" id="L309">        assertNotSame(&quot;No new result&quot;, config, config2);</span>
+<span class="fc" id="L310">        assertFalse(&quot;Parameters not reset&quot;, config2.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L311">    }</span>
+
+    /**
+     * Tests whether a check for the correct bean class is made.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testGetResultDeclarationInvalidBeanClass()
+            throws ConfigurationException
+    {
+<span class="fc" id="L320">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;PropertiesConfiguration&gt;(
+<span class="fc" id="L322">                        PropertiesConfiguration.class, createTestParameters())</span>
+<span class="fc" id="L323">                {</span>
+                    @Override
+                    protected BeanDeclaration createResultDeclaration(
+                            final Map&lt;String, Object&gt; params)
+                    {
+<span class="fc" id="L328">                        return new XMLBeanDeclaration(</span>
+                                new BaseHierarchicalConfiguration(), &quot;bean&quot;,
+<span class="fc" id="L330">                                true, Object.class.getName());</span>
+                    }
+                };
+<span class="nc" id="L333">        builder.getConfiguration();</span>
+<span class="nc" id="L334">    }</span>
+
+    /**
+     * Creates a mock for an event listener.
+     *
+     * @return the event listener mock
+     */
+    private static EventListener&lt;ConfigurationEvent&gt; createEventListener()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L345">        EventListener&lt;ConfigurationEvent&gt; listener =</span>
+<span class="fc" id="L346">                EasyMock.createMock(EventListener.class);</span>
+<span class="fc" id="L347">        return listener;</span>
+    }
+
+    /**
+     * Tests whether configuration listeners can be added.
+     */
+    @Test
+    public void testAddConfigurationListener() throws ConfigurationException
+    {
+<span class="fc" id="L356">        final EventListener&lt;ConfigurationEvent&gt; l1 = createEventListener();</span>
+<span class="fc" id="L357">        final EventListener&lt;ConfigurationEvent&gt; l2 = createEventListener();</span>
+<span class="fc" id="L358">        EasyMock.replay(l1, l2);</span>
+<span class="fc" id="L359">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L362">        builder.addEventListener(ConfigurationEvent.ANY, l1);</span>
+<span class="fc" id="L363">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L364">        builder.addEventListener(ConfigurationEvent.ANY, l2);</span>
+<span class="fc" id="L365">        final Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; listeners =</span>
+<span class="fc" id="L366">                config.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L367">        assertTrue(&quot;Listener 1 not registered&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L368">        assertTrue(&quot;Listener 2 not registered&quot;, listeners.contains(l2));</span>
+<span class="fc" id="L369">    }</span>
+
+    /**
+     * Tests whether configuration listeners can be removed.
+     */
+    @Test
+    public void testRemoveConfigurationListener() throws ConfigurationException
+    {
+<span class="fc" id="L377">        final EventListener&lt;ConfigurationEvent&gt; l1 = createEventListener();</span>
+<span class="fc" id="L378">        final EventListener&lt;ConfigurationEvent&gt; l2 = createEventListener();</span>
+<span class="fc" id="L379">        EasyMock.replay(l1, l2);</span>
+<span class="fc" id="L380">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L383">        builder.addEventListener(ConfigurationEvent.ANY_HIERARCHICAL,</span>
+                l1);
+<span class="fc" id="L385">        builder.addEventListener(ConfigurationEvent.ANY, l2);</span>
+<span class="fc" id="L386">        assertTrue(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L387">                builder.removeEventListener(ConfigurationEvent.ANY, l2));</span>
+<span class="fc" id="L388">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L389">        assertFalse(&quot;Removed listener was registered&quot;, config</span>
+<span class="fc" id="L390">                .getEventListeners(ConfigurationEvent.ANY).contains(l2));</span>
+<span class="fc" id="L391">        assertTrue(&quot;Listener not registered&quot;,</span>
+<span class="fc" id="L392">                config.getEventListeners(ConfigurationEvent.ANY_HIERARCHICAL)</span>
+<span class="fc" id="L393">                        .contains(l1));</span>
+<span class="fc" id="L394">        builder.removeEventListener(</span>
+                ConfigurationEvent.ANY_HIERARCHICAL, l1);
+<span class="fc" id="L396">        assertFalse(&quot;Listener still registered&quot;,</span>
+<span class="fc" id="L397">                config.getEventListeners(ConfigurationEvent.ANY_HIERARCHICAL)</span>
+<span class="fc" id="L398">                        .contains(l1));</span>
+<span class="fc" id="L399">    }</span>
+
+    /**
+     * Tests whether event listeners can be copied to another builder.
+     */
+    @Test
+    public void testCopyEventListeners() throws ConfigurationException
+    {
+<span class="fc" id="L407">        final EventListener&lt;ConfigurationEvent&gt; l1 = createEventListener();</span>
+<span class="fc" id="L408">        final EventListener&lt;ConfigurationEvent&gt; l2 = createEventListener();</span>
+<span class="fc" id="L409">        final EventListener&lt;ConfigurationErrorEvent&gt; l3 = new ErrorListenerTestImpl(null);</span>
+<span class="fc" id="L410">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L413">        builder.addEventListener(ConfigurationEvent.ANY, l1);</span>
+<span class="fc" id="L414">        builder.addEventListener(ConfigurationEvent.ANY_HIERARCHICAL, l2);</span>
+<span class="fc" id="L415">        builder.addEventListener(ConfigurationErrorEvent.ANY, l3);</span>
+<span class="fc" id="L416">        final BasicConfigurationBuilder&lt;XMLConfiguration&gt; builder2 =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L419">        builder.copyEventListeners(builder2);</span>
+<span class="fc" id="L420">        final XMLConfiguration config = builder2.getConfiguration();</span>
+<span class="fc" id="L421">        Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; listeners =</span>
+<span class="fc" id="L422">                config.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L423">        assertEquals(&quot;Wrong number of listeners&quot;, 1, listeners.size());</span>
+<span class="fc" id="L424">        assertTrue(&quot;Wrong listener&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L425">        listeners =</span>
+<span class="fc" id="L426">                config.getEventListeners(ConfigurationEvent.ANY_HIERARCHICAL);</span>
+<span class="fc" id="L427">        assertEquals(&quot;Wrong number of listeners for hierarchical&quot;, 2,</span>
+<span class="fc" id="L428">                listeners.size());</span>
+<span class="fc" id="L429">        assertTrue(&quot;Listener 1 not found&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L430">        assertTrue(&quot;Listener 2 not found&quot;, listeners.contains(l2));</span>
+<span class="fc" id="L431">        final Collection&lt;EventListener&lt;? super ConfigurationErrorEvent&gt;&gt; errListeners =</span>
+<span class="fc" id="L432">                config.getEventListeners(ConfigurationErrorEvent.ANY);</span>
+<span class="fc" id="L433">        assertEquals(&quot;Wrong number of error listeners&quot;, 1, errListeners.size());</span>
+<span class="fc" id="L434">        assertTrue(&quot;Wrong error listener&quot;, errListeners.contains(l3));</span>
+<span class="fc" id="L435">    }</span>
+
+    /**
+     * Tests whether configuration listeners can be defined via the configure()
+     * method.
+     */
+    @Test
+    public void testEventListenerConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L444">        final EventListenerTestImpl listener1 = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L445">        final EventListenerRegistrationData&lt;ConfigurationErrorEvent&gt; regData =</span>
+                new EventListenerRegistrationData&lt;&gt;(
+                        ConfigurationErrorEvent.WRITE,
+                        new ErrorListenerTestImpl(null));
+<span class="fc" id="L449">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class)
+<span class="fc" id="L452">                        .configure(new EventListenerParameters()</span>
+<span class="fc" id="L453">                                .addEventListener(ConfigurationEvent.ANY,</span>
+<span class="fc" id="L454">                                        listener1).addEventListener(regData));</span>
+<span class="fc" id="L455">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L456">        assertTrue(&quot;Configuration listener not found&quot;, config</span>
+<span class="fc" id="L457">                .getEventListeners(ConfigurationEvent.ANY).contains(listener1));</span>
+<span class="fc" id="L458">        assertTrue(</span>
+                &quot;Error listener not found&quot;,
+<span class="fc" id="L460">                config.getEventListeners(regData.getEventType()).contains(</span>
+<span class="fc" id="L461">                        regData.getListener()));</span>
+<span class="fc" id="L462">    }</span>
+
+    /**
+     * Tests whether configuration listeners are removed from the managed
+     * configuration when the builder's result object is reset.
+     */
+    @Test
+    public void testRemoveConfigurationListenersOnReset()
+            throws ConfigurationException
+    {
+<span class="fc" id="L472">        final EventListenerTestImpl listener = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L473">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class)
+<span class="fc" id="L476">                        .configure(new EventListenerParameters()</span>
+<span class="fc" id="L477">                                .addEventListener(ConfigurationEvent.ANY,</span>
+                                        listener));
+<span class="fc" id="L479">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L480">        builder.resetResult();</span>
+<span class="fc" id="L481">        config.addProperty(&quot;foo&quot;, &quot;bar&quot;);</span>
+<span class="fc" id="L482">        listener.done();</span>
+<span class="fc" id="L483">    }</span>
+
+    /**
+     * Tests whether parameters starting with a reserved prefix are filtered out
+     * before result objects are initialized.
+     */
+    @Test
+    public void testReservedParameter() throws ConfigurationException
+    {
+<span class="fc" id="L492">        final Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L493">        params.put(&quot;throwExceptionOnMissing&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L494">        params.put(&quot;config-test&quot;, &quot;a test&quot;);</span>
+<span class="fc" id="L495">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, params);
+<span class="fc" id="L498">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L499">        assertTrue(&quot;Flag not set&quot;, config.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L500">    }</span>
+
+    /**
+     * Tests an exception during configuration initialization if the
+     * allowFailOnInit flag is false.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testInitializationErrorNotAllowed()
+            throws ConfigurationException
+    {
+<span class="fc" id="L510">        final BasicConfigurationBuilderInitFailImpl builder =</span>
+                new BasicConfigurationBuilderInitFailImpl(false);
+<span class="nc" id="L512">        builder.getConfiguration();</span>
+<span class="nc" id="L513">    }</span>
+
+    /**
+     * Tests an exception during configuration initialization if the
+     * allowFailOnInit flag is true.
+     */
+    @Test
+    public void testInitializationErrorAllowed() throws ConfigurationException
+    {
+<span class="fc" id="L522">        final BasicConfigurationBuilderInitFailImpl builder =</span>
+                new BasicConfigurationBuilderInitFailImpl(true);
+<span class="fc" id="L524">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L525">        assertTrue(&quot;Got data&quot;, config.isEmpty());</span>
+<span class="fc" id="L526">    }</span>
+
+    /**
+     * Tests whether a configuration implementing {@code Initializable} is
+     * correctly handled.
+     */
+    @Test
+    public void testInitializableCalled() throws ConfigurationException
+    {
+<span class="fc" id="L535">        final BasicConfigurationBuilder&lt;InitializableConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        InitializableConfiguration.class);
+<span class="fc" id="L538">        builder.configure(new BasicBuilderParameters()</span>
+<span class="fc" id="L539">                .setThrowExceptionOnMissing(true));</span>
+<span class="fc" id="L540">        final InitializableConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L541">        assertEquals(&quot;Property not correctly initialized&quot;,</span>
+<span class="fc" id="L542">                &quot;Initialized with flag true&quot;, config.getInitProperty());</span>
+<span class="fc" id="L543">    }</span>
+
+    /**
+     * Tests whether a configured BeanHelper is used for result creation.
+     */
+    @Test
+    public void testBeanHelperInConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L551">        final Set&lt;Class&lt;?&gt;&gt; classesPassedToFactory = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L552">        final BeanFactory factory = new DefaultBeanFactory()</span>
+<span class="fc" id="L553">        {</span>
+            @Override
+            public Object createBean(final BeanCreationContext bcc) throws Exception
+            {
+<span class="fc" id="L557">                classesPassedToFactory.add(bcc.getBeanClass());</span>
+<span class="fc" id="L558">                return super.createBean(bcc);</span>
+            }
+        };
+<span class="fc" id="L561">        final BeanHelper helper = new BeanHelper(factory);</span>
+<span class="fc" id="L562">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L565">        builder.configure(new BasicBuilderParameters().setBeanHelper(helper));</span>
+<span class="fc" id="L566">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L567">        assertTrue(&quot;BeanFactory was not used correctly&quot;,</span>
+<span class="fc" id="L568">                classesPassedToFactory.contains(config.getClass()));</span>
+<span class="fc" id="L569">    }</span>
+
+    /**
+     * Tests whether a builder can be connected to a reloading controller.
+     */
+    @Test
+    public void testConnectToReloadingController()
+            throws ConfigurationException
+    {
+<span class="fc" id="L578">        final ReloadingDetector detector =</span>
+<span class="fc" id="L579">                EasyMock.createNiceMock(ReloadingDetector.class);</span>
+<span class="fc" id="L580">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L581">        EasyMock.replay(detector);</span>
+<span class="fc" id="L582">        final ReloadingController controller = new ReloadingController(detector);</span>
+<span class="fc" id="L583">        final BasicConfigurationBuilder&lt;Configuration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L586">        final Configuration configuration = builder.getConfiguration();</span>
+
+<span class="fc" id="L588">        builder.connectToReloadingController(controller);</span>
+<span class="fc" id="L589">        controller.checkForReloading(null);</span>
+<span class="fc" id="L590">        assertTrue(&quot;Not in reloading state&quot;, controller.isInReloadingState());</span>
+<span class="fc" id="L591">        assertNotSame(&quot;No new configuration created&quot;, configuration,</span>
+<span class="fc" id="L592">                builder.getConfiguration());</span>
+<span class="fc" id="L593">        assertFalse(&quot;Still in reloading state&quot;, controller.isInReloadingState());</span>
+<span class="fc" id="L594">    }</span>
+
+    /**
+     * Tries to connect to a null reloading controller.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testConnectToReloadingControllerNull()
+    {
+<span class="fc" id="L602">        final BasicConfigurationBuilder&lt;Configuration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="nc" id="L605">        builder.connectToReloadingController(null);</span>
+<span class="nc" id="L606">    }</span>
+
+    /**
+     * A test thread class for testing whether the builder's result object can
+     * be requested concurrently.
+     */
+    private static class AccessBuilderThread extends Thread
+    {
+        /** A latch for controlling the start of the thread. */
+        private final CountDownLatch startLatch;
+
+        /** A latch for controlling the end of the thread. */
+        private final CountDownLatch endLatch;
+
+        /** The builder to be accessed. */
+        private final ConfigurationBuilder&lt;?&gt; builder;
+
+        /** The result object obtained from the builder. */
+        private volatile Object result;
+
+        /**
+         * Creates a new instance of {@code AccessBuilderThread}.
+         *
+         * @param lstart the latch for controlling the thread start
+         * @param lend the latch for controlling the thread end
+         * @param bldr the builder to be tested
+         */
+        public AccessBuilderThread(final CountDownLatch lstart, final CountDownLatch lend,
+                final ConfigurationBuilder&lt;?&gt; bldr)
+<span class="fc" id="L635">        {</span>
+<span class="fc" id="L636">            startLatch = lstart;</span>
+<span class="fc" id="L637">            endLatch = lend;</span>
+<span class="fc" id="L638">            builder = bldr;</span>
+<span class="fc" id="L639">        }</span>
+
+        @Override
+        public void run()
+        {
+            try
+            {
+<span class="fc" id="L646">                startLatch.await();</span>
+<span class="fc" id="L647">                result = builder.getConfiguration();</span>
+            }
+<span class="nc" id="L649">            catch (final Exception ex)</span>
+            {
+<span class="nc" id="L651">                result = ex;</span>
+            }
+            finally
+            {
+<span class="fc" id="L655">                endLatch.countDown();</span>
+            }
+<span class="fc" id="L657">        }</span>
+    }
+
+    /**
+     * A builder test implementation which allows checking exception handling
+     * when creating new configuration objects.
+     */
+    private static class BasicConfigurationBuilderInitFailImpl extends
+            BasicConfigurationBuilder&lt;PropertiesConfiguration&gt;
+    {
+        public BasicConfigurationBuilderInitFailImpl(final boolean allowFailOnInit)
+        {
+<span class="fc" id="L669">            super(PropertiesConfiguration.class, null, allowFailOnInit);</span>
+<span class="fc" id="L670">        }</span>
+
+        /**
+         * {@inheritDoc} This implementation only throws an exception.
+         */
+        @Override
+        protected void initResultInstance(final PropertiesConfiguration obj)
+                throws ConfigurationException
+        {
+<span class="fc" id="L679">            throw new ConfigurationException(&quot;Initialization test exception!&quot;);</span>
+        }
+    }
+
+    /**
+     * A test configuration implementation which also implements Initializable.
+     */
+<span class="fc" id="L686">    public static class InitializableConfiguration extends BaseConfiguration</span>
+            implements Initializable
+    {
+        /** A property which is initialized if the builder works as expected. */
+        private String initProperty;
+
+        /**
+         * Sets the value of the initProperty member based on other flag values.
+         * This tests whether the method is called after other properties have
+         * been set.
+         */
+        @Override
+        public void initialize()
+        {
+<span class="fc" id="L700">            initProperty =</span>
+<span class="fc" id="L701">                    &quot;Initialized with flag &quot; + isThrowExceptionOnMissing();</span>
+<span class="fc" id="L702">        }</span>
+
+        public String getInitProperty()
+        {
+<span class="fc" id="L706">            return initProperty;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReflectionToStringBuilderExcludeNullValuesTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">ReflectionToStringBuilderExcludeNullValuesTest.java</span></div><h1>ReflectionToStringBuilderExcludeNullValuesTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+<span class="fc" id="L25">public class ReflectionToStringBuilderExcludeNullValuesTest {</span>
+
+    static class TestFixture {
+        @SuppressWarnings(&quot;unused&quot;)
+        private final Integer testIntegerField;
+        @SuppressWarnings(&quot;unused&quot;)
+        private final String testStringField;
+
+<span class="fc" id="L33">        TestFixture(final Integer a, final String b) {</span>
+<span class="fc" id="L34">            this.testIntegerField = a;</span>
+<span class="fc" id="L35">            this.testStringField = b;</span>
+<span class="fc" id="L36">        }</span>
+    }
+
+    private static final String INTEGER_FIELD_NAME = &quot;testIntegerField&quot;;
+    private static final String STRING_FIELD_NAME = &quot;testStringField&quot;;
+<span class="fc" id="L41">    private final TestFixture BOTH_NON_NULL = new TestFixture(0, &quot;str&quot;);</span>
+<span class="fc" id="L42">    private final TestFixture FIRST_NULL = new TestFixture(null, &quot;str&quot;);</span>
+<span class="fc" id="L43">    private final TestFixture SECOND_NULL = new TestFixture(0, null);</span>
+<span class="fc" id="L44">    private final TestFixture BOTH_NULL = new TestFixture(null, null);</span>
+
+    @Test
+    public void test_NonExclude() {
+        //normal case=
+<span class="fc" id="L49">        String toString = ReflectionToStringBuilder.toString(BOTH_NON_NULL, null, false, false, false, null);</span>
+<span class="fc" id="L50">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L51">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+        //make one null
+<span class="fc" id="L54">        toString = ReflectionToStringBuilder.toString(FIRST_NULL, null, false, false, false, null);</span>
+<span class="fc" id="L55">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L56">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+        //other one null
+<span class="fc" id="L59">        toString = ReflectionToStringBuilder.toString(SECOND_NULL, null, false, false, false, null);</span>
+<span class="fc" id="L60">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L61">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+        //make the both null
+<span class="fc" id="L64">        toString = ReflectionToStringBuilder.toString(BOTH_NULL, null, false, false, false, null);</span>
+<span class="fc" id="L65">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L66">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L67">    }</span>
+
+    @Test
+    public void test_excludeNull() {
+
+        //test normal case
+<span class="fc" id="L73">        String toString = ReflectionToStringBuilder.toString(BOTH_NON_NULL, null, false, false, true, null);</span>
+<span class="fc" id="L74">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L75">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+        //make one null
+<span class="fc" id="L78">        toString = ReflectionToStringBuilder.toString(FIRST_NULL, null, false, false, true, null);</span>
+<span class="fc" id="L79">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L80">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+        //other one null
+<span class="fc" id="L83">        toString = ReflectionToStringBuilder.toString(SECOND_NULL, null, false, false, true, null);</span>
+<span class="fc" id="L84">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L85">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+
+        //both null
+<span class="fc" id="L88">        toString = ReflectionToStringBuilder.toString(BOTH_NULL, null, false, false, true, null);</span>
+<span class="fc" id="L89">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L90">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L91">    }</span>
+
+    @Test
+    public void test_ConstructorOption() {
+<span class="fc" id="L95">        ReflectionToStringBuilder builder = new ReflectionToStringBuilder(BOTH_NON_NULL, null, null, null, false, false, true);</span>
+<span class="fc" id="L96">        assertTrue(builder.isExcludeNullValues());</span>
+<span class="fc" id="L97">        String toString = builder.toString();</span>
+<span class="fc" id="L98">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L99">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+<span class="fc" id="L101">        builder = new ReflectionToStringBuilder(FIRST_NULL, null, null, null, false, false, true);</span>
+<span class="fc" id="L102">        toString = builder.toString();</span>
+<span class="fc" id="L103">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L104">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+
+<span class="fc" id="L106">        builder = new ReflectionToStringBuilder(SECOND_NULL, null, null, null, false, false, true);</span>
+<span class="fc" id="L107">        toString = builder.toString();</span>
+<span class="fc" id="L108">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L109">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+
+<span class="fc" id="L111">        builder = new ReflectionToStringBuilder(BOTH_NULL, null, null, null, false, false, true);</span>
+<span class="fc" id="L112">        toString = builder.toString();</span>
+<span class="fc" id="L113">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L114">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L115">    }</span>
+
+    @Test
+    public void test_ConstructorOptionNormal() {
+<span class="fc" id="L119">        final ReflectionToStringBuilder builder = new ReflectionToStringBuilder(BOTH_NULL, null, null, null, false, false, false);</span>
+<span class="fc" id="L120">        assertFalse(builder.isExcludeNullValues());</span>
+<span class="fc" id="L121">        String toString = builder.toString();</span>
+<span class="fc" id="L122">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L123">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+
+        //regression test older constructors
+<span class="fc" id="L126">        ReflectionToStringBuilder oldBuilder = new ReflectionToStringBuilder(BOTH_NULL);</span>
+<span class="fc" id="L127">        toString = oldBuilder.toString();</span>
+<span class="fc" id="L128">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L129">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+
+<span class="fc" id="L131">        oldBuilder = new ReflectionToStringBuilder(BOTH_NULL, null, null, null, false, false);</span>
+<span class="fc" id="L132">        toString = oldBuilder.toString();</span>
+<span class="fc" id="L133">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L134">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+
+<span class="fc" id="L136">        oldBuilder = new ReflectionToStringBuilder(BOTH_NULL, null, null);</span>
+<span class="fc" id="L137">        toString = oldBuilder.toString();</span>
+<span class="fc" id="L138">        assertTrue(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L139">        assertTrue(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L140">    }</span>
+
+    @Test
+    public void test_ConstructorOption_ExcludeNull() {
+<span class="fc" id="L144">        ReflectionToStringBuilder builder = new ReflectionToStringBuilder(BOTH_NULL, null, null, null, false, false, false);</span>
+<span class="fc" id="L145">        builder.setExcludeNullValues(true);</span>
+<span class="fc" id="L146">        assertTrue(builder.isExcludeNullValues());</span>
+<span class="fc" id="L147">        String toString = builder.toString();</span>
+<span class="fc" id="L148">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L149">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+
+<span class="fc" id="L151">        builder = new ReflectionToStringBuilder(BOTH_NULL, null, null, null, false, false, true);</span>
+<span class="fc" id="L152">        toString = builder.toString();</span>
+<span class="fc" id="L153">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L154">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+
+<span class="fc" id="L156">        final ReflectionToStringBuilder oldBuilder = new ReflectionToStringBuilder(BOTH_NULL);</span>
+<span class="fc" id="L157">        oldBuilder.setExcludeNullValues(true);</span>
+<span class="fc" id="L158">        assertTrue(oldBuilder.isExcludeNullValues());</span>
+<span class="fc" id="L159">        toString = oldBuilder.toString();</span>
+<span class="fc" id="L160">        assertFalse(toString.contains(STRING_FIELD_NAME));</span>
+<span class="fc" id="L161">        assertFalse(toString.contains(INTEGER_FIELD_NAME));</span>
+<span class="fc" id="L162">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

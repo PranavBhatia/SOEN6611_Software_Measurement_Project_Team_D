@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HashCodeBuilderAndEqualsBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">HashCodeBuilderAndEqualsBuilderTest.java</span></div><h1>HashCodeBuilderAndEqualsBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests {@link org.apache.commons.lang3.builder.HashCodeBuilder} and
+ * {@link org.apache.commons.lang3.builder.EqualsBuilderTest} to insure that equal
+ * objects must have equal hash codes.
+ */
+<span class="fc" id="L28">public class HashCodeBuilderAndEqualsBuilderTest {</span>
+
+    //-----------------------------------------------------------------------
+
+    private void testInteger(final boolean testTransients) {
+<span class="fc" id="L33">        final Integer i1 = Integer.valueOf(12345);</span>
+<span class="fc" id="L34">        final Integer i2 = Integer.valueOf(12345);</span>
+<span class="fc" id="L35">        assertEqualsAndHashCodeContract(i1, i2, testTransients);</span>
+<span class="fc" id="L36">    }</span>
+
+    @Test
+    public void testInteger() {
+<span class="fc" id="L40">        testInteger(false);</span>
+<span class="fc" id="L41">    }</span>
+
+    @Test
+    public void testIntegerWithTransients() {
+<span class="fc" id="L45">        testInteger(true);</span>
+<span class="fc" id="L46">    }</span>
+
+    @Test
+    public void testFixture() {
+<span class="fc" id="L50">        testFixture(false);</span>
+<span class="fc" id="L51">    }</span>
+
+    @Test
+    public void testFixtureWithTransients() {
+<span class="fc" id="L55">        testFixture(true);</span>
+<span class="fc" id="L56">    }</span>
+
+    private void testFixture(final boolean testTransients) {
+<span class="fc" id="L59">        assertEqualsAndHashCodeContract(new TestFixture(2, 'c', &quot;Test&quot;, (short) 2), new TestFixture(2, 'c', &quot;Test&quot;, (short) 2), testTransients);</span>
+<span class="fc" id="L60">        assertEqualsAndHashCodeContract(</span>
+            new AllTransientFixture(2, 'c', &quot;Test&quot;, (short) 2),
+            new AllTransientFixture(2, 'c', &quot;Test&quot;, (short) 2),
+            testTransients);
+<span class="fc" id="L64">        assertEqualsAndHashCodeContract(</span>
+            new SubTestFixture(2, 'c', &quot;Test&quot;, (short) 2, &quot;Same&quot;),
+            new SubTestFixture(2, 'c', &quot;Test&quot;, (short) 2, &quot;Same&quot;),
+            testTransients);
+<span class="fc" id="L68">        assertEqualsAndHashCodeContract(</span>
+            new SubAllTransientFixture(2, 'c', &quot;Test&quot;, (short) 2, &quot;Same&quot;),
+            new SubAllTransientFixture(2, 'c', &quot;Test&quot;, (short) 2, &quot;Same&quot;),
+            testTransients);
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Asserts that if &lt;code&gt;lhs&lt;/code&gt; equals &lt;code&gt;rhs&lt;/code&gt;
+     * then their hash codes MUST be identical.
+     *
+     * @param lhs The Left-Hand-Side of the equals test
+     * @param rhs The Right-Hand-Side of the equals test
+     * @param testTransients whether to test transient fields
+     */
+    private void assertEqualsAndHashCodeContract(final Object lhs, final Object rhs, final boolean testTransients) {
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (EqualsBuilder.reflectionEquals(lhs, rhs, testTransients)) {</span>
+            // test a couple of times for consistency.
+<span class="fc" id="L85">            assertEquals(HashCodeBuilder.reflectionHashCode(lhs, testTransients), HashCodeBuilder.reflectionHashCode(rhs, testTransients));</span>
+<span class="fc" id="L86">            assertEquals(HashCodeBuilder.reflectionHashCode(lhs, testTransients), HashCodeBuilder.reflectionHashCode(rhs, testTransients));</span>
+<span class="fc" id="L87">            assertEquals(HashCodeBuilder.reflectionHashCode(lhs, testTransients), HashCodeBuilder.reflectionHashCode(rhs, testTransients));</span>
+        }
+<span class="fc" id="L89">    }</span>
+
+    static class TestFixture {
+        int i;
+        char c;
+        String string;
+        short s;
+
+<span class="fc" id="L97">        TestFixture(final int i, final char c, final String string, final short s) {</span>
+<span class="fc" id="L98">            this.i = i;</span>
+<span class="fc" id="L99">            this.c = c;</span>
+<span class="fc" id="L100">            this.string = string;</span>
+<span class="fc" id="L101">            this.s = s;</span>
+<span class="fc" id="L102">        }</span>
+    }
+
+    static class SubTestFixture extends TestFixture {
+        transient String tString;
+
+        SubTestFixture(final int i, final char c, final String string, final short s, final String tString) {
+<span class="fc" id="L109">            super(i, c, string, s);</span>
+<span class="fc" id="L110">            this.tString = tString;</span>
+<span class="fc" id="L111">        }</span>
+    }
+
+    static class AllTransientFixture {
+        transient int i;
+        transient char c;
+        transient String string;
+        transient short s;
+
+<span class="fc" id="L120">        AllTransientFixture(final int i, final char c, final String string, final short s) {</span>
+<span class="fc" id="L121">            this.i = i;</span>
+<span class="fc" id="L122">            this.c = c;</span>
+<span class="fc" id="L123">            this.string = string;</span>
+<span class="fc" id="L124">            this.s = s;</span>
+<span class="fc" id="L125">        }</span>
+    }
+
+    static class SubAllTransientFixture extends AllTransientFixture {
+        transient String tString;
+
+        SubAllTransientFixture(final int i, final char c, final String string, final short s, final String tString) {
+<span class="fc" id="L132">            super(i, c, string, s);</span>
+<span class="fc" id="L133">            this.tString = tString;</span>
+<span class="fc" id="L134">        }</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

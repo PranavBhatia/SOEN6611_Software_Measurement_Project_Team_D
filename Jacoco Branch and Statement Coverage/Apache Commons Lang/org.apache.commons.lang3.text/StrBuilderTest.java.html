@@ -1,0 +1,1898 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StrBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.text</a> &gt; <span class="el_source">StrBuilderTest.java</span></div><h1>StrBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.text;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.CharBuffer;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+/**
+ * Unit tests for {@link org.apache.commons.lang3.text.StrBuilder}.
+ */
+@Deprecated
+<span class="fc" id="L46">public class StrBuilderTest {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructors() {
+<span class="fc" id="L51">        final StrBuilder sb0 = new StrBuilder();</span>
+<span class="fc" id="L52">        assertEquals(32, sb0.capacity());</span>
+<span class="fc" id="L53">        assertEquals(0, sb0.length());</span>
+<span class="fc" id="L54">        assertEquals(0, sb0.size());</span>
+
+<span class="fc" id="L56">        final StrBuilder sb1 = new StrBuilder(32);</span>
+<span class="fc" id="L57">        assertEquals(32, sb1.capacity());</span>
+<span class="fc" id="L58">        assertEquals(0, sb1.length());</span>
+<span class="fc" id="L59">        assertEquals(0, sb1.size());</span>
+
+<span class="fc" id="L61">        final StrBuilder sb2 = new StrBuilder(0);</span>
+<span class="fc" id="L62">        assertEquals(32, sb2.capacity());</span>
+<span class="fc" id="L63">        assertEquals(0, sb2.length());</span>
+<span class="fc" id="L64">        assertEquals(0, sb2.size());</span>
+
+<span class="fc" id="L66">        final StrBuilder sb3 = new StrBuilder(-1);</span>
+<span class="fc" id="L67">        assertEquals(32, sb3.capacity());</span>
+<span class="fc" id="L68">        assertEquals(0, sb3.length());</span>
+<span class="fc" id="L69">        assertEquals(0, sb3.size());</span>
+
+<span class="fc" id="L71">        final StrBuilder sb4 = new StrBuilder(1);</span>
+<span class="fc" id="L72">        assertEquals(1, sb4.capacity());</span>
+<span class="fc" id="L73">        assertEquals(0, sb4.length());</span>
+<span class="fc" id="L74">        assertEquals(0, sb4.size());</span>
+
+<span class="fc" id="L76">        final StrBuilder sb5 = new StrBuilder(null);</span>
+<span class="fc" id="L77">        assertEquals(32, sb5.capacity());</span>
+<span class="fc" id="L78">        assertEquals(0, sb5.length());</span>
+<span class="fc" id="L79">        assertEquals(0, sb5.size());</span>
+
+<span class="fc" id="L81">        final StrBuilder sb6 = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L82">        assertEquals(32, sb6.capacity());</span>
+<span class="fc" id="L83">        assertEquals(0, sb6.length());</span>
+<span class="fc" id="L84">        assertEquals(0, sb6.size());</span>
+
+<span class="fc" id="L86">        final StrBuilder sb7 = new StrBuilder(&quot;foo&quot;);</span>
+<span class="fc" id="L87">        assertEquals(35, sb7.capacity());</span>
+<span class="fc" id="L88">        assertEquals(3, sb7.length());</span>
+<span class="fc" id="L89">        assertEquals(3, sb7.size());</span>
+<span class="fc" id="L90">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testChaining() {
+<span class="fc" id="L95">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L96">        assertSame(sb, sb.setNewLineText(null));</span>
+<span class="fc" id="L97">        assertSame(sb, sb.setNullText(null));</span>
+<span class="fc" id="L98">        assertSame(sb, sb.setLength(1));</span>
+<span class="fc" id="L99">        assertSame(sb, sb.setCharAt(0, 'a'));</span>
+<span class="fc" id="L100">        assertSame(sb, sb.ensureCapacity(0));</span>
+<span class="fc" id="L101">        assertSame(sb, sb.minimizeCapacity());</span>
+<span class="fc" id="L102">        assertSame(sb, sb.clear());</span>
+<span class="fc" id="L103">        assertSame(sb, sb.reverse());</span>
+<span class="fc" id="L104">        assertSame(sb, sb.trim());</span>
+<span class="fc" id="L105">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReadFromReader() throws Exception {
+<span class="fc" id="L110">        String s = &quot;&quot;;</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; ++i) {</span>
+<span class="fc" id="L112">            final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L113">            final int len = sb.readFrom(new StringReader(s));</span>
+
+<span class="fc" id="L115">            assertEquals(s.length(), len);</span>
+<span class="fc" id="L116">            assertEquals(s, sb.toString());</span>
+
+<span class="fc" id="L118">            s += Integer.toString(i);</span>
+        }
+<span class="fc" id="L120">    }</span>
+
+    @Test
+    public void testReadFromReaderAppendsToEnd() throws Exception {
+<span class="fc" id="L124">        final StrBuilder sb = new StrBuilder(&quot;Test&quot;);</span>
+<span class="fc" id="L125">        sb.readFrom(new StringReader(&quot; 123&quot;));</span>
+<span class="fc" id="L126">        assertEquals(&quot;Test 123&quot;, sb.toString());</span>
+<span class="fc" id="L127">    }</span>
+
+    @Test
+    public void testReadFromCharBuffer() throws Exception {
+<span class="fc" id="L131">        String s = &quot;&quot;;</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; ++i) {</span>
+<span class="fc" id="L133">            final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L134">            final int len = sb.readFrom(CharBuffer.wrap(s));</span>
+
+<span class="fc" id="L136">            assertEquals(s.length(), len);</span>
+<span class="fc" id="L137">            assertEquals(s, sb.toString());</span>
+
+<span class="fc" id="L139">            s += Integer.toString(i);</span>
+        }
+<span class="fc" id="L141">    }</span>
+
+    @Test
+    public void testReadFromCharBufferAppendsToEnd() throws Exception {
+<span class="fc" id="L145">        final StrBuilder sb = new StrBuilder(&quot;Test&quot;);</span>
+<span class="fc" id="L146">        sb.readFrom(CharBuffer.wrap(&quot; 123&quot;));</span>
+<span class="fc" id="L147">        assertEquals(&quot;Test 123&quot;, sb.toString());</span>
+<span class="fc" id="L148">    }</span>
+
+    @Test
+    public void testReadFromReadable() throws Exception {
+<span class="fc" id="L152">        String s = &quot;&quot;;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        for (int i = 0; i &lt; 100; ++i) {</span>
+<span class="fc" id="L154">            final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L155">            final int len = sb.readFrom(new MockReadable(s));</span>
+
+<span class="fc" id="L157">            assertEquals(s.length(), len);</span>
+<span class="fc" id="L158">            assertEquals(s, sb.toString());</span>
+
+<span class="fc" id="L160">            s += Integer.toString(i);</span>
+        }
+<span class="fc" id="L162">    }</span>
+
+    @Test
+    public void testReadFromReadableAppendsToEnd() throws Exception {
+<span class="fc" id="L166">        final StrBuilder sb = new StrBuilder(&quot;Test&quot;);</span>
+<span class="fc" id="L167">        sb.readFrom(new MockReadable(&quot; 123&quot;));</span>
+<span class="fc" id="L168">        assertEquals(&quot;Test 123&quot;, sb.toString());</span>
+<span class="fc" id="L169">    }</span>
+
+    private static class MockReadable implements Readable {
+
+        private final CharBuffer src;
+
+<span class="fc" id="L175">        MockReadable(final String src) {</span>
+<span class="fc" id="L176">            this.src = CharBuffer.wrap(src);</span>
+<span class="fc" id="L177">        }</span>
+
+        @Override
+        public int read(final CharBuffer cb) throws IOException {
+<span class="fc" id="L181">            return src.read(cb);</span>
+        }
+    }
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetSetNewLineText() {
+<span class="fc" id="L188">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L189">        assertNull(sb.getNewLineText());</span>
+
+<span class="fc" id="L191">        sb.setNewLineText(&quot;#&quot;);</span>
+<span class="fc" id="L192">        assertEquals(&quot;#&quot;, sb.getNewLineText());</span>
+
+<span class="fc" id="L194">        sb.setNewLineText(&quot;&quot;);</span>
+<span class="fc" id="L195">        assertEquals(&quot;&quot;, sb.getNewLineText());</span>
+
+<span class="fc" id="L197">        sb.setNewLineText(null);</span>
+<span class="fc" id="L198">        assertNull(sb.getNewLineText());</span>
+<span class="fc" id="L199">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetSetNullText() {
+<span class="fc" id="L204">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L205">        assertNull(sb.getNullText());</span>
+
+<span class="fc" id="L207">        sb.setNullText(&quot;null&quot;);</span>
+<span class="fc" id="L208">        assertEquals(&quot;null&quot;, sb.getNullText());</span>
+
+<span class="fc" id="L210">        sb.setNullText(&quot;&quot;);</span>
+<span class="fc" id="L211">        assertNull(sb.getNullText());</span>
+
+<span class="fc" id="L213">        sb.setNullText(&quot;NULL&quot;);</span>
+<span class="fc" id="L214">        assertEquals(&quot;NULL&quot;, sb.getNullText());</span>
+
+<span class="fc" id="L216">        sb.setNullText(null);</span>
+<span class="fc" id="L217">        assertNull(sb.getNullText());</span>
+<span class="fc" id="L218">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testCapacityAndLength() {
+<span class="fc" id="L223">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L224">        assertEquals(32, sb.capacity());</span>
+<span class="fc" id="L225">        assertEquals(0, sb.length());</span>
+<span class="fc" id="L226">        assertEquals(0, sb.size());</span>
+<span class="fc" id="L227">        assertTrue(sb.isEmpty());</span>
+
+<span class="fc" id="L229">        sb.minimizeCapacity();</span>
+<span class="fc" id="L230">        assertEquals(0, sb.capacity());</span>
+<span class="fc" id="L231">        assertEquals(0, sb.length());</span>
+<span class="fc" id="L232">        assertEquals(0, sb.size());</span>
+<span class="fc" id="L233">        assertTrue(sb.isEmpty());</span>
+
+<span class="fc" id="L235">        sb.ensureCapacity(32);</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 32);</span>
+<span class="fc" id="L237">        assertEquals(0, sb.length());</span>
+<span class="fc" id="L238">        assertEquals(0, sb.size());</span>
+<span class="fc" id="L239">        assertTrue(sb.isEmpty());</span>
+
+<span class="fc" id="L241">        sb.append(&quot;foo&quot;);</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 32);</span>
+<span class="fc" id="L243">        assertEquals(3, sb.length());</span>
+<span class="fc" id="L244">        assertEquals(3, sb.size());</span>
+<span class="fc" id="L245">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L247">        sb.clear();</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 32);</span>
+<span class="fc" id="L249">        assertEquals(0, sb.length());</span>
+<span class="fc" id="L250">        assertEquals(0, sb.size());</span>
+<span class="fc" id="L251">        assertTrue(sb.isEmpty());</span>
+
+<span class="fc" id="L253">        sb.append(&quot;123456789012345678901234567890123&quot;);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt; 32);</span>
+<span class="fc" id="L255">        assertEquals(33, sb.length());</span>
+<span class="fc" id="L256">        assertEquals(33, sb.size());</span>
+<span class="fc" id="L257">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L259">        sb.ensureCapacity(16);</span>
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt; 16);</span>
+<span class="fc" id="L261">        assertEquals(33, sb.length());</span>
+<span class="fc" id="L262">        assertEquals(33, sb.size());</span>
+<span class="fc" id="L263">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L265">        sb.minimizeCapacity();</span>
+<span class="fc" id="L266">        assertEquals(33, sb.capacity());</span>
+<span class="fc" id="L267">        assertEquals(33, sb.length());</span>
+<span class="fc" id="L268">        assertEquals(33, sb.size());</span>
+<span class="fc" id="L269">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L271">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L273">                () -&gt; sb.setLength(-1),</span>
+                &quot;setLength(-1) expected StringIndexOutOfBoundsException&quot;);
+
+<span class="fc" id="L276">        sb.setLength(33);</span>
+<span class="fc" id="L277">        assertEquals(33, sb.capacity());</span>
+<span class="fc" id="L278">        assertEquals(33, sb.length());</span>
+<span class="fc" id="L279">        assertEquals(33, sb.size());</span>
+<span class="fc" id="L280">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L282">        sb.setLength(16);</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 16);</span>
+<span class="fc" id="L284">        assertEquals(16, sb.length());</span>
+<span class="fc" id="L285">        assertEquals(16, sb.size());</span>
+<span class="fc" id="L286">        assertEquals(&quot;1234567890123456&quot;, sb.toString());</span>
+<span class="fc" id="L287">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L289">        sb.setLength(32);</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 32);</span>
+<span class="fc" id="L291">        assertEquals(32, sb.length());</span>
+<span class="fc" id="L292">        assertEquals(32, sb.size());</span>
+<span class="fc" id="L293">        assertEquals(&quot;1234567890123456\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0&quot;, sb.toString());</span>
+<span class="fc" id="L294">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L296">        sb.setLength(0);</span>
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 32);</span>
+<span class="fc" id="L298">        assertEquals(0, sb.length());</span>
+<span class="fc" id="L299">        assertEquals(0, sb.size());</span>
+<span class="fc" id="L300">        assertTrue(sb.isEmpty());</span>
+<span class="fc" id="L301">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testLength() {
+<span class="fc" id="L306">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L307">        assertEquals(0, sb.length());</span>
+
+<span class="fc" id="L309">        sb.append(&quot;Hello&quot;);</span>
+<span class="fc" id="L310">        assertEquals(5, sb.length());</span>
+<span class="fc" id="L311">    }</span>
+
+    @Test
+    public void testSetLength() {
+<span class="fc" id="L315">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L316">        sb.append(&quot;Hello&quot;);</span>
+<span class="fc" id="L317">        sb.setLength(2);  // shorten</span>
+<span class="fc" id="L318">        assertEquals(&quot;He&quot;, sb.toString());</span>
+<span class="fc" id="L319">        sb.setLength(2);  // no change</span>
+<span class="fc" id="L320">        assertEquals(&quot;He&quot;, sb.toString());</span>
+<span class="fc" id="L321">        sb.setLength(3);  // lengthen</span>
+<span class="fc" id="L322">        assertEquals(&quot;He\0&quot;, sb.toString());</span>
+
+<span class="fc" id="L324">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L326">                () -&gt; sb.setLength(-1),</span>
+                &quot;setLength(-1) expected StringIndexOutOfBoundsException&quot;);
+<span class="fc" id="L328">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testCapacity() {
+<span class="fc" id="L333">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L334">        assertEquals(sb.buffer.length, sb.capacity());</span>
+
+<span class="fc" id="L336">        sb.append(&quot;HelloWorldHelloWorldHelloWorldHelloWorld&quot;);</span>
+<span class="fc" id="L337">        assertEquals(sb.buffer.length, sb.capacity());</span>
+<span class="fc" id="L338">    }</span>
+
+    @Test
+    public void testEnsureCapacity() {
+<span class="fc" id="L342">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L343">        sb.ensureCapacity(2);</span>
+<span class="pc bpc" id="L344" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 2);</span>
+
+<span class="fc" id="L346">        sb.ensureCapacity(-1);</span>
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 0);</span>
+
+<span class="fc" id="L349">        sb.append(&quot;HelloWorld&quot;);</span>
+<span class="fc" id="L350">        sb.ensureCapacity(40);</span>
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">        assertTrue(sb.capacity() &gt;= 40);</span>
+<span class="fc" id="L352">    }</span>
+
+    @Test
+    public void testMinimizeCapacity() {
+<span class="fc" id="L356">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L357">        sb.minimizeCapacity();</span>
+<span class="fc" id="L358">        assertEquals(0, sb.capacity());</span>
+
+<span class="fc" id="L360">        sb.append(&quot;HelloWorld&quot;);</span>
+<span class="fc" id="L361">        sb.minimizeCapacity();</span>
+<span class="fc" id="L362">        assertEquals(10, sb.capacity());</span>
+<span class="fc" id="L363">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSize() {
+<span class="fc" id="L368">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L369">        assertEquals(0, sb.size());</span>
+
+<span class="fc" id="L371">        sb.append(&quot;Hello&quot;);</span>
+<span class="fc" id="L372">        assertEquals(5, sb.size());</span>
+<span class="fc" id="L373">    }</span>
+
+    @Test
+    public void testIsEmpty() {
+<span class="fc" id="L377">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L378">        assertTrue(sb.isEmpty());</span>
+
+<span class="fc" id="L380">        sb.append(&quot;Hello&quot;);</span>
+<span class="fc" id="L381">        assertFalse(sb.isEmpty());</span>
+
+<span class="fc" id="L383">        sb.clear();</span>
+<span class="fc" id="L384">        assertTrue(sb.isEmpty());</span>
+<span class="fc" id="L385">    }</span>
+
+    @Test
+    public void testClear() {
+<span class="fc" id="L389">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L390">        sb.append(&quot;Hello&quot;);</span>
+<span class="fc" id="L391">        sb.clear();</span>
+<span class="fc" id="L392">        assertEquals(0, sb.length());</span>
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">        assertTrue(sb.buffer.length &gt;= 5);</span>
+<span class="fc" id="L394">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testCharAt() {
+<span class="fc" id="L399">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L400">        assertThrows(</span>
+<span class="nc" id="L401">                IndexOutOfBoundsException.class, () -&gt; sb.charAt(0), &quot;charAt(0) expected IndexOutOfBoundsException&quot;);</span>
+<span class="fc" id="L402">        assertThrows(</span>
+<span class="nc" id="L403">                IndexOutOfBoundsException.class, () -&gt; sb.charAt(-1), &quot;charAt(-1) expected IndexOutOfBoundsException&quot;);</span>
+<span class="fc" id="L404">        sb.append(&quot;foo&quot;);</span>
+<span class="fc" id="L405">        assertEquals('f', sb.charAt(0));</span>
+<span class="fc" id="L406">        assertEquals('o', sb.charAt(1));</span>
+<span class="fc" id="L407">        assertEquals('o', sb.charAt(2));</span>
+<span class="fc" id="L408">        assertThrows(</span>
+<span class="nc" id="L409">                IndexOutOfBoundsException.class, () -&gt; sb.charAt(-1), &quot;charAt(-1) expected IndexOutOfBoundsException&quot;);</span>
+<span class="fc" id="L410">        assertThrows(</span>
+<span class="nc" id="L411">                IndexOutOfBoundsException.class, () -&gt; sb.charAt(3), &quot;charAt(3) expected IndexOutOfBoundsException&quot;);</span>
+<span class="fc" id="L412">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSetCharAt() {
+<span class="fc" id="L417">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L418">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L420">                () -&gt; sb.setCharAt(0, 'f'),</span>
+                &quot;setCharAt(0, ) expected IndexOutOfBoundsException&quot;);
+<span class="fc" id="L422">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L424">                () -&gt; sb.setCharAt(-1, 'f'),</span>
+                &quot;setCharAt(-1, ) expected IndexOutOfBoundsException&quot;);
+<span class="fc" id="L426">        sb.append(&quot;foo&quot;);</span>
+<span class="fc" id="L427">        sb.setCharAt(0, 'b');</span>
+<span class="fc" id="L428">        sb.setCharAt(1, 'a');</span>
+<span class="fc" id="L429">        sb.setCharAt(2, 'r');</span>
+<span class="fc" id="L430">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L432">                () -&gt; sb.setCharAt(3, '!'),</span>
+                &quot;setCharAt(3, ) expected IndexOutOfBoundsException&quot;);
+<span class="fc" id="L434">        assertEquals(&quot;bar&quot;, sb.toString());</span>
+<span class="fc" id="L435">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testDeleteCharAt() {
+<span class="fc" id="L440">        final StrBuilder sb = new StrBuilder(&quot;abc&quot;);</span>
+<span class="fc" id="L441">        sb.deleteCharAt(0);</span>
+<span class="fc" id="L442">        assertEquals(&quot;bc&quot;, sb.toString());</span>
+
+<span class="pc" id="L444">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.deleteCharAt(1000));</span>
+<span class="fc" id="L445">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToCharArray() {
+<span class="fc" id="L450">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L451">        assertEquals(ArrayUtils.EMPTY_CHAR_ARRAY, sb.toCharArray());</span>
+
+<span class="fc" id="L453">        char[] a = sb.toCharArray();</span>
+<span class="fc" id="L454">        assertNotNull(a, &quot;toCharArray() result is null&quot;);</span>
+<span class="fc" id="L455">        assertEquals(0, a.length, &quot;toCharArray() result is too large&quot;);</span>
+
+<span class="fc" id="L457">        sb.append(&quot;junit&quot;);</span>
+<span class="fc" id="L458">        a = sb.toCharArray();</span>
+<span class="fc" id="L459">        assertEquals(5, a.length, &quot;toCharArray() result incorrect length&quot;);</span>
+<span class="fc" id="L460">        assertArrayEquals(&quot;junit&quot;.toCharArray(), a, &quot;toCharArray() result does not match&quot;);</span>
+<span class="fc" id="L461">    }</span>
+
+    @Test
+    public void testToCharArrayIntInt() {
+<span class="fc" id="L465">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L466">        assertEquals(ArrayUtils.EMPTY_CHAR_ARRAY, sb.toCharArray(0, 0));</span>
+
+<span class="fc" id="L468">        sb.append(&quot;junit&quot;);</span>
+<span class="fc" id="L469">        char[] a = sb.toCharArray(0, 20); // too large test</span>
+<span class="fc" id="L470">        assertEquals(5, a.length, &quot;toCharArray(int, int) result incorrect length&quot;);</span>
+<span class="fc" id="L471">        assertArrayEquals(&quot;junit&quot;.toCharArray(), a, &quot;toCharArray(int, int) result does not match&quot;);</span>
+
+<span class="fc" id="L473">        a = sb.toCharArray(0, 4);</span>
+<span class="fc" id="L474">        assertEquals(4, a.length, &quot;toCharArray(int, int) result incorrect length&quot;);</span>
+<span class="fc" id="L475">        assertArrayEquals(&quot;juni&quot;.toCharArray(), a, &quot;toCharArray(int, int) result does not match&quot;);</span>
+
+<span class="fc" id="L477">        a = sb.toCharArray(0, 4);</span>
+<span class="fc" id="L478">        assertEquals(4, a.length, &quot;toCharArray(int, int) result incorrect length&quot;);</span>
+<span class="fc" id="L479">        assertArrayEquals(&quot;juni&quot;.toCharArray(), a, &quot;toCharArray(int, int) result does not match&quot;);</span>
+
+<span class="fc" id="L481">        a = sb.toCharArray(0, 1);</span>
+<span class="fc" id="L482">        assertNotNull(a, &quot;toCharArray(int, int) result is null&quot;);</span>
+
+<span class="fc" id="L484">        assertThrows(</span>
+<span class="nc" id="L485">                IndexOutOfBoundsException.class, () -&gt; sb.toCharArray(-1, 5), &quot;no string index out of bound on -1&quot;);</span>
+
+<span class="fc" id="L487">        assertThrows(</span>
+<span class="nc" id="L488">                IndexOutOfBoundsException.class, () -&gt; sb.toCharArray(6, 5), &quot;no string index out of bound on -1&quot;);</span>
+<span class="fc" id="L489">    }</span>
+
+    @Test
+    public void testGetChars ( ) {
+<span class="fc" id="L493">        final StrBuilder sb = new StrBuilder();</span>
+
+<span class="fc" id="L495">        char[] input = new char[10];</span>
+<span class="fc" id="L496">        char[] a = sb.getChars(input);</span>
+<span class="fc" id="L497">        assertSame (input, a);</span>
+<span class="fc" id="L498">        assertArrayEquals(new char[10], a);</span>
+
+<span class="fc" id="L500">        sb.append(&quot;junit&quot;);</span>
+<span class="fc" id="L501">        a = sb.getChars(input);</span>
+<span class="fc" id="L502">        assertSame(input, a);</span>
+<span class="fc" id="L503">        assertArrayEquals(new char[]{'j', 'u', 'n', 'i', 't', 0, 0, 0, 0, 0}, a);</span>
+
+<span class="fc" id="L505">        a = sb.getChars(null);</span>
+<span class="fc" id="L506">        assertNotSame(input, a);</span>
+<span class="fc" id="L507">        assertEquals(5, a.length);</span>
+<span class="fc" id="L508">        assertArrayEquals(&quot;junit&quot;.toCharArray(), a);</span>
+
+<span class="fc" id="L510">        input = new char[5];</span>
+<span class="fc" id="L511">        a = sb.getChars(input);</span>
+<span class="fc" id="L512">        assertSame(input, a);</span>
+
+<span class="fc" id="L514">        input = new char[4];</span>
+<span class="fc" id="L515">        a = sb.getChars(input);</span>
+<span class="fc" id="L516">        assertNotSame(input, a);</span>
+<span class="fc" id="L517">    }</span>
+
+    @Test
+    public void testGetCharsIntIntCharArrayInt( ) {
+<span class="fc" id="L521">        final StrBuilder sb = new StrBuilder();</span>
+
+<span class="fc" id="L523">        sb.append(&quot;junit&quot;);</span>
+<span class="fc" id="L524">        char[] a = new char[5];</span>
+<span class="fc" id="L525">        sb.getChars(0, 5, a, 0);</span>
+<span class="fc" id="L526">        assertArrayEquals(new char[]{'j', 'u', 'n', 'i', 't'}, a);</span>
+
+<span class="fc" id="L528">        final char[] b = new char[5];</span>
+<span class="fc" id="L529">        sb.getChars(0, 2, b, 3);</span>
+<span class="fc" id="L530">        assertArrayEquals(new char[]{0, 0, 0, 'j', 'u'}, b);</span>
+
+<span class="pc" id="L532">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.getChars(-1, 0, b, 0));</span>
+<span class="pc" id="L533">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.getChars(0, -1, b, 0));</span>
+<span class="pc" id="L534">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.getChars(0, 20, b, 0));</span>
+<span class="pc" id="L535">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.getChars(4, 2, b, 0));</span>
+<span class="fc" id="L536">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testDeleteIntInt() {
+<span class="fc" id="L541">        StrBuilder sb = new StrBuilder(&quot;abc&quot;);</span>
+<span class="fc" id="L542">        sb.delete(0, 1);</span>
+<span class="fc" id="L543">        assertEquals(&quot;bc&quot;, sb.toString());</span>
+<span class="fc" id="L544">        sb.delete(1, 2);</span>
+<span class="fc" id="L545">        assertEquals(&quot;b&quot;, sb.toString());</span>
+<span class="fc" id="L546">        sb.delete(0, 1);</span>
+<span class="fc" id="L547">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L548">        sb.delete(0, 1000);</span>
+<span class="fc" id="L549">        assertEquals(&quot;&quot;, sb.toString());</span>
+
+<span class="pc" id="L551">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.delete(1, 2));</span>
+<span class="pc" id="L552">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.delete(-1, 1));</span>
+<span class="pc" id="L553">        assertThrows(IndexOutOfBoundsException.class, () -&gt; new StrBuilder(&quot;anything&quot;).delete(2, 1));</span>
+<span class="fc" id="L554">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testDeleteAll_char() {
+<span class="fc" id="L559">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L560">        sb.deleteAll('X');</span>
+<span class="fc" id="L561">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L562">        sb.deleteAll('a');</span>
+<span class="fc" id="L563">        assertEquals(&quot;bcbccb&quot;, sb.toString());</span>
+<span class="fc" id="L564">        sb.deleteAll('c');</span>
+<span class="fc" id="L565">        assertEquals(&quot;bbb&quot;, sb.toString());</span>
+<span class="fc" id="L566">        sb.deleteAll('b');</span>
+<span class="fc" id="L567">        assertEquals(&quot;&quot;, sb.toString());</span>
+
+<span class="fc" id="L569">        sb = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L570">        sb.deleteAll('b');</span>
+<span class="fc" id="L571">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L572">    }</span>
+
+    @Test
+    public void testDeleteFirst_char() {
+<span class="fc" id="L576">        StrBuilder sb = new StrBuilder(&quot;abcba&quot;);</span>
+<span class="fc" id="L577">        sb.deleteFirst('X');</span>
+<span class="fc" id="L578">        assertEquals(&quot;abcba&quot;, sb.toString());</span>
+<span class="fc" id="L579">        sb.deleteFirst('a');</span>
+<span class="fc" id="L580">        assertEquals(&quot;bcba&quot;, sb.toString());</span>
+<span class="fc" id="L581">        sb.deleteFirst('c');</span>
+<span class="fc" id="L582">        assertEquals(&quot;bba&quot;, sb.toString());</span>
+<span class="fc" id="L583">        sb.deleteFirst('b');</span>
+<span class="fc" id="L584">        assertEquals(&quot;ba&quot;, sb.toString());</span>
+
+<span class="fc" id="L586">        sb = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L587">        sb.deleteFirst('b');</span>
+<span class="fc" id="L588">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L589">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testDeleteAll_String() {
+<span class="fc" id="L594">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L595">        sb.deleteAll((String) null);</span>
+<span class="fc" id="L596">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L597">        sb.deleteAll(&quot;&quot;);</span>
+<span class="fc" id="L598">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L600">        sb.deleteAll(&quot;X&quot;);</span>
+<span class="fc" id="L601">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L602">        sb.deleteAll(&quot;a&quot;);</span>
+<span class="fc" id="L603">        assertEquals(&quot;bcbccb&quot;, sb.toString());</span>
+<span class="fc" id="L604">        sb.deleteAll(&quot;c&quot;);</span>
+<span class="fc" id="L605">        assertEquals(&quot;bbb&quot;, sb.toString());</span>
+<span class="fc" id="L606">        sb.deleteAll(&quot;b&quot;);</span>
+<span class="fc" id="L607">        assertEquals(&quot;&quot;, sb.toString());</span>
+
+<span class="fc" id="L609">        sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L610">        sb.deleteAll(&quot;bc&quot;);</span>
+<span class="fc" id="L611">        assertEquals(&quot;acba&quot;, sb.toString());</span>
+
+<span class="fc" id="L613">        sb = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L614">        sb.deleteAll(&quot;bc&quot;);</span>
+<span class="fc" id="L615">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L616">    }</span>
+
+    @Test
+    public void testDeleteFirst_String() {
+<span class="fc" id="L620">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L621">        sb.deleteFirst((String) null);</span>
+<span class="fc" id="L622">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L623">        sb.deleteFirst(&quot;&quot;);</span>
+<span class="fc" id="L624">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L626">        sb.deleteFirst(&quot;X&quot;);</span>
+<span class="fc" id="L627">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L628">        sb.deleteFirst(&quot;a&quot;);</span>
+<span class="fc" id="L629">        assertEquals(&quot;bcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L630">        sb.deleteFirst(&quot;c&quot;);</span>
+<span class="fc" id="L631">        assertEquals(&quot;bbccba&quot;, sb.toString());</span>
+<span class="fc" id="L632">        sb.deleteFirst(&quot;b&quot;);</span>
+<span class="fc" id="L633">        assertEquals(&quot;bccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L635">        sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L636">        sb.deleteFirst(&quot;bc&quot;);</span>
+<span class="fc" id="L637">        assertEquals(&quot;abccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L639">        sb = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L640">        sb.deleteFirst(&quot;bc&quot;);</span>
+<span class="fc" id="L641">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L642">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testDeleteAll_StrMatcher() {
+<span class="fc" id="L647">        StrBuilder sb = new StrBuilder(&quot;A0xA1A2yA3&quot;);</span>
+<span class="fc" id="L648">        sb.deleteAll((StrMatcher) null);</span>
+<span class="fc" id="L649">        assertEquals(&quot;A0xA1A2yA3&quot;, sb.toString());</span>
+<span class="fc" id="L650">        sb.deleteAll(A_NUMBER_MATCHER);</span>
+<span class="fc" id="L651">        assertEquals(&quot;xy&quot;, sb.toString());</span>
+
+<span class="fc" id="L653">        sb = new StrBuilder(&quot;Ax1&quot;);</span>
+<span class="fc" id="L654">        sb.deleteAll(A_NUMBER_MATCHER);</span>
+<span class="fc" id="L655">        assertEquals(&quot;Ax1&quot;, sb.toString());</span>
+
+<span class="fc" id="L657">        sb = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L658">        sb.deleteAll(A_NUMBER_MATCHER);</span>
+<span class="fc" id="L659">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L660">    }</span>
+
+    @Test
+    public void testDeleteFirst_StrMatcher() {
+<span class="fc" id="L664">        StrBuilder sb = new StrBuilder(&quot;A0xA1A2yA3&quot;);</span>
+<span class="fc" id="L665">        sb.deleteFirst((StrMatcher) null);</span>
+<span class="fc" id="L666">        assertEquals(&quot;A0xA1A2yA3&quot;, sb.toString());</span>
+<span class="fc" id="L667">        sb.deleteFirst(A_NUMBER_MATCHER);</span>
+<span class="fc" id="L668">        assertEquals(&quot;xA1A2yA3&quot;, sb.toString());</span>
+
+<span class="fc" id="L670">        sb = new StrBuilder(&quot;Ax1&quot;);</span>
+<span class="fc" id="L671">        sb.deleteFirst(A_NUMBER_MATCHER);</span>
+<span class="fc" id="L672">        assertEquals(&quot;Ax1&quot;, sb.toString());</span>
+
+<span class="fc" id="L674">        sb = new StrBuilder(&quot;&quot;);</span>
+<span class="fc" id="L675">        sb.deleteFirst(A_NUMBER_MATCHER);</span>
+<span class="fc" id="L676">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L677">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testReplace_int_int_String() {
+<span class="fc" id="L682">        StrBuilder sb = new StrBuilder(&quot;abc&quot;);</span>
+<span class="fc" id="L683">        sb.replace(0, 1, &quot;d&quot;);</span>
+<span class="fc" id="L684">        assertEquals(&quot;dbc&quot;, sb.toString());</span>
+<span class="fc" id="L685">        sb.replace(0, 1, &quot;aaa&quot;);</span>
+<span class="fc" id="L686">        assertEquals(&quot;aaabc&quot;, sb.toString());</span>
+<span class="fc" id="L687">        sb.replace(0, 3, &quot;&quot;);</span>
+<span class="fc" id="L688">        assertEquals(&quot;bc&quot;, sb.toString());</span>
+<span class="fc" id="L689">        sb.replace(1, 2, null);</span>
+<span class="fc" id="L690">        assertEquals(&quot;b&quot;, sb.toString());</span>
+<span class="fc" id="L691">        sb.replace(1, 1000, &quot;text&quot;);</span>
+<span class="fc" id="L692">        assertEquals(&quot;btext&quot;, sb.toString());</span>
+<span class="fc" id="L693">        sb.replace(0, 1000, &quot;text&quot;);</span>
+<span class="fc" id="L694">        assertEquals(&quot;text&quot;, sb.toString());</span>
+
+<span class="fc" id="L696">        StrBuilder sb1 = new StrBuilder(&quot;atext&quot;);</span>
+<span class="fc" id="L697">        sb1.replace(1, 1, &quot;ny&quot;);</span>
+<span class="fc" id="L698">        assertEquals(&quot;anytext&quot;, sb1.toString());</span>
+<span class="pc" id="L699">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb1.replace(2, 1, &quot;anything&quot;));</span>
+
+<span class="fc" id="L701">        StrBuilder sb2 = new StrBuilder();</span>
+<span class="pc" id="L702">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb2.replace(1, 2, &quot;anything&quot;));</span>
+<span class="pc" id="L703">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb2.replace(-1, 1, &quot;anything&quot;));</span>
+<span class="fc" id="L704">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReplaceAll_char_char() {
+<span class="fc" id="L709">        final StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L710">        sb.replaceAll('x', 'y');</span>
+<span class="fc" id="L711">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L712">        sb.replaceAll('a', 'd');</span>
+<span class="fc" id="L713">        assertEquals(&quot;dbcbccbd&quot;, sb.toString());</span>
+<span class="fc" id="L714">        sb.replaceAll('b', 'e');</span>
+<span class="fc" id="L715">        assertEquals(&quot;dececced&quot;, sb.toString());</span>
+<span class="fc" id="L716">        sb.replaceAll('c', 'f');</span>
+<span class="fc" id="L717">        assertEquals(&quot;defeffed&quot;, sb.toString());</span>
+<span class="fc" id="L718">        sb.replaceAll('d', 'd');</span>
+<span class="fc" id="L719">        assertEquals(&quot;defeffed&quot;, sb.toString());</span>
+<span class="fc" id="L720">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReplaceFirst_char_char() {
+<span class="fc" id="L725">        final StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L726">        sb.replaceFirst('x', 'y');</span>
+<span class="fc" id="L727">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L728">        sb.replaceFirst('a', 'd');</span>
+<span class="fc" id="L729">        assertEquals(&quot;dbcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L730">        sb.replaceFirst('b', 'e');</span>
+<span class="fc" id="L731">        assertEquals(&quot;decbccba&quot;, sb.toString());</span>
+<span class="fc" id="L732">        sb.replaceFirst('c', 'f');</span>
+<span class="fc" id="L733">        assertEquals(&quot;defbccba&quot;, sb.toString());</span>
+<span class="fc" id="L734">        sb.replaceFirst('d', 'd');</span>
+<span class="fc" id="L735">        assertEquals(&quot;defbccba&quot;, sb.toString());</span>
+<span class="fc" id="L736">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReplaceAll_String_String() {
+<span class="fc" id="L741">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L742">        sb.replaceAll((String) null, null);</span>
+<span class="fc" id="L743">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L744">        sb.replaceAll((String) null, &quot;anything&quot;);</span>
+<span class="fc" id="L745">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L746">        sb.replaceAll(&quot;&quot;, null);</span>
+<span class="fc" id="L747">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L748">        sb.replaceAll(&quot;&quot;, &quot;anything&quot;);</span>
+<span class="fc" id="L749">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L751">        sb.replaceAll(&quot;x&quot;, &quot;y&quot;);</span>
+<span class="fc" id="L752">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L753">        sb.replaceAll(&quot;a&quot;, &quot;d&quot;);</span>
+<span class="fc" id="L754">        assertEquals(&quot;dbcbccbd&quot;, sb.toString());</span>
+<span class="fc" id="L755">        sb.replaceAll(&quot;d&quot;, null);</span>
+<span class="fc" id="L756">        assertEquals(&quot;bcbccb&quot;, sb.toString());</span>
+<span class="fc" id="L757">        sb.replaceAll(&quot;cb&quot;, &quot;-&quot;);</span>
+<span class="fc" id="L758">        assertEquals(&quot;b-c-&quot;, sb.toString());</span>
+
+<span class="fc" id="L760">        sb = new StrBuilder(&quot;abcba&quot;);</span>
+<span class="fc" id="L761">        sb.replaceAll(&quot;b&quot;, &quot;xbx&quot;);</span>
+<span class="fc" id="L762">        assertEquals(&quot;axbxcxbxa&quot;, sb.toString());</span>
+
+<span class="fc" id="L764">        sb = new StrBuilder(&quot;bb&quot;);</span>
+<span class="fc" id="L765">        sb.replaceAll(&quot;b&quot;, &quot;xbx&quot;);</span>
+<span class="fc" id="L766">        assertEquals(&quot;xbxxbx&quot;, sb.toString());</span>
+<span class="fc" id="L767">    }</span>
+
+    @Test
+    public void testReplaceFirst_String_String() {
+<span class="fc" id="L771">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L772">        sb.replaceFirst((String) null, null);</span>
+<span class="fc" id="L773">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L774">        sb.replaceFirst((String) null, &quot;anything&quot;);</span>
+<span class="fc" id="L775">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L776">        sb.replaceFirst(&quot;&quot;, null);</span>
+<span class="fc" id="L777">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L778">        sb.replaceFirst(&quot;&quot;, &quot;anything&quot;);</span>
+<span class="fc" id="L779">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L781">        sb.replaceFirst(&quot;x&quot;, &quot;y&quot;);</span>
+<span class="fc" id="L782">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L783">        sb.replaceFirst(&quot;a&quot;, &quot;d&quot;);</span>
+<span class="fc" id="L784">        assertEquals(&quot;dbcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L785">        sb.replaceFirst(&quot;d&quot;, null);</span>
+<span class="fc" id="L786">        assertEquals(&quot;bcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L787">        sb.replaceFirst(&quot;cb&quot;, &quot;-&quot;);</span>
+<span class="fc" id="L788">        assertEquals(&quot;b-ccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L790">        sb = new StrBuilder(&quot;abcba&quot;);</span>
+<span class="fc" id="L791">        sb.replaceFirst(&quot;b&quot;, &quot;xbx&quot;);</span>
+<span class="fc" id="L792">        assertEquals(&quot;axbxcba&quot;, sb.toString());</span>
+
+<span class="fc" id="L794">        sb = new StrBuilder(&quot;bb&quot;);</span>
+<span class="fc" id="L795">        sb.replaceFirst(&quot;b&quot;, &quot;xbx&quot;);</span>
+<span class="fc" id="L796">        assertEquals(&quot;xbxb&quot;, sb.toString());</span>
+<span class="fc" id="L797">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReplaceAll_StrMatcher_String() {
+<span class="fc" id="L802">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L803">        sb.replaceAll((StrMatcher) null, null);</span>
+<span class="fc" id="L804">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L805">        sb.replaceAll((StrMatcher) null, &quot;anything&quot;);</span>
+<span class="fc" id="L806">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L807">        sb.replaceAll(StrMatcher.noneMatcher(), null);</span>
+<span class="fc" id="L808">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L809">        sb.replaceAll(StrMatcher.noneMatcher(), &quot;anything&quot;);</span>
+<span class="fc" id="L810">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L812">        sb.replaceAll(StrMatcher.charMatcher('x'), &quot;y&quot;);</span>
+<span class="fc" id="L813">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L814">        sb.replaceAll(StrMatcher.charMatcher('a'), &quot;d&quot;);</span>
+<span class="fc" id="L815">        assertEquals(&quot;dbcbccbd&quot;, sb.toString());</span>
+<span class="fc" id="L816">        sb.replaceAll(StrMatcher.charMatcher('d'), null);</span>
+<span class="fc" id="L817">        assertEquals(&quot;bcbccb&quot;, sb.toString());</span>
+<span class="fc" id="L818">        sb.replaceAll(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;-&quot;);</span>
+<span class="fc" id="L819">        assertEquals(&quot;b-c-&quot;, sb.toString());</span>
+
+<span class="fc" id="L821">        sb = new StrBuilder(&quot;abcba&quot;);</span>
+<span class="fc" id="L822">        sb.replaceAll(StrMatcher.charMatcher('b'), &quot;xbx&quot;);</span>
+<span class="fc" id="L823">        assertEquals(&quot;axbxcxbxa&quot;, sb.toString());</span>
+
+<span class="fc" id="L825">        sb = new StrBuilder(&quot;bb&quot;);</span>
+<span class="fc" id="L826">        sb.replaceAll(StrMatcher.charMatcher('b'), &quot;xbx&quot;);</span>
+<span class="fc" id="L827">        assertEquals(&quot;xbxxbx&quot;, sb.toString());</span>
+
+<span class="fc" id="L829">        sb = new StrBuilder(&quot;A1-A2A3-A4&quot;);</span>
+<span class="fc" id="L830">        sb.replaceAll(A_NUMBER_MATCHER, &quot;***&quot;);</span>
+<span class="fc" id="L831">        assertEquals(&quot;***-******-***&quot;, sb.toString());</span>
+
+<span class="fc" id="L833">        sb = new StrBuilder(&quot;Dear X, hello X.&quot;);</span>
+<span class="fc" id="L834">        sb.replaceAll(StrMatcher.stringMatcher(&quot;X&quot;), &quot;012345678901234567&quot;);</span>
+<span class="fc" id="L835">        assertEquals(&quot;Dear 012345678901234567, hello 012345678901234567.&quot;, sb.toString());</span>
+<span class="fc" id="L836">    }</span>
+
+    @Test
+    public void testReplaceFirst_StrMatcher_String() {
+<span class="fc" id="L840">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L841">        sb.replaceFirst((StrMatcher) null, null);</span>
+<span class="fc" id="L842">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L843">        sb.replaceFirst((StrMatcher) null, &quot;anything&quot;);</span>
+<span class="fc" id="L844">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L845">        sb.replaceFirst(StrMatcher.noneMatcher(), null);</span>
+<span class="fc" id="L846">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L847">        sb.replaceFirst(StrMatcher.noneMatcher(), &quot;anything&quot;);</span>
+<span class="fc" id="L848">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L850">        sb.replaceFirst(StrMatcher.charMatcher('x'), &quot;y&quot;);</span>
+<span class="fc" id="L851">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L852">        sb.replaceFirst(StrMatcher.charMatcher('a'), &quot;d&quot;);</span>
+<span class="fc" id="L853">        assertEquals(&quot;dbcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L854">        sb.replaceFirst(StrMatcher.charMatcher('d'), null);</span>
+<span class="fc" id="L855">        assertEquals(&quot;bcbccba&quot;, sb.toString());</span>
+<span class="fc" id="L856">        sb.replaceFirst(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;-&quot;);</span>
+<span class="fc" id="L857">        assertEquals(&quot;b-ccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L859">        sb = new StrBuilder(&quot;abcba&quot;);</span>
+<span class="fc" id="L860">        sb.replaceFirst(StrMatcher.charMatcher('b'), &quot;xbx&quot;);</span>
+<span class="fc" id="L861">        assertEquals(&quot;axbxcba&quot;, sb.toString());</span>
+
+<span class="fc" id="L863">        sb = new StrBuilder(&quot;bb&quot;);</span>
+<span class="fc" id="L864">        sb.replaceFirst(StrMatcher.charMatcher('b'), &quot;xbx&quot;);</span>
+<span class="fc" id="L865">        assertEquals(&quot;xbxb&quot;, sb.toString());</span>
+
+<span class="fc" id="L867">        sb = new StrBuilder(&quot;A1-A2A3-A4&quot;);</span>
+<span class="fc" id="L868">        sb.replaceFirst(A_NUMBER_MATCHER, &quot;***&quot;);</span>
+<span class="fc" id="L869">        assertEquals(&quot;***-A2A3-A4&quot;, sb.toString());</span>
+<span class="fc" id="L870">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReplace_StrMatcher_String_int_int_int_VaryMatcher() {
+<span class="fc" id="L875">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L876">        sb.replace(null, &quot;x&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L877">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L879">        sb.replace(StrMatcher.charMatcher('a'), &quot;x&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L880">        assertEquals(&quot;xbcbccbx&quot;, sb.toString());</span>
+
+<span class="fc" id="L882">        sb.replace(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;x&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L883">        assertEquals(&quot;xbxcxx&quot;, sb.toString());</span>
+
+<span class="fc" id="L885">        sb = new StrBuilder(&quot;A1-A2A3-A4&quot;);</span>
+<span class="fc" id="L886">        sb.replace(A_NUMBER_MATCHER, &quot;***&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L887">        assertEquals(&quot;***-******-***&quot;, sb.toString());</span>
+
+<span class="fc" id="L889">        sb = new StrBuilder();</span>
+<span class="fc" id="L890">        sb.replace(A_NUMBER_MATCHER, &quot;***&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L891">        assertEquals(&quot;&quot;, sb.toString());</span>
+<span class="fc" id="L892">    }</span>
+
+    @Test
+    public void testReplace_StrMatcher_String_int_int_int_VaryReplace() {
+<span class="fc" id="L896">        StrBuilder sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L897">        sb.replace(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;cb&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L898">        assertEquals(&quot;abcbccba&quot;, sb.toString());</span>
+
+<span class="fc" id="L900">        sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L901">        sb.replace(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;-&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L902">        assertEquals(&quot;ab-c-a&quot;, sb.toString());</span>
+
+<span class="fc" id="L904">        sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L905">        sb.replace(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;+++&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L906">        assertEquals(&quot;ab+++c+++a&quot;, sb.toString());</span>
+
+<span class="fc" id="L908">        sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L909">        sb.replace(StrMatcher.stringMatcher(&quot;cb&quot;), &quot;&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L910">        assertEquals(&quot;abca&quot;, sb.toString());</span>
+
+<span class="fc" id="L912">        sb = new StrBuilder(&quot;abcbccba&quot;);</span>
+<span class="fc" id="L913">        sb.replace(StrMatcher.stringMatcher(&quot;cb&quot;), null, 0, sb.length(), -1);</span>
+<span class="fc" id="L914">        assertEquals(&quot;abca&quot;, sb.toString());</span>
+<span class="fc" id="L915">    }</span>
+
+    @Test
+    public void testReplace_StrMatcher_String_int_int_int_VaryStartIndex() {
+<span class="fc" id="L919">        StrBuilder sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L920">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, sb.length(), -1);</span>
+<span class="fc" id="L921">        assertEquals(&quot;-x--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L923">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L924">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 1, sb.length(), -1);</span>
+<span class="fc" id="L925">        assertEquals(&quot;aax--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L927">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L928">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 2, sb.length(), -1);</span>
+<span class="fc" id="L929">        assertEquals(&quot;aax--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L931">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L932">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 3, sb.length(), -1);</span>
+<span class="fc" id="L933">        assertEquals(&quot;aax--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L935">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L936">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 4, sb.length(), -1);</span>
+<span class="fc" id="L937">        assertEquals(&quot;aaxa-ay-&quot;, sb.toString());</span>
+
+<span class="fc" id="L939">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L940">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 5, sb.length(), -1);</span>
+<span class="fc" id="L941">        assertEquals(&quot;aaxaa-y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L943">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L944">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 6, sb.length(), -1);</span>
+<span class="fc" id="L945">        assertEquals(&quot;aaxaaaay-&quot;, sb.toString());</span>
+
+<span class="fc" id="L947">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L948">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 7, sb.length(), -1);</span>
+<span class="fc" id="L949">        assertEquals(&quot;aaxaaaay-&quot;, sb.toString());</span>
+
+<span class="fc" id="L951">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L952">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 8, sb.length(), -1);</span>
+<span class="fc" id="L953">        assertEquals(&quot;aaxaaaay-&quot;, sb.toString());</span>
+
+<span class="fc" id="L955">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L956">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 9, sb.length(), -1);</span>
+<span class="fc" id="L957">        assertEquals(&quot;aaxaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L959">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L960">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 10, sb.length(), -1);</span>
+<span class="fc" id="L961">        assertEquals(&quot;aaxaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L963">        StrBuilder sb1 = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L964">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L966">                () -&gt; sb1.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 11, sb1.length(), -1));</span>
+<span class="fc" id="L967">        assertEquals(&quot;aaxaaaayaa&quot;, sb1.toString());</span>
+
+<span class="fc" id="L969">        StrBuilder sb2 = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L970">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L972">                () -&gt; sb2.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, -1, sb2.length(), -1));</span>
+<span class="fc" id="L973">        assertEquals(&quot;aaxaaaayaa&quot;, sb2.toString());</span>
+<span class="fc" id="L974">    }</span>
+
+    @Test
+    public void testReplace_StrMatcher_String_int_int_int_VaryEndIndex() {
+<span class="fc" id="L978">        StrBuilder sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L979">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 0, -1);</span>
+<span class="fc" id="L980">        assertEquals(&quot;aaxaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L982">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L983">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 2, -1);</span>
+<span class="fc" id="L984">        assertEquals(&quot;-xaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L986">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L987">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 3, -1);</span>
+<span class="fc" id="L988">        assertEquals(&quot;-xaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L990">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L991">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 4, -1);</span>
+<span class="fc" id="L992">        assertEquals(&quot;-xaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L994">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L995">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 5, -1);</span>
+<span class="fc" id="L996">        assertEquals(&quot;-x-aayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L998">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L999">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 6, -1);</span>
+<span class="fc" id="L1000">        assertEquals(&quot;-x-aayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1002">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1003">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 7, -1);</span>
+<span class="fc" id="L1004">        assertEquals(&quot;-x--yaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1006">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1007">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 8, -1);</span>
+<span class="fc" id="L1008">        assertEquals(&quot;-x--yaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1010">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1011">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 9, -1);</span>
+<span class="fc" id="L1012">        assertEquals(&quot;-x--yaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1014">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1015">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, -1);</span>
+<span class="fc" id="L1016">        assertEquals(&quot;-x--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L1018">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1019">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 1000, -1);</span>
+<span class="fc" id="L1020">        assertEquals(&quot;-x--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L1022">        StrBuilder sb1 = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1023">        assertThrows(</span>
+                IndexOutOfBoundsException.class,
+<span class="nc" id="L1025">                () -&gt; sb1.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 2, 1, -1));</span>
+<span class="fc" id="L1026">        assertEquals(&quot;aaxaaaayaa&quot;, sb1.toString());</span>
+<span class="fc" id="L1027">    }</span>
+
+    @Test
+    public void testReplace_StrMatcher_String_int_int_int_VaryCount() {
+<span class="fc" id="L1031">        StrBuilder sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1032">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, -1);</span>
+<span class="fc" id="L1033">        assertEquals(&quot;-x--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L1035">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1036">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, 0);</span>
+<span class="fc" id="L1037">        assertEquals(&quot;aaxaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1039">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1040">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, 1);</span>
+<span class="fc" id="L1041">        assertEquals(&quot;-xaaaayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1043">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1044">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, 2);</span>
+<span class="fc" id="L1045">        assertEquals(&quot;-x-aayaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1047">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1048">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, 3);</span>
+<span class="fc" id="L1049">        assertEquals(&quot;-x--yaa&quot;, sb.toString());</span>
+
+<span class="fc" id="L1051">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1052">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, 4);</span>
+<span class="fc" id="L1053">        assertEquals(&quot;-x--y-&quot;, sb.toString());</span>
+
+<span class="fc" id="L1055">        sb = new StrBuilder(&quot;aaxaaaayaa&quot;);</span>
+<span class="fc" id="L1056">        sb.replace(StrMatcher.stringMatcher(&quot;aa&quot;), &quot;-&quot;, 0, 10, 5);</span>
+<span class="fc" id="L1057">        assertEquals(&quot;-x--y-&quot;, sb.toString());</span>
+<span class="fc" id="L1058">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReverse() {
+<span class="fc" id="L1063">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1064">        assertEquals(&quot;&quot;, sb.reverse().toString());</span>
+
+<span class="fc" id="L1066">        sb.clear().append(true);</span>
+<span class="fc" id="L1067">        assertEquals(&quot;eurt&quot;, sb.reverse().toString());</span>
+<span class="fc" id="L1068">        assertEquals(&quot;true&quot;, sb.reverse().toString());</span>
+<span class="fc" id="L1069">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testTrim() {
+<span class="fc" id="L1074">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1075">        assertEquals(&quot;&quot;, sb.reverse().toString());</span>
+
+<span class="fc" id="L1077">        sb.clear().append(&quot; \u0000 &quot;);</span>
+<span class="fc" id="L1078">        assertEquals(&quot;&quot;, sb.trim().toString());</span>
+
+<span class="fc" id="L1080">        sb.clear().append(&quot; \u0000 a b c&quot;);</span>
+<span class="fc" id="L1081">        assertEquals(&quot;a b c&quot;, sb.trim().toString());</span>
+
+<span class="fc" id="L1083">        sb.clear().append(&quot;a b c \u0000 &quot;);</span>
+<span class="fc" id="L1084">        assertEquals(&quot;a b c&quot;, sb.trim().toString());</span>
+
+<span class="fc" id="L1086">        sb.clear().append(&quot; \u0000 a b c \u0000 &quot;);</span>
+<span class="fc" id="L1087">        assertEquals(&quot;a b c&quot;, sb.trim().toString());</span>
+
+<span class="fc" id="L1089">        sb.clear().append(&quot;a b c&quot;);</span>
+<span class="fc" id="L1090">        assertEquals(&quot;a b c&quot;, sb.trim().toString());</span>
+<span class="fc" id="L1091">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testStartsWith() {
+<span class="fc" id="L1096">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1097">        assertFalse(sb.startsWith(&quot;a&quot;));</span>
+<span class="fc" id="L1098">        assertFalse(sb.startsWith(null));</span>
+<span class="fc" id="L1099">        assertTrue(sb.startsWith(&quot;&quot;));</span>
+<span class="fc" id="L1100">        sb.append(&quot;abc&quot;);</span>
+<span class="fc" id="L1101">        assertTrue(sb.startsWith(&quot;a&quot;));</span>
+<span class="fc" id="L1102">        assertTrue(sb.startsWith(&quot;ab&quot;));</span>
+<span class="fc" id="L1103">        assertTrue(sb.startsWith(&quot;abc&quot;));</span>
+<span class="fc" id="L1104">        assertFalse(sb.startsWith(&quot;cba&quot;));</span>
+<span class="fc" id="L1105">    }</span>
+
+    @Test
+    public void testEndsWith() {
+<span class="fc" id="L1109">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1110">        assertFalse(sb.endsWith(&quot;a&quot;));</span>
+<span class="fc" id="L1111">        assertFalse(sb.endsWith(&quot;c&quot;));</span>
+<span class="fc" id="L1112">        assertTrue(sb.endsWith(&quot;&quot;));</span>
+<span class="fc" id="L1113">        assertFalse(sb.endsWith(null));</span>
+<span class="fc" id="L1114">        sb.append(&quot;abc&quot;);</span>
+<span class="fc" id="L1115">        assertTrue(sb.endsWith(&quot;c&quot;));</span>
+<span class="fc" id="L1116">        assertTrue(sb.endsWith(&quot;bc&quot;));</span>
+<span class="fc" id="L1117">        assertTrue(sb.endsWith(&quot;abc&quot;));</span>
+<span class="fc" id="L1118">        assertFalse(sb.endsWith(&quot;cba&quot;));</span>
+<span class="fc" id="L1119">        assertFalse(sb.endsWith(&quot;abcd&quot;));</span>
+<span class="fc" id="L1120">        assertFalse(sb.endsWith(&quot; abc&quot;));</span>
+<span class="fc" id="L1121">        assertFalse(sb.endsWith(&quot;abc &quot;));</span>
+<span class="fc" id="L1122">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSubSequenceIntInt() {
+<span class="fc" id="L1127">       final StrBuilder sb = new StrBuilder (&quot;hello goodbye&quot;);</span>
+       // Start index is negative
+<span class="pc" id="L1129">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.subSequence(-1, 5));</span>
+
+        // End index is negative
+<span class="pc" id="L1132">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.subSequence(2, -1));</span>
+
+        // End index greater than length()
+<span class="pc" id="L1135">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.subSequence(2, sb.length() + 1));</span>
+
+        // Start index greater then end index
+<span class="pc" id="L1138">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.subSequence(3, 2));</span>
+
+        // Normal cases
+<span class="fc" id="L1141">        assertEquals (&quot;hello&quot;, sb.subSequence(0, 5));</span>
+<span class="fc" id="L1142">        assertEquals (&quot;hello goodbye&quot;.subSequence(0, 6), sb.subSequence(0, 6));</span>
+<span class="fc" id="L1143">        assertEquals (&quot;goodbye&quot;, sb.subSequence(6, 13));</span>
+<span class="fc" id="L1144">        assertEquals (&quot;hello goodbye&quot;.subSequence(6, 13), sb.subSequence(6, 13));</span>
+<span class="fc" id="L1145">    }</span>
+
+    @Test
+    public void testSubstringInt() {
+<span class="fc" id="L1149">        final StrBuilder sb = new StrBuilder (&quot;hello goodbye&quot;);</span>
+<span class="fc" id="L1150">        assertEquals (&quot;goodbye&quot;, sb.substring(6));</span>
+<span class="fc" id="L1151">        assertEquals (&quot;hello goodbye&quot;.substring(6), sb.substring(6));</span>
+<span class="fc" id="L1152">        assertEquals (&quot;hello goodbye&quot;, sb.substring(0));</span>
+<span class="fc" id="L1153">        assertEquals (&quot;hello goodbye&quot;.substring(0), sb.substring(0));</span>
+<span class="pc" id="L1154">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.substring(-1));</span>
+
+<span class="pc" id="L1156">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.substring(15));</span>
+<span class="fc" id="L1157">    }</span>
+
+    @Test
+    public void testSubstringIntInt() {
+<span class="fc" id="L1161">        final StrBuilder sb = new StrBuilder (&quot;hello goodbye&quot;);</span>
+<span class="fc" id="L1162">        assertEquals (&quot;hello&quot;, sb.substring(0, 5));</span>
+<span class="fc" id="L1163">        assertEquals (&quot;hello goodbye&quot;.substring(0, 6), sb.substring(0, 6));</span>
+
+<span class="fc" id="L1165">        assertEquals (&quot;goodbye&quot;, sb.substring(6, 13));</span>
+<span class="fc" id="L1166">        assertEquals (&quot;hello goodbye&quot;.substring(6, 13), sb.substring(6, 13));</span>
+
+<span class="fc" id="L1168">        assertEquals (&quot;goodbye&quot;, sb.substring(6, 20));</span>
+
+<span class="pc" id="L1170">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.substring(-1, 5));</span>
+<span class="pc" id="L1171">        assertThrows(IndexOutOfBoundsException.class, () -&gt; sb.substring(15, 20));</span>
+<span class="fc" id="L1172">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testMidString() {
+<span class="fc" id="L1177">        final StrBuilder sb = new StrBuilder(&quot;hello goodbye hello&quot;);</span>
+<span class="fc" id="L1178">        assertEquals(&quot;goodbye&quot;, sb.midString(6, 7));</span>
+<span class="fc" id="L1179">        assertEquals(&quot;hello&quot;, sb.midString(0, 5));</span>
+<span class="fc" id="L1180">        assertEquals(&quot;hello&quot;, sb.midString(-5, 5));</span>
+<span class="fc" id="L1181">        assertEquals(&quot;&quot;, sb.midString(0, -1));</span>
+<span class="fc" id="L1182">        assertEquals(&quot;&quot;, sb.midString(20, 2));</span>
+<span class="fc" id="L1183">        assertEquals(&quot;hello&quot;, sb.midString(14, 22));</span>
+<span class="fc" id="L1184">    }</span>
+
+    @Test
+    public void testRightString() {
+<span class="fc" id="L1188">        final StrBuilder sb = new StrBuilder(&quot;left right&quot;);</span>
+<span class="fc" id="L1189">        assertEquals(&quot;right&quot;, sb.rightString(5));</span>
+<span class="fc" id="L1190">        assertEquals(&quot;&quot;, sb.rightString(0));</span>
+<span class="fc" id="L1191">        assertEquals(&quot;&quot;, sb.rightString(-5));</span>
+<span class="fc" id="L1192">        assertEquals(&quot;left right&quot;, sb.rightString(15));</span>
+<span class="fc" id="L1193">    }</span>
+
+    @Test
+    public void testLeftString() {
+<span class="fc" id="L1197">        final StrBuilder sb = new StrBuilder(&quot;left right&quot;);</span>
+<span class="fc" id="L1198">        assertEquals(&quot;left&quot;, sb.leftString(4));</span>
+<span class="fc" id="L1199">        assertEquals(&quot;&quot;, sb.leftString(0));</span>
+<span class="fc" id="L1200">        assertEquals(&quot;&quot;, sb.leftString(-5));</span>
+<span class="fc" id="L1201">        assertEquals(&quot;left right&quot;, sb.leftString(15));</span>
+<span class="fc" id="L1202">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testContains_char() {
+<span class="fc" id="L1207">        final StrBuilder sb = new StrBuilder(&quot;abcdefghijklmnopqrstuvwxyz&quot;);</span>
+<span class="fc" id="L1208">        assertTrue(sb.contains('a'));</span>
+<span class="fc" id="L1209">        assertTrue(sb.contains('o'));</span>
+<span class="fc" id="L1210">        assertTrue(sb.contains('z'));</span>
+<span class="fc" id="L1211">        assertFalse(sb.contains('1'));</span>
+<span class="fc" id="L1212">    }</span>
+
+    @Test
+    public void testContains_String() {
+<span class="fc" id="L1216">        final StrBuilder sb = new StrBuilder(&quot;abcdefghijklmnopqrstuvwxyz&quot;);</span>
+<span class="fc" id="L1217">        assertTrue(sb.contains(&quot;a&quot;));</span>
+<span class="fc" id="L1218">        assertTrue(sb.contains(&quot;pq&quot;));</span>
+<span class="fc" id="L1219">        assertTrue(sb.contains(&quot;z&quot;));</span>
+<span class="fc" id="L1220">        assertFalse(sb.contains(&quot;zyx&quot;));</span>
+<span class="fc" id="L1221">        assertFalse(sb.contains((String) null));</span>
+<span class="fc" id="L1222">    }</span>
+
+    @Test
+    public void testContains_StrMatcher() {
+<span class="fc" id="L1226">        StrBuilder sb = new StrBuilder(&quot;abcdefghijklmnopqrstuvwxyz&quot;);</span>
+<span class="fc" id="L1227">        assertTrue(sb.contains(StrMatcher.charMatcher('a')));</span>
+<span class="fc" id="L1228">        assertTrue(sb.contains(StrMatcher.stringMatcher(&quot;pq&quot;)));</span>
+<span class="fc" id="L1229">        assertTrue(sb.contains(StrMatcher.charMatcher('z')));</span>
+<span class="fc" id="L1230">        assertFalse(sb.contains(StrMatcher.stringMatcher(&quot;zy&quot;)));</span>
+<span class="fc" id="L1231">        assertFalse(sb.contains((StrMatcher) null));</span>
+
+<span class="fc" id="L1233">        sb = new StrBuilder();</span>
+<span class="fc" id="L1234">        assertFalse(sb.contains(A_NUMBER_MATCHER));</span>
+<span class="fc" id="L1235">        sb.append(&quot;B A1 C&quot;);</span>
+<span class="fc" id="L1236">        assertTrue(sb.contains(A_NUMBER_MATCHER));</span>
+<span class="fc" id="L1237">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testIndexOf_char() {
+<span class="fc" id="L1242">        final StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+<span class="fc" id="L1243">        assertEquals(0, sb.indexOf('a'));</span>
+
+        // should work like String#indexOf
+<span class="fc" id="L1246">        assertEquals(&quot;abab&quot;.indexOf('a'), sb.indexOf('a'));</span>
+
+<span class="fc" id="L1248">        assertEquals(1, sb.indexOf('b'));</span>
+<span class="fc" id="L1249">        assertEquals(&quot;abab&quot;.indexOf('b'), sb.indexOf('b'));</span>
+
+<span class="fc" id="L1251">        assertEquals(-1, sb.indexOf('z'));</span>
+<span class="fc" id="L1252">    }</span>
+
+    @Test
+    public void testIndexOf_char_int() {
+<span class="fc" id="L1256">        StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+<span class="fc" id="L1257">        assertEquals(0, sb.indexOf('a', -1));</span>
+<span class="fc" id="L1258">        assertEquals(0, sb.indexOf('a', 0));</span>
+<span class="fc" id="L1259">        assertEquals(2, sb.indexOf('a', 1));</span>
+<span class="fc" id="L1260">        assertEquals(-1, sb.indexOf('a', 4));</span>
+<span class="fc" id="L1261">        assertEquals(-1, sb.indexOf('a', 5));</span>
+
+        // should work like String#indexOf
+<span class="fc" id="L1264">        assertEquals(&quot;abab&quot;.indexOf('a', 1), sb.indexOf('a', 1));</span>
+
+<span class="fc" id="L1266">        assertEquals(3, sb.indexOf('b', 2));</span>
+<span class="fc" id="L1267">        assertEquals(&quot;abab&quot;.indexOf('b', 2), sb.indexOf('b', 2));</span>
+
+<span class="fc" id="L1269">        assertEquals(-1, sb.indexOf('z', 2));</span>
+
+<span class="fc" id="L1271">        sb = new StrBuilder(&quot;xyzabc&quot;);</span>
+<span class="fc" id="L1272">        assertEquals(2, sb.indexOf('z', 0));</span>
+<span class="fc" id="L1273">        assertEquals(-1, sb.indexOf('z', 3));</span>
+<span class="fc" id="L1274">    }</span>
+
+    @Test
+    public void testLastIndexOf_char() {
+<span class="fc" id="L1278">        final StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+
+<span class="fc" id="L1280">        assertEquals (2, sb.lastIndexOf('a'));</span>
+        //should work like String#lastIndexOf
+<span class="fc" id="L1282">        assertEquals (&quot;abab&quot;.lastIndexOf('a'), sb.lastIndexOf('a'));</span>
+
+<span class="fc" id="L1284">        assertEquals(3, sb.lastIndexOf('b'));</span>
+<span class="fc" id="L1285">        assertEquals (&quot;abab&quot;.lastIndexOf('b'), sb.lastIndexOf('b'));</span>
+
+<span class="fc" id="L1287">        assertEquals (-1, sb.lastIndexOf('z'));</span>
+<span class="fc" id="L1288">    }</span>
+
+    @Test
+    public void testLastIndexOf_char_int() {
+<span class="fc" id="L1292">        StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+<span class="fc" id="L1293">        assertEquals(-1, sb.lastIndexOf('a', -1));</span>
+<span class="fc" id="L1294">        assertEquals(0, sb.lastIndexOf('a', 0));</span>
+<span class="fc" id="L1295">        assertEquals(0, sb.lastIndexOf('a', 1));</span>
+
+        // should work like String#lastIndexOf
+<span class="fc" id="L1298">        assertEquals(&quot;abab&quot;.lastIndexOf('a', 1), sb.lastIndexOf('a', 1));</span>
+
+<span class="fc" id="L1300">        assertEquals(1, sb.lastIndexOf('b', 2));</span>
+<span class="fc" id="L1301">        assertEquals(&quot;abab&quot;.lastIndexOf('b', 2), sb.lastIndexOf('b', 2));</span>
+
+<span class="fc" id="L1303">        assertEquals(-1, sb.lastIndexOf('z', 2));</span>
+
+<span class="fc" id="L1305">        sb = new StrBuilder(&quot;xyzabc&quot;);</span>
+<span class="fc" id="L1306">        assertEquals(2, sb.lastIndexOf('z', sb.length()));</span>
+<span class="fc" id="L1307">        assertEquals(-1, sb.lastIndexOf('z', 1));</span>
+<span class="fc" id="L1308">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testIndexOf_String() {
+<span class="fc" id="L1313">        final StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+
+<span class="fc" id="L1315">        assertEquals(0, sb.indexOf(&quot;a&quot;));</span>
+        //should work like String#indexOf
+<span class="fc" id="L1317">        assertEquals(&quot;abab&quot;.indexOf(&quot;a&quot;), sb.indexOf(&quot;a&quot;));</span>
+
+<span class="fc" id="L1319">        assertEquals(0, sb.indexOf(&quot;ab&quot;));</span>
+        //should work like String#indexOf
+<span class="fc" id="L1321">        assertEquals(&quot;abab&quot;.indexOf(&quot;ab&quot;), sb.indexOf(&quot;ab&quot;));</span>
+
+<span class="fc" id="L1323">        assertEquals(1, sb.indexOf(&quot;b&quot;));</span>
+<span class="fc" id="L1324">        assertEquals(&quot;abab&quot;.indexOf(&quot;b&quot;), sb.indexOf(&quot;b&quot;));</span>
+
+<span class="fc" id="L1326">        assertEquals(1, sb.indexOf(&quot;ba&quot;));</span>
+<span class="fc" id="L1327">        assertEquals(&quot;abab&quot;.indexOf(&quot;ba&quot;), sb.indexOf(&quot;ba&quot;));</span>
+
+<span class="fc" id="L1329">        assertEquals(-1, sb.indexOf(&quot;z&quot;));</span>
+
+<span class="fc" id="L1331">        assertEquals(-1, sb.indexOf((String) null));</span>
+<span class="fc" id="L1332">    }</span>
+
+    @Test
+    public void testIndexOf_String_int() {
+<span class="fc" id="L1336">        StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+<span class="fc" id="L1337">        assertEquals(0, sb.indexOf(&quot;a&quot;, -1));</span>
+<span class="fc" id="L1338">        assertEquals(0, sb.indexOf(&quot;a&quot;, 0));</span>
+<span class="fc" id="L1339">        assertEquals(2, sb.indexOf(&quot;a&quot;, 1));</span>
+<span class="fc" id="L1340">        assertEquals(2, sb.indexOf(&quot;a&quot;, 2));</span>
+<span class="fc" id="L1341">        assertEquals(-1, sb.indexOf(&quot;a&quot;, 3));</span>
+<span class="fc" id="L1342">        assertEquals(-1, sb.indexOf(&quot;a&quot;, 4));</span>
+<span class="fc" id="L1343">        assertEquals(-1, sb.indexOf(&quot;a&quot;, 5));</span>
+
+<span class="fc" id="L1345">        assertEquals(-1, sb.indexOf(&quot;abcdef&quot;, 0));</span>
+<span class="fc" id="L1346">        assertEquals(0, sb.indexOf(&quot;&quot;, 0));</span>
+<span class="fc" id="L1347">        assertEquals(1, sb.indexOf(&quot;&quot;, 1));</span>
+
+        //should work like String#indexOf
+<span class="fc" id="L1350">        assertEquals (&quot;abab&quot;.indexOf(&quot;a&quot;, 1), sb.indexOf(&quot;a&quot;, 1));</span>
+
+<span class="fc" id="L1352">        assertEquals(2, sb.indexOf(&quot;ab&quot;, 1));</span>
+        //should work like String#indexOf
+<span class="fc" id="L1354">        assertEquals(&quot;abab&quot;.indexOf(&quot;ab&quot;, 1), sb.indexOf(&quot;ab&quot;, 1));</span>
+
+<span class="fc" id="L1356">        assertEquals(3, sb.indexOf(&quot;b&quot;, 2));</span>
+<span class="fc" id="L1357">        assertEquals(&quot;abab&quot;.indexOf(&quot;b&quot;, 2), sb.indexOf(&quot;b&quot;, 2));</span>
+
+<span class="fc" id="L1359">        assertEquals(1, sb.indexOf(&quot;ba&quot;, 1));</span>
+<span class="fc" id="L1360">        assertEquals(&quot;abab&quot;.indexOf(&quot;ba&quot;, 2), sb.indexOf(&quot;ba&quot;, 2));</span>
+
+<span class="fc" id="L1362">        assertEquals(-1, sb.indexOf(&quot;z&quot;, 2));</span>
+
+<span class="fc" id="L1364">        sb = new StrBuilder(&quot;xyzabc&quot;);</span>
+<span class="fc" id="L1365">        assertEquals(2, sb.indexOf(&quot;za&quot;, 0));</span>
+<span class="fc" id="L1366">        assertEquals(-1, sb.indexOf(&quot;za&quot;, 3));</span>
+
+<span class="fc" id="L1368">        assertEquals(-1, sb.indexOf((String) null, 2));</span>
+<span class="fc" id="L1369">    }</span>
+
+    @Test
+    public void testLastIndexOf_String() {
+<span class="fc" id="L1373">        final StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+
+<span class="fc" id="L1375">        assertEquals(2, sb.lastIndexOf(&quot;a&quot;));</span>
+        //should work like String#lastIndexOf
+<span class="fc" id="L1377">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;a&quot;), sb.lastIndexOf(&quot;a&quot;));</span>
+
+<span class="fc" id="L1379">        assertEquals(2, sb.lastIndexOf(&quot;ab&quot;));</span>
+        //should work like String#lastIndexOf
+<span class="fc" id="L1381">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;ab&quot;), sb.lastIndexOf(&quot;ab&quot;));</span>
+
+<span class="fc" id="L1383">        assertEquals(3, sb.lastIndexOf(&quot;b&quot;));</span>
+<span class="fc" id="L1384">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;b&quot;), sb.lastIndexOf(&quot;b&quot;));</span>
+
+<span class="fc" id="L1386">        assertEquals(1, sb.lastIndexOf(&quot;ba&quot;));</span>
+<span class="fc" id="L1387">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;ba&quot;), sb.lastIndexOf(&quot;ba&quot;));</span>
+
+<span class="fc" id="L1389">        assertEquals(-1, sb.lastIndexOf(&quot;z&quot;));</span>
+
+<span class="fc" id="L1391">        assertEquals(-1, sb.lastIndexOf((String) null));</span>
+<span class="fc" id="L1392">    }</span>
+
+    @Test
+    public void testLastIndexOf_String_int() {
+<span class="fc" id="L1396">        StrBuilder sb = new StrBuilder(&quot;abab&quot;);</span>
+<span class="fc" id="L1397">        assertEquals(-1, sb.lastIndexOf(&quot;a&quot;, -1));</span>
+<span class="fc" id="L1398">        assertEquals(0, sb.lastIndexOf(&quot;a&quot;, 0));</span>
+<span class="fc" id="L1399">        assertEquals(0, sb.lastIndexOf(&quot;a&quot;, 1));</span>
+<span class="fc" id="L1400">        assertEquals(2, sb.lastIndexOf(&quot;a&quot;, 2));</span>
+<span class="fc" id="L1401">        assertEquals(2, sb.lastIndexOf(&quot;a&quot;, 3));</span>
+<span class="fc" id="L1402">        assertEquals(2, sb.lastIndexOf(&quot;a&quot;, 4));</span>
+<span class="fc" id="L1403">        assertEquals(2, sb.lastIndexOf(&quot;a&quot;, 5));</span>
+
+<span class="fc" id="L1405">        assertEquals(-1, sb.lastIndexOf(&quot;abcdef&quot;, 3));</span>
+<span class="fc" id="L1406">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;&quot;, 3), sb.lastIndexOf(&quot;&quot;, 3));</span>
+<span class="fc" id="L1407">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;&quot;, 1), sb.lastIndexOf(&quot;&quot;, 1));</span>
+
+        //should work like String#lastIndexOf
+<span class="fc" id="L1410">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;a&quot;, 1), sb.lastIndexOf(&quot;a&quot;, 1));</span>
+
+<span class="fc" id="L1412">        assertEquals(0, sb.lastIndexOf(&quot;ab&quot;, 1));</span>
+        //should work like String#lastIndexOf
+<span class="fc" id="L1414">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;ab&quot;, 1), sb.lastIndexOf(&quot;ab&quot;, 1));</span>
+
+<span class="fc" id="L1416">        assertEquals(1, sb.lastIndexOf(&quot;b&quot;, 2));</span>
+<span class="fc" id="L1417">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;b&quot;, 2), sb.lastIndexOf(&quot;b&quot;, 2));</span>
+
+<span class="fc" id="L1419">        assertEquals(1, sb.lastIndexOf(&quot;ba&quot;, 2));</span>
+<span class="fc" id="L1420">        assertEquals(&quot;abab&quot;.lastIndexOf(&quot;ba&quot;, 2), sb.lastIndexOf(&quot;ba&quot;, 2));</span>
+
+<span class="fc" id="L1422">        assertEquals(-1, sb.lastIndexOf(&quot;z&quot;, 2));</span>
+
+<span class="fc" id="L1424">        sb = new StrBuilder(&quot;xyzabc&quot;);</span>
+<span class="fc" id="L1425">        assertEquals(2, sb.lastIndexOf(&quot;za&quot;, sb.length()));</span>
+<span class="fc" id="L1426">        assertEquals(-1, sb.lastIndexOf(&quot;za&quot;, 1));</span>
+
+<span class="fc" id="L1428">        assertEquals(-1, sb.lastIndexOf((String) null, 2));</span>
+<span class="fc" id="L1429">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testIndexOf_StrMatcher() {
+<span class="fc" id="L1434">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1435">        assertEquals(-1, sb.indexOf((StrMatcher) null));</span>
+<span class="fc" id="L1436">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('a')));</span>
+
+<span class="fc" id="L1438">        sb.append(&quot;ab bd&quot;);</span>
+<span class="fc" id="L1439">        assertEquals(0, sb.indexOf(StrMatcher.charMatcher('a')));</span>
+<span class="fc" id="L1440">        assertEquals(1, sb.indexOf(StrMatcher.charMatcher('b')));</span>
+<span class="fc" id="L1441">        assertEquals(2, sb.indexOf(StrMatcher.spaceMatcher()));</span>
+<span class="fc" id="L1442">        assertEquals(4, sb.indexOf(StrMatcher.charMatcher('d')));</span>
+<span class="fc" id="L1443">        assertEquals(-1, sb.indexOf(StrMatcher.noneMatcher()));</span>
+<span class="fc" id="L1444">        assertEquals(-1, sb.indexOf((StrMatcher) null));</span>
+
+<span class="fc" id="L1446">        sb.append(&quot; A1 junction&quot;);</span>
+<span class="fc" id="L1447">        assertEquals(6, sb.indexOf(A_NUMBER_MATCHER));</span>
+<span class="fc" id="L1448">    }</span>
+
+    @Test
+    public void testIndexOf_StrMatcher_int() {
+<span class="fc" id="L1452">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1453">        assertEquals(-1, sb.indexOf((StrMatcher) null, 2));</span>
+<span class="fc" id="L1454">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('a'), 2));</span>
+<span class="fc" id="L1455">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('a'), 0));</span>
+
+<span class="fc" id="L1457">        sb.append(&quot;ab bd&quot;);</span>
+<span class="fc" id="L1458">        assertEquals(0, sb.indexOf(StrMatcher.charMatcher('a'), -2));</span>
+<span class="fc" id="L1459">        assertEquals(0, sb.indexOf(StrMatcher.charMatcher('a'), 0));</span>
+<span class="fc" id="L1460">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('a'), 2));</span>
+<span class="fc" id="L1461">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('a'), 20));</span>
+
+<span class="fc" id="L1463">        assertEquals(1, sb.indexOf(StrMatcher.charMatcher('b'), -1));</span>
+<span class="fc" id="L1464">        assertEquals(1, sb.indexOf(StrMatcher.charMatcher('b'), 0));</span>
+<span class="fc" id="L1465">        assertEquals(1, sb.indexOf(StrMatcher.charMatcher('b'), 1));</span>
+<span class="fc" id="L1466">        assertEquals(3, sb.indexOf(StrMatcher.charMatcher('b'), 2));</span>
+<span class="fc" id="L1467">        assertEquals(3, sb.indexOf(StrMatcher.charMatcher('b'), 3));</span>
+<span class="fc" id="L1468">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('b'), 4));</span>
+<span class="fc" id="L1469">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('b'), 5));</span>
+<span class="fc" id="L1470">        assertEquals(-1, sb.indexOf(StrMatcher.charMatcher('b'), 6));</span>
+
+<span class="fc" id="L1472">        assertEquals(2, sb.indexOf(StrMatcher.spaceMatcher(), -2));</span>
+<span class="fc" id="L1473">        assertEquals(2, sb.indexOf(StrMatcher.spaceMatcher(), 0));</span>
+<span class="fc" id="L1474">        assertEquals(2, sb.indexOf(StrMatcher.spaceMatcher(), 2));</span>
+<span class="fc" id="L1475">        assertEquals(-1, sb.indexOf(StrMatcher.spaceMatcher(), 4));</span>
+<span class="fc" id="L1476">        assertEquals(-1, sb.indexOf(StrMatcher.spaceMatcher(), 20));</span>
+
+<span class="fc" id="L1478">        assertEquals(-1, sb.indexOf(StrMatcher.noneMatcher(), 0));</span>
+<span class="fc" id="L1479">        assertEquals(-1, sb.indexOf((StrMatcher) null, 0));</span>
+
+<span class="fc" id="L1481">        sb.append(&quot; A1 junction with A2&quot;);</span>
+<span class="fc" id="L1482">        assertEquals(6, sb.indexOf(A_NUMBER_MATCHER, 5));</span>
+<span class="fc" id="L1483">        assertEquals(6, sb.indexOf(A_NUMBER_MATCHER, 6));</span>
+<span class="fc" id="L1484">        assertEquals(23, sb.indexOf(A_NUMBER_MATCHER, 7));</span>
+<span class="fc" id="L1485">        assertEquals(23, sb.indexOf(A_NUMBER_MATCHER, 22));</span>
+<span class="fc" id="L1486">        assertEquals(23, sb.indexOf(A_NUMBER_MATCHER, 23));</span>
+<span class="fc" id="L1487">        assertEquals(-1, sb.indexOf(A_NUMBER_MATCHER, 24));</span>
+<span class="fc" id="L1488">    }</span>
+
+    @Test
+    public void testLastIndexOf_StrMatcher() {
+<span class="fc" id="L1492">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1493">        assertEquals(-1, sb.lastIndexOf((StrMatcher) null));</span>
+<span class="fc" id="L1494">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('a')));</span>
+
+<span class="fc" id="L1496">        sb.append(&quot;ab bd&quot;);</span>
+<span class="fc" id="L1497">        assertEquals(0, sb.lastIndexOf(StrMatcher.charMatcher('a')));</span>
+<span class="fc" id="L1498">        assertEquals(3, sb.lastIndexOf(StrMatcher.charMatcher('b')));</span>
+<span class="fc" id="L1499">        assertEquals(2, sb.lastIndexOf(StrMatcher.spaceMatcher()));</span>
+<span class="fc" id="L1500">        assertEquals(4, sb.lastIndexOf(StrMatcher.charMatcher('d')));</span>
+<span class="fc" id="L1501">        assertEquals(-1, sb.lastIndexOf(StrMatcher.noneMatcher()));</span>
+<span class="fc" id="L1502">        assertEquals(-1, sb.lastIndexOf((StrMatcher) null));</span>
+
+<span class="fc" id="L1504">        sb.append(&quot; A1 junction&quot;);</span>
+<span class="fc" id="L1505">        assertEquals(6, sb.lastIndexOf(A_NUMBER_MATCHER));</span>
+<span class="fc" id="L1506">    }</span>
+
+    @Test
+    public void testLastIndexOf_StrMatcher_int() {
+<span class="fc" id="L1510">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1511">        assertEquals(-1, sb.lastIndexOf((StrMatcher) null, 2));</span>
+<span class="fc" id="L1512">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('a'), 2));</span>
+<span class="fc" id="L1513">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('a'), 0));</span>
+<span class="fc" id="L1514">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('a'), -1));</span>
+
+<span class="fc" id="L1516">        sb.append(&quot;ab bd&quot;);</span>
+<span class="fc" id="L1517">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('a'), -2));</span>
+<span class="fc" id="L1518">        assertEquals(0, sb.lastIndexOf(StrMatcher.charMatcher('a'), 0));</span>
+<span class="fc" id="L1519">        assertEquals(0, sb.lastIndexOf(StrMatcher.charMatcher('a'), 2));</span>
+<span class="fc" id="L1520">        assertEquals(0, sb.lastIndexOf(StrMatcher.charMatcher('a'), 20));</span>
+
+<span class="fc" id="L1522">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('b'), -1));</span>
+<span class="fc" id="L1523">        assertEquals(-1, sb.lastIndexOf(StrMatcher.charMatcher('b'), 0));</span>
+<span class="fc" id="L1524">        assertEquals(1, sb.lastIndexOf(StrMatcher.charMatcher('b'), 1));</span>
+<span class="fc" id="L1525">        assertEquals(1, sb.lastIndexOf(StrMatcher.charMatcher('b'), 2));</span>
+<span class="fc" id="L1526">        assertEquals(3, sb.lastIndexOf(StrMatcher.charMatcher('b'), 3));</span>
+<span class="fc" id="L1527">        assertEquals(3, sb.lastIndexOf(StrMatcher.charMatcher('b'), 4));</span>
+<span class="fc" id="L1528">        assertEquals(3, sb.lastIndexOf(StrMatcher.charMatcher('b'), 5));</span>
+<span class="fc" id="L1529">        assertEquals(3, sb.lastIndexOf(StrMatcher.charMatcher('b'), 6));</span>
+
+<span class="fc" id="L1531">        assertEquals(-1, sb.lastIndexOf(StrMatcher.spaceMatcher(), -2));</span>
+<span class="fc" id="L1532">        assertEquals(-1, sb.lastIndexOf(StrMatcher.spaceMatcher(), 0));</span>
+<span class="fc" id="L1533">        assertEquals(2, sb.lastIndexOf(StrMatcher.spaceMatcher(), 2));</span>
+<span class="fc" id="L1534">        assertEquals(2, sb.lastIndexOf(StrMatcher.spaceMatcher(), 4));</span>
+<span class="fc" id="L1535">        assertEquals(2, sb.lastIndexOf(StrMatcher.spaceMatcher(), 20));</span>
+
+<span class="fc" id="L1537">        assertEquals(-1, sb.lastIndexOf(StrMatcher.noneMatcher(), 0));</span>
+<span class="fc" id="L1538">        assertEquals(-1, sb.lastIndexOf((StrMatcher) null, 0));</span>
+
+<span class="fc" id="L1540">        sb.append(&quot; A1 junction with A2&quot;);</span>
+<span class="fc" id="L1541">        assertEquals(-1, sb.lastIndexOf(A_NUMBER_MATCHER, 5));</span>
+<span class="fc" id="L1542">        assertEquals(-1, sb.lastIndexOf(A_NUMBER_MATCHER, 6)); // A matches, 1 is outside bounds</span>
+<span class="fc" id="L1543">        assertEquals(6, sb.lastIndexOf(A_NUMBER_MATCHER, 7));</span>
+<span class="fc" id="L1544">        assertEquals(6, sb.lastIndexOf(A_NUMBER_MATCHER, 22));</span>
+<span class="fc" id="L1545">        assertEquals(6, sb.lastIndexOf(A_NUMBER_MATCHER, 23)); // A matches, 2 is outside bounds</span>
+<span class="fc" id="L1546">        assertEquals(23, sb.lastIndexOf(A_NUMBER_MATCHER, 24));</span>
+<span class="fc" id="L1547">    }</span>
+
+<span class="fc" id="L1549">    static final StrMatcher A_NUMBER_MATCHER = new StrMatcher() {</span>
+        @Override
+        public int isMatch(final char[] buffer, int pos, final int bufferStart, final int bufferEnd) {
+<span class="fc bfc" id="L1552" title="All 2 branches covered.">            if (buffer[pos] == 'A') {</span>
+<span class="fc" id="L1553">                pos++;</span>
+<span class="pc bpc" id="L1554" title="1 of 6 branches missed.">                if (pos &lt; bufferEnd &amp;&amp; buffer[pos] &gt;= '0' &amp;&amp; buffer[pos] &lt;= '9') {</span>
+<span class="fc" id="L1555">                    return 2;</span>
+                }
+            }
+<span class="fc" id="L1558">            return 0;</span>
+        }
+    };
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAsTokenizer() {
+        // from Javadoc
+<span class="fc" id="L1566">        final StrBuilder b = new StrBuilder();</span>
+<span class="fc" id="L1567">        b.append(&quot;a b &quot;);</span>
+<span class="fc" id="L1568">        final StrTokenizer t = b.asTokenizer();</span>
+
+<span class="fc" id="L1570">        final String[] tokens1 = t.getTokenArray();</span>
+<span class="fc" id="L1571">        assertEquals(2, tokens1.length);</span>
+<span class="fc" id="L1572">        assertEquals(&quot;a&quot;, tokens1[0]);</span>
+<span class="fc" id="L1573">        assertEquals(&quot;b&quot;, tokens1[1]);</span>
+<span class="fc" id="L1574">        assertEquals(2, t.size());</span>
+
+<span class="fc" id="L1576">        b.append(&quot;c d &quot;);</span>
+<span class="fc" id="L1577">        final String[] tokens2 = t.getTokenArray();</span>
+<span class="fc" id="L1578">        assertEquals(2, tokens2.length);</span>
+<span class="fc" id="L1579">        assertEquals(&quot;a&quot;, tokens2[0]);</span>
+<span class="fc" id="L1580">        assertEquals(&quot;b&quot;, tokens2[1]);</span>
+<span class="fc" id="L1581">        assertEquals(2, t.size());</span>
+<span class="fc" id="L1582">        assertEquals(&quot;a&quot;, t.next());</span>
+<span class="fc" id="L1583">        assertEquals(&quot;b&quot;, t.next());</span>
+
+<span class="fc" id="L1585">        t.reset();</span>
+<span class="fc" id="L1586">        final String[] tokens3 = t.getTokenArray();</span>
+<span class="fc" id="L1587">        assertEquals(4, tokens3.length);</span>
+<span class="fc" id="L1588">        assertEquals(&quot;a&quot;, tokens3[0]);</span>
+<span class="fc" id="L1589">        assertEquals(&quot;b&quot;, tokens3[1]);</span>
+<span class="fc" id="L1590">        assertEquals(&quot;c&quot;, tokens3[2]);</span>
+<span class="fc" id="L1591">        assertEquals(&quot;d&quot;, tokens3[3]);</span>
+<span class="fc" id="L1592">        assertEquals(4, t.size());</span>
+<span class="fc" id="L1593">        assertEquals(&quot;a&quot;, t.next());</span>
+<span class="fc" id="L1594">        assertEquals(&quot;b&quot;, t.next());</span>
+<span class="fc" id="L1595">        assertEquals(&quot;c&quot;, t.next());</span>
+<span class="fc" id="L1596">        assertEquals(&quot;d&quot;, t.next());</span>
+
+<span class="fc" id="L1598">        assertEquals(&quot;a b c d &quot;, t.getContent());</span>
+<span class="fc" id="L1599">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testAsReader() throws Exception {
+<span class="fc" id="L1604">        final StrBuilder sb = new StrBuilder(&quot;some text&quot;);</span>
+<span class="fc" id="L1605">        Reader reader = sb.asReader();</span>
+<span class="fc" id="L1606">        assertTrue(reader.ready());</span>
+<span class="fc" id="L1607">        final char[] buf = new char[40];</span>
+<span class="fc" id="L1608">        assertEquals(9, reader.read(buf));</span>
+<span class="fc" id="L1609">        assertEquals(&quot;some text&quot;, new String(buf, 0, 9));</span>
+
+<span class="fc" id="L1611">        assertEquals(-1, reader.read());</span>
+<span class="fc" id="L1612">        assertFalse(reader.ready());</span>
+<span class="fc" id="L1613">        assertEquals(0, reader.skip(2));</span>
+<span class="fc" id="L1614">        assertEquals(0, reader.skip(-1));</span>
+
+<span class="fc" id="L1616">        assertTrue(reader.markSupported());</span>
+<span class="fc" id="L1617">        reader = sb.asReader();</span>
+<span class="fc" id="L1618">        assertEquals('s', reader.read());</span>
+<span class="fc" id="L1619">        reader.mark(-1);</span>
+<span class="fc" id="L1620">        char[] array = new char[3];</span>
+<span class="fc" id="L1621">        assertEquals(3, reader.read(array, 0, 3));</span>
+<span class="fc" id="L1622">        assertEquals('o', array[0]);</span>
+<span class="fc" id="L1623">        assertEquals('m', array[1]);</span>
+<span class="fc" id="L1624">        assertEquals('e', array[2]);</span>
+<span class="fc" id="L1625">        reader.reset();</span>
+<span class="fc" id="L1626">        assertEquals(1, reader.read(array, 1, 1));</span>
+<span class="fc" id="L1627">        assertEquals('o', array[0]);</span>
+<span class="fc" id="L1628">        assertEquals('o', array[1]);</span>
+<span class="fc" id="L1629">        assertEquals('e', array[2]);</span>
+<span class="fc" id="L1630">        assertEquals(2, reader.skip(2));</span>
+<span class="fc" id="L1631">        assertEquals(' ', reader.read());</span>
+
+<span class="fc" id="L1633">        assertTrue(reader.ready());</span>
+<span class="fc" id="L1634">        reader.close();</span>
+<span class="fc" id="L1635">        assertTrue(reader.ready());</span>
+
+<span class="fc" id="L1637">        final Reader r = sb.asReader();</span>
+<span class="fc" id="L1638">        final char[] arr = new char[3];</span>
+<span class="pc" id="L1639">        assertThrows(IndexOutOfBoundsException.class, () -&gt; r.read(arr, -1, 0));</span>
+<span class="pc" id="L1640">        assertThrows(IndexOutOfBoundsException.class, () -&gt; r.read(arr, 0, -1));</span>
+<span class="pc" id="L1641">        assertThrows(IndexOutOfBoundsException.class, () -&gt; r.read(arr, 100, 1));</span>
+<span class="pc" id="L1642">        assertThrows(IndexOutOfBoundsException.class, () -&gt; r.read(arr, 0, 100));</span>
+<span class="pc" id="L1643">        assertThrows(IndexOutOfBoundsException.class, () -&gt; r.read(arr, Integer.MAX_VALUE, Integer.MAX_VALUE));</span>
+
+<span class="fc" id="L1645">        assertEquals(0, r.read(arr, 0, 0));</span>
+<span class="fc" id="L1646">        assertEquals(0, arr[0]);</span>
+<span class="fc" id="L1647">        assertEquals(0, arr[1]);</span>
+<span class="fc" id="L1648">        assertEquals(0, arr[2]);</span>
+
+<span class="fc" id="L1650">        r.skip(9);</span>
+<span class="fc" id="L1651">        assertEquals(-1, r.read(arr, 0, 1));</span>
+
+<span class="fc" id="L1653">        r.reset();</span>
+<span class="fc" id="L1654">        array = new char[30];</span>
+<span class="fc" id="L1655">        assertEquals(9, r.read(array, 0, 30));</span>
+<span class="fc" id="L1656">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAsWriter() throws Exception {
+<span class="fc" id="L1661">        final StrBuilder sb = new StrBuilder(&quot;base&quot;);</span>
+<span class="fc" id="L1662">        final Writer writer = sb.asWriter();</span>
+
+<span class="fc" id="L1664">        writer.write('l');</span>
+<span class="fc" id="L1665">        assertEquals(&quot;basel&quot;, sb.toString());</span>
+
+<span class="fc" id="L1667">        writer.write(new char[] {'i', 'n'});</span>
+<span class="fc" id="L1668">        assertEquals(&quot;baselin&quot;, sb.toString());</span>
+
+<span class="fc" id="L1670">        writer.write(new char[] {'n', 'e', 'r'}, 1, 2);</span>
+<span class="fc" id="L1671">        assertEquals(&quot;baseliner&quot;, sb.toString());</span>
+
+<span class="fc" id="L1673">        writer.write(&quot; rout&quot;);</span>
+<span class="fc" id="L1674">        assertEquals(&quot;baseliner rout&quot;, sb.toString());</span>
+
+<span class="fc" id="L1676">        writer.write(&quot;ping that server&quot;, 1, 3);</span>
+<span class="fc" id="L1677">        assertEquals(&quot;baseliner routing&quot;, sb.toString());</span>
+
+<span class="fc" id="L1679">        writer.flush();  // no effect</span>
+<span class="fc" id="L1680">        assertEquals(&quot;baseliner routing&quot;, sb.toString());</span>
+
+<span class="fc" id="L1682">        writer.close();  // no effect</span>
+<span class="fc" id="L1683">        assertEquals(&quot;baseliner routing&quot;, sb.toString());</span>
+
+<span class="fc" id="L1685">        writer.write(&quot; hi&quot;);  // works after close</span>
+<span class="fc" id="L1686">        assertEquals(&quot;baseliner routing hi&quot;, sb.toString());</span>
+
+<span class="fc" id="L1688">        sb.setLength(4);  // mix and match</span>
+<span class="fc" id="L1689">        writer.write('d');</span>
+<span class="fc" id="L1690">        assertEquals(&quot;based&quot;, sb.toString());</span>
+<span class="fc" id="L1691">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testEqualsIgnoreCase() {
+<span class="fc" id="L1696">        final StrBuilder sb1 = new StrBuilder();</span>
+<span class="fc" id="L1697">        final StrBuilder sb2 = new StrBuilder();</span>
+<span class="fc" id="L1698">        assertTrue(sb1.equalsIgnoreCase(sb1));</span>
+<span class="fc" id="L1699">        assertTrue(sb1.equalsIgnoreCase(sb2));</span>
+<span class="fc" id="L1700">        assertTrue(sb2.equalsIgnoreCase(sb2));</span>
+
+<span class="fc" id="L1702">        sb1.append(&quot;abc&quot;);</span>
+<span class="fc" id="L1703">        assertFalse(sb1.equalsIgnoreCase(sb2));</span>
+
+<span class="fc" id="L1705">        sb2.append(&quot;ABC&quot;);</span>
+<span class="fc" id="L1706">        assertTrue(sb1.equalsIgnoreCase(sb2));</span>
+
+<span class="fc" id="L1708">        sb2.clear().append(&quot;abc&quot;);</span>
+<span class="fc" id="L1709">        assertTrue(sb1.equalsIgnoreCase(sb2));</span>
+<span class="fc" id="L1710">        assertTrue(sb1.equalsIgnoreCase(sb1));</span>
+<span class="fc" id="L1711">        assertTrue(sb2.equalsIgnoreCase(sb2));</span>
+
+<span class="fc" id="L1713">        sb2.clear().append(&quot;aBc&quot;);</span>
+<span class="fc" id="L1714">        assertTrue(sb1.equalsIgnoreCase(sb2));</span>
+<span class="fc" id="L1715">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testEquals() {
+<span class="fc" id="L1720">        final StrBuilder sb1 = new StrBuilder();</span>
+<span class="fc" id="L1721">        final StrBuilder sb2 = new StrBuilder();</span>
+<span class="fc" id="L1722">        assertTrue(sb1.equals(sb2));</span>
+<span class="fc" id="L1723">        assertTrue(sb1.equals(sb1));</span>
+<span class="fc" id="L1724">        assertTrue(sb2.equals(sb2));</span>
+<span class="fc" id="L1725">        assertEquals(sb1, (Object) sb2);</span>
+
+<span class="fc" id="L1727">        sb1.append(&quot;abc&quot;);</span>
+<span class="fc" id="L1728">        assertFalse(sb1.equals(sb2));</span>
+<span class="fc" id="L1729">        assertNotEquals(sb1, (Object) sb2);</span>
+
+<span class="fc" id="L1731">        sb2.append(&quot;ABC&quot;);</span>
+<span class="fc" id="L1732">        assertFalse(sb1.equals(sb2));</span>
+<span class="fc" id="L1733">        assertNotEquals(sb1, (Object) sb2);</span>
+
+<span class="fc" id="L1735">        sb2.clear().append(&quot;abc&quot;);</span>
+<span class="fc" id="L1736">        assertTrue(sb1.equals(sb2));</span>
+<span class="fc" id="L1737">        assertEquals(sb1, (Object) sb2);</span>
+
+<span class="fc" id="L1739">        assertNotEquals(sb1, Integer.valueOf(1));</span>
+<span class="fc" id="L1740">        assertNotEquals(&quot;abc&quot;, sb1);</span>
+<span class="fc" id="L1741">    }</span>
+
+    @Test
+    public void test_LANG_1131_EqualsWithNullStrBuilder() {
+<span class="fc" id="L1745">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1746">        final StrBuilder other = null;</span>
+<span class="fc" id="L1747">        assertFalse(sb.equals(other));</span>
+<span class="fc" id="L1748">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L1753">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1754">        final int hc1a = sb.hashCode();</span>
+<span class="fc" id="L1755">        final int hc1b = sb.hashCode();</span>
+<span class="fc" id="L1756">        assertEquals(0, hc1a);</span>
+<span class="fc" id="L1757">        assertEquals(hc1a, hc1b);</span>
+
+<span class="fc" id="L1759">        sb.append(&quot;abc&quot;);</span>
+<span class="fc" id="L1760">        final int hc2a = sb.hashCode();</span>
+<span class="fc" id="L1761">        final int hc2b = sb.hashCode();</span>
+<span class="pc bpc" id="L1762" title="1 of 2 branches missed.">        assertTrue(hc2a != 0);</span>
+<span class="fc" id="L1763">        assertEquals(hc2a, hc2b);</span>
+<span class="fc" id="L1764">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToString() {
+<span class="fc" id="L1769">        final StrBuilder sb = new StrBuilder(&quot;abc&quot;);</span>
+<span class="fc" id="L1770">        assertEquals(&quot;abc&quot;, sb.toString());</span>
+<span class="fc" id="L1771">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToStringBuffer() {
+<span class="fc" id="L1776">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1777">        assertEquals(new StringBuffer().toString(), sb.toStringBuffer().toString());</span>
+
+<span class="fc" id="L1779">        sb.append(&quot;junit&quot;);</span>
+<span class="fc" id="L1780">        assertEquals(new StringBuffer(&quot;junit&quot;).toString(), sb.toStringBuffer().toString());</span>
+<span class="fc" id="L1781">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToStringBuilder() {
+<span class="fc" id="L1786">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1787">        assertEquals(new StringBuilder().toString(), sb.toStringBuilder().toString());</span>
+
+<span class="fc" id="L1789">        sb.append(&quot;junit&quot;);</span>
+<span class="fc" id="L1790">        assertEquals(new StringBuilder(&quot;junit&quot;).toString(), sb.toStringBuilder().toString());</span>
+<span class="fc" id="L1791">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testLang294() {
+<span class="fc" id="L1796">        final StrBuilder sb = new StrBuilder(&quot;\n%BLAH%\nDo more stuff\neven more stuff\n%BLAH%\n&quot;);</span>
+<span class="fc" id="L1797">        sb.deleteAll(&quot;\n%BLAH%&quot;);</span>
+<span class="fc" id="L1798">        assertEquals(&quot;\nDo more stuff\neven more stuff\n&quot;, sb.toString());</span>
+<span class="fc" id="L1799">    }</span>
+
+    @Test
+    public void testIndexOfLang294() {
+<span class="fc" id="L1803">        final StrBuilder sb = new StrBuilder(&quot;onetwothree&quot;);</span>
+<span class="fc" id="L1804">        sb.deleteFirst(&quot;three&quot;);</span>
+<span class="fc" id="L1805">        assertEquals(-1, sb.indexOf(&quot;three&quot;));</span>
+<span class="fc" id="L1806">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testLang295() {
+<span class="fc" id="L1811">        final StrBuilder sb = new StrBuilder(&quot;onetwothree&quot;);</span>
+<span class="fc" id="L1812">        sb.deleteFirst(&quot;three&quot;);</span>
+<span class="fc" id="L1813">        assertFalse(sb.contains('h'), &quot;The contains(char) method is looking beyond the end of the string&quot;);</span>
+<span class="fc" id="L1814">        assertEquals(-1, sb.indexOf('h'), &quot;The indexOf(char) method is looking beyond the end of the string&quot;);</span>
+<span class="fc" id="L1815">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testLang412Right() {
+<span class="fc" id="L1820">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1821">        sb.appendFixedWidthPadRight(null, 10, '*');</span>
+<span class="fc" id="L1822">        assertEquals(&quot;**********&quot;, sb.toString(), &quot;Failed to invoke appendFixedWidthPadRight correctly&quot;);</span>
+<span class="fc" id="L1823">    }</span>
+
+    @Test
+    public void testLang412Left() {
+<span class="fc" id="L1827">        final StrBuilder sb = new StrBuilder();</span>
+<span class="fc" id="L1828">        sb.appendFixedWidthPadLeft(null, 10, '*');</span>
+<span class="fc" id="L1829">        assertEquals(&quot;**********&quot;, sb.toString(), &quot;Failed to invoke appendFixedWidthPadLeft correctly&quot;);</span>
+<span class="fc" id="L1830">    }</span>
+
+    @Test
+    public void testAsBuilder() {
+<span class="fc" id="L1834">        final StrBuilder sb = new StrBuilder().appendAll(&quot;Lorem&quot;, &quot; &quot;, &quot;ipsum&quot;, &quot; &quot;, &quot;dolor&quot;);</span>
+<span class="fc" id="L1835">        assertEquals(sb.toString(), sb.build());</span>
+<span class="fc" id="L1836">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAppendCharBuffer() {
+<span class="fc" id="L1841">        final StrBuilder sb1 = new StrBuilder();</span>
+<span class="fc" id="L1842">        final CharBuffer buf = CharBuffer.allocate(10);</span>
+<span class="fc" id="L1843">        buf.append(&quot;0123456789&quot;);</span>
+<span class="fc" id="L1844">        buf.flip();</span>
+<span class="fc" id="L1845">        sb1.append(buf);</span>
+<span class="fc" id="L1846">        assertEquals(&quot;0123456789&quot;, sb1.toString());</span>
+
+<span class="fc" id="L1848">        final StrBuilder sb2 = new StrBuilder();</span>
+<span class="fc" id="L1849">        sb2.append(buf, 1, 8);</span>
+<span class="fc" id="L1850">        assertEquals(&quot;12345678&quot;, sb2.toString());</span>
+<span class="fc" id="L1851">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testAppendToWriter() throws Exception {
+<span class="fc" id="L1856">        final StrBuilder sb = new StrBuilder(&quot;1234567890&quot;);</span>
+<span class="fc" id="L1857">        final StringWriter writer = new StringWriter();</span>
+<span class="fc" id="L1858">        writer.append(&quot;Test &quot;);</span>
+
+<span class="fc" id="L1860">        sb.appendTo(writer);</span>
+
+<span class="fc" id="L1862">        assertEquals(&quot;Test 1234567890&quot;, writer.toString());</span>
+<span class="fc" id="L1863">    }</span>
+
+    @Test
+    public void testAppendToStringBuilder() throws Exception {
+<span class="fc" id="L1867">        final StrBuilder sb = new StrBuilder(&quot;1234567890&quot;);</span>
+<span class="fc" id="L1868">        final StringBuilder builder = new StringBuilder(&quot;Test &quot;);</span>
+
+<span class="fc" id="L1870">        sb.appendTo(builder);</span>
+
+<span class="fc" id="L1872">        assertEquals(&quot;Test 1234567890&quot;, builder.toString());</span>
+<span class="fc" id="L1873">    }</span>
+
+    @Test
+    public void testAppendToStringBuffer() throws Exception {
+<span class="fc" id="L1877">        final StrBuilder sb = new StrBuilder(&quot;1234567890&quot;);</span>
+<span class="fc" id="L1878">        final StringBuffer buffer = new StringBuffer(&quot;Test &quot;);</span>
+
+<span class="fc" id="L1880">        sb.appendTo(buffer);</span>
+
+<span class="fc" id="L1882">        assertEquals(&quot;Test 1234567890&quot;, buffer.toString());</span>
+<span class="fc" id="L1883">    }</span>
+
+    @Test
+    public void testAppendToCharBuffer() throws Exception {
+<span class="fc" id="L1887">        final StrBuilder sb = new StrBuilder(&quot;1234567890&quot;);</span>
+<span class="fc" id="L1888">        final String text = &quot;Test &quot;;</span>
+<span class="fc" id="L1889">        final CharBuffer buffer = CharBuffer.allocate(sb.size() + text.length());</span>
+<span class="fc" id="L1890">        buffer.put(text);</span>
+
+<span class="fc" id="L1892">        sb.appendTo(buffer);</span>
+
+<span class="fc" id="L1894">        buffer.flip();</span>
+<span class="fc" id="L1895">        assertEquals(&quot;Test 1234567890&quot;, buffer.toString());</span>
+<span class="fc" id="L1896">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

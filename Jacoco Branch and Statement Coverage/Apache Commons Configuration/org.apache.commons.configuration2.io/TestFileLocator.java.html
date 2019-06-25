@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestFileLocator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.io</a> &gt; <span class="el_source">TestFileLocator.java</span></div><h1>TestFileLocator.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.io;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+
+import java.net.URL;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code FileLocator}.
+ *
+ */
+<span class="fc" id="L37">public class TestFileLocator</span>
+{
+    /** Constant for a file name. */
+    private static final String FILE_NAME = &quot;test.xml&quot;;
+
+    /** Constant for a base path. */
+    private static final String BASE_PATH = &quot;/etc/test/path/&quot;;
+
+    /** Constant for a test encoding. */
+    private static final String ENCODING = &quot;utf-8&quot;;
+
+    /** A test URL. */
+    private static URL sourceURL;
+
+    /** A test file system. */
+    private static FileSystem fileSystem;
+
+    /** A test location strategy. */
+    private static FileLocationStrategy locationStrategy;
+
+    @BeforeClass
+    public static void setUpOnce() throws Exception
+    {
+<span class="fc" id="L60">        sourceURL = ConfigurationAssert.getTestURL(FILE_NAME);</span>
+<span class="fc" id="L61">        fileSystem = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L62">        locationStrategy = EasyMock.createMock(FileLocationStrategy.class);</span>
+<span class="fc" id="L63">        EasyMock.replay(fileSystem, locationStrategy);</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Tests whether an undefined file locator can be created.
+     */
+    @Test
+    public void testCreateFileLocatorUndefined()
+    {
+<span class="fc" id="L72">        final FileLocator locator = FileLocatorUtils.fileLocator().create();</span>
+<span class="fc" id="L73">        assertNull(&quot;Got a base path&quot;, locator.getBasePath());</span>
+<span class="fc" id="L74">        assertNull(&quot;Got a file name&quot;, locator.getFileName());</span>
+<span class="fc" id="L75">        assertNull(&quot;Got a URL&quot;, locator.getSourceURL());</span>
+<span class="fc" id="L76">        assertNull(&quot;Got an encoding&quot;, locator.getEncoding());</span>
+<span class="fc" id="L77">        assertNull(&quot;Got a file system&quot;, locator.getFileSystem());</span>
+<span class="fc" id="L78">        assertNull(&quot;Got a location strategy&quot;, locator.getLocationStrategy());</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Tests whether a locator has the expected properties.
+     *
+     * @param locator the locator to check
+     */
+    private static void checkLocator(final FileLocator locator)
+    {
+<span class="fc" id="L88">        assertEquals(&quot;Wrong base path&quot;, BASE_PATH, locator.getBasePath());</span>
+<span class="fc" id="L89">        assertEquals(&quot;Wrong file name&quot;, FILE_NAME, locator.getFileName());</span>
+<span class="fc" id="L90">        assertEquals(&quot;Wrong encoding&quot;, ENCODING, locator.getEncoding());</span>
+<span class="fc" id="L91">        assertEquals(&quot;Wrong URL&quot;, sourceURL.toExternalForm(), locator</span>
+<span class="fc" id="L92">                .getSourceURL().toExternalForm());</span>
+<span class="fc" id="L93">        assertSame(&quot;Wrong file system&quot;, fileSystem, locator.getFileSystem());</span>
+<span class="fc" id="L94">        assertSame(&quot;Wrong location strategy&quot;, locationStrategy,</span>
+<span class="fc" id="L95">                locator.getLocationStrategy());</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Tests the creation of a file locator.
+     */
+    @Test
+    public void testCreateFileLocator()
+    {
+        final FileLocator locator =
+<span class="fc" id="L105">                FileLocatorUtils.fileLocator().basePath(BASE_PATH)</span>
+<span class="fc" id="L106">                        .fileName(FILE_NAME).encoding(ENCODING)</span>
+<span class="fc" id="L107">                        .fileSystem(fileSystem).sourceURL(sourceURL)</span>
+<span class="fc" id="L108">                        .locationStrategy(locationStrategy).create();</span>
+<span class="fc" id="L109">        checkLocator(locator);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests whether a file locator can be created from a source locator.
+     */
+    @Test
+    public void testCreateFileLocatorFromSource()
+    {
+        final FileLocator locatorSrc =
+<span class="fc" id="L119">                FileLocatorUtils.fileLocator().basePath(BASE_PATH)</span>
+<span class="fc" id="L120">                        .fileName(&quot;someFile&quot;).encoding(ENCODING)</span>
+<span class="fc" id="L121">                        .fileSystem(fileSystem).sourceURL(sourceURL)</span>
+<span class="fc" id="L122">                        .locationStrategy(locationStrategy).create();</span>
+<span class="fc" id="L123">        final FileLocator locator =</span>
+<span class="fc" id="L124">                FileLocatorUtils.fileLocator(locatorSrc).fileName(FILE_NAME)</span>
+<span class="fc" id="L125">                        .create();</span>
+<span class="fc" id="L126">        checkLocator(locator);</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests the equals() implementation of FileLocator if the expected result
+     * is true.
+     */
+    @Test
+    public void testFileLocatorEqualsTrue()
+    {
+<span class="fc" id="L136">        FileLocator loc1 = FileLocatorUtils.fileLocator().create();</span>
+<span class="fc" id="L137">        ConfigurationAssert.checkEquals(loc1, loc1, true);</span>
+<span class="fc" id="L138">        FileLocator loc2 = FileLocatorUtils.fileLocator().create();</span>
+<span class="fc" id="L139">        ConfigurationAssert.checkEquals(loc1, loc2, true);</span>
+        loc1 =
+<span class="fc" id="L141">                FileLocatorUtils.fileLocator().basePath(BASE_PATH)</span>
+<span class="fc" id="L142">                        .fileName(FILE_NAME).encoding(ENCODING)</span>
+<span class="fc" id="L143">                        .fileSystem(fileSystem).sourceURL(sourceURL)</span>
+<span class="fc" id="L144">                        .locationStrategy(locationStrategy).create();</span>
+        loc2 =
+<span class="fc" id="L146">                FileLocatorUtils.fileLocator().basePath(BASE_PATH)</span>
+<span class="fc" id="L147">                        .fileName(FILE_NAME).encoding(ENCODING)</span>
+<span class="fc" id="L148">                        .fileSystem(fileSystem).sourceURL(sourceURL)</span>
+<span class="fc" id="L149">                        .locationStrategy(locationStrategy).create();</span>
+<span class="fc" id="L150">        ConfigurationAssert.checkEquals(loc1, loc2, true);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests the equals() implementation of FileLocator if the expected result
+     * is false.
+     */
+    @Test
+    public void testFileLocatorEqualsFalse()
+    {
+        final FileLocator loc1 =
+<span class="fc" id="L161">                FileLocatorUtils.fileLocator().basePath(BASE_PATH)</span>
+<span class="fc" id="L162">                        .fileName(FILE_NAME).encoding(ENCODING)</span>
+<span class="fc" id="L163">                        .fileSystem(fileSystem).sourceURL(sourceURL)</span>
+<span class="fc" id="L164">                        .locationStrategy(locationStrategy).create();</span>
+<span class="fc" id="L165">        FileLocator loc2 =</span>
+<span class="fc" id="L166">                FileLocatorUtils.fileLocator(loc1)</span>
+<span class="fc" id="L167">                        .basePath(BASE_PATH + &quot;_other&quot;).create();</span>
+<span class="fc" id="L168">        ConfigurationAssert.checkEquals(loc1, loc2, false);</span>
+<span class="fc" id="L169">        loc2 =</span>
+<span class="fc" id="L170">                FileLocatorUtils.fileLocator(loc1)</span>
+<span class="fc" id="L171">                        .fileName(FILE_NAME + &quot;_other&quot;).create();</span>
+<span class="fc" id="L172">        ConfigurationAssert.checkEquals(loc1, loc2, false);</span>
+<span class="fc" id="L173">        loc2 =</span>
+<span class="fc" id="L174">                FileLocatorUtils.fileLocator(loc1)</span>
+<span class="fc" id="L175">                        .encoding(ENCODING + &quot;_other&quot;).create();</span>
+<span class="fc" id="L176">        ConfigurationAssert.checkEquals(loc1, loc2, false);</span>
+<span class="fc" id="L177">        loc2 =</span>
+<span class="fc" id="L178">                FileLocatorUtils.fileLocator(loc1)</span>
+<span class="fc" id="L179">                        .fileSystem(EasyMock.createMock(FileSystem.class))</span>
+<span class="fc" id="L180">                        .create();</span>
+<span class="fc" id="L181">        ConfigurationAssert.checkEquals(loc1, loc2, false);</span>
+<span class="fc" id="L182">        loc2 =</span>
+                FileLocatorUtils
+<span class="fc" id="L184">                        .fileLocator(loc1)</span>
+<span class="fc" id="L185">                        .sourceURL(</span>
+                                ConfigurationAssert
+<span class="fc" id="L187">                                        .getTestURL(&quot;test.properties&quot;))</span>
+<span class="fc" id="L188">                        .create();</span>
+<span class="fc" id="L189">        ConfigurationAssert.checkEquals(loc1, loc2, false);</span>
+<span class="fc" id="L190">        loc2 =</span>
+                FileLocatorUtils
+<span class="fc" id="L192">                        .fileLocator(loc1)</span>
+<span class="fc" id="L193">                        .locationStrategy(</span>
+<span class="fc" id="L194">                                EasyMock.createMock(FileLocationStrategy.class))</span>
+<span class="fc" id="L195">                        .create();</span>
+<span class="fc" id="L196">        ConfigurationAssert.checkEquals(loc1, loc2, false);</span>
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Tests equals() with a null object.
+     */
+    @Test
+    public void testFileLocatorEqualsNull()
+    {
+        final FileLocator loc =
+<span class="fc" id="L206">                FileLocatorUtils.fileLocator().fileName(FILE_NAME).create();</span>
+<span class="fc" id="L207">        assertFalse(&quot;Wrong result&quot;, loc.equals(null));</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Tests equals() with an object from another class.
+     */
+    @Test
+    public void testFileLocatorEqualsOtherClass()
+    {
+        final FileLocator loc =
+<span class="fc" id="L217">                FileLocatorUtils.fileLocator().fileName(FILE_NAME).create();</span>
+<span class="fc" id="L218">        assertFalse(&quot;Wrong result&quot;, loc.equals(this));</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Tests the string representation of a locator.
+     */
+    @Test
+    public void testFileLocatorToString()
+    {
+        final FileLocator loc =
+<span class="fc" id="L228">                FileLocatorUtils.fileLocator().basePath(BASE_PATH)</span>
+<span class="fc" id="L229">                        .fileName(FILE_NAME).encoding(ENCODING)</span>
+<span class="fc" id="L230">                        .fileSystem(fileSystem).sourceURL(sourceURL)</span>
+<span class="fc" id="L231">                        .locationStrategy(locationStrategy).create();</span>
+<span class="fc" id="L232">        final String s = loc.toString();</span>
+<span class="fc" id="L233">        assertThat(s, containsString(&quot;fileName=&quot; + FILE_NAME));</span>
+<span class="fc" id="L234">        assertThat(s, containsString(&quot;basePath=&quot; + BASE_PATH));</span>
+<span class="fc" id="L235">        assertThat(s, containsString(&quot;sourceURL=&quot; + sourceURL));</span>
+<span class="fc" id="L236">        assertThat(s, containsString(&quot;encoding=&quot; + ENCODING));</span>
+<span class="fc" id="L237">        assertThat(s, containsString(&quot;fileSystem=&quot; + fileSystem));</span>
+<span class="fc" id="L238">        assertThat(s, containsString(&quot;locationStrategy=&quot; + locationStrategy));</span>
+<span class="fc" id="L239">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

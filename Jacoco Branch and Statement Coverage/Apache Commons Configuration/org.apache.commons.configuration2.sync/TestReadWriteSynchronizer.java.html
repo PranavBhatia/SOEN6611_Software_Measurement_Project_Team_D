@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestReadWriteSynchronizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.sync</a> &gt; <span class="el_source">TestReadWriteSynchronizer.java</span></div><h1>TestReadWriteSynchronizer.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.sync;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ReadWriteSynchronizer}.
+ *
+ */
+<span class="fc" id="L32">public class TestReadWriteSynchronizer</span>
+{
+    /** Constant for the total amount of money in the system. */
+    private static final long TOTAL_MONEY = 1000000L;
+
+    /**
+     * Tests whether a lock passed to the constructor is used.
+     */
+    @Test
+    public void testInitLock()
+    {
+<span class="fc" id="L43">        final ReadWriteLock lock = EasyMock.createMock(ReadWriteLock.class);</span>
+<span class="fc" id="L44">        final Lock readLock = EasyMock.createMock(Lock.class);</span>
+<span class="fc" id="L45">        EasyMock.expect(lock.readLock()).andReturn(readLock);</span>
+<span class="fc" id="L46">        readLock.lock();</span>
+<span class="fc" id="L47">        EasyMock.replay(lock, readLock);</span>
+<span class="fc" id="L48">        final ReadWriteSynchronizer sync = new ReadWriteSynchronizer(lock);</span>
+<span class="fc" id="L49">        sync.beginRead();</span>
+<span class="fc" id="L50">        EasyMock.verify(lock, readLock);</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Tests whether the synchronizer is reentrant. This is important for some
+     * combined operations on a configuration.
+     */
+    @Test
+    public void testReentrance()
+    {
+<span class="fc" id="L60">        final Synchronizer sync = new ReadWriteSynchronizer();</span>
+<span class="fc" id="L61">        sync.beginWrite();</span>
+<span class="fc" id="L62">        sync.beginRead();</span>
+<span class="fc" id="L63">        sync.beginRead();</span>
+<span class="fc" id="L64">        sync.endRead();</span>
+<span class="fc" id="L65">        sync.endRead();</span>
+<span class="fc" id="L66">        sync.beginWrite();</span>
+<span class="fc" id="L67">        sync.endWrite();</span>
+<span class="fc" id="L68">        sync.endWrite();</span>
+<span class="fc" id="L69">    }</span>
+
+    /**
+     * Performs a test of the synchronizer based on the classic example of
+     * account objects. Money is transferred between two accounts. If everything
+     * goes well, the total amount of money stays constant over time.
+     */
+    @Test
+    public void testSynchronizerInAction() throws InterruptedException
+    {
+<span class="fc" id="L79">        final int numberOfUpdates = 10000;</span>
+<span class="fc" id="L80">        final int numberOfReads = numberOfUpdates / 2;</span>
+<span class="fc" id="L81">        final int readThreadCount = 3;</span>
+<span class="fc" id="L82">        final int updateThreadCount = 2;</span>
+
+<span class="fc" id="L84">        final Synchronizer sync = new ReadWriteSynchronizer();</span>
+<span class="fc" id="L85">        final Account account1 = new Account();</span>
+<span class="fc" id="L86">        final Account account2 = new Account();</span>
+<span class="fc" id="L87">        account1.change(TOTAL_MONEY / 2);</span>
+<span class="fc" id="L88">        account2.change(TOTAL_MONEY / 2);</span>
+
+<span class="fc" id="L90">        final UpdateThread[] updateThreads = new UpdateThread[updateThreadCount];</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (int i = 0; i &lt; updateThreads.length; i++)</span>
+        {
+<span class="fc" id="L93">            updateThreads[i] =</span>
+                    new UpdateThread(sync, numberOfUpdates, account1, account2);
+<span class="fc" id="L95">            updateThreads[i].start();</span>
+        }
+<span class="fc" id="L97">        final ReaderThread[] readerThreads = new ReaderThread[readThreadCount];</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (int i = 0; i &lt; readerThreads.length; i++)</span>
+        {
+<span class="fc" id="L100">            readerThreads[i] =</span>
+                    new ReaderThread(sync, numberOfReads, account1, account2);
+<span class="fc" id="L102">            readerThreads[i].start();</span>
+        }
+
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        for (final UpdateThread t : updateThreads)</span>
+        {
+<span class="fc" id="L107">            t.join();</span>
+        }
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (final ReaderThread t : readerThreads)</span>
+        {
+<span class="fc" id="L111">            t.join();</span>
+<span class="fc" id="L112">            assertEquals(&quot;Got read errors&quot;, 0, t.getErrors());</span>
+        }
+<span class="fc" id="L114">        sync.beginRead();</span>
+<span class="fc" id="L115">        assertEquals(&quot;Wrong sum of money&quot;, TOTAL_MONEY,</span>
+<span class="fc" id="L116">                sumUpAccounts(account1, account2));</span>
+<span class="fc" id="L117">        sync.endRead();</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Helper method to calculate the sum over all accounts.
+     *
+     * @param accounts the accounts to check
+     * @return the sum of the money on these accounts
+     */
+    private static long sumUpAccounts(final Account... accounts)
+    {
+<span class="fc" id="L128">        long sum = 0;</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (final Account acc : accounts)</span>
+        {
+<span class="fc" id="L131">            sum += acc.getAmount();</span>
+        }
+<span class="fc" id="L133">        return sum;</span>
+    }
+
+    /**
+     * A class representing an account.
+     */
+    private static class Account
+    {
+        /** The amount stored in this account. */
+        private long amount;
+
+        /**
+         * Returns the amount of money stored in this account.
+         *
+         * @return the amount
+         */
+        public long getAmount()
+        {
+<span class="fc" id="L151">            return amount;</span>
+        }
+
+        /**
+         * Changes the amount of money by the given delata.
+         *
+         * @param delta the delta
+         */
+        public void change(final long delta)
+        {
+<span class="fc" id="L161">            amount += delta;</span>
+<span class="fc" id="L162">        }</span>
+    }
+
+    /**
+     * A thread which performs a number of read operations on the bank's
+     * accounts and checks whether the amount of money is consistent.
+     */
+    private static class ReaderThread extends Thread
+    {
+        /** The acounts to monitor. */
+        private final Account[] accounts;
+
+        /** The synchronizer object. */
+        private final Synchronizer sync;
+
+        /** The number of read operations. */
+        private final int numberOfReads;
+
+        /** Stores errors detected on read operations. */
+        private volatile int errors;
+
+        /**
+         * Creates a new instance of {@code ReaderThread}.
+         *
+         * @param s the synchronizer to be used
+         * @param readCount the number of read operations
+         * @param accs the accounts to monitor
+         */
+        public ReaderThread(final Synchronizer s, final int readCount, final Account... accs)
+<span class="fc" id="L191">        {</span>
+<span class="fc" id="L192">            accounts = accs;</span>
+<span class="fc" id="L193">            sync = s;</span>
+<span class="fc" id="L194">            numberOfReads = readCount;</span>
+<span class="fc" id="L195">        }</span>
+
+        /**
+         * Performs the given number of read operations.
+         */
+        @Override
+        public void run()
+        {
+<span class="fc bfc" id="L203" title="All 2 branches covered.">            for (int i = 0; i &lt; numberOfReads; i++)</span>
+            {
+<span class="fc" id="L205">                sync.beginRead();</span>
+<span class="fc" id="L206">                final long sum = sumUpAccounts(accounts);</span>
+<span class="fc" id="L207">                sync.endRead();</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">                if (sum != TOTAL_MONEY)</span>
+                {
+<span class="nc" id="L210">                    errors++;</span>
+                }
+            }
+<span class="fc" id="L213">        }</span>
+
+        /**
+         * Returns the number of errors occurred during read operations.
+         *
+         * @return the number of errors
+         */
+        public int getErrors()
+        {
+<span class="fc" id="L222">            return errors;</span>
+        }
+    }
+
+    /**
+     * A test thread for updating account objects. This thread executes a number
+     * of transactions on two accounts. Each transaction determines the account
+     * containing more money. Then a random number of money is transferred from
+     * this account to the other one.
+     */
+    private static class UpdateThread extends Thread
+    {
+        /** The synchronizer. */
+        private final Synchronizer sync;
+
+        /** Account 1. */
+        private final Account account1;
+
+        /** Account 2. */
+        private final Account account2;
+
+        /** An object for creating random numbers. */
+        private final Random random;
+
+        /** The number of transactions. */
+        private final int numberOfUpdates;
+
+        /**
+         * Creates a new instance of {@code UpdateThread}.
+         *
+         * @param s the synchronizer
+         * @param updateCount the number of updates
+         * @param ac1 account 1
+         * @param ac2 account 2
+         */
+        public UpdateThread(final Synchronizer s, final int updateCount, final Account ac1,
+                final Account ac2)
+<span class="fc" id="L259">        {</span>
+<span class="fc" id="L260">            sync = s;</span>
+<span class="fc" id="L261">            account1 = ac1;</span>
+<span class="fc" id="L262">            account2 = ac2;</span>
+<span class="fc" id="L263">            numberOfUpdates = updateCount;</span>
+<span class="fc" id="L264">            random = new Random();</span>
+<span class="fc" id="L265">        }</span>
+
+        /**
+         * Performs the given number of update transactions.
+         */
+        @Override
+        public void run()
+        {
+<span class="fc bfc" id="L273" title="All 2 branches covered.">            for (int i = 0; i &lt; numberOfUpdates; i++)</span>
+            {
+<span class="fc" id="L275">                sync.beginWrite();</span>
+                Account acSource;
+                Account acDest;
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">                if (account1.getAmount() &lt; account2.getAmount())</span>
+                {
+<span class="nc" id="L280">                    acSource = account1;</span>
+<span class="nc" id="L281">                    acDest = account2;</span>
+                }
+                else
+                {
+<span class="fc" id="L285">                    acSource = account2;</span>
+<span class="fc" id="L286">                    acDest = account1;</span>
+                }
+<span class="fc" id="L288">                final long x =</span>
+<span class="fc" id="L289">                        Math.round(random.nextDouble()</span>
+<span class="fc" id="L290">                                * (acSource.getAmount() - 1)) + 1;</span>
+<span class="fc" id="L291">                acSource.change(-x);</span>
+<span class="fc" id="L292">                acDest.change(x);</span>
+<span class="fc" id="L293">                sync.endWrite();</span>
+            }
+<span class="fc" id="L295">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

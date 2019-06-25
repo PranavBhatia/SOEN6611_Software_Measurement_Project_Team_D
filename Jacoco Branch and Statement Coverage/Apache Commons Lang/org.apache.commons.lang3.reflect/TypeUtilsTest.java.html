@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.reflect</a> &gt; <span class="el_source">TypeUtilsTest.java</span></div><h1>TypeUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.reflect;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+
+import org.apache.commons.lang3.reflect.testbed.Foo;
+import org.apache.commons.lang3.reflect.testbed.GenericParent;
+import org.apache.commons.lang3.reflect.testbed.GenericTypeHolder;
+import org.apache.commons.lang3.reflect.testbed.StringParameterizedChild;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test TypeUtils
+ */
+@SuppressWarnings({ &quot;unchecked&quot;, &quot;unused&quot;, &quot;rawtypes&quot; })
+//raw types, where used, are used purposely
+<span class="fc" id="L54">public class TypeUtilsTest&lt;B&gt; {</span>
+
+    public interface This&lt;K, V&gt; {
+    }
+
+<span class="nc" id="L59">    public class That&lt;K, V&gt; implements This&lt;K, V&gt; {</span>
+    }
+
+    public interface And&lt;K, V&gt; extends This&lt;Number, Number&gt; {
+    }
+
+<span class="nc" id="L65">    public class The&lt;K, V&gt; extends That&lt;Number, Number&gt; implements And&lt;String, String&gt; {</span>
+    }
+
+<span class="nc" id="L68">    public class Other&lt;T&gt; implements This&lt;String, T&gt; {</span>
+    }
+
+<span class="nc" id="L71">    public class Thing&lt;Q&gt; extends Other&lt;B&gt; {</span>
+    }
+
+<span class="nc" id="L74">    public class Tester implements This&lt;String, B&gt; {</span>
+    }
+
+    public This&lt;String, String&gt; dis;
+
+    public That&lt;String, String&gt; dat;
+
+    public The&lt;String, String&gt; da;
+
+    public Other&lt;String&gt; uhder;
+
+    public Thing ding;
+
+    public TypeUtilsTest&lt;String&gt;.Tester tester;
+
+    public Tester tester2;
+
+    public TypeUtilsTest&lt;String&gt;.That&lt;String, String&gt; dat2;
+
+    public TypeUtilsTest&lt;Number&gt;.That&lt;String, String&gt; dat3;
+
+    public Comparable&lt;? extends Integer&gt;[] intWildcardComparable;
+
+    public static Comparable&lt;String&gt; stringComparable;
+
+    public static Comparable&lt;URI&gt; uriComparable;
+
+    public static Comparable&lt;Integer&gt; intComparable;
+
+    public static Comparable&lt;Long&gt; longComparable;
+
+    public static Comparable&lt;?&gt; wildcardComparable;
+
+    public static URI uri;
+
+    public static List&lt;String&gt;[] stringListArray;
+
+    public void dummyMethod(final List list0, final List&lt;Object&gt; list1, final List&lt;?&gt; list2,
+            final List&lt;? super Object&gt; list3, final List&lt;String&gt; list4, final List&lt;? extends String&gt; list5,
+            final List&lt;? super String&gt; list6, final List[] list7, final List&lt;Object&gt;[] list8, final List&lt;?&gt;[] list9,
+            final List&lt;? super Object&gt;[] list10, final List&lt;String&gt;[] list11, final List&lt;? extends String&gt;[] list12,
+            final List&lt;? super String&gt;[] list13) {
+<span class="nc" id="L116">    }</span>
+
+    @SuppressWarnings(&quot;boxing&quot;) // deliberately used here
+    @Test
+    public void testIsAssignable() throws SecurityException, NoSuchMethodException,
+            NoSuchFieldException {
+<span class="fc" id="L122">        List list0 = null;</span>
+<span class="fc" id="L123">        List&lt;Object&gt; list1 = null;</span>
+<span class="fc" id="L124">        List&lt;?&gt; list2 = null;</span>
+<span class="fc" id="L125">        List&lt;? super Object&gt; list3 = null;</span>
+<span class="fc" id="L126">        List&lt;String&gt; list4 = null;</span>
+<span class="fc" id="L127">        List&lt;? extends String&gt; list5 = null;</span>
+<span class="fc" id="L128">        List&lt;? super String&gt; list6 = null;</span>
+<span class="fc" id="L129">        List[] list7 = null;</span>
+<span class="fc" id="L130">        List&lt;Object&gt;[] list8 = null;</span>
+<span class="fc" id="L131">        List&lt;?&gt;[] list9 = null;</span>
+<span class="fc" id="L132">        List&lt;? super Object&gt;[] list10 = null;</span>
+<span class="fc" id="L133">        List&lt;String&gt;[] list11 = null;</span>
+<span class="fc" id="L134">        List&lt;? extends String&gt;[] list12 = null;</span>
+        List&lt;? super String&gt;[] list13;
+<span class="fc" id="L136">        final Class&lt;?&gt; clazz = getClass();</span>
+<span class="fc" id="L137">        final Method method = clazz.getMethod(&quot;dummyMethod&quot;, List.class, List.class, List.class,</span>
+                List.class, List.class, List.class, List.class, List[].class, List[].class,
+                List[].class, List[].class, List[].class, List[].class, List[].class);
+<span class="fc" id="L140">        final Type[] types = method.getGenericParameterTypes();</span>
+//        list0 = list0;
+<span class="fc" id="L142">        delegateBooleanAssertion(types, 0, 0, true);</span>
+<span class="fc" id="L143">        list1 = list0;</span>
+<span class="fc" id="L144">        delegateBooleanAssertion(types, 0, 1, true);</span>
+<span class="fc" id="L145">        list0 = list1;</span>
+<span class="fc" id="L146">        delegateBooleanAssertion(types, 1, 0, true);</span>
+<span class="fc" id="L147">        list2 = list0;</span>
+<span class="fc" id="L148">        delegateBooleanAssertion(types, 0, 2, true);</span>
+<span class="fc" id="L149">        list0 = list2;</span>
+<span class="fc" id="L150">        delegateBooleanAssertion(types, 2, 0, true);</span>
+<span class="fc" id="L151">        list3 = list0;</span>
+<span class="fc" id="L152">        delegateBooleanAssertion(types, 0, 3, true);</span>
+<span class="fc" id="L153">        list0 = list3;</span>
+<span class="fc" id="L154">        delegateBooleanAssertion(types, 3, 0, true);</span>
+<span class="fc" id="L155">        list4 = list0;</span>
+<span class="fc" id="L156">        delegateBooleanAssertion(types, 0, 4, true);</span>
+<span class="fc" id="L157">        list0 = list4;</span>
+<span class="fc" id="L158">        delegateBooleanAssertion(types, 4, 0, true);</span>
+<span class="fc" id="L159">        list5 = list0;</span>
+<span class="fc" id="L160">        delegateBooleanAssertion(types, 0, 5, true);</span>
+<span class="fc" id="L161">        list0 = list5;</span>
+<span class="fc" id="L162">        delegateBooleanAssertion(types, 5, 0, true);</span>
+<span class="fc" id="L163">        list6 = list0;</span>
+<span class="fc" id="L164">        delegateBooleanAssertion(types, 0, 6, true);</span>
+<span class="fc" id="L165">        list0 = list6;</span>
+<span class="fc" id="L166">        delegateBooleanAssertion(types, 6, 0, true);</span>
+//        list1 = list1;
+<span class="fc" id="L168">        delegateBooleanAssertion(types, 1, 1, true);</span>
+<span class="fc" id="L169">        list2 = list1;</span>
+<span class="fc" id="L170">        delegateBooleanAssertion(types, 1, 2, true);</span>
+<span class="fc" id="L171">        list1 = (List&lt;Object&gt;) list2;</span>
+<span class="fc" id="L172">        delegateBooleanAssertion(types, 2, 1, false);</span>
+<span class="fc" id="L173">        list3 = list1;</span>
+<span class="fc" id="L174">        delegateBooleanAssertion(types, 1, 3, true);</span>
+<span class="fc" id="L175">        list1 = (List&lt;Object&gt;) list3;</span>
+<span class="fc" id="L176">        delegateBooleanAssertion(types, 3, 1, false);</span>
+        // list4 = list1;
+<span class="fc" id="L178">        delegateBooleanAssertion(types, 1, 4, false);</span>
+        // list1 = list4;
+<span class="fc" id="L180">        delegateBooleanAssertion(types, 4, 1, false);</span>
+        // list5 = list1;
+<span class="fc" id="L182">        delegateBooleanAssertion(types, 1, 5, false);</span>
+        // list1 = list5;
+<span class="fc" id="L184">        delegateBooleanAssertion(types, 5, 1, false);</span>
+<span class="fc" id="L185">        list6 = list1;</span>
+<span class="fc" id="L186">        delegateBooleanAssertion(types, 1, 6, true);</span>
+<span class="fc" id="L187">        list1 = (List&lt;Object&gt;) list6;</span>
+<span class="fc" id="L188">        delegateBooleanAssertion(types, 6, 1, false);</span>
+//        list2 = list2;
+<span class="fc" id="L190">        delegateBooleanAssertion(types, 2, 2, true);</span>
+<span class="fc" id="L191">        list2 = list3;</span>
+<span class="fc" id="L192">        delegateBooleanAssertion(types, 2, 3, false);</span>
+<span class="fc" id="L193">        list2 = list4;</span>
+<span class="fc" id="L194">        delegateBooleanAssertion(types, 3, 2, true);</span>
+<span class="fc" id="L195">        list3 = (List&lt;? super Object&gt;) list2;</span>
+<span class="fc" id="L196">        delegateBooleanAssertion(types, 2, 4, false);</span>
+<span class="fc" id="L197">        list2 = list5;</span>
+<span class="fc" id="L198">        delegateBooleanAssertion(types, 4, 2, true);</span>
+<span class="fc" id="L199">        list4 = (List&lt;String&gt;) list2;</span>
+<span class="fc" id="L200">        delegateBooleanAssertion(types, 2, 5, false);</span>
+<span class="fc" id="L201">        list2 = list6;</span>
+<span class="fc" id="L202">        delegateBooleanAssertion(types, 5, 2, true);</span>
+<span class="fc" id="L203">        list5 = (List&lt;? extends String&gt;) list2;</span>
+<span class="fc" id="L204">        delegateBooleanAssertion(types, 2, 6, false);</span>
+//        list3 = list3;
+<span class="fc" id="L206">        delegateBooleanAssertion(types, 6, 2, true);</span>
+<span class="fc" id="L207">        list6 = (List&lt;? super String&gt;) list2;</span>
+<span class="fc" id="L208">        delegateBooleanAssertion(types, 3, 3, true);</span>
+        // list4 = list3;
+<span class="fc" id="L210">        delegateBooleanAssertion(types, 3, 4, false);</span>
+        // list3 = list4;
+<span class="fc" id="L212">        delegateBooleanAssertion(types, 4, 3, false);</span>
+        // list5 = list3;
+<span class="fc" id="L214">        delegateBooleanAssertion(types, 3, 5, false);</span>
+        // list3 = list5;
+<span class="fc" id="L216">        delegateBooleanAssertion(types, 5, 3, false);</span>
+<span class="fc" id="L217">        list6 = list3;</span>
+<span class="fc" id="L218">        delegateBooleanAssertion(types, 3, 6, true);</span>
+<span class="fc" id="L219">        list3 = (List&lt;? super Object&gt;) list6;</span>
+<span class="fc" id="L220">        delegateBooleanAssertion(types, 6, 3, false);</span>
+//        list4 = list4;
+<span class="fc" id="L222">        delegateBooleanAssertion(types, 4, 4, true);</span>
+<span class="fc" id="L223">        list5 = list4;</span>
+<span class="fc" id="L224">        delegateBooleanAssertion(types, 4, 5, true);</span>
+<span class="fc" id="L225">        list4 = (List&lt;String&gt;) list5;</span>
+<span class="fc" id="L226">        delegateBooleanAssertion(types, 5, 4, false);</span>
+<span class="fc" id="L227">        list6 = list4;</span>
+<span class="fc" id="L228">        delegateBooleanAssertion(types, 4, 6, true);</span>
+<span class="fc" id="L229">        list4 = (List&lt;String&gt;) list6;</span>
+<span class="fc" id="L230">        delegateBooleanAssertion(types, 6, 4, false);</span>
+//        list5 = list5;
+<span class="fc" id="L232">        delegateBooleanAssertion(types, 5, 5, true);</span>
+<span class="fc" id="L233">        list6 = (List&lt;? super String&gt;) list5;</span>
+<span class="fc" id="L234">        delegateBooleanAssertion(types, 5, 6, false);</span>
+<span class="fc" id="L235">        list5 = (List&lt;? extends String&gt;) list6;</span>
+<span class="fc" id="L236">        delegateBooleanAssertion(types, 6, 5, false);</span>
+//        list6 = list6;
+<span class="fc" id="L238">        delegateBooleanAssertion(types, 6, 6, true);</span>
+
+//        list7 = list7;
+<span class="fc" id="L241">        delegateBooleanAssertion(types, 7, 7, true);</span>
+<span class="fc" id="L242">        list8 = list7;</span>
+<span class="fc" id="L243">        delegateBooleanAssertion(types, 7, 8, true);</span>
+<span class="fc" id="L244">        list7 = list8;</span>
+<span class="fc" id="L245">        delegateBooleanAssertion(types, 8, 7, true);</span>
+<span class="fc" id="L246">        list9 = list7;</span>
+<span class="fc" id="L247">        delegateBooleanAssertion(types, 7, 9, true);</span>
+<span class="fc" id="L248">        list7 = list9;</span>
+<span class="fc" id="L249">        delegateBooleanAssertion(types, 9, 7, true);</span>
+<span class="fc" id="L250">        list10 = list7;</span>
+<span class="fc" id="L251">        delegateBooleanAssertion(types, 7, 10, true);</span>
+<span class="fc" id="L252">        list7 = list10;</span>
+<span class="fc" id="L253">        delegateBooleanAssertion(types, 10, 7, true);</span>
+<span class="fc" id="L254">        list11 = list7;</span>
+<span class="fc" id="L255">        delegateBooleanAssertion(types, 7, 11, true);</span>
+<span class="fc" id="L256">        list7 = list11;</span>
+<span class="fc" id="L257">        delegateBooleanAssertion(types, 11, 7, true);</span>
+<span class="fc" id="L258">        list12 = list7;</span>
+<span class="fc" id="L259">        delegateBooleanAssertion(types, 7, 12, true);</span>
+<span class="fc" id="L260">        list7 = list12;</span>
+<span class="fc" id="L261">        delegateBooleanAssertion(types, 12, 7, true);</span>
+<span class="fc" id="L262">        list13 = list7;</span>
+<span class="fc" id="L263">        delegateBooleanAssertion(types, 7, 13, true);</span>
+<span class="fc" id="L264">        list7 = list13;</span>
+<span class="fc" id="L265">        delegateBooleanAssertion(types, 13, 7, true);</span>
+//        list8 = list8;
+<span class="fc" id="L267">        delegateBooleanAssertion(types, 8, 8, true);</span>
+<span class="fc" id="L268">        list9 = list8;</span>
+<span class="fc" id="L269">        delegateBooleanAssertion(types, 8, 9, true);</span>
+<span class="fc" id="L270">        list8 = (List&lt;Object&gt;[]) list9;</span>
+<span class="fc" id="L271">        delegateBooleanAssertion(types, 9, 8, false);</span>
+<span class="fc" id="L272">        list10 = list8;</span>
+<span class="fc" id="L273">        delegateBooleanAssertion(types, 8, 10, true);</span>
+<span class="fc" id="L274">        list8 = (List&lt;Object&gt;[]) list10; // NOTE cast is required by Sun Java, but not by Eclipse</span>
+<span class="fc" id="L275">        delegateBooleanAssertion(types, 10, 8, false);</span>
+        // list11 = list8;
+<span class="fc" id="L277">        delegateBooleanAssertion(types, 8, 11, false);</span>
+        // list8 = list11;
+<span class="fc" id="L279">        delegateBooleanAssertion(types, 11, 8, false);</span>
+        // list12 = list8;
+<span class="fc" id="L281">        delegateBooleanAssertion(types, 8, 12, false);</span>
+        // list8 = list12;
+<span class="fc" id="L283">        delegateBooleanAssertion(types, 12, 8, false);</span>
+<span class="fc" id="L284">        list13 = list8;</span>
+<span class="fc" id="L285">        delegateBooleanAssertion(types, 8, 13, true);</span>
+<span class="fc" id="L286">        list8 = (List&lt;Object&gt;[]) list13;</span>
+<span class="fc" id="L287">        delegateBooleanAssertion(types, 13, 8, false);</span>
+//        list9 = list9;
+<span class="fc" id="L289">        delegateBooleanAssertion(types, 9, 9, true);</span>
+<span class="fc" id="L290">        list10 = (List&lt;? super Object&gt;[]) list9;</span>
+<span class="fc" id="L291">        delegateBooleanAssertion(types, 9, 10, false);</span>
+<span class="fc" id="L292">        list9 = list10;</span>
+<span class="fc" id="L293">        delegateBooleanAssertion(types, 10, 9, true);</span>
+<span class="fc" id="L294">        list11 = (List&lt;String&gt;[]) list9;</span>
+<span class="fc" id="L295">        delegateBooleanAssertion(types, 9, 11, false);</span>
+<span class="fc" id="L296">        list9 = list11;</span>
+<span class="fc" id="L297">        delegateBooleanAssertion(types, 11, 9, true);</span>
+<span class="fc" id="L298">        list12 = (List&lt;? extends String&gt;[]) list9;</span>
+<span class="fc" id="L299">        delegateBooleanAssertion(types, 9, 12, false);</span>
+<span class="fc" id="L300">        list9 = list12;</span>
+<span class="fc" id="L301">        delegateBooleanAssertion(types, 12, 9, true);</span>
+<span class="fc" id="L302">        list13 = (List&lt;? super String&gt;[]) list9;</span>
+<span class="fc" id="L303">        delegateBooleanAssertion(types, 9, 13, false);</span>
+<span class="fc" id="L304">        list9 = list13;</span>
+<span class="fc" id="L305">        delegateBooleanAssertion(types, 13, 9, true);</span>
+//        list10 = list10;
+<span class="fc" id="L307">        delegateBooleanAssertion(types, 10, 10, true);</span>
+        // list11 = list10;
+<span class="fc" id="L309">        delegateBooleanAssertion(types, 10, 11, false);</span>
+        // list10 = list11;
+<span class="fc" id="L311">        delegateBooleanAssertion(types, 11, 10, false);</span>
+        // list12 = list10;
+<span class="fc" id="L313">        delegateBooleanAssertion(types, 10, 12, false);</span>
+        // list10 = list12;
+<span class="fc" id="L315">        delegateBooleanAssertion(types, 12, 10, false);</span>
+<span class="fc" id="L316">        list13 = list10;</span>
+<span class="fc" id="L317">        delegateBooleanAssertion(types, 10, 13, true);</span>
+<span class="fc" id="L318">        list10 = (List&lt;? super Object&gt;[]) list13;</span>
+<span class="fc" id="L319">        delegateBooleanAssertion(types, 13, 10, false);</span>
+//        list11 = list11;
+<span class="fc" id="L321">        delegateBooleanAssertion(types, 11, 11, true);</span>
+<span class="fc" id="L322">        list12 = list11;</span>
+<span class="fc" id="L323">        delegateBooleanAssertion(types, 11, 12, true);</span>
+<span class="fc" id="L324">        list11 = (List&lt;String&gt;[]) list12;</span>
+<span class="fc" id="L325">        delegateBooleanAssertion(types, 12, 11, false);</span>
+<span class="fc" id="L326">        list13 = list11;</span>
+<span class="fc" id="L327">        delegateBooleanAssertion(types, 11, 13, true);</span>
+<span class="fc" id="L328">        list11 = (List&lt;String&gt;[]) list13;</span>
+<span class="fc" id="L329">        delegateBooleanAssertion(types, 13, 11, false);</span>
+//        list12 = list12;
+<span class="fc" id="L331">        delegateBooleanAssertion(types, 12, 12, true);</span>
+<span class="fc" id="L332">        list13 = (List&lt;? super String&gt;[]) list12;</span>
+<span class="fc" id="L333">        delegateBooleanAssertion(types, 12, 13, false);</span>
+<span class="fc" id="L334">        list12 = (List&lt;? extends String&gt;[]) list13;</span>
+<span class="fc" id="L335">        delegateBooleanAssertion(types, 13, 12, false);</span>
+//        list13 = list13;
+<span class="fc" id="L337">        delegateBooleanAssertion(types, 13, 13, true);</span>
+<span class="fc" id="L338">        final Type disType = getClass().getField(&quot;dis&quot;).getGenericType();</span>
+        // Reporter.log( ( ( ParameterizedType ) disType
+        // ).getOwnerType().getClass().toString() );
+<span class="fc" id="L341">        final Type datType = getClass().getField(&quot;dat&quot;).getGenericType();</span>
+<span class="fc" id="L342">        final Type daType = getClass().getField(&quot;da&quot;).getGenericType();</span>
+<span class="fc" id="L343">        final Type uhderType = getClass().getField(&quot;uhder&quot;).getGenericType();</span>
+<span class="fc" id="L344">        final Type dingType = getClass().getField(&quot;ding&quot;).getGenericType();</span>
+<span class="fc" id="L345">        final Type testerType = getClass().getField(&quot;tester&quot;).getGenericType();</span>
+<span class="fc" id="L346">        final Type tester2Type = getClass().getField(&quot;tester2&quot;).getGenericType();</span>
+<span class="fc" id="L347">        final Type dat2Type = getClass().getField(&quot;dat2&quot;).getGenericType();</span>
+<span class="fc" id="L348">        final Type dat3Type = getClass().getField(&quot;dat3&quot;).getGenericType();</span>
+<span class="fc" id="L349">        dis = dat;</span>
+<span class="fc" id="L350">        assertTrue(TypeUtils.isAssignable(datType, disType));</span>
+        // dis = da;
+<span class="fc" id="L352">        assertFalse(TypeUtils.isAssignable(daType, disType));</span>
+<span class="fc" id="L353">        dis = uhder;</span>
+<span class="fc" id="L354">        assertTrue(TypeUtils.isAssignable(uhderType, disType));</span>
+<span class="fc" id="L355">        dis = ding;</span>
+<span class="fc" id="L356">        assertFalse(TypeUtils.isAssignable(dingType, disType),</span>
+<span class="fc" id="L357">                String.format(&quot;type %s not assignable to %s!&quot;, dingType, disType));</span>
+<span class="fc" id="L358">        dis = tester;</span>
+<span class="fc" id="L359">        assertTrue(TypeUtils.isAssignable(testerType, disType));</span>
+        // dis = tester2;
+<span class="fc" id="L361">        assertFalse(TypeUtils.isAssignable(tester2Type, disType));</span>
+        // dat = dat2;
+<span class="fc" id="L363">        assertFalse(TypeUtils.isAssignable(dat2Type, datType));</span>
+        // dat2 = dat;
+<span class="fc" id="L365">        assertFalse(TypeUtils.isAssignable(datType, dat2Type));</span>
+        // dat = dat3;
+<span class="fc" id="L367">        assertFalse(TypeUtils.isAssignable(dat3Type, datType));</span>
+<span class="fc" id="L368">        final char ch = 0;</span>
+<span class="fc" id="L369">        final boolean bo = false;</span>
+<span class="fc" id="L370">        final byte by = 0;</span>
+<span class="fc" id="L371">        final short sh = 0;</span>
+<span class="fc" id="L372">        int in = 0;</span>
+<span class="fc" id="L373">        long lo = 0;</span>
+<span class="fc" id="L374">        final float fl = 0;</span>
+<span class="fc" id="L375">        double du = 0;</span>
+<span class="fc" id="L376">        du = ch;</span>
+<span class="fc" id="L377">        assertTrue(TypeUtils.isAssignable(char.class, double.class));</span>
+<span class="fc" id="L378">        du = by;</span>
+<span class="fc" id="L379">        assertTrue(TypeUtils.isAssignable(byte.class, double.class));</span>
+<span class="fc" id="L380">        du = sh;</span>
+<span class="fc" id="L381">        assertTrue(TypeUtils.isAssignable(short.class, double.class));</span>
+<span class="fc" id="L382">        du = in;</span>
+<span class="fc" id="L383">        assertTrue(TypeUtils.isAssignable(int.class, double.class));</span>
+<span class="fc" id="L384">        du = lo;</span>
+<span class="fc" id="L385">        assertTrue(TypeUtils.isAssignable(long.class, double.class));</span>
+<span class="fc" id="L386">        du = fl;</span>
+<span class="fc" id="L387">        assertTrue(TypeUtils.isAssignable(float.class, double.class));</span>
+<span class="fc" id="L388">        lo = in;</span>
+<span class="fc" id="L389">        assertTrue(TypeUtils.isAssignable(int.class, long.class));</span>
+<span class="fc" id="L390">        lo = Integer.valueOf(0);</span>
+<span class="fc" id="L391">        assertTrue(TypeUtils.isAssignable(Integer.class, long.class));</span>
+        // Long lngW = 1;
+<span class="fc" id="L393">        assertFalse(TypeUtils.isAssignable(int.class, Long.class));</span>
+        // lngW = Integer.valueOf( 0 );
+<span class="fc" id="L395">        assertFalse(TypeUtils.isAssignable(Integer.class, Long.class));</span>
+<span class="fc" id="L396">        in = Integer.valueOf(0);</span>
+<span class="fc" id="L397">        assertTrue(TypeUtils.isAssignable(Integer.class, int.class));</span>
+<span class="fc" id="L398">        final Integer inte = in;</span>
+<span class="fc" id="L399">        assertTrue(TypeUtils.isAssignable(int.class, Integer.class));</span>
+<span class="fc" id="L400">        assertTrue(TypeUtils.isAssignable(int.class, Number.class));</span>
+<span class="fc" id="L401">        assertTrue(TypeUtils.isAssignable(int.class, Object.class));</span>
+<span class="fc" id="L402">        final Type intComparableType = getClass().getField(&quot;intComparable&quot;).getGenericType();</span>
+<span class="fc" id="L403">        intComparable = 1;</span>
+<span class="fc" id="L404">        assertTrue(TypeUtils.isAssignable(int.class, intComparableType));</span>
+<span class="fc" id="L405">        assertTrue(TypeUtils.isAssignable(int.class, Comparable.class));</span>
+<span class="fc" id="L406">        final Serializable ser = 1;</span>
+<span class="fc" id="L407">        assertTrue(TypeUtils.isAssignable(int.class, Serializable.class));</span>
+<span class="fc" id="L408">        final Type longComparableType = getClass().getField(&quot;longComparable&quot;).getGenericType();</span>
+        // longComparable = 1;
+<span class="fc" id="L410">        assertFalse(TypeUtils.isAssignable(int.class, longComparableType));</span>
+        // longComparable = Integer.valueOf( 0 );
+<span class="fc" id="L412">        assertFalse(TypeUtils.isAssignable(Integer.class, longComparableType));</span>
+        // int[] ia;
+        // long[] la = ia;
+<span class="fc" id="L415">        assertFalse(TypeUtils.isAssignable(int[].class, long[].class));</span>
+<span class="fc" id="L416">        final Integer[] ia = null;</span>
+<span class="fc" id="L417">        final Type caType = getClass().getField(&quot;intWildcardComparable&quot;).getGenericType();</span>
+<span class="fc" id="L418">        intWildcardComparable = ia;</span>
+<span class="fc" id="L419">        assertTrue(TypeUtils.isAssignable(Integer[].class, caType));</span>
+        // int[] ina = ia;
+<span class="fc" id="L421">        assertFalse(TypeUtils.isAssignable(Integer[].class, int[].class));</span>
+<span class="fc" id="L422">        final int[] ina = null;</span>
+        Object[] oa;
+        // oa = ina;
+<span class="fc" id="L425">        assertFalse(TypeUtils.isAssignable(int[].class, Object[].class));</span>
+<span class="fc" id="L426">        oa = new Integer[0];</span>
+<span class="fc" id="L427">        assertTrue(TypeUtils.isAssignable(Integer[].class, Object[].class));</span>
+<span class="fc" id="L428">        final Type bClassType = AClass.class.getField(&quot;bClass&quot;).getGenericType();</span>
+<span class="fc" id="L429">        final Type cClassType = AClass.class.getField(&quot;cClass&quot;).getGenericType();</span>
+<span class="fc" id="L430">        final Type dClassType = AClass.class.getField(&quot;dClass&quot;).getGenericType();</span>
+<span class="fc" id="L431">        final Type eClassType = AClass.class.getField(&quot;eClass&quot;).getGenericType();</span>
+<span class="fc" id="L432">        final Type fClassType = AClass.class.getField(&quot;fClass&quot;).getGenericType();</span>
+<span class="fc" id="L433">        final AClass aClass = new AClass(new AAClass&lt;&gt;());</span>
+<span class="fc" id="L434">        aClass.bClass = aClass.cClass;</span>
+<span class="fc" id="L435">        assertTrue(TypeUtils.isAssignable(cClassType, bClassType));</span>
+<span class="fc" id="L436">        aClass.bClass = aClass.dClass;</span>
+<span class="fc" id="L437">        assertTrue(TypeUtils.isAssignable(dClassType, bClassType));</span>
+<span class="fc" id="L438">        aClass.bClass = aClass.eClass;</span>
+<span class="fc" id="L439">        assertTrue(TypeUtils.isAssignable(eClassType, bClassType));</span>
+<span class="fc" id="L440">        aClass.bClass = aClass.fClass;</span>
+<span class="fc" id="L441">        assertTrue(TypeUtils.isAssignable(fClassType, bClassType));</span>
+<span class="fc" id="L442">        aClass.cClass = aClass.dClass;</span>
+<span class="fc" id="L443">        assertTrue(TypeUtils.isAssignable(dClassType, cClassType));</span>
+<span class="fc" id="L444">        aClass.cClass = aClass.eClass;</span>
+<span class="fc" id="L445">        assertTrue(TypeUtils.isAssignable(eClassType, cClassType));</span>
+<span class="fc" id="L446">        aClass.cClass = aClass.fClass;</span>
+<span class="fc" id="L447">        assertTrue(TypeUtils.isAssignable(fClassType, cClassType));</span>
+<span class="fc" id="L448">        aClass.dClass = aClass.eClass;</span>
+<span class="fc" id="L449">        assertTrue(TypeUtils.isAssignable(eClassType, dClassType));</span>
+<span class="fc" id="L450">        aClass.dClass = aClass.fClass;</span>
+<span class="fc" id="L451">        assertTrue(TypeUtils.isAssignable(fClassType, dClassType));</span>
+<span class="fc" id="L452">        aClass.eClass = aClass.fClass;</span>
+<span class="fc" id="L453">        assertTrue(TypeUtils.isAssignable(fClassType, eClassType));</span>
+<span class="fc" id="L454">    }</span>
+
+    public void delegateBooleanAssertion(final Type[] types, final int i2, final int i1, final boolean expected) {
+<span class="fc" id="L457">        final Type type1 = types[i1];</span>
+<span class="fc" id="L458">        final Type type2 = types[i2];</span>
+<span class="fc" id="L459">        final boolean isAssignable = TypeUtils.isAssignable(type2, type1);</span>
+
+<span class="fc bfc" id="L461" title="All 2 branches covered.">        if (expected) {</span>
+<span class="fc" id="L462">            assertTrue(isAssignable,</span>
+                    &quot;[&quot; + i1 + &quot;, &quot; + i2 + &quot;]: From &quot;
+<span class="fc" id="L464">                                + String.valueOf(type2) + &quot; to &quot;</span>
+<span class="fc" id="L465">                                + String.valueOf(type1));</span>
+        } else {
+<span class="fc" id="L467">            assertFalse(isAssignable,</span>
+                    &quot;[&quot; + i1 + &quot;, &quot; + i2 + &quot;]: From &quot;
+<span class="fc" id="L469">                                + String.valueOf(type2) + &quot; to &quot;</span>
+<span class="fc" id="L470">                                + String.valueOf(type1));</span>
+        }
+<span class="fc" id="L472">    }</span>
+
+    @SuppressWarnings(&quot;boxing&quot;) // boxing is deliberate here
+    @Test
+    public void testIsInstance() throws SecurityException, NoSuchFieldException {
+<span class="fc" id="L477">        final Type intComparableType = getClass().getField(&quot;intComparable&quot;).getGenericType();</span>
+<span class="fc" id="L478">        final Type uriComparableType = getClass().getField(&quot;uriComparable&quot;).getGenericType();</span>
+<span class="fc" id="L479">        intComparable = 1;</span>
+<span class="fc" id="L480">        assertTrue(TypeUtils.isInstance(1, intComparableType));</span>
+        // uriComparable = 1;
+<span class="fc" id="L482">        assertFalse(TypeUtils.isInstance(1, uriComparableType));</span>
+<span class="fc" id="L483">    }</span>
+
+    @Test
+    public void testGetTypeArguments() {
+        Map&lt;TypeVariable&lt;?&gt;, Type&gt; typeVarAssigns;
+        TypeVariable&lt;?&gt; treeSetTypeVar;
+        Type typeArg;
+
+<span class="fc" id="L491">        typeVarAssigns = TypeUtils.getTypeArguments(Integer.class, Comparable.class);</span>
+<span class="fc" id="L492">        treeSetTypeVar = Comparable.class.getTypeParameters()[0];</span>
+<span class="fc" id="L493">        assertTrue(typeVarAssigns.containsKey(treeSetTypeVar),</span>
+                &quot;Type var assigns for Comparable from Integer: &quot; + typeVarAssigns);
+<span class="fc" id="L495">        typeArg = typeVarAssigns.get(treeSetTypeVar);</span>
+<span class="fc" id="L496">        assertEquals(Integer.class, typeVarAssigns.get(treeSetTypeVar),</span>
+                &quot;Type argument of Comparable from Integer: &quot; + typeArg);
+
+<span class="fc" id="L499">        typeVarAssigns = TypeUtils.getTypeArguments(int.class, Comparable.class);</span>
+<span class="fc" id="L500">        treeSetTypeVar = Comparable.class.getTypeParameters()[0];</span>
+<span class="fc" id="L501">        assertTrue(typeVarAssigns.containsKey(treeSetTypeVar),</span>
+                &quot;Type var assigns for Comparable from int: &quot; + typeVarAssigns);
+<span class="fc" id="L503">        typeArg = typeVarAssigns.get(treeSetTypeVar);</span>
+<span class="fc" id="L504">        assertEquals(Integer.class, typeVarAssigns.get(treeSetTypeVar),</span>
+                &quot;Type argument of Comparable from int: &quot; + typeArg);
+
+<span class="fc" id="L507">        final Collection&lt;Integer&gt; col = Arrays.asList(new Integer[0]);</span>
+<span class="fc" id="L508">        typeVarAssigns = TypeUtils.getTypeArguments(List.class, Collection.class);</span>
+<span class="fc" id="L509">        treeSetTypeVar = Comparable.class.getTypeParameters()[0];</span>
+<span class="fc" id="L510">        assertFalse(typeVarAssigns.containsKey(treeSetTypeVar),</span>
+                &quot;Type var assigns for Collection from List: &quot; + typeVarAssigns);
+
+<span class="fc" id="L513">        typeVarAssigns = TypeUtils.getTypeArguments(AAAClass.BBBClass.class, AAClass.BBClass.class);</span>
+<span class="fc" id="L514">        assertEquals(2, typeVarAssigns.size());</span>
+<span class="fc" id="L515">        assertEquals(String.class, typeVarAssigns.get(AAClass.class.getTypeParameters()[0]));</span>
+<span class="fc" id="L516">        assertEquals(String.class, typeVarAssigns.get(AAClass.BBClass.class.getTypeParameters()[0]));</span>
+
+<span class="fc" id="L518">        typeVarAssigns = TypeUtils.getTypeArguments(Other.class, This.class);</span>
+<span class="fc" id="L519">        assertEquals(2, typeVarAssigns.size());</span>
+<span class="fc" id="L520">        assertEquals(String.class, typeVarAssigns.get(This.class.getTypeParameters()[0]));</span>
+<span class="fc" id="L521">        assertEquals(Other.class.getTypeParameters()[0], typeVarAssigns.get(This.class.getTypeParameters()[1]));</span>
+
+<span class="fc" id="L523">        typeVarAssigns = TypeUtils.getTypeArguments(And.class, This.class);</span>
+<span class="fc" id="L524">        assertEquals(2, typeVarAssigns.size());</span>
+<span class="fc" id="L525">        assertEquals(Number.class, typeVarAssigns.get(This.class.getTypeParameters()[0]));</span>
+<span class="fc" id="L526">        assertEquals(Number.class, typeVarAssigns.get(This.class.getTypeParameters()[1]));</span>
+
+<span class="fc" id="L528">        typeVarAssigns = TypeUtils.getTypeArguments(Thing.class, Other.class);</span>
+<span class="fc" id="L529">        assertEquals(2, typeVarAssigns.size());</span>
+<span class="fc" id="L530">        assertEquals(getClass().getTypeParameters()[0], typeVarAssigns.get(getClass().getTypeParameters()[0]));</span>
+<span class="fc" id="L531">        assertEquals(getClass().getTypeParameters()[0], typeVarAssigns.get(Other.class.getTypeParameters()[0]));</span>
+<span class="fc" id="L532">    }</span>
+
+    @Test
+    public void testTypesSatisfyVariables() throws SecurityException,
+            NoSuchMethodException {
+<span class="fc" id="L537">        final Map&lt;TypeVariable&lt;?&gt;, Type&gt; typeVarAssigns = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L538">        final Integer max = TypeUtilsTest.&lt;Integer&gt;stub();</span>
+<span class="fc" id="L539">        typeVarAssigns.put(getClass().getMethod(&quot;stub&quot;).getTypeParameters()[0], Integer.class);</span>
+<span class="fc" id="L540">        assertTrue(TypeUtils.typesSatisfyVariables(typeVarAssigns));</span>
+<span class="fc" id="L541">        typeVarAssigns.clear();</span>
+<span class="fc" id="L542">        typeVarAssigns.put(getClass().getMethod(&quot;stub2&quot;).getTypeParameters()[0], Integer.class);</span>
+<span class="fc" id="L543">        assertTrue(TypeUtils.typesSatisfyVariables(typeVarAssigns));</span>
+<span class="fc" id="L544">        typeVarAssigns.clear();</span>
+<span class="fc" id="L545">        typeVarAssigns.put(getClass().getMethod(&quot;stub3&quot;).getTypeParameters()[0], Integer.class);</span>
+<span class="fc" id="L546">        assertTrue(TypeUtils.typesSatisfyVariables(typeVarAssigns));</span>
+<span class="fc" id="L547">    }</span>
+
+    @Test
+    public void testDetermineTypeVariableAssignments() throws SecurityException,
+            NoSuchFieldException {
+<span class="fc" id="L552">        final ParameterizedType iterableType = (ParameterizedType) getClass().getField(&quot;iterable&quot;)</span>
+<span class="fc" id="L553">                .getGenericType();</span>
+<span class="fc" id="L554">        final Map&lt;TypeVariable&lt;?&gt;, Type&gt; typeVarAssigns = TypeUtils.determineTypeArguments(TreeSet.class,</span>
+                iterableType);
+<span class="fc" id="L556">        final TypeVariable&lt;?&gt; treeSetTypeVar = TreeSet.class.getTypeParameters()[0];</span>
+<span class="fc" id="L557">        assertTrue(typeVarAssigns.containsKey(treeSetTypeVar));</span>
+<span class="fc" id="L558">        assertEquals(iterableType.getActualTypeArguments()[0], typeVarAssigns</span>
+<span class="fc" id="L559">                .get(treeSetTypeVar));</span>
+<span class="fc" id="L560">    }</span>
+
+    @Test
+    public void testGetRawType() throws SecurityException, NoSuchFieldException {
+<span class="fc" id="L564">        final Type stringParentFieldType = GenericTypeHolder.class.getDeclaredField(&quot;stringParent&quot;)</span>
+<span class="fc" id="L565">                .getGenericType();</span>
+<span class="fc" id="L566">        final Type integerParentFieldType = GenericTypeHolder.class.getDeclaredField(&quot;integerParent&quot;)</span>
+<span class="fc" id="L567">                .getGenericType();</span>
+<span class="fc" id="L568">        final Type foosFieldType = GenericTypeHolder.class.getDeclaredField(&quot;foos&quot;).getGenericType();</span>
+<span class="fc" id="L569">        final Type genericParentT = GenericParent.class.getTypeParameters()[0];</span>
+<span class="fc" id="L570">        assertEquals(GenericParent.class, TypeUtils.getRawType(stringParentFieldType, null));</span>
+<span class="fc" id="L571">        assertEquals(GenericParent.class, TypeUtils.getRawType(integerParentFieldType,</span>
+                        null));
+<span class="fc" id="L573">        assertEquals(List.class, TypeUtils.getRawType(foosFieldType, null));</span>
+<span class="fc" id="L574">        assertEquals(String.class, TypeUtils.getRawType(genericParentT,</span>
+                StringParameterizedChild.class));
+<span class="fc" id="L576">        assertEquals(String.class, TypeUtils.getRawType(genericParentT,</span>
+                stringParentFieldType));
+<span class="fc" id="L578">        assertEquals(Foo.class, TypeUtils.getRawType(Iterable.class.getTypeParameters()[0],</span>
+                foosFieldType));
+<span class="fc" id="L580">        assertEquals(Foo.class, TypeUtils.getRawType(List.class.getTypeParameters()[0],</span>
+                foosFieldType));
+<span class="fc" id="L582">        assertNull(TypeUtils.getRawType(genericParentT, GenericParent.class));</span>
+<span class="fc" id="L583">        assertEquals(GenericParent[].class, TypeUtils.getRawType(GenericTypeHolder.class</span>
+<span class="fc" id="L584">                .getDeclaredField(&quot;barParents&quot;).getGenericType(), null));</span>
+<span class="fc" id="L585">    }</span>
+
+    @Test
+    public void testIsArrayTypeClasses() {
+<span class="fc" id="L589">        assertTrue(TypeUtils.isArrayType(boolean[].class));</span>
+<span class="fc" id="L590">        assertTrue(TypeUtils.isArrayType(byte[].class));</span>
+<span class="fc" id="L591">        assertTrue(TypeUtils.isArrayType(short[].class));</span>
+<span class="fc" id="L592">        assertTrue(TypeUtils.isArrayType(int[].class));</span>
+<span class="fc" id="L593">        assertTrue(TypeUtils.isArrayType(char[].class));</span>
+<span class="fc" id="L594">        assertTrue(TypeUtils.isArrayType(long[].class));</span>
+<span class="fc" id="L595">        assertTrue(TypeUtils.isArrayType(float[].class));</span>
+<span class="fc" id="L596">        assertTrue(TypeUtils.isArrayType(double[].class));</span>
+<span class="fc" id="L597">        assertTrue(TypeUtils.isArrayType(Object[].class));</span>
+<span class="fc" id="L598">        assertTrue(TypeUtils.isArrayType(String[].class));</span>
+
+<span class="fc" id="L600">        assertFalse(TypeUtils.isArrayType(boolean.class));</span>
+<span class="fc" id="L601">        assertFalse(TypeUtils.isArrayType(byte.class));</span>
+<span class="fc" id="L602">        assertFalse(TypeUtils.isArrayType(short.class));</span>
+<span class="fc" id="L603">        assertFalse(TypeUtils.isArrayType(int.class));</span>
+<span class="fc" id="L604">        assertFalse(TypeUtils.isArrayType(char.class));</span>
+<span class="fc" id="L605">        assertFalse(TypeUtils.isArrayType(long.class));</span>
+<span class="fc" id="L606">        assertFalse(TypeUtils.isArrayType(float.class));</span>
+<span class="fc" id="L607">        assertFalse(TypeUtils.isArrayType(double.class));</span>
+<span class="fc" id="L608">        assertFalse(TypeUtils.isArrayType(Object.class));</span>
+<span class="fc" id="L609">        assertFalse(TypeUtils.isArrayType(String.class));</span>
+<span class="fc" id="L610">    }</span>
+
+    @Test
+    public void testIsArrayGenericTypes() throws Exception {
+<span class="fc" id="L614">        final Method method = getClass().getMethod(&quot;dummyMethod&quot;, List.class, List.class, List.class,</span>
+                List.class, List.class, List.class, List.class, List[].class, List[].class,
+                List[].class, List[].class, List[].class, List[].class, List[].class);
+
+<span class="fc" id="L618">        final Type[] types = method.getGenericParameterTypes();</span>
+
+<span class="fc" id="L620">        assertFalse(TypeUtils.isArrayType(types[0]));</span>
+<span class="fc" id="L621">        assertFalse(TypeUtils.isArrayType(types[1]));</span>
+<span class="fc" id="L622">        assertFalse(TypeUtils.isArrayType(types[2]));</span>
+<span class="fc" id="L623">        assertFalse(TypeUtils.isArrayType(types[3]));</span>
+<span class="fc" id="L624">        assertFalse(TypeUtils.isArrayType(types[4]));</span>
+<span class="fc" id="L625">        assertFalse(TypeUtils.isArrayType(types[5]));</span>
+<span class="fc" id="L626">        assertFalse(TypeUtils.isArrayType(types[6]));</span>
+<span class="fc" id="L627">        assertTrue(TypeUtils.isArrayType(types[7]));</span>
+<span class="fc" id="L628">        assertTrue(TypeUtils.isArrayType(types[8]));</span>
+<span class="fc" id="L629">        assertTrue(TypeUtils.isArrayType(types[9]));</span>
+<span class="fc" id="L630">        assertTrue(TypeUtils.isArrayType(types[10]));</span>
+<span class="fc" id="L631">        assertTrue(TypeUtils.isArrayType(types[11]));</span>
+<span class="fc" id="L632">        assertTrue(TypeUtils.isArrayType(types[12]));</span>
+<span class="fc" id="L633">        assertTrue(TypeUtils.isArrayType(types[13]));</span>
+<span class="fc" id="L634">    }</span>
+
+    @Test
+    public void testGetPrimitiveArrayComponentType() {
+<span class="fc" id="L638">        assertEquals(boolean.class, TypeUtils.getArrayComponentType(boolean[].class));</span>
+<span class="fc" id="L639">        assertEquals(byte.class, TypeUtils.getArrayComponentType(byte[].class));</span>
+<span class="fc" id="L640">        assertEquals(short.class, TypeUtils.getArrayComponentType(short[].class));</span>
+<span class="fc" id="L641">        assertEquals(int.class, TypeUtils.getArrayComponentType(int[].class));</span>
+<span class="fc" id="L642">        assertEquals(char.class, TypeUtils.getArrayComponentType(char[].class));</span>
+<span class="fc" id="L643">        assertEquals(long.class, TypeUtils.getArrayComponentType(long[].class));</span>
+<span class="fc" id="L644">        assertEquals(float.class, TypeUtils.getArrayComponentType(float[].class));</span>
+<span class="fc" id="L645">        assertEquals(double.class, TypeUtils.getArrayComponentType(double[].class));</span>
+
+<span class="fc" id="L647">        assertNull(TypeUtils.getArrayComponentType(boolean.class));</span>
+<span class="fc" id="L648">        assertNull(TypeUtils.getArrayComponentType(byte.class));</span>
+<span class="fc" id="L649">        assertNull(TypeUtils.getArrayComponentType(short.class));</span>
+<span class="fc" id="L650">        assertNull(TypeUtils.getArrayComponentType(int.class));</span>
+<span class="fc" id="L651">        assertNull(TypeUtils.getArrayComponentType(char.class));</span>
+<span class="fc" id="L652">        assertNull(TypeUtils.getArrayComponentType(long.class));</span>
+<span class="fc" id="L653">        assertNull(TypeUtils.getArrayComponentType(float.class));</span>
+<span class="fc" id="L654">        assertNull(TypeUtils.getArrayComponentType(double.class));</span>
+<span class="fc" id="L655">    }</span>
+
+    @Test
+    public void testGetArrayComponentType() throws Exception {
+<span class="fc" id="L659">        final Method method = getClass().getMethod(&quot;dummyMethod&quot;, List.class, List.class, List.class,</span>
+                List.class, List.class, List.class, List.class, List[].class, List[].class,
+                List[].class, List[].class, List[].class, List[].class, List[].class);
+
+<span class="fc" id="L663">        final Type[] types = method.getGenericParameterTypes();</span>
+
+<span class="fc" id="L665">        assertNull(TypeUtils.getArrayComponentType(types[0]));</span>
+<span class="fc" id="L666">        assertNull(TypeUtils.getArrayComponentType(types[1]));</span>
+<span class="fc" id="L667">        assertNull(TypeUtils.getArrayComponentType(types[2]));</span>
+<span class="fc" id="L668">        assertNull(TypeUtils.getArrayComponentType(types[3]));</span>
+<span class="fc" id="L669">        assertNull(TypeUtils.getArrayComponentType(types[4]));</span>
+<span class="fc" id="L670">        assertNull(TypeUtils.getArrayComponentType(types[5]));</span>
+<span class="fc" id="L671">        assertNull(TypeUtils.getArrayComponentType(types[6]));</span>
+<span class="fc" id="L672">        assertEquals(types[0], TypeUtils.getArrayComponentType(types[7]));</span>
+<span class="fc" id="L673">        assertEquals(types[1], TypeUtils.getArrayComponentType(types[8]));</span>
+<span class="fc" id="L674">        assertEquals(types[2], TypeUtils.getArrayComponentType(types[9]));</span>
+<span class="fc" id="L675">        assertEquals(types[3], TypeUtils.getArrayComponentType(types[10]));</span>
+<span class="fc" id="L676">        assertEquals(types[4], TypeUtils.getArrayComponentType(types[11]));</span>
+<span class="fc" id="L677">        assertEquals(types[5], TypeUtils.getArrayComponentType(types[12]));</span>
+<span class="fc" id="L678">        assertEquals(types[6], TypeUtils.getArrayComponentType(types[13]));</span>
+<span class="fc" id="L679">    }</span>
+
+    @Test
+    public void testLang820() {
+<span class="fc" id="L683">        final Type[] typeArray = {String.class, String.class};</span>
+<span class="fc" id="L684">        final Type[] expectedArray = {String.class};</span>
+<span class="fc" id="L685">        assertArrayEquals(expectedArray, TypeUtils.normalizeUpperBounds(typeArray));</span>
+<span class="fc" id="L686">    }</span>
+
+    @Test
+    public void testParameterize() throws Exception {
+<span class="fc" id="L690">        final ParameterizedType stringComparableType = TypeUtils.parameterize(Comparable.class, String.class);</span>
+<span class="fc" id="L691">        assertTrue(TypeUtils.equals(getClass().getField(&quot;stringComparable&quot;).getGenericType(),</span>
+            stringComparableType));
+<span class="fc" id="L693">        assertEquals(&quot;java.lang.Comparable&lt;java.lang.String&gt;&quot;, stringComparableType.toString());</span>
+<span class="fc" id="L694">    }</span>
+
+    @Test
+    public void testParameterizeNarrowerTypeArray() {
+<span class="fc" id="L698">        final TypeVariable&lt;?&gt;[] variables = ArrayList.class.getTypeParameters();</span>
+<span class="fc" id="L699">        final ParameterizedType parameterizedType = TypeUtils.parameterize(ArrayList.class, variables);</span>
+<span class="fc" id="L700">        final Map&lt;TypeVariable&lt;?&gt;, Type&gt; mapping = Collections.&lt;TypeVariable&lt;?&gt;, Type&gt;singletonMap(variables[0], String.class);</span>
+<span class="fc" id="L701">        final Type unrolled = TypeUtils.unrollVariables(mapping, parameterizedType);</span>
+<span class="fc" id="L702">        assertEquals(TypeUtils.parameterize(ArrayList.class, String.class), unrolled);</span>
+<span class="fc" id="L703">    }</span>
+
+    @Test
+    public void testParameterizeWithOwner() throws Exception {
+<span class="fc" id="L707">        final Type owner = TypeUtils.parameterize(TypeUtilsTest.class, String.class);</span>
+<span class="fc" id="L708">        final ParameterizedType dat2Type = TypeUtils.parameterizeWithOwner(owner, That.class, String.class, String.class);</span>
+<span class="fc" id="L709">        assertTrue(TypeUtils.equals(getClass().getField(&quot;dat2&quot;).getGenericType(), dat2Type));</span>
+<span class="fc" id="L710">    }</span>
+
+    @Test
+    public void testWildcardType() throws Exception {
+<span class="fc" id="L714">        final WildcardType simpleWildcard = TypeUtils.wildcardType().withUpperBounds(String.class).build();</span>
+<span class="fc" id="L715">        final Field cClass = AClass.class.getField(&quot;cClass&quot;);</span>
+<span class="fc" id="L716">        assertTrue(TypeUtils.equals(((ParameterizedType) cClass.getGenericType()).getActualTypeArguments()[0],</span>
+            simpleWildcard));
+<span class="fc" id="L718">        assertEquals(String.format(&quot;? extends %s&quot;, String.class.getName()), TypeUtils.toString(simpleWildcard));</span>
+<span class="fc" id="L719">        assertEquals(String.format(&quot;? extends %s&quot;, String.class.getName()), simpleWildcard.toString());</span>
+<span class="fc" id="L720">    }</span>
+
+    @Test
+    public void testUnboundedWildcardType() {
+<span class="fc" id="L724">        final WildcardType unbounded = TypeUtils.wildcardType().withLowerBounds((Type) null).withUpperBounds().build();</span>
+<span class="fc" id="L725">        assertTrue(TypeUtils.equals(TypeUtils.WILDCARD_ALL, unbounded));</span>
+<span class="fc" id="L726">        assertArrayEquals(new Type[] { Object.class }, TypeUtils.getImplicitUpperBounds(unbounded));</span>
+<span class="fc" id="L727">        assertArrayEquals(new Type[] { null }, TypeUtils.getImplicitLowerBounds(unbounded));</span>
+<span class="fc" id="L728">        assertEquals(&quot;?&quot;, TypeUtils.toString(unbounded));</span>
+<span class="fc" id="L729">        assertEquals(&quot;?&quot;, unbounded.toString());</span>
+<span class="fc" id="L730">    }</span>
+
+    @Test
+    public void testLowerBoundedWildcardType() {
+<span class="fc" id="L734">       final WildcardType lowerBounded = TypeUtils.wildcardType().withLowerBounds(java.sql.Date.class).build();</span>
+<span class="fc" id="L735">       assertEquals(String.format(&quot;? super %s&quot;, java.sql.Date.class.getName()), TypeUtils.toString(lowerBounded));</span>
+<span class="fc" id="L736">       assertEquals(String.format(&quot;? super %s&quot;, java.sql.Date.class.getName()), lowerBounded.toString());</span>
+
+<span class="fc" id="L738">       final TypeVariable&lt;Class&lt;Iterable&gt;&gt; iterableT0 = Iterable.class.getTypeParameters()[0];</span>
+<span class="fc" id="L739">       final WildcardType lowerTypeVariable = TypeUtils.wildcardType().withLowerBounds(iterableT0).build();</span>
+<span class="fc" id="L740">       assertEquals(String.format(&quot;? super %s&quot;, iterableT0.getName()), TypeUtils.toString(lowerTypeVariable));</span>
+<span class="fc" id="L741">       assertEquals(String.format(&quot;? super %s&quot;, iterableT0.getName()), lowerTypeVariable.toString());</span>
+<span class="fc" id="L742">    }</span>
+
+    @Test
+    public void testLang1114() throws Exception {
+<span class="fc" id="L746">        final Type nonWildcardType = getClass().getDeclaredField(&quot;wildcardComparable&quot;).getGenericType();</span>
+<span class="fc" id="L747">        final Type wildcardType = ((ParameterizedType) nonWildcardType).getActualTypeArguments()[0];</span>
+
+<span class="fc" id="L749">        assertFalse(TypeUtils.equals(wildcardType, nonWildcardType));</span>
+<span class="fc" id="L750">        assertFalse(TypeUtils.equals(nonWildcardType, wildcardType));</span>
+<span class="fc" id="L751">    }</span>
+
+    @Test
+    public void testGenericArrayType() throws Exception {
+<span class="fc" id="L755">        final Type expected = getClass().getField(&quot;intWildcardComparable&quot;).getGenericType();</span>
+<span class="fc" id="L756">        final GenericArrayType actual =</span>
+<span class="fc" id="L757">            TypeUtils.genericArrayType(TypeUtils.parameterize(Comparable.class, TypeUtils.wildcardType()</span>
+<span class="fc" id="L758">                .withUpperBounds(Integer.class).build()));</span>
+<span class="fc" id="L759">        assertTrue(TypeUtils.equals(expected, actual));</span>
+<span class="fc" id="L760">        assertEquals(&quot;java.lang.Comparable&lt;? extends java.lang.Integer&gt;[]&quot;, actual.toString());</span>
+<span class="fc" id="L761">    }</span>
+
+    @Test
+    public void testToStringLang1311() {
+<span class="fc" id="L765">        assertEquals(&quot;int[]&quot;, TypeUtils.toString(int[].class));</span>
+<span class="fc" id="L766">        assertEquals(&quot;java.lang.Integer[]&quot;, TypeUtils.toString(Integer[].class));</span>
+<span class="fc" id="L767">        final Field stringListField = FieldUtils.getDeclaredField(getClass(), &quot;stringListArray&quot;);</span>
+<span class="fc" id="L768">        assertEquals(&quot;java.util.List&lt;java.lang.String&gt;[]&quot;, TypeUtils.toString(stringListField.getGenericType()));</span>
+<span class="fc" id="L769">    }</span>
+
+    @Test
+    public void testToLongString() {
+<span class="fc" id="L773">        assertEquals(getClass().getName() + &quot;:B&quot;, TypeUtils.toLongString(getClass().getTypeParameters()[0]));</span>
+<span class="fc" id="L774">    }</span>
+
+    @Test
+    public void testWrap() {
+<span class="fc" id="L778">        final Type t = getClass().getTypeParameters()[0];</span>
+<span class="fc" id="L779">        assertTrue(TypeUtils.equals(t, TypeUtils.wrap(t).getType()));</span>
+
+<span class="fc" id="L781">        assertEquals(String.class, TypeUtils.wrap(String.class).getType());</span>
+<span class="fc" id="L782">    }</span>
+
+<span class="nc" id="L784">    public static class ClassWithSuperClassWithGenericType extends ArrayList&lt;Object&gt; {</span>
+        private static final long serialVersionUID = 1L;
+
+        public static &lt;U&gt; Iterable&lt;U&gt; methodWithGenericReturnType() {
+<span class="nc" id="L788">            return null;</span>
+        }
+    }
+
+    @Test
+    public void testLANG1190() throws Exception {
+<span class="fc" id="L794">        final Type fromType = ClassWithSuperClassWithGenericType.class.getDeclaredMethod(&quot;methodWithGenericReturnType&quot;).getGenericReturnType();</span>
+<span class="fc" id="L795">        final Type failingToType = TypeUtils.wildcardType().withLowerBounds(ClassWithSuperClassWithGenericType.class).build();</span>
+
+<span class="fc" id="L797">        assertTrue(TypeUtils.isAssignable(fromType, failingToType));</span>
+<span class="fc" id="L798">    }</span>
+
+    @Test
+    public void testLANG1348() throws Exception {
+<span class="fc" id="L802">        final Method method = Enum.class.getMethod(&quot;valueOf&quot;, Class.class, String.class);</span>
+<span class="fc" id="L803">        assertEquals(&quot;T extends java.lang.Enum&lt;T&gt;&quot;, TypeUtils.toString(method.getGenericReturnType()));</span>
+<span class="fc" id="L804">    }</span>
+
+    public Iterable&lt;? extends Map&lt;Integer, ? extends Collection&lt;?&gt;&gt;&gt; iterable;
+
+    public static &lt;G extends Comparable&lt;G&gt;&gt; G stub() {
+<span class="fc" id="L809">        return null;</span>
+    }
+
+    public static &lt;G extends Comparable&lt;? super G&gt;&gt; G stub2() {
+<span class="nc" id="L813">        return null;</span>
+    }
+
+    public static &lt;T extends Comparable&lt;? extends T&gt;&gt; T stub3() {
+<span class="nc" id="L817">        return null;</span>
+    }
+}
+
+<span class="fc" id="L821">class AAClass&lt;T&gt; {</span>
+
+<span class="fc" id="L823">    public class BBClass&lt;S&gt; {</span>
+    }
+}
+
+<span class="nc" id="L827">class AAAClass extends AAClass&lt;String&gt; {</span>
+<span class="nc" id="L828">    public class BBBClass extends BBClass&lt;String&gt; {</span>
+    }
+}
+
+@SuppressWarnings(&quot;rawtypes&quot;)
+//raw types, where used, are used purposely
+class AClass extends AAClass&lt;String&gt;.BBClass&lt;Number&gt; {
+
+    AClass(final AAClass&lt;String&gt; enclosingInstance) {
+<span class="fc" id="L837">        enclosingInstance.super();</span>
+<span class="fc" id="L838">    }</span>
+
+<span class="nc" id="L840">    public class BClass&lt;T&gt; {</span>
+    }
+
+<span class="nc" id="L843">    public class CClass&lt;T&gt; extends BClass {</span>
+    }
+
+<span class="nc" id="L846">    public class DClass&lt;T&gt; extends CClass&lt;T&gt; {</span>
+    }
+
+<span class="nc" id="L849">    public class EClass&lt;T&gt; extends DClass {</span>
+    }
+
+<span class="nc" id="L852">    public class FClass extends EClass&lt;String&gt; {</span>
+    }
+
+<span class="nc" id="L855">    public class GClass&lt;T extends BClass&lt;? extends T&gt; &amp; AInterface&lt;AInterface&lt;? super T&gt;&gt;&gt; {</span>
+    }
+
+    public BClass&lt;Number&gt; bClass;
+
+    public CClass&lt;? extends String&gt; cClass;
+
+    public DClass&lt;String&gt; dClass;
+
+    public EClass&lt;String&gt; eClass;
+
+    public FClass fClass;
+
+    public GClass gClass;
+
+    public interface AInterface&lt;T&gt; {
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

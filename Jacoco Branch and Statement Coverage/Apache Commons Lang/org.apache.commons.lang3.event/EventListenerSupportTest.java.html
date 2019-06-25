@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EventListenerSupportTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.event</a> &gt; <span class="el_source">EventListenerSupportTest.java</span></div><h1>EventListenerSupportTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.event;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.easymock.EasyMock;
+import org.junit.jupiter.api.Test;
+
+/**
+ * @since 3.0
+ */
+<span class="fc" id="L43">public class EventListenerSupportTest {</span>
+
+    @Test
+    public void testAddListenerNoDuplicates() {
+<span class="fc" id="L47">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+
+<span class="fc" id="L49">        final VetoableChangeListener[] listeners = listenerSupport.getListeners();</span>
+<span class="fc" id="L50">        assertEquals(0, listeners.length);</span>
+<span class="fc" id="L51">        assertEquals(VetoableChangeListener.class, listeners.getClass().getComponentType());</span>
+<span class="fc" id="L52">        final VetoableChangeListener[] empty = listeners;</span>
+        //for fun, show that the same empty instance is used
+<span class="fc" id="L54">        assertSame(empty, listenerSupport.getListeners());</span>
+
+<span class="fc" id="L56">        final VetoableChangeListener listener1 = EasyMock.createNiceMock(VetoableChangeListener.class);</span>
+<span class="fc" id="L57">        listenerSupport.addListener(listener1);</span>
+<span class="fc" id="L58">        assertEquals(1, listenerSupport.getListeners().length);</span>
+<span class="fc" id="L59">        listenerSupport.addListener(listener1, false);</span>
+<span class="fc" id="L60">        assertEquals(1, listenerSupport.getListeners().length);</span>
+<span class="fc" id="L61">        listenerSupport.removeListener(listener1);</span>
+<span class="fc" id="L62">        assertSame(empty, listenerSupport.getListeners());</span>
+<span class="fc" id="L63">    }</span>
+
+    @Test
+    public void testAddNullListener() {
+<span class="fc" id="L67">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+<span class="pc" id="L68">        assertThrows(NullPointerException.class, () -&gt; listenerSupport.addListener(null));</span>
+<span class="fc" id="L69">    }</span>
+
+    @Test
+    public void testRemoveNullListener() {
+<span class="fc" id="L73">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+<span class="pc" id="L74">        assertThrows(NullPointerException.class, () -&gt; listenerSupport.removeListener(null));</span>
+<span class="fc" id="L75">    }</span>
+
+    @Test
+    public void testEventDispatchOrder() throws PropertyVetoException {
+<span class="fc" id="L79">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+<span class="fc" id="L80">        final List&lt;VetoableChangeListener&gt; calledListeners = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L82">        final VetoableChangeListener listener1 = createListener(calledListeners);</span>
+<span class="fc" id="L83">        final VetoableChangeListener listener2 = createListener(calledListeners);</span>
+<span class="fc" id="L84">        listenerSupport.addListener(listener1);</span>
+<span class="fc" id="L85">        listenerSupport.addListener(listener2);</span>
+<span class="fc" id="L86">        listenerSupport.fire().vetoableChange(new PropertyChangeEvent(new Date(), &quot;Day&quot;, 4, 5));</span>
+<span class="fc" id="L87">        assertEquals(calledListeners.size(), 2);</span>
+<span class="fc" id="L88">        assertSame(calledListeners.get(0), listener1);</span>
+<span class="fc" id="L89">        assertSame(calledListeners.get(1), listener2);</span>
+<span class="fc" id="L90">    }</span>
+
+    @Test
+    public void testCreateWithNonInterfaceParameter() {
+<span class="pc" id="L94">        assertThrows(IllegalArgumentException.class, () -&gt; EventListenerSupport.create(String.class));</span>
+<span class="fc" id="L95">    }</span>
+
+    @Test
+    public void testCreateWithNullParameter() {
+<span class="pc" id="L99">        assertThrows(NullPointerException.class, () -&gt; EventListenerSupport.create(null));</span>
+<span class="fc" id="L100">    }</span>
+
+    @Test
+    public void testRemoveListenerDuringEvent() throws PropertyVetoException {
+<span class="fc" id="L104">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        for (int i = 0; i &lt; 10; ++i) {</span>
+<span class="fc" id="L106">            addDeregisterListener(listenerSupport);</span>
+        }
+<span class="fc" id="L108">        assertEquals(listenerSupport.getListenerCount(), 10);</span>
+<span class="fc" id="L109">        listenerSupport.fire().vetoableChange(new PropertyChangeEvent(new Date(), &quot;Day&quot;, 4, 5));</span>
+<span class="fc" id="L110">        assertEquals(listenerSupport.getListenerCount(), 0);</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    public void testGetListeners() {
+<span class="fc" id="L115">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+
+<span class="fc" id="L117">        final VetoableChangeListener[] listeners = listenerSupport.getListeners();</span>
+<span class="fc" id="L118">        assertEquals(0, listeners.length);</span>
+<span class="fc" id="L119">        assertEquals(VetoableChangeListener.class, listeners.getClass().getComponentType());</span>
+<span class="fc" id="L120">        final VetoableChangeListener[] empty = listeners;</span>
+        //for fun, show that the same empty instance is used
+<span class="fc" id="L122">        assertSame(empty, listenerSupport.getListeners());</span>
+
+<span class="fc" id="L124">        final VetoableChangeListener listener1 = EasyMock.createNiceMock(VetoableChangeListener.class);</span>
+<span class="fc" id="L125">        listenerSupport.addListener(listener1);</span>
+<span class="fc" id="L126">        assertEquals(1, listenerSupport.getListeners().length);</span>
+<span class="fc" id="L127">        final VetoableChangeListener listener2 = EasyMock.createNiceMock(VetoableChangeListener.class);</span>
+<span class="fc" id="L128">        listenerSupport.addListener(listener2);</span>
+<span class="fc" id="L129">        assertEquals(2, listenerSupport.getListeners().length);</span>
+<span class="fc" id="L130">        listenerSupport.removeListener(listener1);</span>
+<span class="fc" id="L131">        assertEquals(1, listenerSupport.getListeners().length);</span>
+<span class="fc" id="L132">        listenerSupport.removeListener(listener2);</span>
+<span class="fc" id="L133">        assertSame(empty, listenerSupport.getListeners());</span>
+<span class="fc" id="L134">    }</span>
+
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException, PropertyVetoException {
+<span class="fc" id="L138">        final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);</span>
+<span class="fc" id="L139">        listenerSupport.addListener(new VetoableChangeListener() {</span>
+
+            @Override
+            public void vetoableChange(final PropertyChangeEvent e) {
+<span class="nc" id="L143">            }</span>
+        });
+<span class="fc" id="L145">        listenerSupport.addListener(EasyMock.createNiceMock(VetoableChangeListener.class));</span>
+
+        //serialize:
+<span class="fc" id="L148">        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();</span>
+<span class="fc" id="L149">        final ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);</span>
+
+<span class="fc" id="L151">        objectOutputStream.writeObject(listenerSupport);</span>
+<span class="fc" id="L152">        objectOutputStream.close();</span>
+
+        //deserialize:
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L157">        EventListenerSupport&lt;VetoableChangeListener&gt; deserializedListenerSupport = (EventListenerSupport&lt;VetoableChangeListener&gt;) new ObjectInputStream(</span>
+<span class="fc" id="L158">                new ByteArrayInputStream(outputStream.toByteArray())).readObject();</span>
+
+        //make sure we get a listener array back, of the correct component type, and that it contains only the serializable mock
+<span class="fc" id="L161">        final VetoableChangeListener[] listeners = deserializedListenerSupport.getListeners();</span>
+<span class="fc" id="L162">        assertEquals(VetoableChangeListener.class, listeners.getClass().getComponentType());</span>
+<span class="fc" id="L163">        assertEquals(1, listeners.length);</span>
+
+        //now verify that the mock still receives events; we can infer that the proxy was correctly reconstituted
+<span class="fc" id="L166">        final VetoableChangeListener listener = listeners[0];</span>
+<span class="fc" id="L167">        final PropertyChangeEvent evt = new PropertyChangeEvent(new Date(), &quot;Day&quot;, 7, 9);</span>
+<span class="fc" id="L168">        listener.vetoableChange(evt);</span>
+<span class="fc" id="L169">        EasyMock.replay(listener);</span>
+<span class="fc" id="L170">        deserializedListenerSupport.fire().vetoableChange(evt);</span>
+<span class="fc" id="L171">        EasyMock.verify(listener);</span>
+
+        //remove listener and verify we get an empty array of listeners
+<span class="fc" id="L174">        deserializedListenerSupport.removeListener(listener);</span>
+<span class="fc" id="L175">        assertEquals(0, deserializedListenerSupport.getListeners().length);</span>
+<span class="fc" id="L176">    }</span>
+
+    @Test
+    public void testSubclassInvocationHandling() throws PropertyVetoException {
+
+        final
+<span class="fc" id="L182">        EventListenerSupport&lt;VetoableChangeListener&gt; eventListenerSupport = new EventListenerSupport&lt;VetoableChangeListener&gt;(</span>
+<span class="fc" id="L183">                VetoableChangeListener.class) {</span>
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected java.lang.reflect.InvocationHandler createInvocationHandler() {
+<span class="fc" id="L188">                return new ProxyInvocationHandler() {</span>
+                    /**
+                     * {@inheritDoc}
+                     */
+                    @Override
+                    public Object invoke(final Object proxy, final Method method, final Object[] args)
+                            throws Throwable {
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">                        return &quot;vetoableChange&quot;.equals(method.getName())</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">                                &amp;&amp; &quot;Hour&quot;.equals(((PropertyChangeEvent) args[0]).getPropertyName()) ? null</span>
+<span class="fc" id="L197">                                : super.invoke(proxy, method, args);</span>
+                    }
+                };
+            }
+        };
+
+<span class="fc" id="L203">        final VetoableChangeListener listener = EasyMock.createNiceMock(VetoableChangeListener.class);</span>
+<span class="fc" id="L204">        eventListenerSupport.addListener(listener);</span>
+<span class="fc" id="L205">        final Object source = new Date();</span>
+<span class="fc" id="L206">        final PropertyChangeEvent ignore = new PropertyChangeEvent(source, &quot;Hour&quot;, 5, 6);</span>
+<span class="fc" id="L207">        final PropertyChangeEvent respond = new PropertyChangeEvent(source, &quot;Day&quot;, 6, 7);</span>
+<span class="fc" id="L208">        listener.vetoableChange(respond);</span>
+<span class="fc" id="L209">        EasyMock.replay(listener);</span>
+<span class="fc" id="L210">        eventListenerSupport.fire().vetoableChange(ignore);</span>
+<span class="fc" id="L211">        eventListenerSupport.fire().vetoableChange(respond);</span>
+<span class="fc" id="L212">        EasyMock.verify(listener);</span>
+<span class="fc" id="L213">    }</span>
+
+    private void addDeregisterListener(final EventListenerSupport&lt;VetoableChangeListener&gt; listenerSupport) {
+<span class="fc" id="L216">        listenerSupport.addListener(new VetoableChangeListener() {</span>
+            @Override
+            public void vetoableChange(final PropertyChangeEvent e) {
+<span class="fc" id="L219">                listenerSupport.removeListener(this);</span>
+<span class="fc" id="L220">            }</span>
+        });
+<span class="fc" id="L222">    }</span>
+
+    private VetoableChangeListener createListener(final List&lt;VetoableChangeListener&gt; calledListeners) {
+<span class="fc" id="L225">        return new VetoableChangeListener() {</span>
+            @Override
+            public void vetoableChange(final PropertyChangeEvent e) {
+<span class="fc" id="L228">                calledListeners.add(this);</span>
+<span class="fc" id="L229">            }</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

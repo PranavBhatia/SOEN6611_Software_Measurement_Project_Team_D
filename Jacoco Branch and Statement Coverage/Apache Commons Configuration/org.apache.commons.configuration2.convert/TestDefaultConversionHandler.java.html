@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDefaultConversionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.convert</a> &gt; <span class="el_source">TestDefaultConversionHandler.java</span></div><h1>TestDefaultConversionHandler.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.convert;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code DefaultConversionHandler}.
+ *
+ */
+<span class="fc" id="L41">public class TestDefaultConversionHandler</span>
+{
+    /** Constant for a variable. */
+    private static final String VAR = &quot;${test}&quot;;
+
+    /** Constant for the value to replace the variable. */
+    private static final String REPLACEMENT = &quot;1&quot;;
+
+    /** The conversion handler to be tested. */
+    private DefaultConversionHandler handler;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L55">        handler = new DefaultConversionHandler();</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Creates a special test ConfigurationInterpolator. This object only
+     * replaces the test variable by its replacement. Other substitutions are
+     * not performed.
+     *
+     * @return the test {@code ConfigurationInterpolator}
+     */
+    private static ConfigurationInterpolator createInterpolator()
+    {
+<span class="fc" id="L67">        return new ConfigurationInterpolator()</span>
+<span class="fc" id="L68">        {</span>
+            @Override
+            public Object interpolate(final Object value)
+            {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">                if (VAR.equals(value))</span>
+                {
+<span class="fc" id="L74">                    return REPLACEMENT;</span>
+                }
+<span class="fc" id="L76">                return value;</span>
+            }
+        };
+    }
+
+    /**
+     * Helper method for testing the result of the conversion of a single value.
+     *
+     * @param expResult the expected result
+     */
+    private void checkSingleValue(final Integer expResult)
+    {
+<span class="fc" id="L88">        assertEquals(&quot;Wrong result&quot;, Integer.parseInt(REPLACEMENT),</span>
+<span class="fc" id="L89">                expResult.intValue());</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Tests a conversion with a ConfigurationInterpolator.
+     */
+    @Test
+    public void testToWithInterpolator()
+    {
+<span class="fc" id="L98">        final Integer result = handler.to(VAR, Integer.class, createInterpolator());</span>
+<span class="fc" id="L99">        checkSingleValue(result);</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Tests whether a ConfigurationInterpolator is optional.
+     */
+    @Test
+    public void testToNoInterpolator()
+    {
+<span class="fc" id="L108">        final Integer result = handler.to(REPLACEMENT, Integer.class, null);</span>
+<span class="fc" id="L109">        checkSingleValue(result);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests a failed conversion.
+     */
+    @Test(expected = ConversionException.class)
+    public void testToFailedConversion()
+    {
+<span class="nc" id="L118">        handler.to(VAR, Integer.class, null);</span>
+<span class="nc" id="L119">    }</span>
+
+    /**
+     * Tests whether a conversion from an array is possible.
+     */
+    @Test
+    public void testToFromArray()
+    {
+<span class="fc" id="L127">        final Object[] src = {</span>
+<span class="fc" id="L128">                VAR, true, 20130808221759L</span>
+        };
+<span class="fc" id="L130">        checkSingleValue(handler.to(src, Integer.class, createInterpolator()));</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests whether a conversion from a collection is possible.
+     */
+    @Test
+    public void testToFromCollection()
+    {
+<span class="fc" id="L139">        final Collection&lt;String&gt; src = Arrays.asList(VAR, &quot;true&quot;, &quot;1000&quot;);</span>
+<span class="fc" id="L140">        checkSingleValue(handler.to(src, Integer.class, createInterpolator()));</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Tests whether a conversion from an iterator is possible.
+     */
+    @Test
+    public void testToFromIterator()
+    {
+<span class="fc" id="L149">        final Iterator&lt;String&gt; src = Arrays.asList(VAR, &quot;true&quot;, &quot;1000&quot;).iterator();</span>
+<span class="fc" id="L150">        checkSingleValue(handler.to(src, Integer.class, createInterpolator()));</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests whether empty complex objects are handled when converting to a
+     * single value.
+     */
+    @Test
+    public void testToFromEmptyCollection()
+    {
+<span class="fc" id="L160">        assertNull(&quot;Wrong result&quot;, handler.to(new ArrayList&lt;&gt;(),</span>
+<span class="fc" id="L161">                Integer.class, createInterpolator()));</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Tests whether null input is handled by to().
+     */
+    @Test
+    public void testToNull()
+    {
+<span class="fc" id="L170">        assertNull(&quot;Wrong result&quot;, handler.to(null, Integer.class, null));</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Tests a conversion to a collection if the source object is null.
+     */
+    @Test
+    public void testToCollectionNullInput()
+    {
+<span class="fc" id="L179">        final ArrayList&lt;Integer&gt; col = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L180">        handler.toCollection(null, Integer.class, null, col);</span>
+<span class="fc" id="L181">        assertTrue(&quot;Got elements&quot;, col.isEmpty());</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Tries to pass a null collection to toCollection().
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testToCollectionNullCollection()
+    {
+<span class="nc" id="L190">        handler.toCollection(Arrays.asList(1, 2, 3), Integer.class, null, null);</span>
+<span class="nc" id="L191">    }</span>
+
+    /**
+     * Tests a successful conversion to a collection.
+     */
+    @Test
+    public void testToCollectionSuccess()
+    {
+<span class="fc" id="L199">        final Object[] src = new Object[] {</span>
+                VAR, &quot;100&quot;
+        };
+<span class="fc" id="L202">        final List&lt;Integer&gt; col = new ArrayList&lt;&gt;(src.length);</span>
+<span class="fc" id="L203">        handler.toCollection(src, Integer.class, createInterpolator(), col);</span>
+<span class="fc" id="L204">        assertEquals(&quot;Wrong number of elements&quot;, src.length, col.size());</span>
+<span class="fc" id="L205">        assertEquals(&quot;Wrong element (1)&quot;, Integer.parseInt(REPLACEMENT), col</span>
+<span class="fc" id="L206">                .get(0).intValue());</span>
+<span class="fc" id="L207">        assertEquals(&quot;Wrong element (2)&quot;, Integer.parseInt(src[1].toString()),</span>
+<span class="fc" id="L208">                col.get(1).intValue());</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Tests a conversion to a collection if an empty string is passed in. An
+     * empty string should be interpreted as a list with no values.
+     */
+    @Test
+    public void testToCollectionEmptyString()
+    {
+<span class="fc" id="L218">        final List&lt;Integer&gt; col = new ArrayList&lt;&gt;(1);</span>
+<span class="fc" id="L219">        handler.toCollection(&quot;&quot;, Integer.class, null, col);</span>
+<span class="fc" id="L220">        assertTrue(&quot;Got elements&quot;, col.isEmpty());</span>
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Tests toArray() if the source object is null.
+     */
+    @Test
+    public void testToArrayNullInput()
+    {
+<span class="fc" id="L229">        assertNull(&quot;Wrong result&quot;, handler.toArray(null, Integer.class, null));</span>
+<span class="fc" id="L230">    }</span>
+
+    /**
+     * Tests a conversion to an array of Objects.
+     */
+    @Test
+    public void testToArrayObject()
+    {
+<span class="fc" id="L238">        final List&lt;String&gt; src = Arrays.asList(VAR, &quot;100&quot;);</span>
+<span class="fc" id="L239">        final Integer[] array =</span>
+<span class="fc" id="L240">                (Integer[]) handler.toArray(src, Integer.class,</span>
+<span class="fc" id="L241">                        createInterpolator());</span>
+<span class="fc" id="L242">        assertEquals(&quot;Wrong number of elements&quot;, src.size(), array.length);</span>
+<span class="fc" id="L243">        assertEquals(&quot;Wrong element (1)&quot;, Integer.valueOf(REPLACEMENT),</span>
+                array[0]);
+<span class="fc" id="L245">        assertEquals(&quot;Wrong element (2)&quot;, Integer.valueOf(src.get(1)), array[1]);</span>
+<span class="fc" id="L246">    }</span>
+
+    /**
+     * Tests a conversion to an array of primitive type if the source array
+     * already has the correct type.
+     */
+    @Test
+    public void testToArrayPrimitiveSameType()
+    {
+<span class="fc" id="L255">        final int[] src = new int[] {</span>
+                1, 2, 3, 4, 5, 6
+        };
+<span class="fc" id="L258">        final int[] array =</span>
+                (int[]) handler
+<span class="fc" id="L260">                        .toArray(src, Integer.TYPE, createInterpolator());</span>
+<span class="fc" id="L261">        Assert.assertArrayEquals(&quot;Wrong array result&quot;, src, array);</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Tests a conversion to an array of primitive type if the source array is
+     * of the corresponding wrapper type.
+     */
+    @Test
+    public void testToArrayPrimitiveWrapperType()
+    {
+<span class="fc" id="L271">        final Integer[] src = new Integer[] {</span>
+<span class="fc" id="L272">                0, 1, 2, 4, 8, 16, 32, 64, 128</span>
+        };
+<span class="fc" id="L274">        final int[] array =</span>
+                (int[]) handler
+<span class="fc" id="L276">                        .toArray(src, Integer.TYPE, createInterpolator());</span>
+<span class="fc" id="L277">        assertEquals(&quot;Wrong array length&quot;, src.length, array.length);</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">        for (int i = 0; i &lt; src.length; i++)</span>
+        {
+<span class="fc" id="L280">            assertEquals(&quot;Wrong element at &quot; + i, src[i].intValue(), array[i]);</span>
+        }
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Tests a conversion to an array of primitive type if the source object is
+     * something else.
+     */
+    @Test
+    public void testToArrayPrimitiveOtherType()
+    {
+<span class="fc" id="L291">        final List&lt;String&gt; src = Arrays.asList(VAR, &quot;100&quot;);</span>
+<span class="fc" id="L292">        final int[] array =</span>
+                (int[]) handler
+<span class="fc" id="L294">                        .toArray(src, Integer.TYPE, createInterpolator());</span>
+<span class="fc" id="L295">        assertEquals(&quot;Wrong element (1)&quot;, Integer.parseInt(REPLACEMENT),</span>
+                array[0]);
+<span class="fc" id="L297">        assertEquals(&quot;Wrong element (2)&quot;, Integer.parseInt(src.get(1)),</span>
+                array[1]);
+<span class="fc" id="L299">    }</span>
+
+    /**
+     * Tests a conversion to an array from an empty string. An empty string
+     * should be interpreted as an empty array.
+     */
+    @Test
+    public void testToArrayEmptyString()
+    {
+<span class="fc" id="L308">        final int[] array = (int[]) handler.toArray(&quot;&quot;, Integer.TYPE, null);</span>
+<span class="fc" id="L309">        assertEquals(&quot;Got elements&quot;, 0, array.length);</span>
+<span class="fc" id="L310">    }</span>
+
+    /**
+     * Tests whether the default date format is used if no format has been set.
+     */
+    @Test
+    public void testGetDateFormatNotSet()
+    {
+<span class="fc" id="L318">        assertEquals(&quot;Wrong date format&quot;,</span>
+                DefaultConversionHandler.DEFAULT_DATE_FORMAT,
+<span class="fc" id="L320">                handler.getDateFormat());</span>
+<span class="fc" id="L321">    }</span>
+
+    /**
+     * Tests whether the date format can be changed.
+     */
+    @Test
+    public void testSetDateFormat()
+    {
+<span class="fc" id="L329">        final String dateFormat = &quot;dd.MM.yyyy&quot;;</span>
+<span class="fc" id="L330">        handler.setDateFormat(dateFormat);</span>
+<span class="fc" id="L331">        assertEquals(&quot;Date format not changed&quot;, dateFormat,</span>
+<span class="fc" id="L332">                handler.getDateFormat());</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * Tests whether a conversion to a date object is possible if a specific
+     * date format is used.
+     */
+    @Test
+    public void testToDateWithFormat()
+    {
+<span class="fc" id="L342">        handler.setDateFormat(&quot;dd.MM.yyyy&quot;);</span>
+<span class="fc" id="L343">        final Date dt = handler.to(&quot;19.08.2013&quot;, Date.class, null);</span>
+<span class="fc" id="L344">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L345">        cal.setTime(dt);</span>
+<span class="fc" id="L346">        assertEquals(&quot;Wrong day&quot;, 19, cal.get(Calendar.DATE));</span>
+<span class="fc" id="L347">        assertEquals(&quot;Wrong month&quot;, Calendar.AUGUST, cal.get(Calendar.MONTH));</span>
+<span class="fc" id="L348">        assertEquals(&quot;Wrong year&quot;, 2013, cal.get(Calendar.YEAR));</span>
+<span class="fc" id="L349">    }</span>
+
+    /**
+     * Tests a conversion to a Calendar object using the default format.
+     */
+    @Test
+    public void testToCalendarWithDefaultFormat()
+    {
+<span class="fc" id="L357">        final Calendar cal = handler.to(&quot;2013-08-19 21:17:22&quot;, Calendar.class, null);</span>
+<span class="fc" id="L358">        assertEquals(&quot;Wrong day&quot;, 19, cal.get(Calendar.DATE));</span>
+<span class="fc" id="L359">        assertEquals(&quot;Wrong month&quot;, Calendar.AUGUST, cal.get(Calendar.MONTH));</span>
+<span class="fc" id="L360">        assertEquals(&quot;Wrong year&quot;, 2013, cal.get(Calendar.YEAR));</span>
+<span class="fc" id="L361">        assertEquals(&quot;Wrong hour&quot;, 21, cal.get(Calendar.HOUR_OF_DAY));</span>
+<span class="fc" id="L362">        assertEquals(&quot;Wrong minute&quot;, 17, cal.get(Calendar.MINUTE));</span>
+<span class="fc" id="L363">        assertEquals(&quot;Wrong second&quot;, 22, cal.get(Calendar.SECOND));</span>
+<span class="fc" id="L364">    }</span>
+
+    /**
+     * Tests a conversion to a primitive type.
+     */
+    @Test
+    public void testToPrimitive()
+    {
+<span class="fc" id="L372">        final Long value = 20130819214935L;</span>
+<span class="fc" id="L373">        final Object result = handler.to(value.toString(), Long.TYPE, null);</span>
+<span class="fc" id="L374">        assertEquals(&quot;Wrong conversion result&quot;, value, result);</span>
+<span class="fc" id="L375">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

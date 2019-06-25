@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBaseConfigurationXMLReader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestBaseConfigurationXMLReader.java</span></div><h1>TestBaseConfigurationXMLReader.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.sax.SAXSource;
+
+import org.apache.commons.jxpath.JXPathContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/**
+ * Test class for BaseConfigurationXMLReader.
+ *
+ */
+<span class="fc" id="L46">public class TestBaseConfigurationXMLReader</span>
+{
+<span class="fc" id="L48">    private static final String[] CONTINENTS =</span>
+    {
+        &quot;Africa&quot;, &quot;America&quot;, &quot;Asia&quot;, &quot;Australia&quot;, &quot;Europe&quot;
+    };
+
+    private BaseConfiguration config;
+    private BaseConfigurationXMLReader configReader;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L59">        config = new BaseConfiguration();</span>
+<span class="fc" id="L60">        config.addProperty(&quot;world.continents.continent&quot;, Arrays.asList(CONTINENTS));</span>
+<span class="fc" id="L61">        config.addProperty(&quot;world.greeting&quot;, &quot;Hello&quot;);</span>
+<span class="fc" id="L62">        config.addProperty(&quot;world.greeting&quot;, &quot;Salute&quot;);</span>
+<span class="fc" id="L63">        config.addProperty(&quot;world.wish&quot;, &quot;Peace&quot;);</span>
+<span class="fc" id="L64">        config.addProperty(&quot;application.mail.smtp&quot;, &quot;smtp.mymail.org&quot;);</span>
+<span class="fc" id="L65">        config.addProperty(&quot;application.mail.pop&quot;, &quot;pop3.mymail.org&quot;);</span>
+<span class="fc" id="L66">        config.addProperty(&quot;application.mail.account.type&quot;, &quot;pop3&quot;);</span>
+<span class="fc" id="L67">        config.addProperty(&quot;application.mail.account.user&quot;, &quot;postmaster&quot;);</span>
+<span class="fc" id="L68">        config.addProperty(&quot;application.mail.account.pwd&quot;, &quot;?.-gulp*#&quot;);</span>
+<span class="fc" id="L69">        config.addProperty(&quot;application.mail.timeout&quot;, new Integer(42));</span>
+<span class="fc" id="L70">        config.addProperty(&quot;test&quot;, Boolean.TRUE);</span>
+
+<span class="fc" id="L72">        configReader = new BaseConfigurationXMLReader(config);</span>
+<span class="fc" id="L73">    }</span>
+
+    @Test
+    public void testParse() throws Exception
+    {
+<span class="fc" id="L78">        checkDocument(configReader, &quot;config&quot;);</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test(expected = SAXException.class)
+    public void testParseSAXException() throws IOException, SAXException
+    {
+<span class="fc" id="L84">        configReader.setContentHandler(new TestContentHandler());</span>
+<span class="nc" id="L85">        configReader.parse(&quot;systemID&quot;);</span>
+<span class="nc" id="L86">    }</span>
+
+    @Test(expected = IOException.class)
+    public void testParseIOException() throws SAXException, IOException
+    {
+<span class="fc" id="L91">        final BaseConfigurationXMLReader reader = new BaseConfigurationXMLReader();</span>
+<span class="nc" id="L92">        reader.parse(&quot;document&quot;);</span>
+<span class="nc" id="L93">    }</span>
+
+    @Test
+    public void testSetRootName() throws Exception
+    {
+<span class="fc" id="L98">        final BaseConfigurationXMLReader reader = new BaseConfigurationXMLReader(config);</span>
+<span class="fc" id="L99">        reader.setRootName(&quot;apache&quot;);</span>
+<span class="fc" id="L100">        checkDocument(reader, &quot;apache&quot;);</span>
+<span class="fc" id="L101">    }</span>
+
+    private void checkDocument(final BaseConfigurationXMLReader creader,
+    final String rootName) throws Exception
+    {
+<span class="fc" id="L106">        final SAXSource source = new SAXSource(creader, new InputSource());</span>
+<span class="fc" id="L107">        final DOMResult result = new DOMResult();</span>
+<span class="fc" id="L108">        final Transformer trans = TransformerFactory.newInstance().newTransformer();</span>
+<span class="fc" id="L109">        trans.transform(source, result);</span>
+<span class="fc" id="L110">        final Node root = ((Document) result.getNode()).getDocumentElement();</span>
+<span class="fc" id="L111">        final JXPathContext ctx = JXPathContext.newContext(root);</span>
+
+<span class="fc" id="L113">        assertEquals(&quot;Wrong root name&quot;, rootName, root.getNodeName());</span>
+<span class="fc" id="L114">        assertEquals(&quot;Wrong number of children&quot;, 3, ctx.selectNodes(&quot;/*&quot;).size());</span>
+
+<span class="fc" id="L116">        check(ctx, &quot;world/continents/continent&quot;, CONTINENTS);</span>
+<span class="fc" id="L117">        check(ctx, &quot;world/greeting&quot;, new String[] { &quot;Hello&quot;, &quot;Salute&quot; });</span>
+<span class="fc" id="L118">        check(ctx, &quot;world/wish&quot;, &quot;Peace&quot;);</span>
+<span class="fc" id="L119">        check(ctx, &quot;application/mail/smtp&quot;, &quot;smtp.mymail.org&quot;);</span>
+<span class="fc" id="L120">        check(ctx, &quot;application/mail/timeout&quot;, &quot;42&quot;);</span>
+<span class="fc" id="L121">        check(ctx, &quot;application/mail/account/type&quot;, &quot;pop3&quot;);</span>
+<span class="fc" id="L122">        check(ctx, &quot;application/mail/account/user&quot;, &quot;postmaster&quot;);</span>
+<span class="fc" id="L123">        check(ctx, &quot;test&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Helper method for checking values in the created document.
+     *
+     * @param ctx the JXPath context
+     * @param path the path to be checked
+     * @param values the expected element values
+     */
+    private void check(final JXPathContext ctx, final String path, final String[] values)
+    {
+<span class="fc" id="L135">        final Iterator&lt;?&gt; it = ctx.iterate(path);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        for (final String value : values) {</span>
+<span class="fc" id="L137">            assertTrue(&quot;Too few values&quot;, it.hasNext());</span>
+<span class="fc" id="L138">            assertEquals(&quot;Wrong property value&quot;, value, it.next());</span>
+        }
+<span class="fc" id="L140">        assertFalse(&quot;Too many values&quot;, it.hasNext());</span>
+<span class="fc" id="L141">    }</span>
+
+    private void check(final JXPathContext ctx, final String path, final String value)
+    {
+<span class="fc" id="L145">        check(ctx, path, new String[]</span>
+        { value });
+<span class="fc" id="L147">    }</span>
+
+    // A ContentHandler that raises an exception
+    private static class TestContentHandler extends DefaultHandler
+     {
+        @Override
+        public void characters(final char[] ch, final int start, final int length)
+            throws SAXException
+        {
+<span class="fc" id="L156">            throw new SAXException(&quot;Test exception during parsing&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

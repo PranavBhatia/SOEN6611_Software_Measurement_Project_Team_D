@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestSystemConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestSystemConfiguration.java</span></div><h1>TestSystemConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/**
+ * Tests for {@code SystemConfiguration}.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L40">public class TestSystemConfiguration</span>
+{
+    /** An object for creating temporary files. */
+<span class="fc" id="L43">    @Rule</span>
+    public TemporaryFolder folder = new TemporaryFolder();
+
+    @Test
+    public void testSystemConfiguration()
+    {
+<span class="fc" id="L49">        final Properties props = System.getProperties();</span>
+<span class="fc" id="L50">        props.put(&quot;test.number&quot;, &quot;123&quot;);</span>
+
+<span class="fc" id="L52">        final Configuration conf = new SystemConfiguration();</span>
+<span class="fc" id="L53">        assertEquals(&quot;number&quot;, 123, conf.getInt(&quot;test.number&quot;));</span>
+<span class="fc" id="L54">    }</span>
+
+    @Test
+    public void testSetSystemProperties()
+    {
+<span class="fc" id="L59">        final PropertiesConfiguration props = new PropertiesConfiguration();</span>
+<span class="fc" id="L60">        props.addProperty(&quot;test.name&quot;, &quot;Apache&quot;);</span>
+<span class="fc" id="L61">        SystemConfiguration.setSystemProperties(props);</span>
+<span class="fc" id="L62">        assertEquals(&quot;System Properties&quot;, &quot;Apache&quot;, System.getProperty(&quot;test.name&quot;));</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Tests whether system properties can be set from a configuration file.
+     */
+    @Test
+    public void testSetSystemPropertiesFromPropertiesFile()
+            throws ConfigurationException, IOException
+    {
+<span class="fc" id="L72">        final File file = folder.newFile(&quot;sys.properties&quot;);</span>
+<span class="fc" id="L73">        final PropertiesConfiguration pconfig = new PropertiesConfiguration();</span>
+<span class="fc" id="L74">        final FileHandler handler = new FileHandler(pconfig);</span>
+<span class="fc" id="L75">        pconfig.addProperty(&quot;fromFile&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L76">        handler.setFile(file);</span>
+<span class="fc" id="L77">        handler.save();</span>
+<span class="fc" id="L78">        SystemConfiguration.setSystemProperties(handler.getBasePath(),</span>
+<span class="fc" id="L79">                handler.getFileName());</span>
+<span class="fc" id="L80">        final SystemConfiguration sconf = new SystemConfiguration();</span>
+<span class="fc" id="L81">        assertTrue(&quot;Property from file not found&quot;, sconf.getBoolean(&quot;fromFile&quot;));</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Tests whether the configuration can be used to change system properties.
+     */
+    @Test
+    public void testChangeSystemProperties()
+    {
+<span class="fc" id="L90">        final String testProperty = &quot;someTest&quot;;</span>
+<span class="fc" id="L91">        final SystemConfiguration config = new SystemConfiguration();</span>
+<span class="fc" id="L92">        config.setProperty(testProperty, &quot;true&quot;);</span>
+<span class="fc" id="L93">        assertEquals(&quot;System property not changed&quot;, &quot;true&quot;,</span>
+<span class="fc" id="L94">                System.getProperty(testProperty));</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Tests an append operation with a system configuration while system
+     * properties are modified from another thread. This is related to
+     * CONFIGURATION-570.
+     */
+    @Test
+    public void testAppendWhileConcurrentAccess() throws InterruptedException
+    {
+<span class="fc" id="L105">        final AtomicBoolean stop = new AtomicBoolean();</span>
+<span class="fc" id="L106">        final String property =</span>
+<span class="fc" id="L107">                SystemConfiguration.class.getName() + &quot;.testProperty&quot;;</span>
+<span class="fc" id="L108">        final Thread t = new Thread()</span>
+<span class="fc" id="L109">        {</span>
+            @Override
+            public void run()
+            {
+<span class="fc" id="L113">                boolean setValue = true;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">                while (!stop.get())</span>
+                {
+<span class="fc bfc" id="L116" title="All 2 branches covered.">                    if (setValue)</span>
+                    {
+<span class="fc" id="L118">                        System.setProperty(property, &quot;true&quot;);</span>
+                    }
+                    else
+                    {
+<span class="fc" id="L122">                        System.clearProperty(property);</span>
+                    }
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                    setValue = !setValue;</span>
+                }
+<span class="fc" id="L126">            }</span>
+        };
+        try
+        {
+<span class="fc" id="L130">            t.start();</span>
+
+<span class="fc" id="L132">            final SystemConfiguration config = new SystemConfiguration();</span>
+<span class="fc" id="L133">            final PropertiesConfiguration props = new PropertiesConfiguration();</span>
+<span class="fc" id="L134">            props.append(config);</span>
+
+<span class="fc" id="L136">            stop.set(true);</span>
+<span class="fc" id="L137">            t.join();</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">            for (final Iterator&lt;String&gt; keys = config.getKeys(); keys.hasNext();)</span>
+            {
+<span class="fc" id="L140">                final String key = keys.next();</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">                if (!property.equals(key))</span>
+                {
+<span class="fc" id="L143">                    assertEquals(&quot;Wrong value for &quot; + key,</span>
+<span class="fc" id="L144">                            config.getString(key), props.getString(key));</span>
+                }
+<span class="fc" id="L146">            }</span>
+        }
+        finally
+        {
+<span class="fc" id="L150">            System.clearProperty(property);</span>
+        }
+<span class="fc" id="L152">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

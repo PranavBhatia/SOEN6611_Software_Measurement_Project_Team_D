@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestServletRequestConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.web</a> &gt; <span class="el_source">TestServletRequestConfiguration.java</span></div><h1>TestServletRequestConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2.web;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletRequest;
+
+import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationMap;
+import org.apache.commons.configuration2.TestAbstractConfiguration;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.junit.Test;
+
+import com.mockobjects.servlet.MockHttpServletRequest;
+
+/**
+ * Test case for the {@link ServletRequestConfiguration} class.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L43">public class TestServletRequestConfiguration extends TestAbstractConfiguration</span>
+{
+    @Override
+    protected AbstractConfiguration getConfiguration()
+    {
+<span class="fc" id="L48">        final Configuration configuration = new BaseConfiguration();</span>
+<span class="fc" id="L49">        configuration.setProperty(&quot;key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L50">        configuration.setProperty(&quot;key2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L51">        configuration.addProperty(&quot;list&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L52">        configuration.addProperty(&quot;list&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L53">        configuration.addProperty(&quot;listesc&quot;, &quot;value1\\,value2&quot;);</span>
+
+<span class="fc" id="L55">        return createConfiguration(configuration);</span>
+    }
+
+    @Override
+    protected AbstractConfiguration getEmptyConfiguration()
+    {
+<span class="fc" id="L61">        final ServletRequest request = new MockHttpServletRequest()</span>
+<span class="fc" id="L62">        {</span>
+            @Override
+            public String getParameter(final String key)
+            {
+<span class="nc" id="L66">                return null;</span>
+            }
+
+            @Override
+            public Map&lt;?, ?&gt; getParameterMap()
+            {
+<span class="fc" id="L72">                return new HashMap&lt;&gt;();</span>
+            }
+        };
+
+<span class="fc" id="L76">        return new ServletRequestConfiguration(request);</span>
+    }
+
+    /**
+     * Returns a new servlet request configuration that is backed by the passed
+     * in configuration.
+     *
+     * @param base the configuration with the underlying values
+     * @return the servlet request configuration
+     */
+    private ServletRequestConfiguration createConfiguration(final Configuration base)
+    {
+<span class="fc" id="L88">        final ServletRequest request = new MockHttpServletRequest()</span>
+<span class="fc" id="L89">        {</span>
+            @Override
+            public String[] getParameterValues(final String key)
+            {
+<span class="fc" id="L93">                return base.getStringArray(key);</span>
+            }
+
+            @Override
+            public Map&lt;?, ?&gt; getParameterMap()
+            {
+<span class="fc" id="L99">                return new ConfigurationMap(base);</span>
+            }
+        };
+
+<span class="fc" id="L103">        final ServletRequestConfiguration config = new ServletRequestConfiguration(request);</span>
+<span class="fc" id="L104">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L105">        return config;</span>
+    }
+
+    @Override
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAddPropertyDirect()
+    {
+<span class="nc" id="L112">        super.testAddPropertyDirect();</span>
+<span class="nc" id="L113">    }</span>
+
+    @Override
+    @Test(expected = UnsupportedOperationException.class)
+    public void testClearProperty()
+    {
+<span class="nc" id="L119">        super.testClearProperty();</span>
+<span class="nc" id="L120">    }</span>
+
+    /**
+     * Tests a list with elements that contain an escaped list delimiter.
+     */
+    @Test
+    public void testListWithEscapedElements()
+    {
+<span class="fc" id="L128">        final String[] values = { &quot;test1&quot;, &quot;test2\\,test3&quot;, &quot;test4\\,test5&quot; };</span>
+<span class="fc" id="L129">        final String listKey = &quot;test.list&quot;;</span>
+
+<span class="fc" id="L131">        final BaseConfiguration config = new BaseConfiguration();</span>
+<span class="fc" id="L132">        config.addProperty(listKey, values);</span>
+
+<span class="fc" id="L134">        assertEquals(&quot;Wrong number of list elements&quot;, values.length, config.getList(listKey).size());</span>
+
+<span class="fc" id="L136">        final Configuration c = createConfiguration(config);</span>
+<span class="fc" id="L137">        final List&lt;?&gt; v = c.getList(listKey);</span>
+
+<span class="fc" id="L139">        assertEquals(&quot;Wrong number of elements in list&quot;, values.length, v.size());</span>
+
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        for (int i = 0; i &lt; values.length; i++)</span>
+        {
+<span class="fc" id="L143">            assertEquals(&quot;Wrong value at index &quot; + i, values[i].replaceAll(&quot;\\\\&quot;, &quot;&quot;), v.get(i));</span>
+        }
+<span class="fc" id="L145">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

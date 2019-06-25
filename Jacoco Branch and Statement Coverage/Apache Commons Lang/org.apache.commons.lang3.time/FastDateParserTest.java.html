@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FastDateParserTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">FastDateParserTest.java</span></div><h1>FastDateParserTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional inparserion regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.Serializable;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import org.apache.commons.lang3.LocaleUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.time.FastDateParser}.
+ *
+ * @since 3.2
+ */
+<span class="fc" id="L45">public class FastDateParserTest {</span>
+    private static final String SHORT_FORMAT_NOERA = &quot;y/M/d/h/a/m/s/E&quot;;
+    private static final String LONG_FORMAT_NOERA = &quot;yyyy/MMMM/dddd/hhhh/mmmm/ss/aaaa/EEEE&quot;;
+    private static final String SHORT_FORMAT = &quot;G/&quot; + SHORT_FORMAT_NOERA;
+    private static final String LONG_FORMAT = &quot;GGGG/&quot; + LONG_FORMAT_NOERA;
+
+    private static final String yMdHmsSZ = &quot;yyyy-MM-dd'T'HH:mm:ss.SSS Z&quot;;
+    private static final String DMY_DOT = &quot;dd.MM.yyyy&quot;;
+    private static final String YMD_SLASH = &quot;yyyy/MM/dd&quot;;
+    private static final String MDY_DASH = &quot;MM-DD-yyyy&quot;;
+    private static final String MDY_SLASH = &quot;MM/DD/yyyy&quot;;
+
+<span class="fc" id="L57">    private static final TimeZone REYKJAVIK = TimeZone.getTimeZone(&quot;Atlantic/Reykjavik&quot;);</span>
+<span class="fc" id="L58">    private static final TimeZone NEW_YORK = TimeZone.getTimeZone(&quot;America/New_York&quot;);</span>
+<span class="fc" id="L59">    private static final TimeZone GMT = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="fc" id="L60">    private static final TimeZone INDIA = TimeZone.getTimeZone(&quot;Asia/Calcutta&quot;);</span>
+
+<span class="fc" id="L62">    private static final Locale SWEDEN = new Locale(&quot;sv&quot;, &quot;SE&quot;);</span>
+
+    DateParser getInstance(final String format) {
+<span class="fc" id="L65">        return getInstance(format, TimeZone.getDefault(), Locale.getDefault());</span>
+    }
+
+    private DateParser getDateInstance(final int dateStyle, final Locale locale) {
+<span class="fc" id="L69">        return getInstance(FormatCache.getPatternForStyle(Integer.valueOf(dateStyle), null, locale), TimeZone.getDefault(), Locale.getDefault());</span>
+    }
+
+    private DateParser getInstance(final String format, final Locale locale) {
+<span class="fc" id="L73">        return getInstance(format, TimeZone.getDefault(), locale);</span>
+    }
+
+    private DateParser getInstance(final String format, final TimeZone timeZone) {
+<span class="fc" id="L77">        return getInstance(format, timeZone, Locale.getDefault());</span>
+    }
+
+    /**
+     * Override this method in derived tests to change the construction of instances
+     *
+     * @param format the format string to use
+     * @param timeZone the time zone to use
+     * @param locale the locale to use
+     *
+     * @return the DateParser instance to use for testing
+     */
+    protected DateParser getInstance(final String format, final TimeZone timeZone, final Locale locale) {
+<span class="fc" id="L90">        return new FastDateParser(format, timeZone, locale, null);</span>
+    }
+
+    @Test
+    public void test_Equality_Hash() {
+<span class="fc" id="L95">        final DateParser[] parsers= {</span>
+<span class="fc" id="L96">            getInstance(yMdHmsSZ, NEW_YORK, Locale.US),</span>
+<span class="fc" id="L97">            getInstance(DMY_DOT, NEW_YORK, Locale.US),</span>
+<span class="fc" id="L98">            getInstance(YMD_SLASH, NEW_YORK, Locale.US),</span>
+<span class="fc" id="L99">            getInstance(MDY_DASH, NEW_YORK, Locale.US),</span>
+<span class="fc" id="L100">            getInstance(MDY_SLASH, NEW_YORK, Locale.US),</span>
+<span class="fc" id="L101">            getInstance(MDY_SLASH, REYKJAVIK, Locale.US),</span>
+<span class="fc" id="L102">            getInstance(MDY_SLASH, REYKJAVIK, SWEDEN)</span>
+        };
+
+<span class="fc" id="L105">        final Map&lt;DateParser, Integer&gt; map= new HashMap&lt;&gt;();</span>
+<span class="fc" id="L106">        int i= 0;</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        for (final DateParser parser:parsers) {</span>
+<span class="fc" id="L108">            map.put(parser, Integer.valueOf(i++));</span>
+        }
+
+<span class="fc" id="L111">        i= 0;</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        for (final DateParser parser:parsers) {</span>
+<span class="fc" id="L113">            assertEquals(i++, map.get(parser).intValue());</span>
+        }
+<span class="fc" id="L115">    }</span>
+
+    @Test
+    public void testParseZone() throws ParseException {
+<span class="fc" id="L119">        final Calendar cal= Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L120">        cal.clear();</span>
+<span class="fc" id="L121">        cal.set(2003, Calendar.JULY, 10, 16, 33, 20);</span>
+
+<span class="fc" id="L123">        final DateParser fdf = getInstance(yMdHmsSZ, NEW_YORK, Locale.US);</span>
+
+<span class="fc" id="L125">        assertEquals(cal.getTime(), fdf.parse(&quot;2003-07-10T15:33:20.000 -0500&quot;));</span>
+<span class="fc" id="L126">        assertEquals(cal.getTime(), fdf.parse(&quot;2003-07-10T15:33:20.000 GMT-05:00&quot;));</span>
+<span class="fc" id="L127">        assertEquals(cal.getTime(), fdf.parse(&quot;2003-07-10T16:33:20.000 Eastern Daylight Time&quot;));</span>
+<span class="fc" id="L128">        assertEquals(cal.getTime(), fdf.parse(&quot;2003-07-10T16:33:20.000 EDT&quot;));</span>
+
+<span class="fc" id="L130">        cal.setTimeZone(TimeZone.getTimeZone(&quot;GMT-3&quot;));</span>
+<span class="fc" id="L131">        cal.set(2003, Calendar.FEBRUARY, 10, 9, 0, 0);</span>
+
+<span class="fc" id="L133">        assertEquals(cal.getTime(), fdf.parse(&quot;2003-02-10T09:00:00.000 -0300&quot;));</span>
+
+<span class="fc" id="L135">        cal.setTimeZone(TimeZone.getTimeZone(&quot;GMT+5&quot;));</span>
+<span class="fc" id="L136">        cal.set(2003, Calendar.FEBRUARY, 10, 15, 5, 6);</span>
+
+<span class="fc" id="L138">        assertEquals(cal.getTime(), fdf.parse(&quot;2003-02-10T15:05:06.000 +0500&quot;));</span>
+<span class="fc" id="L139">    }</span>
+
+    @Test
+    public void testParseLongShort() throws ParseException {
+<span class="fc" id="L143">        final Calendar cal= Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L144">        cal.clear();</span>
+<span class="fc" id="L145">        cal.set(2003, Calendar.FEBRUARY, 10, 15, 33, 20);</span>
+<span class="fc" id="L146">        cal.set(Calendar.MILLISECOND, 989);</span>
+<span class="fc" id="L147">        cal.setTimeZone(NEW_YORK);</span>
+
+<span class="fc" id="L149">        DateParser fdf = getInstance(&quot;yyyy GGGG MMMM dddd aaaa EEEE HHHH mmmm ssss SSSS ZZZZ&quot;, NEW_YORK, Locale.US);</span>
+
+<span class="fc" id="L151">        assertEquals(cal.getTime(), fdf.parse(&quot;2003 AD February 0010 PM Monday 0015 0033 0020 0989 GMT-05:00&quot;));</span>
+<span class="fc" id="L152">        cal.set(Calendar.ERA, GregorianCalendar.BC);</span>
+
+<span class="fc" id="L154">        final Date parse = fdf.parse(&quot;2003 BC February 0010 PM Saturday 0015 0033 0020 0989 GMT-05:00&quot;);</span>
+<span class="fc" id="L155">                assertEquals(cal.getTime(), parse);</span>
+
+<span class="fc" id="L157">        fdf = getInstance(&quot;y G M d a E H m s S Z&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L158">        assertEquals(cal.getTime(), fdf.parse(&quot;03 BC 2 10 PM Sat 15 33 20 989 -0500&quot;));</span>
+
+<span class="fc" id="L160">        cal.set(Calendar.ERA, GregorianCalendar.AD);</span>
+<span class="fc" id="L161">        assertEquals(cal.getTime(), fdf.parse(&quot;03 AD 2 10 PM Saturday 15 33 20 989 -0500&quot;));</span>
+<span class="fc" id="L162">    }</span>
+
+    @Test
+    public void testAmPm() throws ParseException {
+<span class="fc" id="L166">        final Calendar cal= Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L167">        cal.clear();</span>
+
+<span class="fc" id="L169">        final DateParser h = getInstance(&quot;yyyy-MM-dd hh a mm:ss&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L170">        final DateParser K = getInstance(&quot;yyyy-MM-dd KK a mm:ss&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L171">        final DateParser k = getInstance(&quot;yyyy-MM-dd kk:mm:ss&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L172">        final DateParser H = getInstance(&quot;yyyy-MM-dd HH:mm:ss&quot;, NEW_YORK, Locale.US);</span>
+
+<span class="fc" id="L174">        cal.set(2010, Calendar.AUGUST, 1, 0, 33, 20);</span>
+<span class="fc" id="L175">        assertEquals(cal.getTime(), h.parse(&quot;2010-08-01 12 AM 33:20&quot;));</span>
+<span class="fc" id="L176">        assertEquals(cal.getTime(), K.parse(&quot;2010-08-01 0 AM 33:20&quot;));</span>
+<span class="fc" id="L177">        assertEquals(cal.getTime(), k.parse(&quot;2010-08-01 00:33:20&quot;));</span>
+<span class="fc" id="L178">        assertEquals(cal.getTime(), H.parse(&quot;2010-08-01 00:33:20&quot;));</span>
+
+<span class="fc" id="L180">        cal.set(2010, Calendar.AUGUST, 1, 3, 33, 20);</span>
+<span class="fc" id="L181">        assertEquals(cal.getTime(), h.parse(&quot;2010-08-01 3 AM 33:20&quot;));</span>
+<span class="fc" id="L182">        assertEquals(cal.getTime(), K.parse(&quot;2010-08-01 3 AM 33:20&quot;));</span>
+<span class="fc" id="L183">        assertEquals(cal.getTime(), k.parse(&quot;2010-08-01 03:33:20&quot;));</span>
+<span class="fc" id="L184">        assertEquals(cal.getTime(), H.parse(&quot;2010-08-01 03:33:20&quot;));</span>
+
+<span class="fc" id="L186">        cal.set(2010, Calendar.AUGUST, 1, 15, 33, 20);</span>
+<span class="fc" id="L187">        assertEquals(cal.getTime(), h.parse(&quot;2010-08-01 3 PM 33:20&quot;));</span>
+<span class="fc" id="L188">        assertEquals(cal.getTime(), K.parse(&quot;2010-08-01 3 PM 33:20&quot;));</span>
+<span class="fc" id="L189">        assertEquals(cal.getTime(), k.parse(&quot;2010-08-01 15:33:20&quot;));</span>
+<span class="fc" id="L190">        assertEquals(cal.getTime(), H.parse(&quot;2010-08-01 15:33:20&quot;));</span>
+
+<span class="fc" id="L192">        cal.set(2010, Calendar.AUGUST, 1, 12, 33, 20);</span>
+<span class="fc" id="L193">        assertEquals(cal.getTime(), h.parse(&quot;2010-08-01 12 PM 33:20&quot;));</span>
+<span class="fc" id="L194">        assertEquals(cal.getTime(), K.parse(&quot;2010-08-01 0 PM 33:20&quot;));</span>
+<span class="fc" id="L195">        assertEquals(cal.getTime(), k.parse(&quot;2010-08-01 12:33:20&quot;));</span>
+<span class="fc" id="L196">        assertEquals(cal.getTime(), H.parse(&quot;2010-08-01 12:33:20&quot;));</span>
+<span class="fc" id="L197">    }</span>
+
+    private Calendar getEraStart(int year, final TimeZone zone, final Locale locale) {
+<span class="fc" id="L200">        final Calendar cal = Calendar.getInstance(zone, locale);</span>
+<span class="fc" id="L201">        cal.clear();</span>
+
+        // http://docs.oracle.com/javase/6/docs/technotes/guides/intl/calendar.doc.html
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        if (locale.equals(FastDateParser.JAPANESE_IMPERIAL)) {</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">            if (year &lt; 1868) {</span>
+<span class="fc" id="L206">                cal.set(Calendar.ERA, 0);</span>
+<span class="fc" id="L207">                cal.set(Calendar.YEAR, 1868-year);</span>
+            }
+        } else {
+<span class="fc bfc" id="L210" title="All 2 branches covered.">            if (year &lt; 0) {</span>
+<span class="fc" id="L211">                cal.set(Calendar.ERA, GregorianCalendar.BC);</span>
+<span class="fc" id="L212">                year= -year;</span>
+            }
+<span class="fc" id="L214">            cal.set(Calendar.YEAR, year/100 * 100);</span>
+        }
+<span class="fc" id="L216">        return cal;</span>
+    }
+
+    private void validateSdfFormatFdpParseEquality(final String format, final Locale locale, final TimeZone tz, final DateParser fdp, final Date in, final int year, final Date cs) throws ParseException {
+<span class="fc" id="L220">        final SimpleDateFormat sdf = new SimpleDateFormat(format, locale);</span>
+<span class="fc" id="L221">        sdf.setTimeZone(tz);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">        if (format.equals(SHORT_FORMAT)) {</span>
+<span class="fc" id="L223">            sdf.set2DigitYearStart( cs );</span>
+        }
+<span class="fc" id="L225">        final String fmt = sdf.format(in);</span>
+        try {
+<span class="fc" id="L227">            final Date out = fdp.parse(fmt);</span>
+<span class="fc" id="L228">            assertEquals(in, out, locale.toString()+&quot; &quot;+in+&quot; &quot;+ format+ &quot; &quot;+tz.getID());</span>
+<span class="fc" id="L229">        } catch (final ParseException pe) {</span>
+<span class="pc bpc" id="L230" title="2 of 4 branches missed.">            if (year &gt;= 1868 || !locale.getCountry().equals(&quot;JP&quot;)) {// LANG-978</span>
+<span class="nc" id="L231">                throw pe;</span>
+            }
+<span class="fc" id="L233">        }</span>
+<span class="fc" id="L234">    }</span>
+
+    @Test
+    // Check that all Locales can parse the formats we use
+    public void testParses() throws Exception {
+<span class="fc bfc" id="L239" title="All 2 branches covered.">        for (final String format : new String[]{LONG_FORMAT, SHORT_FORMAT}) {</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">            for (final Locale locale : Locale.getAvailableLocales()) {</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">                for (final TimeZone tz :  new TimeZone[]{NEW_YORK, REYKJAVIK, GMT}) {</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">                     for (final int year : new int[]{2003, 1940, 1868, 1867, 1, -1, -1940}) {</span>
+<span class="fc" id="L243">                        final Calendar cal= getEraStart(year, tz, locale);</span>
+<span class="fc" id="L244">                        final Date centuryStart= cal.getTime();</span>
+
+<span class="fc" id="L246">                        cal.set(Calendar.MONTH, 1);</span>
+<span class="fc" id="L247">                        cal.set(Calendar.DAY_OF_MONTH, 10);</span>
+<span class="fc" id="L248">                        final Date in= cal.getTime();</span>
+
+<span class="fc" id="L250">                        final FastDateParser fdp= new FastDateParser(format, tz, locale, centuryStart);</span>
+<span class="fc" id="L251">                        validateSdfFormatFdpParseEquality(format, locale, tz, fdp, in, year, centuryStart);</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L256">    }</span>
+
+    // we cannot use historic dates to test timezone parsing, some timezones have second offsets
+    // as well as hours and minutes which makes the z formats a low fidelity round trip
+    @Test
+    public void testTzParses() throws Exception {
+        // Check that all Locales can parse the time formats we use
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        for (final Locale locale : Locale.getAvailableLocales()) {</span>
+<span class="fc" id="L264">            final FastDateParser fdp= new FastDateParser(&quot;yyyy/MM/dd z&quot;, TimeZone.getDefault(), locale);</span>
+
+<span class="fc bfc" id="L266" title="All 2 branches covered.">            for (final TimeZone tz :  new TimeZone[]{NEW_YORK, REYKJAVIK, GMT}) {</span>
+<span class="fc" id="L267">                final Calendar cal= Calendar.getInstance(tz, locale);</span>
+<span class="fc" id="L268">                cal.clear();</span>
+<span class="fc" id="L269">                cal.set(Calendar.YEAR, 2000);</span>
+<span class="fc" id="L270">                cal.set(Calendar.MONTH, 1);</span>
+<span class="fc" id="L271">                cal.set(Calendar.DAY_OF_MONTH, 10);</span>
+<span class="fc" id="L272">                final Date expected= cal.getTime();</span>
+
+<span class="fc" id="L274">                final Date actual = fdp.parse(&quot;2000/02/10 &quot;+tz.getDisplayName(locale));</span>
+<span class="fc" id="L275">                assertEquals(expected, actual, &quot;tz:&quot;+tz.getID()+&quot; locale:&quot;+locale.getDisplayName());</span>
+            }
+        }
+<span class="fc" id="L278">    }</span>
+
+
+    @Test
+    public void testLocales_Long_AD() throws Exception {
+<span class="fc" id="L283">        testLocales(LONG_FORMAT, false);</span>
+<span class="fc" id="L284">    }</span>
+
+    @Test
+    public void testLocales_Long_BC() throws Exception {
+<span class="fc" id="L288">        testLocales(LONG_FORMAT, true);</span>
+<span class="fc" id="L289">    }</span>
+
+    @Test
+    public void testLocales_Short_AD() throws Exception {
+<span class="fc" id="L293">        testLocales(SHORT_FORMAT, false);</span>
+<span class="fc" id="L294">    }</span>
+
+    @Test
+    public void testLocales_Short_BC() throws Exception {
+<span class="fc" id="L298">        testLocales(SHORT_FORMAT, true);</span>
+<span class="fc" id="L299">    }</span>
+
+    @Test
+    public void testLocales_LongNoEra_AD() throws Exception {
+<span class="fc" id="L303">        testLocales(LONG_FORMAT_NOERA, false);</span>
+<span class="fc" id="L304">    }</span>
+
+    @Test
+    public void testLocales_LongNoEra_BC() throws Exception {
+<span class="fc" id="L308">        testLocales(LONG_FORMAT_NOERA, true);</span>
+<span class="fc" id="L309">    }</span>
+
+    @Test
+    public void testLocales_ShortNoEra_AD() throws Exception {
+<span class="fc" id="L313">        testLocales(SHORT_FORMAT_NOERA, false);</span>
+<span class="fc" id="L314">    }</span>
+
+    @Test
+    public void testLocales_ShortNoEra_BC() throws Exception {
+<span class="fc" id="L318">        testLocales(SHORT_FORMAT_NOERA, true);</span>
+<span class="fc" id="L319">    }</span>
+
+    private void testLocales(final String format, final boolean eraBC) throws Exception {
+
+<span class="fc" id="L323">        final Calendar cal= Calendar.getInstance(GMT);</span>
+<span class="fc" id="L324">        cal.clear();</span>
+<span class="fc" id="L325">        cal.set(2003, Calendar.FEBRUARY, 10);</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">        if (eraBC) {</span>
+<span class="fc" id="L327">            cal.set(Calendar.ERA, GregorianCalendar.BC);</span>
+        }
+
+<span class="fc bfc" id="L330" title="All 2 branches covered.">        for (final Locale locale : Locale.getAvailableLocales() ) {</span>
+            // ja_JP_JP cannot handle dates before 1868 properly
+<span class="fc bfc" id="L332" title="All 4 branches covered.">            if (eraBC &amp;&amp; locale.equals(FastDateParser.JAPANESE_IMPERIAL)) {</span>
+<span class="fc" id="L333">                continue;</span>
+            }
+<span class="fc" id="L335">            final SimpleDateFormat sdf = new SimpleDateFormat(format, locale);</span>
+<span class="fc" id="L336">            final DateParser fdf = getInstance(format, locale);</span>
+
+            // If parsing fails, a ParseException will be thrown and the test will fail
+<span class="fc" id="L339">            checkParse(locale, cal, sdf, fdf);</span>
+        }
+<span class="fc" id="L341">    }</span>
+
+    @Test
+    public void testJpLocales() throws ParseException {
+
+<span class="fc" id="L346">        final Calendar cal= Calendar.getInstance(GMT);</span>
+<span class="fc" id="L347">        cal.clear();</span>
+<span class="fc" id="L348">        cal.set(2003, Calendar.FEBRUARY, 10);</span>
+<span class="fc" id="L349">        cal.set(Calendar.ERA, GregorianCalendar.BC);</span>
+
+<span class="fc" id="L351">        final Locale locale = LocaleUtils.toLocale(&quot;zh&quot;);</span>
+        // ja_JP_JP cannot handle dates before 1868 properly
+
+<span class="fc" id="L354">        final SimpleDateFormat sdf = new SimpleDateFormat(LONG_FORMAT, locale);</span>
+<span class="fc" id="L355">        final DateParser fdf = getInstance(LONG_FORMAT, locale);</span>
+
+        // If parsing fails, a ParseException will be thrown and the test will fail
+<span class="fc" id="L358">        checkParse(locale, cal, sdf, fdf);</span>
+<span class="fc" id="L359">    }</span>
+
+    private void checkParse(final Locale locale, final Calendar cal, final SimpleDateFormat sdf, final DateParser fdf) throws ParseException {
+<span class="fc" id="L362">        final String formattedDate= sdf.format(cal.getTime());</span>
+<span class="fc" id="L363">        checkParse(locale, sdf, fdf, formattedDate);</span>
+<span class="fc" id="L364">        checkParse(locale, sdf, fdf, formattedDate.toLowerCase(locale));</span>
+<span class="fc" id="L365">        checkParse(locale, sdf, fdf, formattedDate.toUpperCase(locale));</span>
+<span class="fc" id="L366">    }</span>
+
+    private void checkParse(final Locale locale, final SimpleDateFormat sdf, final DateParser fdf, final String formattedDate) throws ParseException {
+<span class="fc" id="L369">        final Date expectedTime = sdf.parse(formattedDate);</span>
+<span class="fc" id="L370">        final Date actualTime = fdf.parse(formattedDate);</span>
+<span class="fc" id="L371">        assertEquals(expectedTime, actualTime, locale.toString()+&quot; &quot;+formattedDate +&quot;\n&quot;);</span>
+<span class="fc" id="L372">    }</span>
+
+    @Test
+    public void testParseNumerics() throws ParseException {
+<span class="fc" id="L376">        final Calendar cal= Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L377">        cal.clear();</span>
+<span class="fc" id="L378">        cal.set(2003, Calendar.FEBRUARY, 10, 15, 33, 20);</span>
+<span class="fc" id="L379">        cal.set(Calendar.MILLISECOND, 989);</span>
+
+<span class="fc" id="L381">        final DateParser fdf = getInstance(&quot;yyyyMMddHHmmssSSS&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L382">        assertEquals(cal.getTime(), fdf.parse(&quot;20030210153320989&quot;));</span>
+<span class="fc" id="L383">    }</span>
+
+    @Test
+    public void testQuotes() throws ParseException {
+<span class="fc" id="L387">        final Calendar cal= Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L388">        cal.clear();</span>
+<span class="fc" id="L389">        cal.set(2003, Calendar.FEBRUARY, 10, 15, 33, 20);</span>
+<span class="fc" id="L390">        cal.set(Calendar.MILLISECOND, 989);</span>
+
+<span class="fc" id="L392">        final DateParser fdf = getInstance(&quot;''yyyyMMdd'A''B'HHmmssSSS''&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L393">        assertEquals(cal.getTime(), fdf.parse(&quot;'20030210A'B153320989'&quot;));</span>
+<span class="fc" id="L394">    }</span>
+
+    @Test
+    public void testSpecialCharacters() throws Exception {
+<span class="fc" id="L398">        testSdfAndFdp(&quot;q&quot;, &quot;&quot;, true); // bad pattern character (at present)</span>
+<span class="fc" id="L399">        testSdfAndFdp(&quot;Q&quot;, &quot;&quot;, true); // bad pattern character</span>
+<span class="fc" id="L400">        testSdfAndFdp(&quot;$&quot;, &quot;$&quot;, false); // OK</span>
+<span class="fc" id="L401">        testSdfAndFdp(&quot;?.d&quot;, &quot;?.12&quot;, false); // OK</span>
+<span class="fc" id="L402">        testSdfAndFdp(&quot;''yyyyMMdd'A''B'HHmmssSSS''&quot;, &quot;'20030210A'B153320989'&quot;, false); // OK</span>
+<span class="fc" id="L403">        testSdfAndFdp(&quot;''''yyyyMMdd'A''B'HHmmssSSS''&quot;, &quot;''20030210A'B153320989'&quot;, false); // OK</span>
+<span class="fc" id="L404">        testSdfAndFdp(&quot;'$\\Ed'&quot;, &quot;$\\Ed&quot;, false); // OK</span>
+
+        // quoted charaters are case sensitive
+<span class="fc" id="L407">        testSdfAndFdp(&quot;'QED'&quot;, &quot;QED&quot;, false);</span>
+<span class="fc" id="L408">        testSdfAndFdp(&quot;'QED'&quot;, &quot;qed&quot;, true);</span>
+        // case sensitive after insensitive Month field
+<span class="fc" id="L410">        testSdfAndFdp(&quot;yyyy-MM-dd 'QED'&quot;, &quot;2003-02-10 QED&quot;, false);</span>
+<span class="fc" id="L411">        testSdfAndFdp(&quot;yyyy-MM-dd 'QED'&quot;, &quot;2003-02-10 qed&quot;, true);</span>
+<span class="fc" id="L412">    }</span>
+
+    @Test
+    public void testLANG_832() throws Exception {
+<span class="fc" id="L416">        testSdfAndFdp(&quot;'d'd&quot;, &quot;d3&quot;, false); // OK</span>
+<span class="fc" id="L417">        testSdfAndFdp(&quot;'d'd'&quot;, &quot;d3&quot;, true); // should fail (unterminated quote)</span>
+<span class="fc" id="L418">    }</span>
+
+    @Test
+    public void testLANG_831() throws Exception {
+<span class="fc" id="L422">        testSdfAndFdp(&quot;M E&quot;, &quot;3  Tue&quot;, true);</span>
+<span class="fc" id="L423">    }</span>
+
+    private void testSdfAndFdp(final String format, final String date, final boolean shouldFail)
+            throws Exception {
+<span class="fc" id="L427">        Date dfdp = null;</span>
+<span class="fc" id="L428">        Date dsdf = null;</span>
+<span class="fc" id="L429">        Throwable f = null;</span>
+<span class="fc" id="L430">        Throwable s = null;</span>
+
+        try {
+<span class="fc" id="L433">            final SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);</span>
+<span class="fc" id="L434">            sdf.setTimeZone(NEW_YORK);</span>
+<span class="fc" id="L435">            dsdf = sdf.parse(date);</span>
+<span class="fc" id="L436">            assertFalse(shouldFail, &quot;Expected SDF failure, but got &quot; + dsdf + &quot; for [&quot;+format+&quot;, &quot;+date+&quot;]&quot;);</span>
+<span class="fc" id="L437">        } catch (final Exception e) {</span>
+<span class="fc" id="L438">            s = e;</span>
+<span class="pc bpc" id="L439" title="1 of 2 branches missed.">            if (!shouldFail) {</span>
+<span class="nc" id="L440">                throw e;</span>
+            }
+<span class="fc" id="L442">        }</span>
+
+        try {
+<span class="fc" id="L445">            final DateParser fdp = getInstance(format, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L446">            dfdp = fdp.parse(date);</span>
+<span class="fc" id="L447">            assertFalse(shouldFail, &quot;Expected FDF failure, but got &quot; + dfdp + &quot; for [&quot;+format+&quot;, &quot;+date+&quot;]&quot;);</span>
+<span class="fc" id="L448">        } catch (final Exception e) {</span>
+<span class="fc" id="L449">            f = e;</span>
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">            if (!shouldFail) {</span>
+<span class="nc" id="L451">                throw e;</span>
+            }
+<span class="fc" id="L453">        }</span>
+        // SDF and FDF should produce equivalent results
+<span class="fc bfc" id="L455" title="All 4 branches covered.">        assertEquals((f == null), (s == null), &quot;Should both or neither throw Exceptions&quot;);</span>
+<span class="fc" id="L456">        assertEquals(dsdf, dfdp, &quot;Parsed dates should be equal&quot;);</span>
+<span class="fc" id="L457">    }</span>
+
+    @Test
+    public void testDayOf() throws ParseException {
+<span class="fc" id="L461">        final Calendar cal= Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L462">        cal.clear();</span>
+<span class="fc" id="L463">        cal.set(2003, Calendar.FEBRUARY, 10);</span>
+
+<span class="fc" id="L465">        final DateParser fdf = getInstance(&quot;W w F D y&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L466">        assertEquals(cal.getTime(), fdf.parse(&quot;3 7 2 41 03&quot;));</span>
+<span class="fc" id="L467">    }</span>
+
+    /**
+     * Test case for {@link FastDateParser#FastDateParser(String, TimeZone, Locale)}.
+     * @throws ParseException so we don't have to catch it
+     */
+    @Test
+    public void testShortDateStyleWithLocales() throws ParseException {
+<span class="fc" id="L475">        DateParser fdf = getDateInstance(FastDateFormat.SHORT, Locale.US);</span>
+<span class="fc" id="L476">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L477">        cal.clear();</span>
+
+<span class="fc" id="L479">        cal.set(2004, Calendar.FEBRUARY, 3);</span>
+<span class="fc" id="L480">        assertEquals(cal.getTime(), fdf.parse(&quot;2/3/04&quot;));</span>
+
+<span class="fc" id="L482">        fdf = getDateInstance(FastDateFormat.SHORT, SWEDEN);</span>
+<span class="fc" id="L483">        assertEquals(cal.getTime(), fdf.parse(&quot;2004-02-03&quot;));</span>
+<span class="fc" id="L484">    }</span>
+
+    /**
+     * Tests that pre-1000AD years get padded with yyyy
+     * @throws ParseException so we don't have to catch it
+     */
+    @Test
+    public void testLowYearPadding() throws ParseException {
+<span class="fc" id="L492">        final DateParser parser = getInstance(YMD_SLASH);</span>
+<span class="fc" id="L493">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L494">        cal.clear();</span>
+
+<span class="fc" id="L496">        cal.set(1, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L497">        assertEquals(cal.getTime(), parser.parse(&quot;0001/01/01&quot;));</span>
+<span class="fc" id="L498">        cal.set(10, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L499">        assertEquals(cal.getTime(), parser.parse(&quot;0010/01/01&quot;));</span>
+<span class="fc" id="L500">        cal.set(100, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L501">        assertEquals(cal.getTime(), parser.parse(&quot;0100/01/01&quot;));</span>
+<span class="fc" id="L502">        cal.set(999, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L503">        assertEquals(cal.getTime(), parser.parse(&quot;0999/01/01&quot;));</span>
+<span class="fc" id="L504">    }</span>
+
+    @Test
+    public void testMilleniumBug() throws ParseException {
+<span class="fc" id="L508">        final DateParser parser = getInstance(DMY_DOT);</span>
+<span class="fc" id="L509">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L510">        cal.clear();</span>
+
+<span class="fc" id="L512">        cal.set(1000, Calendar.JANUARY, 1);</span>
+<span class="fc" id="L513">        assertEquals(cal.getTime(), parser.parse(&quot;01.01.1000&quot;));</span>
+<span class="fc" id="L514">    }</span>
+
+    @Test
+    public void testLang303() throws ParseException {
+<span class="fc" id="L518">        DateParser parser = getInstance(YMD_SLASH);</span>
+<span class="fc" id="L519">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L520">        cal.set(2004, Calendar.DECEMBER, 31);</span>
+
+<span class="fc" id="L522">        final Date date = parser.parse(&quot;2004/11/31&quot;);</span>
+
+<span class="fc" id="L524">        parser = SerializationUtils.deserialize(SerializationUtils.serialize((Serializable) parser));</span>
+<span class="fc" id="L525">        assertEquals(date, parser.parse(&quot;2004/11/31&quot;));</span>
+<span class="fc" id="L526">    }</span>
+
+    @Test
+    public void testLang538() throws ParseException {
+<span class="fc" id="L530">        final DateParser parser = getInstance(&quot;yyyy-MM-dd'T'HH:mm:ss.SSS'Z'&quot;, GMT);</span>
+
+<span class="fc" id="L532">        final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(&quot;GMT-8&quot;));</span>
+<span class="fc" id="L533">        cal.clear();</span>
+<span class="fc" id="L534">        cal.set(2009, Calendar.OCTOBER, 16, 8, 42, 16);</span>
+
+<span class="fc" id="L536">        assertEquals(cal.getTime(), parser.parse(&quot;2009-10-16T16:42:16.000Z&quot;));</span>
+<span class="fc" id="L537">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L541">        final DateParser parser1= getInstance(YMD_SLASH);</span>
+<span class="fc" id="L542">        final DateParser parser2= getInstance(YMD_SLASH);</span>
+
+<span class="fc" id="L544">        assertEquals(parser1, parser2);</span>
+<span class="fc" id="L545">        assertEquals(parser1.hashCode(), parser2.hashCode());</span>
+
+<span class="fc" id="L547">        assertNotEquals(parser1, new Object());</span>
+<span class="fc" id="L548">    }</span>
+
+    @Test
+    public void testToStringContainsName() {
+<span class="fc" id="L552">        final DateParser parser= getInstance(YMD_SLASH);</span>
+<span class="fc" id="L553">        assertTrue(parser.toString().startsWith(&quot;FastDate&quot;));</span>
+<span class="fc" id="L554">    }</span>
+
+    @Test
+    public void testPatternMatches() {
+<span class="fc" id="L558">        final DateParser parser= getInstance(yMdHmsSZ);</span>
+<span class="fc" id="L559">        assertEquals(yMdHmsSZ, parser.getPattern());</span>
+<span class="fc" id="L560">    }</span>
+
+    @Test
+    public void testLocaleMatches() {
+<span class="fc" id="L564">        final DateParser parser= getInstance(yMdHmsSZ, SWEDEN);</span>
+<span class="fc" id="L565">        assertEquals(SWEDEN, parser.getLocale());</span>
+<span class="fc" id="L566">    }</span>
+
+    @Test
+    public void testTimeZoneMatches() {
+<span class="fc" id="L570">        final DateParser parser= getInstance(yMdHmsSZ, REYKJAVIK);</span>
+<span class="fc" id="L571">        assertEquals(REYKJAVIK, parser.getTimeZone());</span>
+<span class="fc" id="L572">    }</span>
+
+    @Test
+    public void testLang996() throws ParseException {
+<span class="fc" id="L576">        final Calendar expected = Calendar.getInstance(NEW_YORK, Locale.US);</span>
+<span class="fc" id="L577">        expected.clear();</span>
+<span class="fc" id="L578">        expected.set(2014, Calendar.MAY, 14);</span>
+
+<span class="fc" id="L580">        final DateParser fdp = getInstance(&quot;ddMMMyyyy&quot;, NEW_YORK, Locale.US);</span>
+<span class="fc" id="L581">        assertEquals(expected.getTime(), fdp.parse(&quot;14may2014&quot;));</span>
+<span class="fc" id="L582">        assertEquals(expected.getTime(), fdp.parse(&quot;14MAY2014&quot;));</span>
+<span class="fc" id="L583">        assertEquals(expected.getTime(), fdp.parse(&quot;14May2014&quot;));</span>
+<span class="fc" id="L584">    }</span>
+
+    @Test
+    public void test1806Argument() {
+<span class="pc" id="L588">        assertThrows(IllegalArgumentException.class, () -&gt; getInstance(&quot;XXXX&quot;));</span>
+<span class="fc" id="L589">    }</span>
+
+    private static Calendar initializeCalendar(final TimeZone tz) {
+<span class="fc" id="L592">        final Calendar cal = Calendar.getInstance(tz);</span>
+<span class="fc" id="L593">        cal.set(Calendar.YEAR, 2001);</span>
+<span class="fc" id="L594">        cal.set(Calendar.MONTH, 1); // not daylight savings</span>
+<span class="fc" id="L595">        cal.set(Calendar.DAY_OF_MONTH, 4);</span>
+<span class="fc" id="L596">        cal.set(Calendar.HOUR_OF_DAY, 12);</span>
+<span class="fc" id="L597">        cal.set(Calendar.MINUTE, 8);</span>
+<span class="fc" id="L598">        cal.set(Calendar.SECOND, 56);</span>
+<span class="fc" id="L599">        cal.set(Calendar.MILLISECOND, 235);</span>
+<span class="fc" id="L600">        return cal;</span>
+    }
+
+<span class="fc" id="L603">    private enum Expected1806 {</span>
+<span class="fc" id="L604">        India(INDIA, &quot;+05&quot;, &quot;+0530&quot;, &quot;+05:30&quot;, true),</span>
+<span class="fc" id="L605">        Greenwich(GMT, &quot;Z&quot;, &quot;Z&quot;, &quot;Z&quot;, false),</span>
+<span class="fc" id="L606">        NewYork(NEW_YORK, &quot;-05&quot;, &quot;-0500&quot;, &quot;-05:00&quot;, false);</span>
+
+<span class="fc" id="L608">        Expected1806(final TimeZone zone, final String one, final String two, final String three, final boolean hasHalfHourOffset) {</span>
+<span class="fc" id="L609">            this.zone = zone;</span>
+<span class="fc" id="L610">            this.one = one;</span>
+<span class="fc" id="L611">            this.two = two;</span>
+<span class="fc" id="L612">            this.three = three;</span>
+<span class="fc bfc" id="L613" title="All 2 branches covered.">            this.offset = hasHalfHourOffset ?30*60*1000 :0;</span>
+<span class="fc" id="L614">        }</span>
+
+        final TimeZone zone;
+        final String one;
+        final String two;
+        final String three;
+        final long offset;
+    }
+
+    @Test
+    public void test1806() throws ParseException {
+<span class="fc" id="L625">        final String formatStub = &quot;yyyy-MM-dd'T'HH:mm:ss.SSS&quot;;</span>
+<span class="fc" id="L626">        final String dateStub = &quot;2001-02-04T12:08:56.235&quot;;</span>
+
+<span class="fc bfc" id="L628" title="All 2 branches covered.">        for (final Expected1806 trial : Expected1806.values()) {</span>
+<span class="fc" id="L629">            final Calendar cal = initializeCalendar(trial.zone);</span>
+
+<span class="fc" id="L631">            final String message = trial.zone.getDisplayName()+&quot;;&quot;;</span>
+
+<span class="fc" id="L633">            DateParser parser = getInstance(formatStub+&quot;X&quot;, trial.zone);</span>
+<span class="fc" id="L634">            assertEquals(cal.getTime().getTime(), parser.parse(dateStub+trial.one).getTime()-trial.offset, message+trial.one);</span>
+
+<span class="fc" id="L636">            parser = getInstance(formatStub+&quot;XX&quot;, trial.zone);</span>
+<span class="fc" id="L637">            assertEquals(cal.getTime(), parser.parse(dateStub+trial.two), message+trial.two);</span>
+
+<span class="fc" id="L639">            parser = getInstance(formatStub+&quot;XXX&quot;, trial.zone);</span>
+<span class="fc" id="L640">            assertEquals(cal.getTime(), parser.parse(dateStub+trial.three), message+trial.three);</span>
+        }
+<span class="fc" id="L642">    }</span>
+
+    @Test
+    public void testLang1121() throws ParseException {
+<span class="fc" id="L646">        final TimeZone kst = TimeZone.getTimeZone(&quot;KST&quot;);</span>
+<span class="fc" id="L647">        final DateParser fdp = getInstance(&quot;yyyyMMdd&quot;, kst, Locale.KOREA);</span>
+
+<span class="pc" id="L649">        assertThrows(ParseException.class, () -&gt; fdp.parse(&quot;2015&quot;));</span>
+
+        // Wed Apr 29 00:00:00 KST 2015
+<span class="fc" id="L652">        Date actual = fdp.parse(&quot;20150429&quot;);</span>
+<span class="fc" id="L653">        final Calendar cal = Calendar.getInstance(kst, Locale.KOREA);</span>
+<span class="fc" id="L654">        cal.clear();</span>
+<span class="fc" id="L655">        cal.set(2015, 3, 29);</span>
+<span class="fc" id="L656">        Date expected = cal.getTime();</span>
+<span class="fc" id="L657">        assertEquals(expected, actual);</span>
+
+<span class="fc" id="L659">        final SimpleDateFormat df = new SimpleDateFormat(&quot;yyyyMMdd&quot;, Locale.KOREA);</span>
+<span class="fc" id="L660">        df.setTimeZone(kst);</span>
+<span class="fc" id="L661">        expected = df.parse(&quot;20150429113100&quot;);</span>
+
+        // Thu Mar 16 00:00:00 KST 81724
+<span class="fc" id="L664">        actual = fdp.parse(&quot;20150429113100&quot;);</span>
+<span class="fc" id="L665">        assertEquals(expected, actual);</span>
+<span class="fc" id="L666">    }</span>
+
+    @Test
+    public void testParseOffset() {
+<span class="fc" id="L670">        final DateParser parser = getInstance(YMD_SLASH);</span>
+<span class="fc" id="L671">        final Date date = parser.parse(&quot;Today is 2015/07/04&quot;, new ParsePosition(9));</span>
+
+<span class="fc" id="L673">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L674">        cal.clear();</span>
+<span class="fc" id="L675">        cal.set(2015, Calendar.JULY, 4);</span>
+<span class="fc" id="L676">        assertEquals(cal.getTime(), date);</span>
+<span class="fc" id="L677">    }</span>
+
+    @Test
+    public void testDayNumberOfWeek() throws ParseException {
+<span class="fc" id="L681">        final DateParser parser = getInstance(&quot;u&quot;);</span>
+<span class="fc" id="L682">        final Calendar calendar = Calendar.getInstance();</span>
+
+<span class="fc" id="L684">        calendar.setTime(parser.parse(&quot;1&quot;));</span>
+<span class="fc" id="L685">        assertEquals(Calendar.MONDAY, calendar.get(Calendar.DAY_OF_WEEK));</span>
+
+<span class="fc" id="L687">        calendar.setTime(parser.parse(&quot;6&quot;));</span>
+<span class="fc" id="L688">        assertEquals(Calendar.SATURDAY, calendar.get(Calendar.DAY_OF_WEEK));</span>
+
+<span class="fc" id="L690">        calendar.setTime(parser.parse(&quot;7&quot;));</span>
+<span class="fc" id="L691">        assertEquals(Calendar.SUNDAY, calendar.get(Calendar.DAY_OF_WEEK));</span>
+<span class="fc" id="L692">    }</span>
+
+    @Test
+    public void testLang1380() throws ParseException {
+<span class="fc" id="L696">        final Calendar expected = Calendar.getInstance(GMT, Locale.FRANCE);</span>
+<span class="fc" id="L697">        expected.clear();</span>
+<span class="fc" id="L698">        expected.set(2014, Calendar.APRIL, 14);</span>
+
+<span class="fc" id="L700">        final DateParser fdp = getInstance(&quot;dd MMM yyyy&quot;, GMT, Locale.FRANCE);</span>
+<span class="fc" id="L701">        assertEquals(expected.getTime(), fdp.parse(&quot;14 avril 2014&quot;));</span>
+<span class="fc" id="L702">        assertEquals(expected.getTime(), fdp.parse(&quot;14 avr. 2014&quot;));</span>
+<span class="fc" id="L703">        assertEquals(expected.getTime(), fdp.parse(&quot;14 avr 2014&quot;));</span>
+<span class="fc" id="L704">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

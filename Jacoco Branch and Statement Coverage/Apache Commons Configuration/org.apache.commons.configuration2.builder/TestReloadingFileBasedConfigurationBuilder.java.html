@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestReloadingFileBasedConfigurationBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestReloadingFileBasedConfigurationBuilder.java</span></div><h1>TestReloadingFileBasedConfigurationBuilder.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.reloading.FileHandlerReloadingDetector;
+import org.apache.commons.configuration2.reloading.ReloadingDetector;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ReloadingFileBasedConfigurationBuilder}.
+ *
+ */
+<span class="fc" id="L40">public class TestReloadingFileBasedConfigurationBuilder</span>
+{
+    /**
+     * Tests whether a configuration can be created if no location is set. This
+     * tests also ensures that the super constructor is called correctly.
+     */
+    @Test
+    public void testGetConfigurationNoLocation() throws ConfigurationException
+    {
+<span class="fc" id="L49">        final Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L50">        params.put(&quot;throwExceptionOnMissing&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L51">        final ReloadingFileBasedConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new ReloadingFileBasedConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, params);
+<span class="fc" id="L54">        final PropertiesConfiguration conf = builder.getConfiguration();</span>
+<span class="fc" id="L55">        assertTrue(&quot;Property not set&quot;, conf.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L56">        assertTrue(&quot;Not empty&quot;, conf.isEmpty());</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Tests whether a correct reloading detector is created if no custom factory
+     * was set.
+     */
+    @Test
+    public void testCreateReloadingDetectorDefaultFactory() throws ConfigurationException
+    {
+<span class="fc" id="L66">        final ReloadingFileBasedConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new ReloadingFileBasedConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L69">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L70">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L71">        final long refreshDelay = 60000L;</span>
+<span class="fc" id="L72">        params.setReloadingRefreshDelay(refreshDelay);</span>
+<span class="fc" id="L73">        final FileHandlerReloadingDetector detector =</span>
+<span class="fc" id="L74">                (FileHandlerReloadingDetector) builder.createReloadingDetector(</span>
+                        handler, params);
+<span class="fc" id="L76">        assertSame(&quot;Wrong file handler&quot;, handler, detector.getFileHandler());</span>
+<span class="fc" id="L77">        assertEquals(&quot;Wrong refresh delay&quot;, refreshDelay,</span>
+<span class="fc" id="L78">                detector.getRefreshDelay());</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Tests whether a custom reloading detector factory can be installed.
+     */
+    @Test
+    public void testCreateReloadingDetectoryCustomFactory()
+            throws ConfigurationException
+    {
+<span class="fc" id="L88">        final ReloadingDetector detector =</span>
+<span class="fc" id="L89">                EasyMock.createMock(ReloadingDetector.class);</span>
+<span class="fc" id="L90">        final ReloadingDetectorFactory factory =</span>
+<span class="fc" id="L91">                EasyMock.createMock(ReloadingDetectorFactory.class);</span>
+<span class="fc" id="L92">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L93">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L95">        EasyMock.expect(factory.createReloadingDetector(handler, params))</span>
+<span class="fc" id="L96">                .andReturn(detector);</span>
+<span class="fc" id="L97">        EasyMock.replay(detector, factory);</span>
+<span class="fc" id="L98">        params.setReloadingDetectorFactory(factory);</span>
+<span class="fc" id="L99">        final ReloadingFileBasedConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new ReloadingFileBasedConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L102">        assertSame(&quot;Wrong detector&quot;, detector,</span>
+<span class="fc" id="L103">                builder.createReloadingDetector(handler, params));</span>
+<span class="fc" id="L104">        EasyMock.verify(factory);</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Tests the isReloadingRequired() implementation of the detector associated
+     * with the reloading controller.
+     */
+    @Test
+    public void testReloadingDetectorIsReloadingRequired()
+            throws ConfigurationException
+    {
+<span class="fc" id="L115">        final ReloadingDetector detector =</span>
+<span class="fc" id="L116">                EasyMock.createMock(ReloadingDetector.class);</span>
+<span class="fc" id="L117">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L118">        EasyMock.expect(detector.isReloadingRequired())</span>
+<span class="fc" id="L119">                .andReturn(Boolean.FALSE);</span>
+<span class="fc" id="L120">        EasyMock.replay(detector);</span>
+<span class="fc" id="L121">        final ReloadingFileBasedConfigurationBuilderTestImpl builder =</span>
+                new ReloadingFileBasedConfigurationBuilderTestImpl(detector);
+<span class="fc" id="L123">        builder.getConfiguration();</span>
+<span class="fc" id="L124">        final ReloadingDetector ctrlDetector =</span>
+<span class="fc" id="L125">                builder.getReloadingController().getDetector();</span>
+<span class="fc" id="L126">        assertTrue(&quot;Wrong result (1)&quot;, ctrlDetector.isReloadingRequired());</span>
+<span class="fc" id="L127">        assertFalse(&quot;Wrong result (2)&quot;, ctrlDetector.isReloadingRequired());</span>
+<span class="fc" id="L128">        assertSame(&quot;Wrong file handler&quot;, builder.getFileHandler(),</span>
+<span class="fc" id="L129">                builder.getHandlerForDetector());</span>
+<span class="fc" id="L130">        EasyMock.verify(detector);</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests the reloadingPerformed() implementation of the detector associated
+     * with the reloading controller.
+     */
+    @Test
+    public void testReloadingDetectorReloadingPerformed()
+            throws ConfigurationException
+    {
+<span class="fc" id="L141">        final ReloadingDetector detector =</span>
+<span class="fc" id="L142">                EasyMock.createMock(ReloadingDetector.class);</span>
+<span class="fc" id="L143">        detector.reloadingPerformed();</span>
+<span class="fc" id="L144">        EasyMock.replay(detector);</span>
+<span class="fc" id="L145">        final ReloadingFileBasedConfigurationBuilderTestImpl builder =</span>
+                new ReloadingFileBasedConfigurationBuilderTestImpl(detector);
+<span class="fc" id="L147">        builder.getConfiguration();</span>
+<span class="fc" id="L148">        final ReloadingDetector ctrlDetector =</span>
+<span class="fc" id="L149">                builder.getReloadingController().getDetector();</span>
+<span class="fc" id="L150">        ctrlDetector.reloadingPerformed();</span>
+<span class="fc" id="L151">        EasyMock.verify(detector);</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Tests the behavior of the reloading detector if no underlying detector is
+     * available.
+     */
+    @Test
+    public void testReloadingDetectorNoFileHandler()
+    {
+<span class="fc" id="L161">        final ReloadingFileBasedConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new ReloadingFileBasedConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L164">        final ReloadingDetector ctrlDetector =</span>
+<span class="fc" id="L165">                builder.getReloadingController().getDetector();</span>
+<span class="fc" id="L166">        ctrlDetector.reloadingPerformed();</span>
+<span class="fc" id="L167">        assertFalse(&quot;Wrong result&quot;, ctrlDetector.isReloadingRequired());</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * Tests whether the controller's reloading state is reset when a new result
+     * configuration is created.
+     */
+    @Test
+    public void testResetReloadingStateInGetConfiguration()
+            throws ConfigurationException
+    {
+<span class="fc" id="L178">        final ReloadingDetector detector =</span>
+<span class="fc" id="L179">                EasyMock.createMock(ReloadingDetector.class);</span>
+<span class="fc" id="L180">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L181">        detector.reloadingPerformed();</span>
+<span class="fc" id="L182">        EasyMock.replay(detector);</span>
+<span class="fc" id="L183">        final ReloadingFileBasedConfigurationBuilderTestImpl builder =</span>
+                new ReloadingFileBasedConfigurationBuilderTestImpl(detector);
+<span class="fc" id="L185">        final PropertiesConfiguration config1 = builder.getConfiguration();</span>
+<span class="fc" id="L186">        builder.getReloadingController().checkForReloading(null);</span>
+<span class="fc" id="L187">        final PropertiesConfiguration config2 = builder.getConfiguration();</span>
+<span class="fc" id="L188">        assertNotSame(&quot;No new configuration instance&quot;, config1, config2);</span>
+<span class="fc" id="L189">        assertFalse(&quot;Still in reloading state&quot;, builder</span>
+<span class="fc" id="L190">                .getReloadingController().isInReloadingState());</span>
+<span class="fc" id="L191">        EasyMock.verify(detector);</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * Tests whether this builder reacts on events fired by the reloading
+     * controller.
+     */
+    @Test
+    public void testReloadingControllerEvents() throws ConfigurationException
+    {
+<span class="fc" id="L201">        final ReloadingDetector detector =</span>
+<span class="fc" id="L202">                EasyMock.createMock(ReloadingDetector.class);</span>
+<span class="fc" id="L203">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L204">        final ReloadingFileBasedConfigurationBuilderTestImpl builder =</span>
+                new ReloadingFileBasedConfigurationBuilderTestImpl(detector);
+<span class="fc" id="L206">        EasyMock.replay(detector);</span>
+<span class="fc" id="L207">        final BuilderEventListenerImpl listener = new BuilderEventListenerImpl();</span>
+<span class="fc" id="L208">        builder.addEventListener(ConfigurationBuilderEvent.RESET, listener);</span>
+<span class="fc" id="L209">        builder.getConfiguration();</span>
+<span class="fc" id="L210">        builder.getReloadingController().checkForReloading(null);</span>
+<span class="fc" id="L211">        listener.nextEvent(ConfigurationBuilderEvent.RESET);</span>
+<span class="fc" id="L212">        listener.assertNoMoreEvents();</span>
+<span class="fc" id="L213">        EasyMock.verify(detector);</span>
+<span class="fc" id="L214">    }</span>
+
+    /**
+     * Tests whether the allowFailOnInit flag is correctly initialized.
+     */
+    @Test
+    public void testInitAllowFailOnInitFlag()
+    {
+<span class="fc" id="L222">        final ReloadingFileBasedConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new ReloadingFileBasedConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class, null, true);
+<span class="fc" id="L225">        assertTrue(&quot;Flag not set&quot;, builder.isAllowFailOnInit());</span>
+<span class="fc" id="L226">    }</span>
+
+    /**
+     * A test builder implementation which allows mocking the underlying
+     * reloading detector.
+     */
+    private static class ReloadingFileBasedConfigurationBuilderTestImpl extends
+            ReloadingFileBasedConfigurationBuilder&lt;PropertiesConfiguration&gt;
+    {
+        /** The mock for the reloading detector. */
+        private final ReloadingDetector mockDetector;
+
+        /** Stores the file handler passed to createReloadingDetector(). */
+        private FileHandler handlerForDetector;
+
+        /**
+         * Creates a new instance of
+         * {@code ReloadingFileBasedConfigurationBuilderTestImpl} and
+         * initializes it with a mock reloading detector.
+         *
+         * @param detector the mock detector
+         */
+        public ReloadingFileBasedConfigurationBuilderTestImpl(
+                final ReloadingDetector detector)
+        {
+<span class="fc" id="L251">            super(PropertiesConfiguration.class);</span>
+<span class="fc" id="L252">            mockDetector = detector;</span>
+<span class="fc" id="L253">        }</span>
+
+        /**
+         * Returns the file handler that was passed to
+         * createReloadingDetector().
+         *
+         * @return the file handler
+         */
+        public FileHandler getHandlerForDetector()
+        {
+<span class="fc" id="L263">            return handlerForDetector;</span>
+        }
+
+        /**
+         * Returns the mock file handler.
+         */
+        @Override
+        protected ReloadingDetector createReloadingDetector(
+                final FileHandler handler, final FileBasedBuilderParametersImpl fbparams)
+        {
+<span class="fc" id="L273">            handlerForDetector = handler;</span>
+<span class="fc" id="L274">            return mockDetector;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

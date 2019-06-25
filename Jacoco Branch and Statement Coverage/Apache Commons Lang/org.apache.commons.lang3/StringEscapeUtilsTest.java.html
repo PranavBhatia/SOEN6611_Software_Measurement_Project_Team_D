@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringEscapeUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">StringEscapeUtilsTest.java</span></div><h1>StringEscapeUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.NumericEntityEscaper;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests for {@link StringEscapeUtils}.
+ */
+@Deprecated
+<span class="fc" id="L43">public class StringEscapeUtilsTest {</span>
+    private static final String FOO = &quot;foo&quot;;
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L48">        assertNotNull(new StringEscapeUtils());</span>
+<span class="fc" id="L49">        final Constructor&lt;?&gt;[] cons = StringEscapeUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L50">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L51">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L52">        assertTrue(Modifier.isPublic(StringEscapeUtils.class.getModifiers()));</span>
+<span class="fc" id="L53">        assertFalse(Modifier.isFinal(StringEscapeUtils.class.getModifiers()));</span>
+<span class="fc" id="L54">    }</span>
+
+    @Test
+    public void testEscapeJava() throws IOException {
+<span class="fc" id="L58">        assertNull(StringEscapeUtils.escapeJava(null));</span>
+<span class="pc" id="L59">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.ESCAPE_JAVA.translate(null, null));</span>
+<span class="pc" id="L60">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.ESCAPE_JAVA.translate(&quot;&quot;, null));</span>
+
+<span class="fc" id="L62">        assertEscapeJava(&quot;empty string&quot;, &quot;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L63">        assertEscapeJava(FOO, FOO);</span>
+<span class="fc" id="L64">        assertEscapeJava(&quot;tab&quot;, &quot;\\t&quot;, &quot;\t&quot;);</span>
+<span class="fc" id="L65">        assertEscapeJava(&quot;backslash&quot;, &quot;\\\\&quot;, &quot;\\&quot;);</span>
+<span class="fc" id="L66">        assertEscapeJava(&quot;single quote should not be escaped&quot;, &quot;'&quot;, &quot;'&quot;);</span>
+<span class="fc" id="L67">        assertEscapeJava(&quot;\\\\\\b\\t\\r&quot;, &quot;\\\b\t\r&quot;);</span>
+<span class="fc" id="L68">        assertEscapeJava(&quot;\\u1234&quot;, &quot;\u1234&quot;);</span>
+<span class="fc" id="L69">        assertEscapeJava(&quot;\\u0234&quot;, &quot;\u0234&quot;);</span>
+<span class="fc" id="L70">        assertEscapeJava(&quot;\\u00EF&quot;, &quot;\u00ef&quot;);</span>
+<span class="fc" id="L71">        assertEscapeJava(&quot;\\u0001&quot;, &quot;\u0001&quot;);</span>
+<span class="fc" id="L72">        assertEscapeJava(&quot;Should use capitalized Unicode hex&quot;, &quot;\\uABCD&quot;, &quot;\uabcd&quot;);</span>
+
+<span class="fc" id="L74">        assertEscapeJava(&quot;He didn't say, \\\&quot;stop!\\\&quot;&quot;,</span>
+                &quot;He didn't say, \&quot;stop!\&quot;&quot;);
+<span class="fc" id="L76">        assertEscapeJava(&quot;non-breaking space&quot;, &quot;This space is non-breaking:&quot; + &quot;\\u00A0&quot;,</span>
+                &quot;This space is non-breaking:\u00a0&quot;);
+<span class="fc" id="L78">        assertEscapeJava(&quot;\\uABCD\\u1234\\u012C&quot;,</span>
+                &quot;\uABCD\u1234\u012C&quot;);
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Tests https://issues.apache.org/jira/browse/LANG-421
+     */
+    @Test
+    public void testEscapeJavaWithSlash() {
+<span class="fc" id="L87">        final String input = &quot;String with a slash (/) in it&quot;;</span>
+
+<span class="fc" id="L89">        final String expected = input;</span>
+<span class="fc" id="L90">        final String actual = StringEscapeUtils.escapeJava(input);</span>
+
+        /**
+         * In 2.4 StringEscapeUtils.escapeJava(String) escapes '/' characters, which are not a valid character to escape
+         * in a Java string.
+         */
+<span class="fc" id="L96">        assertEquals(expected, actual);</span>
+<span class="fc" id="L97">    }</span>
+
+    private void assertEscapeJava(final String escaped, final String original) throws IOException {
+<span class="fc" id="L100">        assertEscapeJava(null, escaped, original);</span>
+<span class="fc" id="L101">    }</span>
+
+    private void assertEscapeJava(String message, final String expected, final String original) throws IOException {
+<span class="fc" id="L104">        final String converted = StringEscapeUtils.escapeJava(original);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        message = &quot;escapeJava(String) failed&quot; + (message == null ? &quot;&quot; : (&quot;: &quot; + message));</span>
+<span class="fc" id="L106">        assertEquals(expected, converted, message);</span>
+
+<span class="fc" id="L108">        final StringWriter writer = new StringWriter();</span>
+<span class="fc" id="L109">        StringEscapeUtils.ESCAPE_JAVA.translate(original, writer);</span>
+<span class="fc" id="L110">        assertEquals(expected, writer.toString());</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    public void testUnescapeJava() throws IOException {
+<span class="fc" id="L115">        assertNull(StringEscapeUtils.unescapeJava(null));</span>
+<span class="pc" id="L116">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.UNESCAPE_JAVA.translate(null, null));</span>
+<span class="pc" id="L117">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.UNESCAPE_JAVA.translate(&quot;&quot;, null));</span>
+<span class="pc" id="L118">        assertThrows(RuntimeException.class, () -&gt; StringEscapeUtils.unescapeJava(&quot;\\u02-3&quot;));</span>
+
+<span class="fc" id="L120">        assertUnescapeJava(&quot;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L121">        assertUnescapeJava(&quot;test&quot;, &quot;test&quot;);</span>
+<span class="fc" id="L122">        assertUnescapeJava(&quot;\ntest\b&quot;, &quot;\\ntest\\b&quot;);</span>
+<span class="fc" id="L123">        assertUnescapeJava(&quot;\u123425foo\ntest\b&quot;, &quot;\\u123425foo\\ntest\\b&quot;);</span>
+<span class="fc" id="L124">        assertUnescapeJava(&quot;'\foo\teste\r&quot;, &quot;\\'\\foo\\teste\\r&quot;);</span>
+<span class="fc" id="L125">        assertUnescapeJava(&quot;&quot;, &quot;\\&quot;);</span>
+        //foo
+<span class="fc" id="L127">        assertUnescapeJava(&quot;lowercase Unicode&quot;, &quot;\uABCDx&quot;, &quot;\\uabcdx&quot;);</span>
+<span class="fc" id="L128">        assertUnescapeJava(&quot;uppercase Unicode&quot;, &quot;\uABCDx&quot;, &quot;\\uABCDx&quot;);</span>
+<span class="fc" id="L129">        assertUnescapeJava(&quot;Unicode as final character&quot;, &quot;\uABCD&quot;, &quot;\\uabcd&quot;);</span>
+<span class="fc" id="L130">    }</span>
+
+    private void assertUnescapeJava(final String unescaped, final String original) throws IOException {
+<span class="fc" id="L133">        assertUnescapeJava(null, unescaped, original);</span>
+<span class="fc" id="L134">    }</span>
+
+    private void assertUnescapeJava(final String message, final String unescaped, final String original) throws IOException {
+<span class="fc" id="L137">        final String expected = unescaped;</span>
+<span class="fc" id="L138">        final String actual = StringEscapeUtils.unescapeJava(original);</span>
+
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        assertEquals(expected, actual,</span>
+                &quot;unescape(String) failed&quot; +
+                (message == null ? &quot;&quot; : (&quot;: &quot; + message)) +
+<span class="fc" id="L143">                &quot;: expected '&quot; + StringEscapeUtils.escapeJava(expected) +</span>
+                // we escape this so we can see it in the error message
+<span class="fc" id="L145">                &quot;' actual '&quot; + StringEscapeUtils.escapeJava(actual) + &quot;'&quot;);</span>
+
+<span class="fc" id="L147">        final StringWriter writer = new StringWriter();</span>
+<span class="fc" id="L148">        StringEscapeUtils.UNESCAPE_JAVA.translate(original, writer);</span>
+<span class="fc" id="L149">        assertEquals(unescaped, writer.toString());</span>
+
+<span class="fc" id="L151">    }</span>
+
+    @Test
+    public void testEscapeEcmaScript() {
+<span class="fc" id="L155">        assertNull(StringEscapeUtils.escapeEcmaScript(null));</span>
+<span class="pc" id="L156">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.ESCAPE_ECMASCRIPT.translate(null, null));</span>
+<span class="pc" id="L157">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.ESCAPE_ECMASCRIPT.translate(&quot;&quot;, null));</span>
+
+<span class="fc" id="L159">        assertEquals(&quot;He didn\\'t say, \\\&quot;stop!\\\&quot;&quot;, StringEscapeUtils.escapeEcmaScript(&quot;He didn't say, \&quot;stop!\&quot;&quot;));</span>
+<span class="fc" id="L160">        assertEquals(&quot;document.getElementById(\\\&quot;test\\\&quot;).value = \\'&lt;script&gt;alert(\\'aaa\\');&lt;\\/script&gt;\\';&quot;,</span>
+<span class="fc" id="L161">                StringEscapeUtils.escapeEcmaScript(&quot;document.getElementById(\&quot;test\&quot;).value = '&lt;script&gt;alert('aaa');&lt;/script&gt;';&quot;));</span>
+<span class="fc" id="L162">    }</span>
+
+    @Test
+    public void testUnescapeEcmaScript() {
+<span class="fc" id="L166">        assertNull(StringEscapeUtils.escapeEcmaScript(null));</span>
+<span class="pc" id="L167">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.UNESCAPE_ECMASCRIPT.translate(null, null));</span>
+<span class="pc" id="L168">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.UNESCAPE_ECMASCRIPT.translate(&quot;&quot;, null));</span>
+
+<span class="fc" id="L170">        assertEquals(&quot;He didn't say, \&quot;stop!\&quot;&quot;, StringEscapeUtils.unescapeEcmaScript(&quot;He didn\\'t say, \\\&quot;stop!\\\&quot;&quot;));</span>
+<span class="fc" id="L171">        assertEquals(&quot;document.getElementById(\&quot;test\&quot;).value = '&lt;script&gt;alert('aaa');&lt;/script&gt;';&quot;,</span>
+<span class="fc" id="L172">                StringEscapeUtils.unescapeEcmaScript(&quot;document.getElementById(\\\&quot;test\\\&quot;).value = \\'&lt;script&gt;alert(\\'aaa\\');&lt;\\/script&gt;\\';&quot;));</span>
+<span class="fc" id="L173">    }</span>
+
+
+    // HTML and XML
+    //--------------------------------------------------------------
+
+<span class="fc" id="L179">    private static final String[][] HTML_ESCAPES = {</span>
+        {&quot;no escaping&quot;, &quot;plain text&quot;, &quot;plain text&quot;},
+        {&quot;no escaping&quot;, &quot;plain text&quot;, &quot;plain text&quot;},
+        {&quot;empty string&quot;, &quot;&quot;, &quot;&quot;},
+        {&quot;null&quot;, null, null},
+        {&quot;ampersand&quot;, &quot;bread &amp;amp; butter&quot;, &quot;bread &amp; butter&quot;},
+        {&quot;quotes&quot;, &quot;&amp;quot;bread&amp;quot; &amp;amp; butter&quot;, &quot;\&quot;bread\&quot; &amp; butter&quot;},
+        {&quot;final character only&quot;, &quot;greater than &amp;gt;&quot;, &quot;greater than &gt;&quot;},
+        {&quot;first character only&quot;, &quot;&amp;lt; less than&quot;, &quot;&lt; less than&quot;},
+        {&quot;apostrophe&quot;, &quot;Huntington's chorea&quot;, &quot;Huntington's chorea&quot;},
+        {&quot;languages&quot;, &quot;English,Fran&amp;ccedil;ais,\u65E5\u672C\u8A9E (nihongo)&quot;, &quot;English,Fran\u00E7ais,\u65E5\u672C\u8A9E (nihongo)&quot;},
+        {&quot;8-bit ascii shouldn't number-escape&quot;, &quot;\u0080\u009F&quot;, &quot;\u0080\u009F&quot;},
+    };
+
+    @Test
+    public void testEscapeHtml() throws IOException {
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        for (final String[] element : HTML_ESCAPES) {</span>
+<span class="fc" id="L196">            final String message = element[0];</span>
+<span class="fc" id="L197">            final String expected = element[1];</span>
+<span class="fc" id="L198">            final String original = element[2];</span>
+<span class="fc" id="L199">            assertEquals(expected, StringEscapeUtils.escapeHtml4(original), message);</span>
+<span class="fc" id="L200">            final StringWriter sw = new StringWriter();</span>
+<span class="fc" id="L201">            StringEscapeUtils.ESCAPE_HTML4.translate(original, sw);</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">            final String actual = original == null ? null : sw.toString();</span>
+<span class="fc" id="L203">            assertEquals(expected, actual, message);</span>
+        }
+<span class="fc" id="L205">    }</span>
+
+    @Test
+    public void testUnescapeHtml4() throws IOException {
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        for (final String[] element : HTML_ESCAPES) {</span>
+<span class="fc" id="L210">            final String message = element[0];</span>
+<span class="fc" id="L211">            final String expected = element[2];</span>
+<span class="fc" id="L212">            final String original = element[1];</span>
+<span class="fc" id="L213">            assertEquals(expected, StringEscapeUtils.unescapeHtml4(original), message);</span>
+
+<span class="fc" id="L215">            final StringWriter sw = new StringWriter();</span>
+<span class="fc" id="L216">            StringEscapeUtils.UNESCAPE_HTML4.translate(original, sw);</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">            final String actual = original == null ? null : sw.toString();</span>
+<span class="fc" id="L218">            assertEquals(expected, actual, message);</span>
+        }
+        // \u00E7 is a cedilla (c with wiggle under)
+        // note that the test string must be 7-bit-clean (Unicode escaped) or else it will compile incorrectly
+        // on some locales
+<span class="fc" id="L223">        assertEquals(&quot;Fran\u00E7ais&quot;, StringEscapeUtils.unescapeHtml4(&quot;Fran\u00E7ais&quot;), &quot;funny chars pass through OK&quot;);</span>
+
+<span class="fc" id="L225">        assertEquals(&quot;Hello&amp;;World&quot;, StringEscapeUtils.unescapeHtml4(&quot;Hello&amp;;World&quot;));</span>
+<span class="fc" id="L226">        assertEquals(&quot;Hello&amp;#;World&quot;, StringEscapeUtils.unescapeHtml4(&quot;Hello&amp;#;World&quot;));</span>
+<span class="fc" id="L227">        assertEquals(&quot;Hello&amp;# ;World&quot;, StringEscapeUtils.unescapeHtml4(&quot;Hello&amp;# ;World&quot;));</span>
+<span class="fc" id="L228">        assertEquals(&quot;Hello&amp;##;World&quot;, StringEscapeUtils.unescapeHtml4(&quot;Hello&amp;##;World&quot;));</span>
+<span class="fc" id="L229">    }</span>
+
+    @Test
+    public void testUnescapeHexCharsHtml() {
+        // Simple easy to grok test
+<span class="fc" id="L234">        assertEquals(&quot;\u0080\u009F&quot;, StringEscapeUtils.unescapeHtml4(&quot;&amp;#x80;&amp;#x9F;&quot;), &quot;hex number unescape&quot;);</span>
+<span class="fc" id="L235">        assertEquals(&quot;\u0080\u009F&quot;, StringEscapeUtils.unescapeHtml4(&quot;&amp;#X80;&amp;#X9F;&quot;), &quot;hex number unescape&quot;);</span>
+        // Test all Character values:
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        for (char i = Character.MIN_VALUE; i &lt; Character.MAX_VALUE; i++) {</span>
+<span class="fc" id="L238">            final Character c1 = new Character(i);</span>
+<span class="fc" id="L239">            final Character c2 = new Character((char) (i+1));</span>
+<span class="fc" id="L240">            final String expected = c1.toString() + c2.toString();</span>
+<span class="fc" id="L241">            final String escapedC1 = &quot;&amp;#x&quot; + Integer.toHexString((c1.charValue())) + &quot;;&quot;;</span>
+<span class="fc" id="L242">            final String escapedC2 = &quot;&amp;#x&quot; + Integer.toHexString((c2.charValue())) + &quot;;&quot;;</span>
+<span class="fc" id="L243">            assertEquals(expected, StringEscapeUtils.unescapeHtml4(escapedC1 + escapedC2), &quot;hex number unescape index &quot; + (int) i);</span>
+        }
+<span class="fc" id="L245">    }</span>
+
+    @Test
+    public void testUnescapeUnknownEntity() {
+<span class="fc" id="L249">        assertEquals(&quot;&amp;zzzz;&quot;, StringEscapeUtils.unescapeHtml4(&quot;&amp;zzzz;&quot;));</span>
+<span class="fc" id="L250">    }</span>
+
+    @Test
+    public void testEscapeHtmlVersions() {
+<span class="fc" id="L254">        assertEquals(&quot;&amp;Beta;&quot;, StringEscapeUtils.escapeHtml4(&quot;\u0392&quot;));</span>
+<span class="fc" id="L255">        assertEquals(&quot;\u0392&quot;, StringEscapeUtils.unescapeHtml4(&quot;&amp;Beta;&quot;));</span>
+
+        // TODO: refine API for escaping/unescaping specific HTML versions
+<span class="fc" id="L258">    }</span>
+
+    @Test
+    public void testEscapeXml() throws Exception {
+<span class="fc" id="L262">        assertEquals(&quot;&amp;lt;abc&amp;gt;&quot;, StringEscapeUtils.escapeXml(&quot;&lt;abc&gt;&quot;));</span>
+<span class="fc" id="L263">        assertEquals(&quot;&lt;abc&gt;&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;lt;abc&amp;gt;&quot;));</span>
+
+<span class="fc" id="L265">        assertEquals(&quot;\u00A1&quot;, StringEscapeUtils.escapeXml(&quot;\u00A1&quot;), &quot;XML should not escape &gt;0x7f values&quot;);</span>
+<span class="fc" id="L266">        assertEquals(&quot;\u00A0&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;#160;&quot;), &quot;XML should be able to unescape &gt;0x7f values&quot;);</span>
+<span class="fc" id="L267">        assertEquals(&quot;\u00A0&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;#0160;&quot;),</span>
+                &quot;XML should be able to unescape &gt;0x7f values with one leading 0&quot;);
+<span class="fc" id="L269">        assertEquals(&quot;\u00A0&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;#00160;&quot;),</span>
+                &quot;XML should be able to unescape &gt;0x7f values with two leading 0s&quot;);
+<span class="fc" id="L271">        assertEquals(&quot;\u00A0&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;#000160;&quot;),</span>
+                &quot;XML should be able to unescape &gt;0x7f values with three leading 0s&quot;);
+
+<span class="fc" id="L274">        assertEquals(&quot;ain't&quot;, StringEscapeUtils.unescapeXml(&quot;ain&amp;apos;t&quot;));</span>
+<span class="fc" id="L275">        assertEquals(&quot;ain&amp;apos;t&quot;, StringEscapeUtils.escapeXml(&quot;ain't&quot;));</span>
+<span class="fc" id="L276">        assertEquals(&quot;&quot;, StringEscapeUtils.escapeXml(&quot;&quot;));</span>
+<span class="fc" id="L277">        assertNull(StringEscapeUtils.escapeXml(null));</span>
+<span class="fc" id="L278">        assertNull(StringEscapeUtils.unescapeXml(null));</span>
+
+<span class="fc" id="L280">        StringWriter sw = new StringWriter();</span>
+<span class="fc" id="L281">        StringEscapeUtils.ESCAPE_XML.translate(&quot;&lt;abc&gt;&quot;, sw);</span>
+<span class="fc" id="L282">        assertEquals(&quot;&amp;lt;abc&amp;gt;&quot;, sw.toString(), &quot;XML was escaped incorrectly&quot;);</span>
+
+<span class="fc" id="L284">        sw = new StringWriter();</span>
+<span class="fc" id="L285">        StringEscapeUtils.UNESCAPE_XML.translate(&quot;&amp;lt;abc&amp;gt;&quot;, sw);</span>
+<span class="fc" id="L286">        assertEquals(&quot;&lt;abc&gt;&quot;, sw.toString(), &quot;XML was unescaped incorrectly&quot;);</span>
+<span class="fc" id="L287">    }</span>
+
+    @Test
+    public void testEscapeXml10() {
+<span class="fc" id="L291">        assertEquals(&quot;a&amp;lt;b&amp;gt;c&amp;quot;d&amp;apos;e&amp;amp;f&quot;, StringEscapeUtils.escapeXml10(&quot;a&lt;b&gt;c\&quot;d'e&amp;f&quot;));</span>
+<span class="fc" id="L292">        assertEquals(&quot;a\tb\rc\nd&quot;, StringEscapeUtils.escapeXml10(&quot;a\tb\rc\nd&quot;), &quot;XML 1.0 should not escape \t \n \r&quot;);</span>
+<span class="fc" id="L293">        assertEquals(&quot;ab&quot;, StringEscapeUtils.escapeXml10(&quot;a\u0000\u0001\u0008\u000b\u000c\u000e\u001fb&quot;),</span>
+                &quot;XML 1.0 should omit most #x0-x8 | #xb | #xc | #xe-#x19&quot;);
+<span class="fc" id="L295">        assertEquals(&quot;a\ud7ff  \ue000b&quot;, StringEscapeUtils.escapeXml10(&quot;a\ud7ff\ud800 \udfff \ue000b&quot;),</span>
+                &quot;XML 1.0 should omit #xd800-#xdfff&quot;);
+<span class="fc" id="L297">        assertEquals(&quot;a\ufffdb&quot;, StringEscapeUtils.escapeXml10(&quot;a\ufffd\ufffe\uffffb&quot;),</span>
+                &quot;XML 1.0 should omit #xfffe | #xffff&quot;);
+<span class="fc" id="L299">        assertEquals(&quot;a\u007e&amp;#127;&amp;#132;\u0085&amp;#134;&amp;#159;\u00a0b&quot;,</span>
+<span class="fc" id="L300">                StringEscapeUtils.escapeXml10(&quot;a\u007e\u007f\u0084\u0085\u0086\u009f\u00a0b&quot;),</span>
+                &quot;XML 1.0 should escape #x7f-#x84 | #x86 - #x9f, for XML 1.1 compatibility&quot;);
+<span class="fc" id="L302">    }</span>
+
+    @Test
+    public void testEscapeXml11() {
+<span class="fc" id="L306">        assertEquals(&quot;a&amp;lt;b&amp;gt;c&amp;quot;d&amp;apos;e&amp;amp;f&quot;, StringEscapeUtils.escapeXml11(&quot;a&lt;b&gt;c\&quot;d'e&amp;f&quot;));</span>
+<span class="fc" id="L307">        assertEquals(&quot;a\tb\rc\nd&quot;, StringEscapeUtils.escapeXml11(&quot;a\tb\rc\nd&quot;), &quot;XML 1.1 should not escape \t \n \r&quot;);</span>
+<span class="fc" id="L308">        assertEquals(&quot;ab&quot;, StringEscapeUtils.escapeXml11(&quot;a\u0000b&quot;), &quot;XML 1.1 should omit #x0&quot;);</span>
+<span class="fc" id="L309">        assertEquals(&quot;a&amp;#1;&amp;#8;&amp;#11;&amp;#12;&amp;#14;&amp;#31;b&quot;,</span>
+<span class="fc" id="L310">                StringEscapeUtils.escapeXml11(&quot;a\u0001\u0008\u000b\u000c\u000e\u001fb&quot;),</span>
+                &quot;XML 1.1 should escape #x1-x8 | #xb | #xc | #xe-#x19&quot;);
+<span class="fc" id="L312">        assertEquals(&quot;a\u007e&amp;#127;&amp;#132;\u0085&amp;#134;&amp;#159;\u00a0b&quot;,</span>
+<span class="fc" id="L313">                StringEscapeUtils.escapeXml11(&quot;a\u007e\u007f\u0084\u0085\u0086\u009f\u00a0b&quot;),</span>
+                &quot;XML 1.1 should escape #x7F-#x84 | #x86-#x9F&quot;);
+<span class="fc" id="L315">        assertEquals(&quot;a\ud7ff  \ue000b&quot;, StringEscapeUtils.escapeXml11(&quot;a\ud7ff\ud800 \udfff \ue000b&quot;),</span>
+                &quot;XML 1.1 should omit #xd800-#xdfff&quot;);
+<span class="fc" id="L317">        assertEquals(&quot;a\ufffdb&quot;, StringEscapeUtils.escapeXml11(&quot;a\ufffd\ufffe\uffffb&quot;),</span>
+                &quot;XML 1.1 should omit #xfffe | #xffff&quot;);
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Tests Supplementary characters.
+     * &lt;p&gt;
+     * From http://www.w3.org/International/questions/qa-escapes
+     * &lt;/p&gt;
+     * &lt;blockquote&gt;
+     * Supplementary characters are those Unicode characters that have code points higher than the characters in
+     * the Basic Multilingual Plane (BMP). In UTF-16 a supplementary character is encoded using two 16-bit surrogate code points from the
+     * BMP. Because of this, some people think that supplementary characters need to be represented using two escapes, but this is incorrect
+     * - you must use the single, code point value for that character. For example, use &amp;amp;&amp;#35;x233B4&amp;#59; rather than
+     * &amp;amp;&amp;#35;xD84C&amp;#59;&amp;amp;&amp;#35;xDFB4&amp;#59;.
+     * &lt;/blockquote&gt;
+     * @see &lt;a href=&quot;http://www.w3.org/International/questions/qa-escapes&quot;&gt;Using character escapes in markup and CSS&lt;/a&gt;
+     * @see &lt;a href=&quot;https://issues.apache.org/jira/browse/LANG-728&quot;&gt;LANG-728&lt;/a&gt;
+     */
+    @Test
+    public void testEscapeXmlSupplementaryCharacters() {
+<span class="fc" id="L338">        final CharSequenceTranslator escapeXml =</span>
+<span class="fc" id="L339">            StringEscapeUtils.ESCAPE_XML.with( NumericEntityEscaper.between(0x7f, Integer.MAX_VALUE) );</span>
+
+<span class="fc" id="L341">        assertEquals(&quot;&amp;#144308;&quot;, escapeXml.translate(&quot;\uD84C\uDFB4&quot;),</span>
+                &quot;Supplementary character must be represented using a single escape&quot;);
+
+<span class="fc" id="L344">        assertEquals(&quot;a b c &amp;#144308;&quot;, escapeXml.translate(&quot;a b c \uD84C\uDFB4&quot;),</span>
+                &quot;Supplementary characters mixed with basic characters should be encoded correctly&quot;);
+<span class="fc" id="L346">    }</span>
+
+    @Test
+    public void testEscapeXmlAllCharacters() {
+        // http://www.w3.org/TR/xml/#charsets says:
+        // Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF] /* any Unicode character,
+        // excluding the surrogate blocks, FFFE, and FFFF. */
+<span class="fc" id="L353">        final CharSequenceTranslator escapeXml = StringEscapeUtils.ESCAPE_XML</span>
+<span class="fc" id="L354">                .with(NumericEntityEscaper.below(9), NumericEntityEscaper.between(0xB, 0xC), NumericEntityEscaper.between(0xE, 0x19),</span>
+<span class="fc" id="L355">                        NumericEntityEscaper.between(0xD800, 0xDFFF), NumericEntityEscaper.between(0xFFFE, 0xFFFF), NumericEntityEscaper.above(0x110000));</span>
+
+<span class="fc" id="L357">        assertEquals(&quot;&amp;#0;&amp;#1;&amp;#2;&amp;#3;&amp;#4;&amp;#5;&amp;#6;&amp;#7;&amp;#8;&quot;, escapeXml.translate(&quot;\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008&quot;));</span>
+<span class="fc" id="L358">        assertEquals(&quot;\t&quot;, escapeXml.translate(&quot;\t&quot;)); // 0x9</span>
+<span class="fc" id="L359">        assertEquals(&quot;\n&quot;, escapeXml.translate(&quot;\n&quot;)); // 0xA</span>
+<span class="fc" id="L360">        assertEquals(&quot;&amp;#11;&amp;#12;&quot;, escapeXml.translate(&quot;\u000B\u000C&quot;));</span>
+<span class="fc" id="L361">        assertEquals(&quot;\r&quot;, escapeXml.translate(&quot;\r&quot;)); // 0xD</span>
+<span class="fc" id="L362">        assertEquals(&quot;Hello World! Ain&amp;apos;t this great?&quot;, escapeXml.translate(&quot;Hello World! Ain't this great?&quot;));</span>
+<span class="fc" id="L363">        assertEquals(&quot;&amp;#14;&amp;#15;&amp;#24;&amp;#25;&quot;, escapeXml.translate(&quot;\u000E\u000F\u0018\u0019&quot;));</span>
+<span class="fc" id="L364">    }</span>
+
+    /**
+     * Reverse of the above.
+     *
+     * @see &lt;a href=&quot;https://issues.apache.org/jira/browse/LANG-729&quot;&gt;LANG-729&lt;/a&gt;
+     */
+    @Test
+    public void testUnescapeXmlSupplementaryCharacters() {
+<span class="fc" id="L373">        assertEquals(&quot;\uD84C\uDFB4&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;#144308;&quot;),</span>
+                &quot;Supplementary character must be represented using a single escape&quot;);
+
+<span class="fc" id="L376">        assertEquals(&quot;a b c \uD84C\uDFB4&quot;, StringEscapeUtils.unescapeXml(&quot;a b c &amp;#144308;&quot;),</span>
+                &quot;Supplementary characters mixed with basic characters should be decoded correctly&quot;);
+<span class="fc" id="L378">    }</span>
+
+    // Tests issue #38569
+    // http://issues.apache.org/bugzilla/show_bug.cgi?id=38569
+    @Test
+    public void testStandaloneAmphersand() {
+<span class="fc" id="L384">        assertEquals(&quot;&lt;P&amp;O&gt;&quot;, StringEscapeUtils.unescapeHtml4(&quot;&amp;lt;P&amp;O&amp;gt;&quot;));</span>
+<span class="fc" id="L385">        assertEquals(&quot;test &amp; &lt;&quot;, StringEscapeUtils.unescapeHtml4(&quot;test &amp; &amp;lt;&quot;));</span>
+<span class="fc" id="L386">        assertEquals(&quot;&lt;P&amp;O&gt;&quot;, StringEscapeUtils.unescapeXml(&quot;&amp;lt;P&amp;O&amp;gt;&quot;));</span>
+<span class="fc" id="L387">        assertEquals(&quot;test &amp; &lt;&quot;, StringEscapeUtils.unescapeXml(&quot;test &amp; &amp;lt;&quot;));</span>
+<span class="fc" id="L388">    }</span>
+
+    @Test
+    public void testLang313() {
+<span class="fc" id="L392">        assertEquals(&quot;&amp; &amp;&quot;, StringEscapeUtils.unescapeHtml4(&quot;&amp; &amp;amp;&quot;));</span>
+<span class="fc" id="L393">    }</span>
+
+    @Test
+    public void testEscapeCsvString() {
+<span class="fc" id="L397">        assertEquals(&quot;foo.bar&quot;,            StringEscapeUtils.escapeCsv(&quot;foo.bar&quot;));</span>
+<span class="fc" id="L398">        assertEquals(&quot;\&quot;foo,bar\&quot;&quot;,        StringEscapeUtils.escapeCsv(&quot;foo,bar&quot;));</span>
+<span class="fc" id="L399">        assertEquals(&quot;\&quot;foo\nbar\&quot;&quot;,       StringEscapeUtils.escapeCsv(&quot;foo\nbar&quot;));</span>
+<span class="fc" id="L400">        assertEquals(&quot;\&quot;foo\rbar\&quot;&quot;,       StringEscapeUtils.escapeCsv(&quot;foo\rbar&quot;));</span>
+<span class="fc" id="L401">        assertEquals(&quot;\&quot;foo\&quot;\&quot;bar\&quot;&quot;,     StringEscapeUtils.escapeCsv(&quot;foo\&quot;bar&quot;));</span>
+<span class="fc" id="L402">        assertEquals(&quot;foo\uD84C\uDFB4bar&quot;, StringEscapeUtils.escapeCsv(&quot;foo\uD84C\uDFB4bar&quot;));</span>
+<span class="fc" id="L403">        assertEquals(&quot;&quot;,   StringEscapeUtils.escapeCsv(&quot;&quot;));</span>
+<span class="fc" id="L404">        assertNull(StringEscapeUtils.escapeCsv(null));</span>
+<span class="fc" id="L405">    }</span>
+
+    @Test
+    public void testEscapeCsvWriter() throws Exception {
+<span class="fc" id="L409">        checkCsvEscapeWriter(&quot;foo.bar&quot;,            &quot;foo.bar&quot;);</span>
+<span class="fc" id="L410">        checkCsvEscapeWriter(&quot;\&quot;foo,bar\&quot;&quot;,        &quot;foo,bar&quot;);</span>
+<span class="fc" id="L411">        checkCsvEscapeWriter(&quot;\&quot;foo\nbar\&quot;&quot;,       &quot;foo\nbar&quot;);</span>
+<span class="fc" id="L412">        checkCsvEscapeWriter(&quot;\&quot;foo\rbar\&quot;&quot;,       &quot;foo\rbar&quot;);</span>
+<span class="fc" id="L413">        checkCsvEscapeWriter(&quot;\&quot;foo\&quot;\&quot;bar\&quot;&quot;,     &quot;foo\&quot;bar&quot;);</span>
+<span class="fc" id="L414">        checkCsvEscapeWriter(&quot;foo\uD84C\uDFB4bar&quot;, &quot;foo\uD84C\uDFB4bar&quot;);</span>
+<span class="fc" id="L415">        checkCsvEscapeWriter(&quot;&quot;, null);</span>
+<span class="fc" id="L416">        checkCsvEscapeWriter(&quot;&quot;, &quot;&quot;);</span>
+<span class="fc" id="L417">    }</span>
+
+    private void checkCsvEscapeWriter(final String expected, final String value) throws IOException {
+<span class="fc" id="L420">        final StringWriter writer = new StringWriter();</span>
+<span class="fc" id="L421">        StringEscapeUtils.ESCAPE_CSV.translate(value, writer);</span>
+<span class="fc" id="L422">        assertEquals(expected, writer.toString());</span>
+<span class="fc" id="L423">    }</span>
+
+    @Test
+    public void testEscapeCsvIllegalStateException() {
+<span class="fc" id="L427">        final StringWriter writer = new StringWriter();</span>
+<span class="pc" id="L428">        assertThrows(IllegalStateException.class, () -&gt; StringEscapeUtils.ESCAPE_CSV.translate(&quot;foo&quot;, -1, writer));</span>
+<span class="fc" id="L429">    }</span>
+
+    @Test
+    public void testUnescapeCsvString() {
+<span class="fc" id="L433">        assertEquals(&quot;foo.bar&quot;,              StringEscapeUtils.unescapeCsv(&quot;foo.bar&quot;));</span>
+<span class="fc" id="L434">        assertEquals(&quot;foo,bar&quot;,              StringEscapeUtils.unescapeCsv(&quot;\&quot;foo,bar\&quot;&quot;));</span>
+<span class="fc" id="L435">        assertEquals(&quot;foo\nbar&quot;,             StringEscapeUtils.unescapeCsv(&quot;\&quot;foo\nbar\&quot;&quot;));</span>
+<span class="fc" id="L436">        assertEquals(&quot;foo\rbar&quot;,             StringEscapeUtils.unescapeCsv(&quot;\&quot;foo\rbar\&quot;&quot;));</span>
+<span class="fc" id="L437">        assertEquals(&quot;foo\&quot;bar&quot;,             StringEscapeUtils.unescapeCsv(&quot;\&quot;foo\&quot;\&quot;bar\&quot;&quot;));</span>
+<span class="fc" id="L438">        assertEquals(&quot;foo\uD84C\uDFB4bar&quot;,   StringEscapeUtils.unescapeCsv(&quot;foo\uD84C\uDFB4bar&quot;));</span>
+<span class="fc" id="L439">        assertEquals(&quot;&quot;,   StringEscapeUtils.unescapeCsv(&quot;&quot;));</span>
+<span class="fc" id="L440">        assertNull(StringEscapeUtils.unescapeCsv(null));</span>
+
+<span class="fc" id="L442">        assertEquals(&quot;\&quot;foo.bar\&quot;&quot;,          StringEscapeUtils.unescapeCsv(&quot;\&quot;foo.bar\&quot;&quot;));</span>
+<span class="fc" id="L443">    }</span>
+
+    @Test
+    public void testUnescapeCsvWriter() throws Exception {
+<span class="fc" id="L447">        checkCsvUnescapeWriter(&quot;foo.bar&quot;,            &quot;foo.bar&quot;);</span>
+<span class="fc" id="L448">        checkCsvUnescapeWriter(&quot;foo,bar&quot;,            &quot;\&quot;foo,bar\&quot;&quot;);</span>
+<span class="fc" id="L449">        checkCsvUnescapeWriter(&quot;foo\nbar&quot;,           &quot;\&quot;foo\nbar\&quot;&quot;);</span>
+<span class="fc" id="L450">        checkCsvUnescapeWriter(&quot;foo\rbar&quot;,           &quot;\&quot;foo\rbar\&quot;&quot;);</span>
+<span class="fc" id="L451">        checkCsvUnescapeWriter(&quot;foo\&quot;bar&quot;,           &quot;\&quot;foo\&quot;\&quot;bar\&quot;&quot;);</span>
+<span class="fc" id="L452">        checkCsvUnescapeWriter(&quot;foo\uD84C\uDFB4bar&quot;, &quot;foo\uD84C\uDFB4bar&quot;);</span>
+<span class="fc" id="L453">        checkCsvUnescapeWriter(&quot;&quot;, null);</span>
+<span class="fc" id="L454">        checkCsvUnescapeWriter(&quot;&quot;, &quot;&quot;);</span>
+
+<span class="fc" id="L456">        checkCsvUnescapeWriter(&quot;\&quot;foo.bar\&quot;&quot;,        &quot;\&quot;foo.bar\&quot;&quot;);</span>
+<span class="fc" id="L457">    }</span>
+
+    private void checkCsvUnescapeWriter(final String expected, final String value) throws IOException {
+<span class="fc" id="L460">        final StringWriter writer = new StringWriter();</span>
+<span class="fc" id="L461">        StringEscapeUtils.UNESCAPE_CSV.translate(value, writer);</span>
+<span class="fc" id="L462">        assertEquals(expected, writer.toString());</span>
+<span class="fc" id="L463">    }</span>
+
+    @Test
+    public void testUnescapeCsvIllegalStateException() {
+<span class="fc" id="L467">        final StringWriter writer = new StringWriter();</span>
+<span class="pc" id="L468">        assertThrows(IllegalStateException.class, () -&gt; StringEscapeUtils.UNESCAPE_CSV.translate(&quot;foo&quot;, -1, writer));</span>
+<span class="fc" id="L469">    }</span>
+
+    /**
+     * Tests // https://issues.apache.org/jira/browse/LANG-480
+     */
+    @Test
+    public void testEscapeHtmlHighUnicode() {
+        // this is the utf8 representation of the character:
+        // COUNTING ROD UNIT DIGIT THREE
+        // in Unicode
+        // codepoint: U+1D362
+<span class="fc" id="L480">        final byte[] data = new byte[] { (byte) 0xF0, (byte) 0x9D, (byte) 0x8D, (byte) 0xA2 };</span>
+
+<span class="fc" id="L482">        final String original = new String(data, Charset.forName(&quot;UTF8&quot;));</span>
+
+<span class="fc" id="L484">        final String escaped = StringEscapeUtils.escapeHtml4( original );</span>
+<span class="fc" id="L485">        assertEquals(original, escaped, &quot;High Unicode should not have been escaped&quot;);</span>
+
+<span class="fc" id="L487">        final String unescaped = StringEscapeUtils.unescapeHtml4( escaped );</span>
+<span class="fc" id="L488">        assertEquals(original, unescaped, &quot;High Unicode should have been unchanged&quot;);</span>
+
+// TODO: I think this should hold, needs further investigation
+//        String unescapedFromEntity = StringEscapeUtils.unescapeHtml4( &quot;&amp;#119650;&quot; );
+//        assertEquals( &quot;High Unicode should have been unescaped&quot;, original, unescapedFromEntity);
+<span class="fc" id="L493">    }</span>
+
+    /**
+     * Tests https://issues.apache.org/jira/browse/LANG-339
+     */
+    @Test
+    public void testEscapeHiragana() {
+        // Some random Japanese Unicode characters
+<span class="fc" id="L501">        final String original = &quot;\u304B\u304C\u3068&quot;;</span>
+<span class="fc" id="L502">        final String escaped = StringEscapeUtils.escapeHtml4(original);</span>
+<span class="fc" id="L503">        assertEquals(original, escaped,</span>
+                &quot;Hiragana character Unicode behaviour should not be being escaped by escapeHtml4&quot;);
+
+<span class="fc" id="L506">        final String unescaped = StringEscapeUtils.unescapeHtml4( escaped );</span>
+
+<span class="fc" id="L508">        assertEquals(escaped, unescaped, &quot;Hiragana character Unicode behaviour has changed - expected no unescaping&quot;);</span>
+<span class="fc" id="L509">    }</span>
+
+    /**
+     * Tests https://issues.apache.org/jira/browse/LANG-708
+     *
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    @Test
+    public void testLang708() throws IOException {
+<span class="fc" id="L519">        final byte[] inputBytes = Files.readAllBytes(Paths.get(&quot;src/test/resources/lang-708-input.txt&quot;));</span>
+<span class="fc" id="L520">        final String input = new String(inputBytes, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L521">        final String escaped = StringEscapeUtils.escapeEcmaScript(input);</span>
+        // just the end:
+<span class="fc" id="L523">        assertTrue(escaped.endsWith(&quot;}]&quot;), escaped);</span>
+        // a little more:
+<span class="fc" id="L525">        assertTrue(escaped.endsWith(&quot;\&quot;valueCode\\\&quot;:\\\&quot;\\\&quot;}]&quot;), escaped);</span>
+<span class="fc" id="L526">    }</span>
+
+    /**
+     * Tests https://issues.apache.org/jira/browse/LANG-720
+     */
+    @Test
+    public void testLang720() {
+<span class="fc" id="L533">        final String input = &quot;\ud842\udfb7&quot; + &quot;A&quot;;</span>
+<span class="fc" id="L534">        final String escaped = StringEscapeUtils.escapeXml(input);</span>
+<span class="fc" id="L535">        assertEquals(input, escaped);</span>
+<span class="fc" id="L536">    }</span>
+
+    /**
+     * Tests https://issues.apache.org/jira/browse/LANG-911
+     */
+    @Test
+    public void testLang911() {
+<span class="fc" id="L543">        final String bellsTest = &quot;\ud83d\udc80\ud83d\udd14&quot;;</span>
+<span class="fc" id="L544">        final String value = StringEscapeUtils.escapeJava(bellsTest);</span>
+<span class="fc" id="L545">        final String valueTest = StringEscapeUtils.unescapeJava(value);</span>
+<span class="fc" id="L546">        assertEquals(bellsTest, valueTest);</span>
+<span class="fc" id="L547">    }</span>
+
+    @Test
+    public void testEscapeJson() {
+<span class="fc" id="L551">        assertNull(StringEscapeUtils.escapeJson(null));</span>
+<span class="pc" id="L552">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.ESCAPE_JSON.translate(null, null));</span>
+<span class="pc" id="L553">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.ESCAPE_JSON.translate(&quot;&quot;, null));</span>
+
+<span class="fc" id="L555">        assertEquals(&quot;He didn't say, \\\&quot;stop!\\\&quot;&quot;, StringEscapeUtils.escapeJson(&quot;He didn't say, \&quot;stop!\&quot;&quot;));</span>
+
+<span class="fc" id="L557">        final String expected = &quot;\\\&quot;foo\\\&quot; isn't \\\&quot;bar\\\&quot;. specials: \\b\\r\\n\\f\\t\\\\\\/&quot;;</span>
+<span class="fc" id="L558">        final String input =&quot;\&quot;foo\&quot; isn't \&quot;bar\&quot;. specials: \b\r\n\f\t\\/&quot;;</span>
+
+<span class="fc" id="L560">        assertEquals(expected, StringEscapeUtils.escapeJson(input));</span>
+<span class="fc" id="L561">    }</span>
+
+    @Test
+    public void testUnescapeJson() {
+<span class="fc" id="L565">        assertNull(StringEscapeUtils.unescapeJson(null));</span>
+<span class="pc" id="L566">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.UNESCAPE_JSON.translate(null, null));</span>
+<span class="pc" id="L567">        assertThrows(IllegalArgumentException.class, () -&gt; StringEscapeUtils.UNESCAPE_JSON.translate(&quot;&quot;, null));</span>
+
+<span class="fc" id="L569">        assertEquals(&quot;He didn't say, \&quot;stop!\&quot;&quot;, StringEscapeUtils.unescapeJson(&quot;He didn't say, \\\&quot;stop!\\\&quot;&quot;));</span>
+
+<span class="fc" id="L571">        final String expected =&quot;\&quot;foo\&quot; isn't \&quot;bar\&quot;. specials: \b\r\n\f\t\\/&quot;;</span>
+<span class="fc" id="L572">        final String input = &quot;\\\&quot;foo\\\&quot; isn't \\\&quot;bar\\\&quot;. specials: \\b\\r\\n\\f\\t\\\\\\/&quot;;</span>
+
+<span class="fc" id="L574">        assertEquals(expected, StringEscapeUtils.unescapeJson(input));</span>
+<span class="fc" id="L575">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

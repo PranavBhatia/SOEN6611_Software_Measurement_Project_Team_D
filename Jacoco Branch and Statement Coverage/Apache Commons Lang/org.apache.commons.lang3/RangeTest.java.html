@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RangeTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">RangeTest.java</span></div><h1>RangeTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Comparator;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * &lt;p&gt;
+ * Tests the methods in the {@link org.apache.commons.lang3.Range} class.
+ * &lt;/p&gt;
+ */
+@SuppressWarnings(&quot;boxing&quot;)
+<span class="fc" id="L39">public class RangeTest {</span>
+
+    private Range&lt;Byte&gt; byteRange;
+    private Range&lt;Byte&gt; byteRange2;
+    private Range&lt;Byte&gt; byteRange3;
+
+    private Range&lt;Integer&gt; intRange;
+    private Range&lt;Long&gt; longRange;
+    private Range&lt;Float&gt; floatRange;
+    private Range&lt;Double&gt; doubleRange;
+
+    @SuppressWarnings(&quot;cast&quot;) // intRange
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L53">        byteRange = Range.between((byte) 0, (byte) 5);</span>
+<span class="fc" id="L54">        byteRange2 = Range.between((byte) 0, (byte) 5);</span>
+<span class="fc" id="L55">        byteRange3 = Range.between((byte) 0, (byte) 10);</span>
+
+<span class="fc" id="L57">        intRange = Range.between(10, 20);</span>
+<span class="fc" id="L58">        longRange = Range.between(10L, 20L);</span>
+<span class="fc" id="L59">        floatRange = Range.between((float) 10, (float) 20);</span>
+<span class="fc" id="L60">        doubleRange = Range.between((double) 10, (double) 20);</span>
+<span class="fc" id="L61">    }</span>
+
+    // -----------------------------------------------------------------------
+    @SuppressWarnings({ &quot;rawtypes&quot;, &quot;unchecked&quot; })
+    @Test
+    public void testComparableConstructors() {
+<span class="fc" id="L67">        final Comparable c = other -&gt; 1;</span>
+<span class="fc" id="L68">        final Range r1 = Range.is(c);</span>
+<span class="fc" id="L69">        final Range r2 = Range.between(c, c);</span>
+<span class="fc" id="L70">        assertTrue(r1.isNaturalOrdering());</span>
+<span class="fc" id="L71">        assertTrue(r2.isNaturalOrdering());</span>
+<span class="fc" id="L72">    }</span>
+
+    @Test
+    public void testIsWithCompare() {
+        // all integers are equal
+<span class="fc" id="L77">        final Comparator&lt;Integer&gt; c = (o1, o2) -&gt; 0;</span>
+<span class="fc" id="L78">        Range&lt;Integer&gt; ri = Range.is(10);</span>
+<span class="fc" id="L79">        assertFalse(ri.contains(null), &quot;should not contain null&quot;);</span>
+<span class="fc" id="L80">        assertTrue(ri.contains(10), &quot;should contain 10&quot;);</span>
+<span class="fc" id="L81">        assertFalse(ri.contains(11), &quot;should not contain 11&quot;);</span>
+<span class="fc" id="L82">        ri = Range.is(10, c);</span>
+<span class="fc" id="L83">        assertFalse(ri.contains(null), &quot;should not contain null&quot;);</span>
+<span class="fc" id="L84">        assertTrue(ri.contains(10), &quot;should contain 10&quot;);</span>
+<span class="fc" id="L85">        assertTrue(ri.contains(11), &quot;should contain 11&quot;);</span>
+<span class="fc" id="L86">    }</span>
+
+    @Test
+    public void testBetweenWithCompare() {
+        // all integers are equal
+<span class="fc" id="L91">        final Comparator&lt;Integer&gt; c = (o1, o2) -&gt; 0;</span>
+<span class="fc" id="L92">        final Comparator&lt;String&gt; lengthComp = Comparator.comparingInt(String::length);</span>
+<span class="fc" id="L93">        Range&lt;Integer&gt; rb = Range.between(-10, 20);</span>
+<span class="fc" id="L94">        assertFalse(rb.contains(null), &quot;should not contain null&quot;);</span>
+<span class="fc" id="L95">        assertTrue(rb.contains(10), &quot;should contain 10&quot;);</span>
+<span class="fc" id="L96">        assertTrue(rb.contains(-10), &quot;should contain -10&quot;);</span>
+<span class="fc" id="L97">        assertFalse(rb.contains(21), &quot;should not contain 21&quot;);</span>
+<span class="fc" id="L98">        assertFalse(rb.contains(-11), &quot;should not contain -11&quot;);</span>
+<span class="fc" id="L99">        rb = Range.between(-10, 20, c);</span>
+<span class="fc" id="L100">        assertFalse(rb.contains(null), &quot;should not contain null&quot;);</span>
+<span class="fc" id="L101">        assertTrue(rb.contains(10), &quot;should contain 10&quot;);</span>
+<span class="fc" id="L102">        assertTrue(rb.contains(-10), &quot;should contain -10&quot;);</span>
+<span class="fc" id="L103">        assertTrue(rb.contains(21), &quot;should contain 21&quot;);</span>
+<span class="fc" id="L104">        assertTrue(rb.contains(-11), &quot;should contain -11&quot;);</span>
+<span class="fc" id="L105">        Range&lt;String&gt; rbstr = Range.between(&quot;house&quot;, &quot;i&quot;);</span>
+<span class="fc" id="L106">        assertFalse(rbstr.contains(null), &quot;should not contain null&quot;);</span>
+<span class="fc" id="L107">        assertTrue(rbstr.contains(&quot;house&quot;), &quot;should contain house&quot;);</span>
+<span class="fc" id="L108">        assertTrue(rbstr.contains(&quot;i&quot;), &quot;should contain i&quot;);</span>
+<span class="fc" id="L109">        assertFalse(rbstr.contains(&quot;hose&quot;), &quot;should not contain hose&quot;);</span>
+<span class="fc" id="L110">        assertFalse(rbstr.contains(&quot;ice&quot;), &quot;should not contain ice&quot;);</span>
+<span class="fc" id="L111">        rbstr = Range.between(&quot;house&quot;, &quot;i&quot;, lengthComp);</span>
+<span class="fc" id="L112">        assertFalse(rbstr.contains(null), &quot;should not contain null&quot;);</span>
+<span class="fc" id="L113">        assertTrue(rbstr.contains(&quot;house&quot;), &quot;should contain house&quot;);</span>
+<span class="fc" id="L114">        assertTrue(rbstr.contains(&quot;i&quot;), &quot;should contain i&quot;);</span>
+<span class="fc" id="L115">        assertFalse(rbstr.contains(&quot;houses&quot;), &quot;should not contain houses&quot;);</span>
+<span class="fc" id="L116">        assertFalse(rbstr.contains(&quot;&quot;), &quot;should not contain ''&quot;);</span>
+<span class="fc" id="L117">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testRangeOfChars() {
+<span class="fc" id="L122">        final Range&lt;Character&gt; chars = Range.between('a', 'z');</span>
+<span class="fc" id="L123">        assertTrue(chars.contains('b'));</span>
+<span class="fc" id="L124">        assertFalse(chars.contains('B'));</span>
+<span class="fc" id="L125">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testEqualsObject() {
+<span class="fc" id="L130">        assertEquals(byteRange, byteRange);</span>
+<span class="fc" id="L131">        assertEquals(byteRange, byteRange2);</span>
+<span class="fc" id="L132">        assertEquals(byteRange2, byteRange2);</span>
+<span class="fc" id="L133">        assertEquals(byteRange, byteRange);</span>
+<span class="fc" id="L134">        assertEquals(byteRange2, byteRange2);</span>
+<span class="fc" id="L135">        assertEquals(byteRange3, byteRange3);</span>
+<span class="fc" id="L136">        assertNotEquals(byteRange2, byteRange3);</span>
+<span class="fc" id="L137">        assertNotEquals(null, byteRange2);</span>
+<span class="fc" id="L138">        assertNotEquals(&quot;Ni!&quot;, byteRange2);</span>
+<span class="fc" id="L139">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L143">        assertEquals(byteRange.hashCode(), byteRange2.hashCode());</span>
+<span class="fc" id="L144">        assertNotEquals(byteRange.hashCode(), byteRange3.hashCode());</span>
+
+<span class="fc" id="L146">        assertEquals(intRange.hashCode(), intRange.hashCode());</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        assertTrue(intRange.hashCode() != 0);</span>
+<span class="fc" id="L148">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L152">        assertNotNull(byteRange.toString());</span>
+
+<span class="fc" id="L154">        final String str = intRange.toString();</span>
+<span class="fc" id="L155">        assertEquals(&quot;[10..20]&quot;, str);</span>
+<span class="fc" id="L156">        assertEquals(&quot;[-20..-10]&quot;, Range.between(-20, -10).toString());</span>
+<span class="fc" id="L157">    }</span>
+
+    @Test
+    public void testToStringFormat() {
+<span class="fc" id="L161">        final String str = intRange.toString(&quot;From %1$s to %2$s&quot;);</span>
+<span class="fc" id="L162">        assertEquals(&quot;From 10 to 20&quot;, str);</span>
+<span class="fc" id="L163">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testGetMinimum() {
+<span class="fc" id="L168">        assertEquals(10, (int) intRange.getMinimum());</span>
+<span class="fc" id="L169">        assertEquals(10L, (long) longRange.getMinimum());</span>
+<span class="fc" id="L170">        assertEquals(10f, floatRange.getMinimum(), 0.00001f);</span>
+<span class="fc" id="L171">        assertEquals(10d, doubleRange.getMinimum(), 0.00001d);</span>
+<span class="fc" id="L172">    }</span>
+
+    @Test
+    public void testGetMaximum() {
+<span class="fc" id="L176">        assertEquals(20, (int) intRange.getMaximum());</span>
+<span class="fc" id="L177">        assertEquals(20L, (long) longRange.getMaximum());</span>
+<span class="fc" id="L178">        assertEquals(20f, floatRange.getMaximum(), 0.00001f);</span>
+<span class="fc" id="L179">        assertEquals(20d, doubleRange.getMaximum(), 0.00001d);</span>
+<span class="fc" id="L180">    }</span>
+
+    @Test
+    public void testContains() {
+<span class="fc" id="L184">        assertFalse(intRange.contains(null));</span>
+
+<span class="fc" id="L186">        assertFalse(intRange.contains(5));</span>
+<span class="fc" id="L187">        assertTrue(intRange.contains(10));</span>
+<span class="fc" id="L188">        assertTrue(intRange.contains(15));</span>
+<span class="fc" id="L189">        assertTrue(intRange.contains(20));</span>
+<span class="fc" id="L190">        assertFalse(intRange.contains(25));</span>
+<span class="fc" id="L191">    }</span>
+
+    @Test
+    public void testIsAfter() {
+<span class="fc" id="L195">        assertFalse(intRange.isAfter(null));</span>
+
+<span class="fc" id="L197">        assertTrue(intRange.isAfter(5));</span>
+<span class="fc" id="L198">        assertFalse(intRange.isAfter(10));</span>
+<span class="fc" id="L199">        assertFalse(intRange.isAfter(15));</span>
+<span class="fc" id="L200">        assertFalse(intRange.isAfter(20));</span>
+<span class="fc" id="L201">        assertFalse(intRange.isAfter(25));</span>
+<span class="fc" id="L202">    }</span>
+
+    @Test
+    public void testIsStartedBy() {
+<span class="fc" id="L206">        assertFalse(intRange.isStartedBy(null));</span>
+
+<span class="fc" id="L208">        assertFalse(intRange.isStartedBy(5));</span>
+<span class="fc" id="L209">        assertTrue(intRange.isStartedBy(10));</span>
+<span class="fc" id="L210">        assertFalse(intRange.isStartedBy(15));</span>
+<span class="fc" id="L211">        assertFalse(intRange.isStartedBy(20));</span>
+<span class="fc" id="L212">        assertFalse(intRange.isStartedBy(25));</span>
+<span class="fc" id="L213">    }</span>
+
+    @Test
+    public void testIsEndedBy() {
+<span class="fc" id="L217">        assertFalse(intRange.isEndedBy(null));</span>
+
+<span class="fc" id="L219">        assertFalse(intRange.isEndedBy(5));</span>
+<span class="fc" id="L220">        assertFalse(intRange.isEndedBy(10));</span>
+<span class="fc" id="L221">        assertFalse(intRange.isEndedBy(15));</span>
+<span class="fc" id="L222">        assertTrue(intRange.isEndedBy(20));</span>
+<span class="fc" id="L223">        assertFalse(intRange.isEndedBy(25));</span>
+<span class="fc" id="L224">    }</span>
+
+    @Test
+    public void testIsBefore() {
+<span class="fc" id="L228">        assertFalse(intRange.isBefore(null));</span>
+
+<span class="fc" id="L230">        assertFalse(intRange.isBefore(5));</span>
+<span class="fc" id="L231">        assertFalse(intRange.isBefore(10));</span>
+<span class="fc" id="L232">        assertFalse(intRange.isBefore(15));</span>
+<span class="fc" id="L233">        assertFalse(intRange.isBefore(20));</span>
+<span class="fc" id="L234">        assertTrue(intRange.isBefore(25));</span>
+<span class="fc" id="L235">    }</span>
+
+    @Test
+    public void testElementCompareTo() {
+<span class="pc" id="L239">        assertThrows(NullPointerException.class, () -&gt; intRange.elementCompareTo(null));</span>
+
+<span class="fc" id="L241">        assertEquals(-1, intRange.elementCompareTo(5));</span>
+<span class="fc" id="L242">        assertEquals(0, intRange.elementCompareTo(10));</span>
+<span class="fc" id="L243">        assertEquals(0, intRange.elementCompareTo(15));</span>
+<span class="fc" id="L244">        assertEquals(0, intRange.elementCompareTo(20));</span>
+<span class="fc" id="L245">        assertEquals(1, intRange.elementCompareTo(25));</span>
+<span class="fc" id="L246">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testContainsRange() {
+
+        // null handling
+<span class="fc" id="L253">        assertFalse(intRange.containsRange(null));</span>
+
+        // easy inside range
+<span class="fc" id="L256">        assertTrue(intRange.containsRange(Range.between(12, 18)));</span>
+
+        // outside range on each side
+<span class="fc" id="L259">        assertFalse(intRange.containsRange(Range.between(32, 45)));</span>
+<span class="fc" id="L260">        assertFalse(intRange.containsRange(Range.between(2, 8)));</span>
+
+        // equals range
+<span class="fc" id="L263">        assertTrue(intRange.containsRange(Range.between(10, 20)));</span>
+
+        // overlaps
+<span class="fc" id="L266">        assertFalse(intRange.containsRange(Range.between(9, 14)));</span>
+<span class="fc" id="L267">        assertFalse(intRange.containsRange(Range.between(16, 21)));</span>
+
+        // touches lower boundary
+<span class="fc" id="L270">        assertTrue(intRange.containsRange(Range.between(10, 19)));</span>
+<span class="fc" id="L271">        assertFalse(intRange.containsRange(Range.between(10, 21)));</span>
+
+        // touches upper boundary
+<span class="fc" id="L274">        assertTrue(intRange.containsRange(Range.between(11, 20)));</span>
+<span class="fc" id="L275">        assertFalse(intRange.containsRange(Range.between(9, 20)));</span>
+
+        // negative
+<span class="fc" id="L278">        assertFalse(intRange.containsRange(Range.between(-11, -18)));</span>
+<span class="fc" id="L279">    }</span>
+
+    @Test
+    public void testIsAfterRange() {
+<span class="fc" id="L283">        assertFalse(intRange.isAfterRange(null));</span>
+
+<span class="fc" id="L285">        assertTrue(intRange.isAfterRange(Range.between(5, 9)));</span>
+
+<span class="fc" id="L287">        assertFalse(intRange.isAfterRange(Range.between(5, 10)));</span>
+<span class="fc" id="L288">        assertFalse(intRange.isAfterRange(Range.between(5, 20)));</span>
+<span class="fc" id="L289">        assertFalse(intRange.isAfterRange(Range.between(5, 25)));</span>
+<span class="fc" id="L290">        assertFalse(intRange.isAfterRange(Range.between(15, 25)));</span>
+
+<span class="fc" id="L292">        assertFalse(intRange.isAfterRange(Range.between(21, 25)));</span>
+
+<span class="fc" id="L294">        assertFalse(intRange.isAfterRange(Range.between(10, 20)));</span>
+<span class="fc" id="L295">    }</span>
+
+    @Test
+    public void testIsOverlappedBy() {
+
+        // null handling
+<span class="fc" id="L301">        assertFalse(intRange.isOverlappedBy(null));</span>
+
+        // easy inside range
+<span class="fc" id="L304">        assertTrue(intRange.isOverlappedBy(Range.between(12, 18)));</span>
+
+        // outside range on each side
+<span class="fc" id="L307">        assertFalse(intRange.isOverlappedBy(Range.between(32, 45)));</span>
+<span class="fc" id="L308">        assertFalse(intRange.isOverlappedBy(Range.between(2, 8)));</span>
+
+        // equals range
+<span class="fc" id="L311">        assertTrue(intRange.isOverlappedBy(Range.between(10, 20)));</span>
+
+        // overlaps
+<span class="fc" id="L314">        assertTrue(intRange.isOverlappedBy(Range.between(9, 14)));</span>
+<span class="fc" id="L315">        assertTrue(intRange.isOverlappedBy(Range.between(16, 21)));</span>
+
+        // touches lower boundary
+<span class="fc" id="L318">        assertTrue(intRange.isOverlappedBy(Range.between(10, 19)));</span>
+<span class="fc" id="L319">        assertTrue(intRange.isOverlappedBy(Range.between(10, 21)));</span>
+
+        // touches upper boundary
+<span class="fc" id="L322">        assertTrue(intRange.isOverlappedBy(Range.between(11, 20)));</span>
+<span class="fc" id="L323">        assertTrue(intRange.isOverlappedBy(Range.between(9, 20)));</span>
+
+        // negative
+<span class="fc" id="L326">        assertFalse(intRange.isOverlappedBy(Range.between(-11, -18)));</span>
+<span class="fc" id="L327">    }</span>
+
+    @Test
+    public void testIsBeforeRange() {
+<span class="fc" id="L331">        assertFalse(intRange.isBeforeRange(null));</span>
+
+<span class="fc" id="L333">        assertFalse(intRange.isBeforeRange(Range.between(5, 9)));</span>
+
+<span class="fc" id="L335">        assertFalse(intRange.isBeforeRange(Range.between(5, 10)));</span>
+<span class="fc" id="L336">        assertFalse(intRange.isBeforeRange(Range.between(5, 20)));</span>
+<span class="fc" id="L337">        assertFalse(intRange.isBeforeRange(Range.between(5, 25)));</span>
+<span class="fc" id="L338">        assertFalse(intRange.isBeforeRange(Range.between(15, 25)));</span>
+
+<span class="fc" id="L340">        assertTrue(intRange.isBeforeRange(Range.between(21, 25)));</span>
+
+<span class="fc" id="L342">        assertFalse(intRange.isBeforeRange(Range.between(10, 20)));</span>
+<span class="fc" id="L343">    }</span>
+
+    @Test
+    public void testIntersectionWith() {
+<span class="fc" id="L347">        assertSame(intRange, intRange.intersectionWith(intRange));</span>
+<span class="fc" id="L348">        assertSame(byteRange, byteRange.intersectionWith(byteRange));</span>
+<span class="fc" id="L349">        assertSame(longRange, longRange.intersectionWith(longRange));</span>
+<span class="fc" id="L350">        assertSame(floatRange, floatRange.intersectionWith(floatRange));</span>
+<span class="fc" id="L351">        assertSame(doubleRange, doubleRange.intersectionWith(doubleRange));</span>
+
+<span class="fc" id="L353">        assertEquals(Range.between(10, 15), intRange.intersectionWith(Range.between(5, 15)));</span>
+<span class="fc" id="L354">    }</span>
+
+    @Test
+    public void testIntersectionWithNull() {
+<span class="pc" id="L358">        assertThrows(IllegalArgumentException.class, () -&gt; intRange.intersectionWith(null));</span>
+<span class="fc" id="L359">    }</span>
+
+    @Test
+    public void testIntersectionWithNonOverlapping() {
+<span class="pc" id="L363">        assertThrows(IllegalArgumentException.class, () -&gt; intRange.intersectionWith(Range.between(0, 9)));</span>
+<span class="fc" id="L364">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testSerializing() {
+<span class="fc" id="L369">        SerializationUtils.clone(intRange);</span>
+<span class="fc" id="L370">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

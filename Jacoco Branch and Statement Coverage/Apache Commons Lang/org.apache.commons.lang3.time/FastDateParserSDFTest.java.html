@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FastDateParserSDFTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.time</a> &gt; <span class="el_source">FastDateParserSDFTest.java</span></div><h1>FastDateParserSDFTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.time;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+/**
+ * Compare FastDateParser with SimpleDateFormat
+ */
+<span class="fc" id="L39">public class FastDateParserSDFTest {</span>
+
+    public static Stream&lt;Arguments&gt; data() {
+<span class="fc" id="L42">        return Stream.of(</span>
+                // General Time zone tests
+<span class="fc" id="L44">                Arguments.of(&quot;z yyyy&quot;, &quot;GMT 2010&quot;,       Locale.UK, true), // no offset specified, but this is allowed as a TimeZone name</span>
+<span class="fc" id="L45">                Arguments.of(&quot;z yyyy&quot;, &quot;GMT-123 2010&quot;,   Locale.UK, false),</span>
+<span class="fc" id="L46">                Arguments.of(&quot;z yyyy&quot;, &quot;GMT-1234 2010&quot;,  Locale.UK, false),</span>
+<span class="fc" id="L47">                Arguments.of(&quot;z yyyy&quot;, &quot;GMT-12:34 2010&quot;, Locale.UK, true),</span>
+<span class="fc" id="L48">                Arguments.of(&quot;z yyyy&quot;, &quot;GMT-1:23 2010&quot;,  Locale.UK, true),</span>
+                // RFC 822 tests
+<span class="fc" id="L50">                Arguments.of(&quot;z yyyy&quot;, &quot;-1234 2010&quot;,     Locale.UK, true),</span>
+<span class="fc" id="L51">                Arguments.of(&quot;z yyyy&quot;, &quot;-12:34 2010&quot;,    Locale.UK, false),</span>
+<span class="fc" id="L52">                Arguments.of(&quot;z yyyy&quot;, &quot;-123 2010&quot;,      Locale.UK, false),</span>
+                // year tests
+<span class="fc" id="L54">                Arguments.of( &quot;MM/dd/yyyy&quot;, &quot;01/11/12&quot;,  Locale.UK, true),</span>
+<span class="fc" id="L55">                Arguments.of( &quot;MM/dd/yy&quot;, &quot;01/11/12&quot;,    Locale.UK, true),</span>
+
+                // LANG-1089
+<span class="fc" id="L58">                Arguments.of( &quot;HH&quot;, &quot;00&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L59">                Arguments.of( &quot;KK&quot;, &quot;00&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L60">                Arguments.of( &quot;hh&quot;, &quot;00&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L61">                Arguments.of( &quot;kk&quot;, &quot;00&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L63">                Arguments.of( &quot;HH&quot;, &quot;01&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L64">                Arguments.of( &quot;KK&quot;, &quot;01&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L65">                Arguments.of( &quot;hh&quot;, &quot;01&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L66">                Arguments.of( &quot;kk&quot;, &quot;01&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L68">                Arguments.of( &quot;HH&quot;, &quot;11&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L69">                Arguments.of( &quot;KK&quot;, &quot;11&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L70">                Arguments.of( &quot;hh&quot;, &quot;11&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L71">                Arguments.of( &quot;kk&quot;, &quot;11&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L73">                Arguments.of( &quot;HH&quot;, &quot;12&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L74">                Arguments.of( &quot;KK&quot;, &quot;12&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L75">                Arguments.of( &quot;hh&quot;, &quot;12&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L76">                Arguments.of( &quot;kk&quot;, &quot;12&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L78">                Arguments.of( &quot;HH&quot;, &quot;13&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L79">                Arguments.of( &quot;KK&quot;, &quot;13&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L80">                Arguments.of( &quot;hh&quot;, &quot;13&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L81">                Arguments.of( &quot;kk&quot;, &quot;13&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L83">                Arguments.of( &quot;HH&quot;, &quot;23&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L84">                Arguments.of( &quot;KK&quot;, &quot;23&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L85">                Arguments.of( &quot;hh&quot;, &quot;23&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L86">                Arguments.of( &quot;kk&quot;, &quot;23&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L88">                Arguments.of( &quot;HH&quot;, &quot;24&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L89">                Arguments.of( &quot;KK&quot;, &quot;24&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L90">                Arguments.of( &quot;hh&quot;, &quot;24&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L91">                Arguments.of( &quot;kk&quot;, &quot;24&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L93">                Arguments.of( &quot;HH&quot;, &quot;25&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L94">                Arguments.of( &quot;KK&quot;, &quot;25&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L95">                Arguments.of( &quot;hh&quot;, &quot;25&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L96">                Arguments.of( &quot;kk&quot;, &quot;25&quot;,    Locale.UK, true), // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+
+<span class="fc" id="L98">                Arguments.of( &quot;HH&quot;, &quot;48&quot;,    Locale.UK, true), // Hour in day (0-23)</span>
+<span class="fc" id="L99">                Arguments.of( &quot;KK&quot;, &quot;48&quot;,    Locale.UK, true), // Hour in am/pm (0-11)</span>
+<span class="fc" id="L100">                Arguments.of( &quot;hh&quot;, &quot;48&quot;,    Locale.UK, true), // Hour in am/pm (1-12), i.e. midday/midnight is 12, not 0</span>
+<span class="fc" id="L101">                Arguments.of( &quot;kk&quot;, &quot;48&quot;,    Locale.UK, true)  // Hour in day (1-24), i.e. midnight is 24, not 0</span>
+        );
+    }
+
+<span class="fc" id="L105">    private static final TimeZone timeZone = TimeZone.getDefault();</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testOriginal(final String format, final String input, final Locale locale, final boolean valid) {
+<span class="fc" id="L110">        checkParse(input, format, locale, valid);</span>
+<span class="fc" id="L111">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testOriginalPP(final String format, final String input, final Locale locale, final boolean valid) {
+<span class="fc" id="L116">        checkParsePosition(input, format, locale, valid);</span>
+<span class="fc" id="L117">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testUpperCase(final String format, final String input, final Locale locale, final boolean valid) {
+<span class="fc" id="L122">        checkParse(input.toUpperCase(locale), format, locale, valid);</span>
+<span class="fc" id="L123">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testUpperCasePP(final String format, final String input, final Locale locale, final boolean valid) {
+<span class="fc" id="L128">        checkParsePosition(input.toUpperCase(locale), format, locale, valid);</span>
+<span class="fc" id="L129">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testLowerCase(final String format, final String input, final Locale locale, final boolean valid) {
+<span class="fc" id="L134">        checkParse(input.toLowerCase(locale), format, locale, valid);</span>
+<span class="fc" id="L135">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;data&quot;)
+    public void testLowerCasePP(final String format, final String input, final Locale locale, final boolean valid) {
+<span class="fc" id="L140">        checkParsePosition(input.toLowerCase(locale), format, locale, valid);</span>
+<span class="fc" id="L141">    }</span>
+
+    private void checkParse(final String formattedDate, String format, Locale locale, boolean valid) {
+<span class="fc" id="L144">        final SimpleDateFormat sdf = new SimpleDateFormat(format, locale);</span>
+<span class="fc" id="L145">        sdf.setTimeZone(timeZone);</span>
+<span class="fc" id="L146">        final DateParser fdf = new FastDateParser(format, timeZone, locale);</span>
+<span class="fc" id="L147">        Date expectedTime=null;</span>
+<span class="fc" id="L148">        Class&lt;?&gt; sdfE = null;</span>
+        try {
+<span class="fc" id="L150">            expectedTime = sdf.parse(formattedDate);</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">            if (!valid) {</span>
+                // Error in test data
+<span class="nc" id="L153">                throw new RuntimeException(&quot;Test data error: expected SDF parse to fail, but got &quot; + expectedTime);</span>
+            }
+<span class="fc" id="L155">        } catch (final ParseException e) {</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">            if (valid) {</span>
+                // Error in test data
+<span class="nc" id="L158">                throw new RuntimeException(&quot;Test data error: expected SDF parse to succeed, but got &quot; + e);</span>
+            }
+<span class="fc" id="L160">            sdfE = e.getClass();</span>
+<span class="fc" id="L161">        }</span>
+<span class="fc" id="L162">        Date actualTime = null;</span>
+<span class="fc" id="L163">        Class&lt;?&gt; fdfE = null;</span>
+        try {
+<span class="fc" id="L165">            actualTime = fdf.parse(formattedDate);</span>
+            // failure in test
+<span class="fc" id="L167">            assertTrue(valid, &quot;Expected FDP parse to fail, but got &quot; + actualTime);</span>
+<span class="fc" id="L168">        } catch (final ParseException e) {</span>
+            // failure in test
+<span class="fc" id="L170">            assertFalse(valid, &quot;Expected FDP parse to succeed, but got &quot; + e);</span>
+<span class="fc" id="L171">            fdfE = e.getClass();</span>
+<span class="fc" id="L172">        }</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        if (valid) {</span>
+<span class="fc" id="L174">            assertEquals(expectedTime, actualTime, locale.toString()+&quot; &quot;+formattedDate +&quot;\n&quot;);</span>
+        } else {
+<span class="fc" id="L176">            assertEquals(sdfE, fdfE, locale.toString()+&quot; &quot;+formattedDate + &quot; expected same Exception &quot;);</span>
+        }
+<span class="fc" id="L178">    }</span>
+    private void checkParsePosition(final String formattedDate, String format, Locale locale, boolean valid) {
+<span class="fc" id="L180">        final SimpleDateFormat sdf = new SimpleDateFormat(format, locale);</span>
+<span class="fc" id="L181">        sdf.setTimeZone(timeZone);</span>
+<span class="fc" id="L182">        final DateParser fdf = new FastDateParser(format, timeZone, locale);</span>
+
+<span class="fc" id="L184">        final ParsePosition sdfP = new ParsePosition(0);</span>
+<span class="fc" id="L185">        final Date expectedTime = sdf.parse(formattedDate, sdfP);</span>
+<span class="fc" id="L186">        final int sdferrorIndex = sdfP.getErrorIndex();</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        if (valid) {</span>
+<span class="fc" id="L188">            assertEquals(-1, sdferrorIndex, &quot;Expected SDF error index -1 &quot;);</span>
+<span class="fc" id="L189">            final int endIndex = sdfP.getIndex();</span>
+<span class="fc" id="L190">            final int length = formattedDate.length();</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">            if (endIndex != length) {</span>
+                // Error in test data
+<span class="nc" id="L193">                throw new RuntimeException(&quot;Test data error: expected SDF parse to consume entire string; endindex &quot; + endIndex + &quot; != &quot; + length);</span>
+            }
+<span class="fc" id="L195">        } else {</span>
+<span class="fc" id="L196">            final int errorIndex = sdfP.getErrorIndex();</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">            if (errorIndex == -1) {</span>
+<span class="nc" id="L198">                throw new RuntimeException(&quot;Test data error: expected SDF parse to fail, but got &quot; + expectedTime);</span>
+            }
+        }
+
+<span class="fc" id="L202">        final ParsePosition fdfP = new ParsePosition(0);</span>
+<span class="fc" id="L203">        final Date actualTime = fdf.parse(formattedDate, fdfP);</span>
+<span class="fc" id="L204">        final int fdferrorIndex = fdfP.getErrorIndex();</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (valid) {</span>
+<span class="fc" id="L206">            assertEquals(-1, fdferrorIndex, &quot;Expected FDF error index -1 &quot;);</span>
+<span class="fc" id="L207">            final int endIndex = fdfP.getIndex();</span>
+<span class="fc" id="L208">            final int length = formattedDate.length();</span>
+<span class="fc" id="L209">            assertEquals(length, endIndex, &quot;Expected FDF to parse full string &quot; + fdfP);</span>
+<span class="fc" id="L210">            assertEquals(expectedTime, actualTime, locale.toString()+&quot; &quot;+formattedDate +&quot;\n&quot;);</span>
+<span class="fc" id="L211">        } else {</span>
+<span class="fc" id="L212">            assertNotEquals(-1, fdferrorIndex, &quot;Test data error: expected FDF parse to fail, but got &quot; + actualTime);</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">            assertTrue(sdferrorIndex - fdferrorIndex &lt;= 4,</span>
+                    &quot;FDF error index (&quot;+ fdferrorIndex + &quot;) should approximate SDF index (&quot; + sdferrorIndex + &quot;)&quot;);
+        }
+<span class="fc" id="L216">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

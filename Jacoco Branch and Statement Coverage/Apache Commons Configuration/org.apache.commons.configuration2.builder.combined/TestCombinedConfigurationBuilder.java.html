@@ -1,0 +1,1616 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCombinedConfigurationBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestCombinedConfigurationBuilder.java</span></div><h1>TestCombinedConfigurationBuilder.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.CombinedConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.ConfigurationDecoder;
+import org.apache.commons.configuration2.DynamicCombinedConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.XMLPropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.BuilderEventListenerImpl;
+import org.apache.commons.configuration2.builder.ConfigurationBuilder;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderEvent;
+import org.apache.commons.configuration2.builder.CopyObjectDefaultHandler;
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.FileBasedBuilderProperties;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.PropertiesBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.XMLBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.XMLBuilderProperties;
+import org.apache.commons.configuration2.builder.fluent.CombinedBuilderParameters;
+import org.apache.commons.configuration2.builder.fluent.FileBasedBuilderParameters;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.builder.fluent.XMLBuilderParameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.Event;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.Lookup;
+import org.apache.commons.configuration2.io.DefaultFileSystem;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.io.FileLocatorUtils;
+import org.apache.commons.configuration2.io.FileSystem;
+import org.apache.commons.configuration2.reloading.ReloadingController;
+import org.apache.commons.configuration2.reloading.ReloadingControllerSupport;
+import org.apache.commons.configuration2.resolver.CatalogResolver;
+import org.apache.commons.configuration2.tree.DefaultExpressionEngine;
+import org.apache.commons.configuration2.tree.DefaultExpressionEngineSymbols;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
+import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code CombinedConfigurationBuilder}.
+ *
+ */
+<span class="fc" id="L93">public class TestCombinedConfigurationBuilder</span>
+{
+    /** Test configuration definition file. */
+<span class="fc" id="L96">    private static final File TEST_FILE = ConfigurationAssert</span>
+<span class="fc" id="L97">            .getTestFile(&quot;testDigesterConfiguration.xml&quot;);</span>
+
+    /** Test file name for a sub configuration. */
+    private static final String TEST_SUB_XML = &quot;test.xml&quot;;
+
+    /** Constant for a named builder. */
+    private static final String BUILDER_NAME = &quot;subBuilderName&quot;;
+
+    /**
+     * The name of the system property for selecting a file managed by a
+     * MultiFileConfigurationBuilder.
+     */
+    private static final String MULTI_FILE_PROPERTY = &quot;Id&quot;;
+
+    /** A helper object for creating builder parameters. */
+    protected Parameters parameters;
+
+    /** Stores the object to be tested. */
+    protected CombinedConfigurationBuilder builder;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L120">        System.setProperty(&quot;java.naming.factory.initial&quot;,</span>
+                &quot;org.apache.commons.configuration2.MockInitialContextFactory&quot;);
+<span class="fc" id="L122">        System.setProperty(&quot;test_file_xml&quot;, TEST_SUB_XML);</span>
+<span class="fc" id="L123">        System.setProperty(&quot;test_file_combine&quot;, &quot;testcombine1.xml&quot;);</span>
+<span class="fc" id="L124">        parameters = new Parameters();</span>
+<span class="fc" id="L125">        builder = new CombinedConfigurationBuilder();</span>
+<span class="fc" id="L126">    }</span>
+
+    @After
+    public void tearDown() throws Exception
+    {
+<span class="fc" id="L131">        System.getProperties().remove(MULTI_FILE_PROPERTY);</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Creates a configuration builder for the definition configuration which
+     * always returns the passed in definition configuration.
+     *
+     * @param defConfig the definition configuration
+     * @return the definition builder
+     */
+    protected static BasicConfigurationBuilder&lt;? extends BaseHierarchicalConfiguration&gt; createDefinitionBuilder(
+            final BaseHierarchicalConfiguration defConfig)
+    {
+<span class="fc" id="L144">        return new ConstantConfigurationBuilder(defConfig);</span>
+    }
+
+    /**
+     * Convenience method for creating a definition configuration. This method
+     * creates a configuration containing a tag referring to a configuration
+     * source. The tag has attributes defined by the given map.
+     *
+     * @param tag the name of the tag to create
+     * @param attrs the attributes of this tag
+     * @return the definition configuration
+     */
+    protected static BaseHierarchicalConfiguration createDefinitionConfig(final String tag,
+            final Map&lt;String, Object&gt; attrs)
+    {
+<span class="fc" id="L159">        final BaseHierarchicalConfiguration defConfig =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L161">        final String prefix = &quot;override.&quot; + tag;</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        for (final Map.Entry&lt;String, Object&gt; e : attrs.entrySet())</span>
+        {
+<span class="fc" id="L164">            defConfig.addProperty(prefix + &quot;[@&quot; + e.getKey() + &quot;]&quot;,</span>
+<span class="fc" id="L165">                    e.getValue());</span>
+<span class="fc" id="L166">        }</span>
+<span class="fc" id="L167">        return defConfig;</span>
+    }
+
+    /**
+     * Creates an object with parameters for defining the file to be loaded.
+     *
+     * @return the parameters object
+     */
+    protected FileBasedBuilderParameters createParameters()
+    {
+<span class="fc" id="L177">        return parameters.fileBased();</span>
+    }
+
+    /**
+     * Tries to build a configuration if no definition builder is provided.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testNoDefinitionBuilder() throws ConfigurationException
+    {
+<span class="nc" id="L186">        builder.getConfiguration();</span>
+<span class="nc" id="L187">    }</span>
+
+    /**
+     * Tests if the configuration was correctly created by the builder.
+     *
+     * @return the combined configuration obtained from the builder
+     */
+    private CombinedConfiguration checkConfiguration()
+            throws ConfigurationException
+    {
+<span class="fc" id="L197">        final CombinedConfiguration compositeConfiguration =</span>
+<span class="fc" id="L198">                builder.getConfiguration();</span>
+
+<span class="fc" id="L200">        assertEquals(&quot;Number of configurations&quot;, 3,</span>
+<span class="fc" id="L201">                compositeConfiguration.getNumberOfConfigurations());</span>
+<span class="fc" id="L202">        assertEquals(PropertiesConfiguration.class, compositeConfiguration</span>
+<span class="fc" id="L203">                .getConfiguration(0).getClass());</span>
+<span class="fc" id="L204">        assertEquals(XMLPropertiesConfiguration.class, compositeConfiguration</span>
+<span class="fc" id="L205">                .getConfiguration(1).getClass());</span>
+<span class="fc" id="L206">        assertEquals(XMLConfiguration.class, compositeConfiguration</span>
+<span class="fc" id="L207">                .getConfiguration(2).getClass());</span>
+
+        // check the first configuration
+<span class="fc" id="L210">        final PropertiesConfiguration pc =</span>
+                (PropertiesConfiguration) compositeConfiguration
+<span class="fc" id="L212">                        .getConfiguration(0);</span>
+<span class="fc" id="L213">        assertNotNull(&quot;No properties configuration&quot;, pc);</span>
+
+        // check some properties
+<span class="fc" id="L216">        checkProperties(compositeConfiguration);</span>
+<span class="fc" id="L217">        return compositeConfiguration;</span>
+    }
+
+    /**
+     * Checks if the passed in configuration contains the expected properties.
+     *
+     * @param compositeConfiguration the configuration to check
+     */
+    private void checkProperties(final Configuration compositeConfiguration)
+    {
+<span class="fc" id="L227">        assertTrue(&quot;Make sure we have loaded our key&quot;,</span>
+<span class="fc" id="L228">                compositeConfiguration.getBoolean(&quot;test.boolean&quot;));</span>
+<span class="fc" id="L229">        assertEquals(&quot;I'm complex!&quot;,</span>
+                compositeConfiguration
+<span class="fc" id="L231">                        .getProperty(&quot;element2.subelement.subsubelement&quot;));</span>
+<span class="fc" id="L232">        assertEquals(&quot;property in the XMLPropertiesConfiguration&quot;, &quot;value1&quot;,</span>
+<span class="fc" id="L233">                compositeConfiguration.getProperty(&quot;key1&quot;));</span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * Tests that the return value of configure() is overloaded.
+     */
+    @Test
+    public void testConfigureResult()
+    {
+<span class="fc" id="L242">        final CombinedConfigurationBuilder configuredBuilder =</span>
+<span class="fc" id="L243">                builder.configure(createParameters().setFile(TEST_FILE));</span>
+<span class="fc" id="L244">        assertSame(&quot;Wrong instance returned&quot;, builder, configuredBuilder);</span>
+<span class="fc" id="L245">    }</span>
+
+    /**
+     * Tests loading a simple configuration definition file.
+     */
+    @Test
+    public void testLoadConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L253">        builder.configure(createParameters()</span>
+<span class="fc" id="L254">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L255">        checkConfiguration();</span>
+<span class="fc" id="L256">    }</span>
+
+    /**
+     * Tests loading a configuration definition file with an additional section.
+     */
+    @Test
+    public void testLoadAdditional() throws ConfigurationException
+    {
+<span class="fc" id="L264">        final File additonalFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L266">                        .getTestFile(&quot;testDigesterConfiguration2.xml&quot;);</span>
+<span class="fc" id="L267">        builder.configure(createParameters()</span>
+<span class="fc" id="L268">                .setFile(additonalFile));</span>
+<span class="fc" id="L269">        final CombinedConfiguration compositeConfiguration =</span>
+<span class="fc" id="L270">                builder.getConfiguration();</span>
+<span class="fc" id="L271">        assertEquals(&quot;Verify how many configs&quot;, 2,</span>
+<span class="fc" id="L272">                compositeConfiguration.getNumberOfConfigurations());</span>
+
+        // Test if union was constructed correctly
+<span class="fc" id="L275">        Object prop = compositeConfiguration.getProperty(&quot;tables.table.name&quot;);</span>
+<span class="fc" id="L276">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L277">        assertEquals(3, ((Collection&lt;?&gt;) prop).size());</span>
+<span class="fc" id="L278">        assertEquals(&quot;users&quot;,</span>
+<span class="fc" id="L279">                compositeConfiguration.getProperty(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L280">        assertEquals(&quot;documents&quot;,</span>
+<span class="fc" id="L281">                compositeConfiguration.getProperty(&quot;tables.table(1).name&quot;));</span>
+<span class="fc" id="L282">        assertEquals(&quot;tasks&quot;,</span>
+<span class="fc" id="L283">                compositeConfiguration.getProperty(&quot;tables.table(2).name&quot;));</span>
+
+<span class="fc" id="L285">        prop =</span>
+                compositeConfiguration
+<span class="fc" id="L287">                        .getProperty(&quot;tables.table.fields.field.name&quot;);</span>
+<span class="fc" id="L288">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L289">        assertEquals(17, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L291">        assertEquals(&quot;smtp.mydomain.org&quot;,</span>
+<span class="fc" id="L292">                compositeConfiguration.getString(&quot;mail.host.smtp&quot;));</span>
+<span class="fc" id="L293">        assertEquals(&quot;pop3.mydomain.org&quot;,</span>
+<span class="fc" id="L294">                compositeConfiguration.getString(&quot;mail.host.pop&quot;));</span>
+
+        // This was overriden
+<span class="fc" id="L297">        assertEquals(&quot;masterOfPost&quot;,</span>
+<span class="fc" id="L298">                compositeConfiguration.getString(&quot;mail.account.user&quot;));</span>
+<span class="fc" id="L299">        assertEquals(&quot;topsecret&quot;,</span>
+<span class="fc" id="L300">                compositeConfiguration.getString(&quot;mail.account.psswd&quot;));</span>
+
+        // This was overridden, too, but not in additional section
+<span class="fc" id="L303">        assertEquals(&quot;enhanced factory&quot;,</span>
+<span class="fc" id="L304">                compositeConfiguration.getString(&quot;test.configuration&quot;));</span>
+<span class="fc" id="L305">    }</span>
+
+    /**
+     * Tests loading a definition file that contains optional configurations.
+     */
+    @Test
+    public void testLoadOptional() throws Exception
+    {
+<span class="fc" id="L313">        final File optionalFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L315">                        .getTestFile(&quot;testDigesterOptionalConfiguration.xml&quot;);</span>
+<span class="fc" id="L316">        builder.configure(createParameters()</span>
+<span class="fc" id="L317">                .setFile(optionalFile));</span>
+<span class="fc" id="L318">        final Configuration config = builder.getConfiguration();</span>
+<span class="fc" id="L319">        assertTrue(config.getBoolean(&quot;test.boolean&quot;));</span>
+<span class="fc" id="L320">        assertEquals(&quot;value&quot;, config.getProperty(&quot;element&quot;));</span>
+<span class="fc" id="L321">    }</span>
+
+    /**
+     * Tests loading a definition file with optional and non optional
+     * configuration sources. One non optional does not exist, so this should
+     * cause an exception.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testLoadOptionalWithException() throws ConfigurationException
+    {
+<span class="fc" id="L331">        final File optionalExFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L333">                        .getTestFile(&quot;testDigesterOptionalConfigurationEx.xml&quot;);</span>
+<span class="fc" id="L334">        builder.configure(createParameters()</span>
+<span class="fc" id="L335">                .setFile(optionalExFile));</span>
+<span class="nc" id="L336">        builder.getConfiguration();</span>
+<span class="nc" id="L337">    }</span>
+
+    /**
+     * Tests whether the force-create attribute is taken into account.
+     */
+    @Test
+    public void testLoadOptionalForceCreate() throws ConfigurationException
+    {
+<span class="fc" id="L345">        final String name = &quot;optionalConfig&quot;;</span>
+<span class="fc" id="L346">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L347">        attrs.put(&quot;fileName&quot;, &quot;nonExisting.xml&quot;);</span>
+<span class="fc" id="L348">        attrs.put(&quot;config-name&quot;, name);</span>
+<span class="fc" id="L349">        attrs.put(&quot;config-optional&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L350">        attrs.put(&quot;config-forceCreate&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L351">        final BaseHierarchicalConfiguration defConfig =</span>
+<span class="fc" id="L352">                createDefinitionConfig(&quot;xml&quot;, attrs);</span>
+<span class="fc" id="L353">        final BasicConfigurationBuilder&lt;? extends BaseHierarchicalConfiguration&gt; defBuilder =</span>
+<span class="fc" id="L354">                createDefinitionBuilder(defConfig);</span>
+<span class="fc" id="L355">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L356">                .setDefinitionBuilder(defBuilder));</span>
+<span class="fc" id="L357">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L358">        assertEquals(&quot;Wrong number of configurations&quot;, 1,</span>
+<span class="fc" id="L359">                cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L360">        assertTrue(&quot;Wrong configuration type&quot;,</span>
+<span class="fc" id="L361">                cc.getConfiguration(name) instanceof XMLConfiguration);</span>
+<span class="fc" id="L362">    }</span>
+
+    /**
+     * Tests the behavior of builderNames() before the result configuration has
+     * been created.
+     */
+    @Test
+    public void testBuilderNamesBeforeConfigurationAccess()
+    {
+<span class="fc" id="L371">        assertTrue(&quot;Got builders (1)&quot;, builder.builderNames().isEmpty());</span>
+<span class="fc" id="L372">        builder.configure(createParameters()</span>
+<span class="fc" id="L373">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L374">        assertTrue(&quot;Got builders (2)&quot;, builder.builderNames().isEmpty());</span>
+<span class="fc" id="L375">    }</span>
+
+    /**
+     * Tests whether the names of sub builders can be queried.
+     */
+    @Test
+    public void testBuilderNames() throws ConfigurationException
+    {
+<span class="fc" id="L383">        builder.configure(createParameters()</span>
+<span class="fc" id="L384">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L385">        builder.getConfiguration();</span>
+<span class="fc" id="L386">        final Set&lt;String&gt; names = builder.builderNames();</span>
+<span class="fc" id="L387">        final List&lt;String&gt; expected = Arrays.asList(&quot;props&quot;, &quot;xml&quot;);</span>
+<span class="fc" id="L388">        assertEquals(&quot;Wrong number of named builders&quot;, expected.size(),</span>
+<span class="fc" id="L389">                names.size());</span>
+<span class="fc" id="L390">        assertTrue(&quot;Wrong builder names: &quot; + names, names.containsAll(expected));</span>
+<span class="fc" id="L391">    }</span>
+
+    /**
+     * Tests that the collection with builder names cannot be manipulated.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testBuilderNamesManipulate() throws ConfigurationException
+    {
+<span class="fc" id="L399">        builder.configure(createParameters()</span>
+<span class="fc" id="L400">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L401">        builder.getConfiguration();</span>
+<span class="fc" id="L402">        final Set&lt;String&gt; names = builder.builderNames();</span>
+<span class="nc" id="L403">        names.add(BUILDER_NAME);</span>
+<span class="nc" id="L404">    }</span>
+
+    /**
+     * Tests whether named builders can be accessed.
+     */
+    @Test
+    public void testGetNamedBuilder() throws ConfigurationException
+    {
+<span class="fc" id="L412">        builder.configure(createParameters()</span>
+<span class="fc" id="L413">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L414">        builder.getConfiguration();</span>
+<span class="fc" id="L415">        final ConfigurationBuilder&lt;? extends Configuration&gt; propBuilder =</span>
+<span class="fc" id="L416">                builder.getNamedBuilder(&quot;props&quot;);</span>
+<span class="fc" id="L417">        assertTrue(&quot;Wrong builder class&quot;,</span>
+                propBuilder instanceof FileBasedConfigurationBuilder);
+<span class="fc" id="L419">        assertTrue(</span>
+                &quot;Wrong sub configuration&quot;,
+<span class="fc" id="L421">                propBuilder.getConfiguration() instanceof PropertiesConfiguration);</span>
+<span class="fc" id="L422">    }</span>
+
+    /**
+     * Tries to query a non-existing builder by name.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testGetNamedBuilderUnknown() throws ConfigurationException
+    {
+<span class="fc" id="L430">        builder.configure(createParameters()</span>
+<span class="fc" id="L431">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L432">        builder.getConfiguration();</span>
+<span class="nc" id="L433">        builder.getNamedBuilder(&quot;nonExistingBuilder&quot;);</span>
+<span class="nc" id="L434">    }</span>
+
+    /**
+     * Tries to query a named builder before the result configuration has been
+     * created.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testGetNamedBuilderBeforeConfigurationAccess()
+            throws ConfigurationException
+    {
+<span class="fc" id="L444">        builder.configure(createParameters()</span>
+<span class="fc" id="L445">                .setFile(TEST_FILE));</span>
+<span class="nc" id="L446">        builder.getNamedBuilder(&quot;nonExistingBuilder&quot;);</span>
+<span class="nc" id="L447">    }</span>
+
+    /**
+     * Prepares a test with a combined configuration that uses a single sub
+     * builder. This method adds some default attributes to the given map,
+     * creates the corresponding definition builder and configures the combined
+     * builder.
+     *
+     * @param attrs the map with attributes
+     * @return the definition builder
+     */
+    private BasicConfigurationBuilder&lt;? extends HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; prepareSubBuilderTest(
+            final Map&lt;String, Object&gt; attrs)
+    {
+<span class="fc" id="L461">        attrs.put(&quot;fileName&quot;, TEST_SUB_XML);</span>
+<span class="fc" id="L462">        attrs.put(&quot;config-name&quot;, BUILDER_NAME);</span>
+<span class="fc" id="L463">        final BaseHierarchicalConfiguration defConfig =</span>
+<span class="fc" id="L464">                createDefinitionConfig(&quot;xml&quot;, attrs);</span>
+<span class="fc" id="L465">        final BasicConfigurationBuilder&lt;? extends HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; defBuilder =</span>
+<span class="fc" id="L466">                createDefinitionBuilder(defConfig);</span>
+<span class="fc" id="L467">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L468">                .setDefinitionBuilder(defBuilder));</span>
+<span class="fc" id="L469">        return defBuilder;</span>
+    }
+
+    /**
+     * Tests a reset of the builder. The configuration instance should be
+     * created anew.
+     */
+    @Test
+    public void testResetBuilder() throws ConfigurationException
+    {
+<span class="fc" id="L479">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L480">        final BasicConfigurationBuilder&lt;? extends HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; defBuilder =</span>
+<span class="fc" id="L481">                prepareSubBuilderTest(attrs);</span>
+<span class="fc" id="L482">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L483">        final ConfigurationBuilder&lt;? extends Configuration&gt; subBuilder =</span>
+<span class="fc" id="L484">                builder.getNamedBuilder(BUILDER_NAME);</span>
+<span class="fc" id="L485">        defBuilder.reset();</span>
+<span class="fc" id="L486">        final CombinedConfiguration cc2 = builder.getConfiguration();</span>
+<span class="fc" id="L487">        assertNotSame(&quot;No new configuration instance&quot;, cc, cc2);</span>
+<span class="fc" id="L488">        final ConfigurationBuilder&lt;? extends Configuration&gt; subBuilder2 =</span>
+<span class="fc" id="L489">                builder.getNamedBuilder(BUILDER_NAME);</span>
+<span class="fc" id="L490">        assertNotSame(&quot;No new sub builder instance&quot;, subBuilder, subBuilder2);</span>
+<span class="fc" id="L491">    }</span>
+
+    /**
+     * Tests whether a reloading sub builder can be created.
+     */
+    @Test
+    public void testReloadingBuilder() throws ConfigurationException
+    {
+<span class="fc" id="L499">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L500">        attrs.put(&quot;config-reload&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L501">        prepareSubBuilderTest(attrs);</span>
+<span class="fc" id="L502">        builder.getConfiguration();</span>
+<span class="fc" id="L503">        assertTrue(</span>
+                &quot;Not a reloading builder&quot;,
+<span class="fc" id="L505">                builder.getNamedBuilder(BUILDER_NAME) instanceof ReloadingFileBasedConfigurationBuilder);</span>
+<span class="fc" id="L506">    }</span>
+
+    /**
+     * Tests whether a reset of one of the sub builders causes the combined
+     * configuration to be re-created.
+     */
+    @Test
+    public void testReactOnSubBuilderChange() throws ConfigurationException
+    {
+<span class="fc" id="L515">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L516">        prepareSubBuilderTest(attrs);</span>
+<span class="fc" id="L517">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L518">        final BasicConfigurationBuilder&lt;?&gt; subBuilder =</span>
+                (BasicConfigurationBuilder&lt;?&gt;) builder
+<span class="fc" id="L520">                        .getNamedBuilder(BUILDER_NAME);</span>
+<span class="fc" id="L521">        subBuilder.reset();</span>
+<span class="fc" id="L522">        assertNotSame(&quot;Configuration not newly created&quot;, cc,</span>
+<span class="fc" id="L523">                builder.getConfiguration());</span>
+<span class="fc" id="L524">    }</span>
+
+    /**
+     * Tests that change listeners registered at sub builders are removed on a
+     * reset.
+     */
+    @Test
+    public void testRemoveSubBuilderListener() throws ConfigurationException
+    {
+<span class="fc" id="L533">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L534">        prepareSubBuilderTest(attrs);</span>
+<span class="fc" id="L535">        builder.getConfiguration();</span>
+<span class="fc" id="L536">        final BasicConfigurationBuilder&lt;?&gt; subBuilder =</span>
+                (BasicConfigurationBuilder&lt;?&gt;) builder
+<span class="fc" id="L538">                        .getNamedBuilder(BUILDER_NAME);</span>
+<span class="fc" id="L539">        builder.reset();</span>
+<span class="fc" id="L540">        prepareSubBuilderTest(attrs);</span>
+<span class="fc" id="L541">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L542">        final BasicConfigurationBuilder&lt;?&gt; subBuilder2 =</span>
+                (BasicConfigurationBuilder&lt;?&gt;) builder
+<span class="fc" id="L544">                        .getNamedBuilder(BUILDER_NAME);</span>
+<span class="fc" id="L545">        assertNotSame(&quot;Got the same sub builder&quot;, subBuilder, subBuilder2);</span>
+<span class="fc" id="L546">        subBuilder.reset();</span>
+<span class="fc" id="L547">        assertSame(&quot;Configuration was reset&quot;, cc, builder.getConfiguration());</span>
+<span class="fc" id="L548">    }</span>
+
+    /**
+     * Helper method for testing the attributes of a combined configuration
+     * created by the builder.
+     *
+     * @param cc the configuration to be checked
+     */
+    private static void checkCombinedConfigAttrs(final CombinedConfiguration cc)
+    {
+<span class="fc" id="L558">        final ListDelimiterHandler handler = cc.getListDelimiterHandler();</span>
+<span class="fc" id="L559">        assertTrue(&quot;Wrong delimiter handler: &quot; + handler,</span>
+                handler instanceof DefaultListDelimiterHandler);
+<span class="fc" id="L561">        assertEquals(&quot;Wrong list delimiter character&quot;, ',',</span>
+<span class="fc" id="L562">                ((DefaultListDelimiterHandler) handler).getDelimiter());</span>
+<span class="fc" id="L563">    }</span>
+
+    /**
+     * Tests whether attributes are correctly set on the combined configurations
+     * for the override and additional sections.
+     */
+    @Test
+    public void testCombinedConfigurationAttributes()
+            throws ConfigurationException
+    {
+<span class="fc" id="L573">        final File initFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L575">                        .getTestFile(&quot;testCCResultInitialization.xml&quot;);</span>
+<span class="fc" id="L576">        builder.configure(createParameters()</span>
+<span class="fc" id="L577">                .setFile(initFile));</span>
+<span class="fc" id="L578">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L579">        checkCombinedConfigAttrs(cc);</span>
+<span class="fc" id="L580">        final CombinedConfiguration cc2 =</span>
+                (CombinedConfiguration) cc
+<span class="fc" id="L582">                        .getConfiguration(CombinedConfigurationBuilder.ADDITIONAL_NAME);</span>
+<span class="fc" id="L583">        checkCombinedConfigAttrs(cc2);</span>
+<span class="fc" id="L584">    }</span>
+
+    /**
+     * Tests the structure of the returned combined configuration if there is no
+     * additional section.
+     */
+    @Test
+    public void testCombinedConfigurationNoAdditional()
+            throws ConfigurationException
+    {
+<span class="fc" id="L594">        builder.configure(createParameters()</span>
+<span class="fc" id="L595">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L596">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L597">        assertNull(</span>
+                &quot;Additional configuration was found&quot;,
+<span class="fc" id="L599">                cc.getConfiguration(CombinedConfigurationBuilder.ADDITIONAL_NAME));</span>
+<span class="fc" id="L600">    }</span>
+
+    /**
+     * Tests whether the list node definition was correctly processed.
+     */
+    @Test
+    public void testCombinedConfigurationListNodes()
+            throws ConfigurationException
+    {
+<span class="fc" id="L609">        final File initFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L611">                        .getTestFile(&quot;testCCResultInitialization.xml&quot;);</span>
+<span class="fc" id="L612">        builder.configure(createParameters()</span>
+<span class="fc" id="L613">                .setFile(initFile));</span>
+<span class="fc" id="L614">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L615">        Set&lt;String&gt; listNodes = cc.getNodeCombiner().getListNodes();</span>
+<span class="fc" id="L616">        assertEquals(&quot;Wrong number of list nodes&quot;, 2, listNodes.size());</span>
+<span class="fc" id="L617">        assertTrue(&quot;table node not a list node&quot;, listNodes.contains(&quot;table&quot;));</span>
+<span class="fc" id="L618">        assertTrue(&quot;list node not a list node&quot;, listNodes.contains(&quot;list&quot;));</span>
+
+<span class="fc" id="L620">        final CombinedConfiguration cca =</span>
+                (CombinedConfiguration) cc
+<span class="fc" id="L622">                        .getConfiguration(CombinedConfigurationBuilder.ADDITIONAL_NAME);</span>
+<span class="fc" id="L623">        listNodes = cca.getNodeCombiner().getListNodes();</span>
+<span class="fc" id="L624">        assertTrue(&quot;Found list nodes for additional combiner&quot;,</span>
+<span class="fc" id="L625">                listNodes.isEmpty());</span>
+<span class="fc" id="L626">    }</span>
+
+    /**
+     * Tests whether a custom provider can be registered.
+     */
+    @Test
+    public void testCustomBuilderProvider() throws ConfigurationException
+    {
+<span class="fc" id="L634">        final String tagName = &quot;myTestTag&quot;;</span>
+<span class="fc" id="L635">        final BaseHierarchicalConfiguration dataConf =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L637">        dataConf.addProperty(tagName, Boolean.TRUE);</span>
+<span class="fc" id="L638">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L639">        attrs.put(&quot;config-name&quot;, BUILDER_NAME);</span>
+<span class="fc" id="L640">        attrs.put(&quot;config-at&quot;, &quot;tests&quot;);</span>
+<span class="fc" id="L641">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L642">                .setDefinitionBuilder(</span>
+<span class="fc" id="L643">                        createDefinitionBuilder(createDefinitionConfig(tagName,</span>
+<span class="fc" id="L644">                                attrs))).registerProvider(tagName,</span>
+                        new ConfigurationBuilderProvider()
+<span class="fc" id="L646">                        {</span>
+                            @Override
+                            public ConfigurationBuilder&lt;? extends Configuration&gt; getConfigurationBuilder(
+                                    final ConfigurationDeclaration decl)
+                                    throws ConfigurationException
+                            {
+<span class="fc" id="L652">                                return new ConstantConfigurationBuilder(</span>
+                                        dataConf);
+                            }
+                        }));
+<span class="fc" id="L656">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L657">        assertEquals(&quot;Configuration not added&quot;, dataConf,</span>
+<span class="fc" id="L658">                cc.getConfiguration(BUILDER_NAME));</span>
+<span class="fc" id="L659">        assertEquals(&quot;Property not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L660">                cc.getProperty(&quot;tests.&quot; + tagName));</span>
+<span class="fc" id="L661">    }</span>
+
+    /**
+     * Tests whether a custom provider can be defined in the definition file.
+     */
+    @Test
+    public void testProviderInDefinitionConfig() throws ConfigurationException
+    {
+<span class="fc" id="L669">        builder.configure(createParameters()</span>
+<span class="fc" id="L670">                .setFile(ConfigurationAssert</span>
+<span class="fc" id="L671">                        .getTestFile(&quot;testCCCustomProvider.xml&quot;)));</span>
+<span class="fc" id="L672">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L673">        assertTrue(&quot;Property not found&quot;, cc.getBoolean(&quot;testKey&quot;));</span>
+<span class="fc" id="L674">    }</span>
+
+    /**
+     * Tests whether a file with system properties can be specified in the
+     * configuration definition file and that system properties can be added to
+     * the resulting configuration.
+     */
+    @Test
+    public void testSystemProperties() throws ConfigurationException
+    {
+<span class="fc" id="L684">        final File systemFile =</span>
+<span class="fc" id="L685">                ConfigurationAssert.getTestFile(&quot;testCCSystemProperties.xml&quot;);</span>
+<span class="fc" id="L686">        builder.configure(createParameters()</span>
+<span class="fc" id="L687">                .setFile(systemFile));</span>
+<span class="fc" id="L688">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L689">        assertTrue(&quot;System property not found&quot;, cc.containsKey(&quot;user.name&quot;));</span>
+<span class="fc" id="L690">        assertEquals(&quot;Properties not added&quot;, &quot;value1&quot;,</span>
+<span class="fc" id="L691">                System.getProperty(&quot;key1&quot;));</span>
+<span class="fc" id="L692">    }</span>
+
+    /**
+     * Tests whether environment properties can be added as a configuration
+     * source.
+     */
+    @Test
+    public void testEnvironmentProperties() throws ConfigurationException
+    {
+<span class="fc" id="L701">        final File envFile =</span>
+<span class="fc" id="L702">                ConfigurationAssert.getTestFile(&quot;testCCEnvProperties.xml&quot;);</span>
+<span class="fc" id="L703">        builder.configure(createParameters().setFile(envFile));</span>
+<span class="fc" id="L704">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L705">        assertFalse(&quot;Configuration is empty&quot;, cc.isEmpty());</span>
+
+        // The environment may contain settings with values that 
+        // are altered by interpolation. Disable this for direct access
+        // to the String associated with the environment property name.
+<span class="fc" id="L710">        cc.setInterpolator(null);</span>
+
+        // Test the environment is available through the configuration
+<span class="fc bfc" id="L713" title="All 2 branches covered.">        for (final Map.Entry&lt;String, String&gt; e : System.getenv().entrySet())</span>
+        {
+<span class="fc" id="L715">            assertEquals(&quot;Wrong value for property: &quot; + e.getKey(),</span>
+<span class="fc" id="L716">                    e.getValue(), cc.getString(e.getKey()));</span>
+<span class="fc" id="L717">        }</span>
+<span class="fc" id="L718">    }</span>
+
+    /**
+     * Tests whether a JNDI configuration can be integrated into the combined
+     * configuration.
+     */
+    @Test
+    public void testJndiConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L727">        final File multiFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L729">                        .getTestFile(&quot;testDigesterConfiguration3.xml&quot;);</span>
+<span class="fc" id="L730">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L731">                .setDefinitionBuilderParameters(createParameters()</span>
+<span class="fc" id="L732">                        .setFile(multiFile)));</span>
+<span class="fc" id="L733">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L734">        assertTrue(&quot;JNDI property not found&quot;, cc.getBoolean(&quot;test.onlyinjndi&quot;));</span>
+<span class="fc" id="L735">    }</span>
+
+    /**
+     * Tests whether an INI configuration source can be added to the combined
+     * configuration.
+     */
+    @Test
+    public void testINIConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L744">        final File multiFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L746">                        .getTestFile(&quot;testDigesterConfiguration3.xml&quot;);</span>
+<span class="fc" id="L747">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L748">                .setDefinitionBuilderParameters(createParameters()</span>
+<span class="fc" id="L749">                        .setFile(multiFile)));</span>
+<span class="fc" id="L750">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L751">        assertEquals(&quot;Property from ini file not found&quot;, &quot;yes&quot;,</span>
+<span class="fc" id="L752">                cc.getString(&quot;testini.loaded&quot;));</span>
+<span class="fc" id="L753">    }</span>
+
+    /**
+     * Tests whether an entity resolver can be defined in the definition file.
+     */
+    @Test
+    public void testCustomEntityResolver() throws ConfigurationException
+    {
+<span class="fc" id="L761">        final File resolverFile =</span>
+<span class="fc" id="L762">                ConfigurationAssert.getTestFile(&quot;testCCEntityResolver.xml&quot;);</span>
+<span class="fc" id="L763">        builder.configure(createParameters()</span>
+<span class="fc" id="L764">                .setFile(resolverFile));</span>
+<span class="fc" id="L765">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L766">        final XMLConfiguration xmlConf =</span>
+<span class="fc" id="L767">                (XMLConfiguration) cc.getConfiguration(&quot;xml&quot;);</span>
+<span class="fc" id="L768">        final EntityResolverWithPropertiesTestImpl resolver =</span>
+                (EntityResolverWithPropertiesTestImpl) xmlConf
+<span class="fc" id="L770">                        .getEntityResolver();</span>
+<span class="fc" id="L771">        assertFalse(&quot;No lookups&quot;, resolver.getInterpolator().getLookups()</span>
+<span class="fc" id="L772">                .isEmpty());</span>
+<span class="fc" id="L773">    }</span>
+
+    /**
+     * Tests whether the entity resolver is initialized with other XML-related
+     * properties.
+     */
+    @Test
+    public void testConfigureEntityResolverWithProperties()
+            throws ConfigurationException
+    {
+<span class="fc" id="L783">        final HierarchicalConfiguration&lt;ImmutableNode&gt; config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L784">        config.addProperty(&quot;header.entity-resolver[@config-class]&quot;,</span>
+<span class="fc" id="L785">                EntityResolverWithPropertiesTestImpl.class.getName());</span>
+<span class="fc" id="L786">        final XMLBuilderParametersImpl xmlParams = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L787">        final FileSystem fs = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L788">        final String baseDir = ConfigurationAssert.OUT_DIR_NAME;</span>
+<span class="fc" id="L789">        xmlParams.setBasePath(baseDir);</span>
+<span class="fc" id="L790">        xmlParams.setFileSystem(fs);</span>
+<span class="fc" id="L791">        builder.configureEntityResolver(config, xmlParams);</span>
+<span class="fc" id="L792">        final EntityResolverWithPropertiesTestImpl resolver =</span>
+                (EntityResolverWithPropertiesTestImpl) xmlParams
+<span class="fc" id="L794">                        .getEntityResolver();</span>
+<span class="fc" id="L795">        assertSame(&quot;File system not set&quot;, fs, resolver.getFileSystem());</span>
+<span class="fc" id="L796">        assertSame(&quot;Base directory not set&quot;, baseDir, resolver.getBaseDir());</span>
+<span class="fc" id="L797">    }</span>
+
+    /**
+     * Helper method for testing whether the file system can be customized in
+     * the configuration definition file.
+     *
+     * @param fsFile the file to be processed
+     * @throws ConfigurationException if an error occurs
+     */
+    private void checkFileSystem(final File fsFile) throws ConfigurationException
+    {
+<span class="fc" id="L808">        builder.configure(createParameters().setFile(fsFile));</span>
+<span class="fc" id="L809">        builder.getConfiguration();</span>
+        @SuppressWarnings(&quot;unchecked&quot;) // this is the minimum bound for type arguments
+        final
+<span class="fc" id="L812">        FileBasedConfigurationBuilder&lt;? extends Configuration&gt; xmlBuilder =</span>
+                (FileBasedConfigurationBuilder&lt;? extends Configuration&gt;) builder
+<span class="fc" id="L814">                        .getNamedBuilder(&quot;xml&quot;);</span>
+<span class="fc" id="L815">        assertTrue(&quot;Wrong file system: &quot;</span>
+<span class="fc" id="L816">                + xmlBuilder.getFileHandler().getFileSystem(), xmlBuilder</span>
+<span class="fc" id="L817">                .getFileHandler().getFileSystem() instanceof FileSystemTestImpl);</span>
+<span class="fc" id="L818">    }</span>
+
+    /**
+     * Tests whether a default file system can be configured in the definition
+     * file.
+     */
+    @Test
+    public void testCustomFileSystem() throws ConfigurationException
+    {
+<span class="fc" id="L827">        checkFileSystem(ConfigurationAssert.getTestFile(&quot;testCCFileSystem.xml&quot;));</span>
+<span class="fc" id="L828">    }</span>
+
+    /**
+     * Tests whether a specific file system can be applied to a sub
+     * configuration.
+     */
+    @Test
+    public void testCustomFileSystemForSubConfig()
+            throws ConfigurationException
+    {
+<span class="fc" id="L838">        checkFileSystem(ConfigurationAssert</span>
+<span class="fc" id="L839">                .getTestFile(&quot;testCCFileSystemSubConfig.xml&quot;));</span>
+<span class="fc" id="L840">    }</span>
+
+    /**
+     * Tests whether a default base path for all file-based child configurations
+     * can be set in the builder parameters.
+     */
+    @Test
+    public void testDefaultBasePathInParameters() throws ConfigurationException
+    {
+<span class="fc" id="L849">        final File testFile =</span>
+<span class="fc" id="L850">                ConfigurationAssert.getTestFile(&quot;testCCSystemProperties.xml&quot;);</span>
+<span class="fc" id="L851">        final String basePath = ConfigurationAssert.OUT_DIR.getAbsolutePath();</span>
+<span class="fc" id="L852">        builder.configure(new CombinedBuilderParametersImpl().setBasePath(</span>
+<span class="fc" id="L853">                basePath).setDefinitionBuilderParameters(</span>
+<span class="fc" id="L854">                createParameters().setFile(testFile)));</span>
+<span class="fc" id="L855">        builder.getConfiguration();</span>
+<span class="fc" id="L856">        final XMLBuilderParametersImpl xmlParams = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L857">        builder.initChildBuilderParameters(xmlParams);</span>
+<span class="fc" id="L858">        assertEquals(&quot;Base path not set&quot;, basePath, xmlParams.getFileHandler()</span>
+<span class="fc" id="L859">                .getBasePath());</span>
+<span class="fc" id="L860">    }</span>
+
+    /**
+     * Tests whether the default base path for file-based configurations is
+     * derived from the configuration definition builder.
+     */
+    @Test
+    public void testDefaultBasePathFromDefinitionBuilder()
+            throws ConfigurationException, IOException
+    {
+<span class="fc" id="L870">        final String testFile = &quot;testCCSystemProperties.xml&quot;;</span>
+<span class="fc" id="L871">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L872">                .setDefinitionBuilderParameters(createParameters()</span>
+<span class="fc" id="L873">                        .setBasePath(</span>
+<span class="fc" id="L874">                                ConfigurationAssert.TEST_DIR.getAbsolutePath())</span>
+<span class="fc" id="L875">                        .setFileName(testFile)));</span>
+<span class="fc" id="L876">        builder.getConfiguration();</span>
+<span class="fc" id="L877">        final XMLBuilderParametersImpl xmlParams = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L878">        builder.initChildBuilderParameters(xmlParams);</span>
+<span class="fc" id="L879">        final File basePathFile =</span>
+<span class="fc" id="L880">                FileLocatorUtils.fileFromURL(new URL(xmlParams</span>
+<span class="fc" id="L881">                        .getFileHandler().getBasePath()));</span>
+<span class="fc" id="L882">        assertEquals(&quot;Wrong base path&quot;,</span>
+<span class="fc" id="L883">                ConfigurationAssert.getTestFile(testFile).getAbsoluteFile(),</span>
+                basePathFile);
+<span class="fc" id="L885">    }</span>
+
+    /**
+     * Tests if the base path is correctly evaluated.
+     */
+    @Test
+    public void testBasePathForChildConfigurations()
+            throws ConfigurationException
+    {
+<span class="fc" id="L894">        final BaseHierarchicalConfiguration defConfig =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L896">        defConfig.addProperty(&quot;properties[@fileName]&quot;, &quot;test.properties&quot;);</span>
+<span class="fc" id="L897">        final File deepDir = new File(ConfigurationAssert.TEST_DIR, &quot;config/deep&quot;);</span>
+<span class="fc" id="L898">        builder.configure(new CombinedBuilderParametersImpl().setBasePath(</span>
+<span class="fc" id="L899">                deepDir.getAbsolutePath()).setDefinitionBuilder(</span>
+                new ConstantConfigurationBuilder(defConfig)));
+<span class="fc" id="L901">        final CombinedConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L902">        assertEquals(&quot;Wrong property value&quot;, &quot;somevalue&quot;,</span>
+<span class="fc" id="L903">                config.getString(&quot;somekey&quot;));</span>
+<span class="fc" id="L904">    }</span>
+
+    /**
+     * Tests whether the resulting combined configuration can be customized.
+     */
+    @Test
+    public void testCustomResultConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L912">        final File testFile =</span>
+<span class="fc" id="L913">                ConfigurationAssert.getTestFile(&quot;testCCResultClass.xml&quot;);</span>
+<span class="fc" id="L914">        final ListDelimiterHandler listHandler = new DefaultListDelimiterHandler('.');</span>
+<span class="fc" id="L915">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L916">                .setDefinitionBuilderParameters(</span>
+<span class="fc" id="L917">                        new XMLBuilderParametersImpl().setFile(testFile))</span>
+<span class="fc" id="L918">                .setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L919">                .setThrowExceptionOnMissing(false));</span>
+<span class="fc" id="L920">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L921">        assertTrue(&quot;Wrong configuration class: &quot; + cc.getClass(),</span>
+                cc instanceof CombinedConfigurationTestImpl);
+<span class="fc" id="L923">        assertTrue(&quot;Wrong exception flag&quot;, cc.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L924">        assertEquals(&quot;Wrong list delimiter handler&quot;, listHandler,</span>
+<span class="fc" id="L925">                cc.getListDelimiterHandler());</span>
+<span class="fc" id="L926">    }</span>
+
+    /**
+     * Tests whether a configuration builder can itself be declared in a
+     * configuration definition file.
+     */
+    @Test
+    public void testConfigurationBuilderProvider()
+            throws ConfigurationException
+    {
+<span class="fc" id="L936">        final BaseHierarchicalConfiguration defConfig =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L938">        defConfig.addProperty(&quot;override.configuration[@fileName]&quot;,</span>
+<span class="fc" id="L939">                TEST_FILE.getAbsolutePath());</span>
+<span class="fc" id="L940">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L941">                .setDefinitionBuilder(new ConstantConfigurationBuilder(</span>
+                        defConfig)));
+<span class="fc" id="L943">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L944">        assertEquals(&quot;Wrong number of configurations&quot;, 1,</span>
+<span class="fc" id="L945">                cc.getNumberOfConfigurations());</span>
+<span class="fc" id="L946">        checkProperties(cc);</span>
+<span class="fc" id="L947">    }</span>
+
+    /**
+     * Tests whether basic properties defined for the combined configuration are
+     * inherited by a child combined configuration builder.
+     */
+    @Test
+    public void testConfigurationBuilderProviderInheritBasicProperties()
+            throws ConfigurationException
+    {
+<span class="fc" id="L957">        final File testFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L959">                        .getTestFile(&quot;testCCCombinedChildBuilder.xml&quot;);</span>
+<span class="fc" id="L960">        final ListDelimiterHandler listHandler = new DefaultListDelimiterHandler('*');</span>
+<span class="fc" id="L961">        final ConfigurationDecoder decoder = EasyMock.createMock(ConfigurationDecoder.class);</span>
+<span class="fc" id="L962">        builder.configure(new CombinedBuilderParametersImpl()</span>
+<span class="fc" id="L963">                .setDefinitionBuilderParameters(</span>
+<span class="fc" id="L964">                        new XMLBuilderParametersImpl().setFile(testFile))</span>
+<span class="fc" id="L965">                .setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L966">                .setConfigurationDecoder(decoder));</span>
+<span class="fc" id="L967">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L968">        final CombinedConfiguration cc2 =</span>
+<span class="fc" id="L969">                (CombinedConfiguration) cc.getConfiguration(&quot;subcc&quot;);</span>
+<span class="fc" id="L970">        assertFalse(&quot;Wrong exception flag&quot;, cc2.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L971">        assertEquals(&quot;Wrong list delimiter handler&quot;, listHandler,</span>
+<span class="fc" id="L972">                cc2.getListDelimiterHandler());</span>
+<span class="fc" id="L973">        assertEquals(&quot;Wrong decoder&quot;, decoder, cc2.getConfigurationDecoder());</span>
+<span class="fc" id="L974">    }</span>
+
+    /**
+     * Tests whether a child configuration builder inherits the event listeners
+     * from its parent.
+     */
+    @Test
+    public void testConfigurationBuilderProviderInheritEventListeners()
+            throws ConfigurationException
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L986">        EventListener&lt;Event&gt; l1 = EasyMock.createNiceMock(EventListener.class);</span>
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L989">        EventListener&lt;ConfigurationEvent&gt; l2 =</span>
+<span class="fc" id="L990">                EasyMock.createNiceMock(EventListener.class);</span>
+<span class="fc" id="L991">        EasyMock.replay(l1, l2);</span>
+<span class="fc" id="L992">        final File testFile =</span>
+                ConfigurationAssert
+<span class="fc" id="L994">                        .getTestFile(&quot;testCCCombinedChildBuilder.xml&quot;);</span>
+<span class="fc" id="L995">        builder.configure(new XMLBuilderParametersImpl().setFile(testFile));</span>
+<span class="fc" id="L996">        builder.addEventListener(Event.ANY, l1);</span>
+<span class="fc" id="L997">        builder.addEventListener(ConfigurationEvent.ANY, l2);</span>
+<span class="fc" id="L998">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L999">        final CombinedConfiguration cc2 =</span>
+<span class="fc" id="L1000">                (CombinedConfiguration) cc.getConfiguration(&quot;subcc&quot;);</span>
+<span class="fc" id="L1001">        final Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; listeners =</span>
+<span class="fc" id="L1002">                cc2.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L1003">        assertTrue(&quot;Listener 1 not found&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L1004">        assertTrue(&quot;Listener 2 not found&quot;, listeners.contains(l2));</span>
+<span class="fc" id="L1005">        final Collection&lt;EventListener&lt;? super Event&gt;&gt; eventListeners =</span>
+<span class="fc" id="L1006">                cc2.getEventListeners(Event.ANY);</span>
+<span class="fc" id="L1007">        assertEquals(&quot;Wrong number of event listeners&quot;, 1,</span>
+<span class="fc" id="L1008">                eventListeners.size());</span>
+<span class="fc" id="L1009">        assertTrue(&quot;Wrong listener&quot;, eventListeners.contains(l1));</span>
+<span class="fc" id="L1010">    }</span>
+
+    /**
+     * Tests whether custom builder providers are inherited to child combined
+     * configuration builder providers.
+     */
+    @Test
+    public void testConfigurationBuilderProviderInheritCustomProviders()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1020">        builder.configure(createParameters()</span>
+<span class="fc" id="L1021">                .setFile(ConfigurationAssert</span>
+<span class="fc" id="L1022">                        .getTestFile(&quot;testCCCustomProvider.xml&quot;)));</span>
+<span class="fc" id="L1023">        builder.getConfiguration();</span>
+<span class="fc" id="L1024">        final CombinedBuilderParametersImpl ccparams =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L1026">        builder.initChildBuilderParameters(ccparams);</span>
+<span class="fc" id="L1027">        assertNotNull(&quot;Custom provider not found&quot;,</span>
+<span class="fc" id="L1028">                ccparams.providerForTag(&quot;test&quot;));</span>
+<span class="fc" id="L1029">    }</span>
+
+    /**
+     * Tests whether the base path can be inherited to child combined
+     * configuration builders.
+     */
+    @Test
+    public void testConfigurationBuilderProviderInheritBasePath()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1039">        final File envFile =</span>
+<span class="fc" id="L1040">                ConfigurationAssert.getTestFile(&quot;testCCEnvProperties.xml&quot;);</span>
+<span class="fc" id="L1041">        final String basePath = ConfigurationAssert.OUT_DIR.getAbsolutePath();</span>
+<span class="fc" id="L1042">        builder.configure(new CombinedBuilderParametersImpl().setBasePath(</span>
+<span class="fc" id="L1043">                basePath).setDefinitionBuilderParameters(</span>
+<span class="fc" id="L1044">                createParameters().setFile(envFile)));</span>
+<span class="fc" id="L1045">        builder.getConfiguration();</span>
+<span class="fc" id="L1046">        final CombinedBuilderParametersImpl params =</span>
+                new CombinedBuilderParametersImpl();
+<span class="fc" id="L1048">        builder.initChildBuilderParameters(params);</span>
+<span class="fc" id="L1049">        assertEquals(&quot;Base path not set&quot;, basePath, params.getBasePath());</span>
+<span class="fc" id="L1050">    }</span>
+
+    /**
+     * Tests whether default child properties in the combined builder's
+     * configuration are inherited by child parameter objects.
+     */
+    @Test
+    public void testInitChildBuilderParametersDefaultChildProperties()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1060">        final Long defRefresh = 60000L;</span>
+<span class="fc" id="L1061">        final Long xmlRefresh = 30000L;</span>
+<span class="fc" id="L1062">        builder.configure(parameters</span>
+<span class="fc" id="L1063">                .combined()</span>
+<span class="fc" id="L1064">                .setDefinitionBuilderParameters(</span>
+<span class="fc" id="L1065">                        parameters.fileBased().setFile(TEST_FILE))</span>
+<span class="fc" id="L1066">                .registerChildDefaultsHandler(</span>
+                        FileBasedBuilderProperties.class,
+                        new CopyObjectDefaultHandler(
+                                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L1070">                                        .setReloadingRefreshDelay(defRefresh)</span>
+<span class="fc" id="L1071">                                        .setThrowExceptionOnMissing(true)))</span>
+<span class="fc" id="L1072">                .registerChildDefaultsHandler(</span>
+                        XMLBuilderProperties.class,
+                        new CopyObjectDefaultHandler(
+                                new XMLBuilderParametersImpl()
+<span class="fc" id="L1076">                                        .setValidating(false)</span>
+<span class="fc" id="L1077">                                        .setExpressionEngine(</span>
+                                                new XPathExpressionEngine())
+<span class="fc" id="L1079">                                        .setReloadingRefreshDelay(xmlRefresh))));</span>
+<span class="fc" id="L1080">        builder.getConfiguration();</span>
+<span class="fc" id="L1081">        final XMLBuilderParametersImpl params = new XMLBuilderParametersImpl();</span>
+<span class="fc" id="L1082">        builder.initChildBuilderParameters(params);</span>
+<span class="fc" id="L1083">        assertTrue(</span>
+                &quot;Wrong expression engine&quot;,
+<span class="fc" id="L1085">                params.getParameters().get(&quot;expressionEngine&quot;) instanceof XPathExpressionEngine);</span>
+<span class="fc" id="L1086">        assertEquals(&quot;Validating flag not set&quot;, Boolean.FALSE, params</span>
+<span class="fc" id="L1087">                .getParameters().get(&quot;validating&quot;));</span>
+<span class="fc" id="L1088">        assertEquals(&quot;Wrong XML refresh&quot;, xmlRefresh,</span>
+<span class="fc" id="L1089">                params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L1090">        assertEquals(&quot;Basic flag not set&quot;, Boolean.TRUE, params.getParameters()</span>
+<span class="fc" id="L1091">                .get(&quot;throwExceptionOnMissing&quot;));</span>
+
+<span class="fc" id="L1093">        final PropertiesBuilderParametersImpl params2 =</span>
+                new PropertiesBuilderParametersImpl();
+<span class="fc" id="L1095">        builder.initChildBuilderParameters(params2);</span>
+<span class="fc" id="L1096">        assertEquals(&quot;Wrong default refresh&quot;, defRefresh,</span>
+<span class="fc" id="L1097">                params2.getReloadingRefreshDelay());</span>
+<span class="fc" id="L1098">    }</span>
+
+    /**
+     * Tests whether a Lookup object can be declared in the definition
+     * configuration.
+     */
+    @Test
+    public void testCustomLookup() throws ConfigurationException
+    {
+<span class="fc" id="L1107">        final File testFile = ConfigurationAssert.getTestFile(&quot;testCCLookup.xml&quot;);</span>
+<span class="fc" id="L1108">        builder.configure(createParameters()</span>
+<span class="fc" id="L1109">                .setFile(testFile));</span>
+<span class="fc" id="L1110">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L1111">        assertTrue(&quot;Lookup not registered in CC&quot;, cc.getInterpolator()</span>
+<span class="fc" id="L1112">                .getLookups().containsKey(&quot;test&quot;));</span>
+<span class="fc" id="L1113">        final Configuration xmlConf = cc.getConfiguration(&quot;xml&quot;);</span>
+<span class="fc" id="L1114">        assertTrue(&quot;Lookup not registered in sub config&quot;, xmlConf</span>
+<span class="fc" id="L1115">                .getInterpolator().getLookups().containsKey(&quot;test&quot;));</span>
+<span class="fc" id="L1116">    }</span>
+
+    /**
+     * Tests whether variable substitution works across multiple child
+     * configurations and also in the definition configuration.
+     */
+    @Test
+    public void testInterpolationOverMultipleSources()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1126">        final File testFile =</span>
+<span class="fc" id="L1127">                ConfigurationAssert.getTestFile(&quot;testInterpolationBuilder.xml&quot;);</span>
+<span class="fc" id="L1128">        builder.configure(createParameters().setFile(testFile));</span>
+<span class="fc" id="L1129">        final CombinedConfiguration combConfig = builder.getConfiguration();</span>
+<span class="fc" id="L1130">        assertEquals(&quot;Wrong value&quot;, &quot;abc-product&quot;,</span>
+<span class="fc" id="L1131">                combConfig.getString(&quot;products.product.desc&quot;));</span>
+<span class="fc" id="L1132">        final XMLConfiguration xmlConfig =</span>
+<span class="fc" id="L1133">                (XMLConfiguration) combConfig.getConfiguration(&quot;test&quot;);</span>
+<span class="fc" id="L1134">        assertEquals(&quot;Wrong value from XML config&quot;, &quot;abc-product&quot;,</span>
+<span class="fc" id="L1135">                xmlConfig.getString(&quot;products/product/desc&quot;));</span>
+<span class="fc" id="L1136">        final HierarchicalConfiguration&lt;ImmutableNode&gt; subConfig =</span>
+                xmlConfig
+<span class="fc" id="L1138">                        .configurationAt(&quot;products/product[@name='abc']&quot;, true);</span>
+<span class="fc" id="L1139">        assertEquals(&quot;Wrong value from sub config&quot;, &quot;abc-product&quot;,</span>
+<span class="fc" id="L1140">                subConfig.getString(&quot;desc&quot;));</span>
+<span class="fc" id="L1141">    }</span>
+
+    /**
+     * Tests whether all child builders can be obtained.
+     */
+    @Test
+    public void testGetChildBuilders() throws ConfigurationException
+    {
+<span class="fc" id="L1149">        builder.configure(createParameters()</span>
+<span class="fc" id="L1150">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L1151">        builder.getConfiguration();</span>
+<span class="fc" id="L1152">        final Collection&lt;ConfigurationBuilder&lt;? extends Configuration&gt;&gt; childBuilders =</span>
+<span class="fc" id="L1153">                builder.getChildBuilders();</span>
+<span class="fc" id="L1154">        assertEquals(&quot;Wrong number of child builders&quot;, 3, childBuilders.size());</span>
+<span class="fc" id="L1155">    }</span>
+
+    /**
+     * Tests that child configuration builders are not initialized multiple
+     * times. This test is releated to CONFIGURATION-687.
+     */
+    @Test
+    public void testChildBuildersAreInitializedOnlyOnce()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1165">        builder.configure(createParameters().setFile(TEST_FILE));</span>
+<span class="fc" id="L1166">        builder.getConfiguration();</span>
+<span class="fc" id="L1167">        builder.resetResult();</span>
+<span class="fc" id="L1168">        builder.getConfiguration();</span>
+<span class="fc" id="L1169">        final Collection&lt;ConfigurationBuilder&lt;? extends Configuration&gt;&gt; childBuilders =</span>
+<span class="fc" id="L1170">                builder.getChildBuilders();</span>
+<span class="fc" id="L1171">        assertEquals(&quot;Wrong number of child builders&quot;, 3, childBuilders.size());</span>
+<span class="fc" id="L1172">    }</span>
+
+    /**
+     * Loads a test file which includes a MultiFileConfigurationBuilder
+     * declaration and returns the resulting configuration.
+     *
+     * @param fileName the name of the file to be loaded
+     * @return the resulting combined configuration
+     * @throws ConfigurationException if an error occurs
+     */
+    private CombinedConfiguration createMultiFileConfig(final String fileName)
+            throws ConfigurationException
+    {
+<span class="fc" id="L1185">        final File testFile = ConfigurationAssert.getTestFile(fileName);</span>
+<span class="fc" id="L1186">        builder.configure(createParameters()</span>
+<span class="fc" id="L1187">                .setFile(testFile));</span>
+<span class="fc" id="L1188">        final CombinedConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L1189">        assertTrue(&quot;Incorrect result configuration&quot;,</span>
+                config instanceof DynamicCombinedConfiguration);
+<span class="fc" id="L1191">        return config;</span>
+    }
+
+    /**
+     * Tests whether a MultiFileConfigurationBuilder can be integrated into a
+     * combined configuration definition.
+     */
+    @Test
+    public void testMultiTenentConfiguration() throws ConfigurationException
+    {
+<span class="fc" id="L1201">        final CombinedConfiguration config = createMultiFileConfig(&quot;testCCMultiTenent.xml&quot;);</span>
+<span class="fc" id="L1202">        checkMultiFile(&quot;1001&quot;, config, 15);</span>
+<span class="fc" id="L1203">        checkMultiFile(&quot;1002&quot;, config, 25);</span>
+<span class="fc" id="L1204">        checkMultiFile(&quot;1003&quot;, config, 35);</span>
+<span class="fc" id="L1205">        checkMultiFile(&quot;1004&quot;, config, 50);</span>
+<span class="fc" id="L1206">    }</span>
+
+    /**
+     * Tests whether a configuration created by a MultiFileConfigurationBuilder
+     * has been initialized correctly.
+     */
+    @Test
+    public void testMultiTenentConfigurationProperties()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1216">        final CombinedConfiguration config = createMultiFileConfig(&quot;testCCMultiTenent.xml&quot;);</span>
+<span class="fc" id="L1217">        switchToMultiFile(&quot;1001&quot;);</span>
+<span class="fc" id="L1218">        final HierarchicalConfiguration&lt;?&gt; multiConf =</span>
+                (HierarchicalConfiguration&lt;?&gt;) config
+<span class="fc" id="L1220">                        .getConfiguration(&quot;clientConfig&quot;);</span>
+<span class="fc" id="L1221">        assertTrue(</span>
+                &quot;Expression engine not configured&quot;,
+<span class="fc" id="L1223">                multiConf.getExpressionEngine() instanceof XPathExpressionEngine);</span>
+<span class="fc" id="L1224">        assertEquals(&quot;Wrong bg color&quot;, &quot;#808080&quot;,</span>
+<span class="fc" id="L1225">                config.getString(&quot;colors.background&quot;));</span>
+<span class="fc" id="L1226">        assertEquals(&quot;Wrong text color&quot;, &quot;#000000&quot;,</span>
+<span class="fc" id="L1227">                multiConf.getString(&quot;colors/text&quot;));</span>
+<span class="fc" id="L1228">    }</span>
+
+    /**
+     * Helper method for testing whether properties of a MultiFileConfiguration
+     * can be obtained.
+     *
+     * @param key the key of the file to be accessed
+     * @param config the configuration to check
+     * @param rows the expected value of the test property
+     */
+    private void checkMultiFile(final String key, final CombinedConfiguration config,
+            final int rows)
+    {
+<span class="fc" id="L1241">        switchToMultiFile(key);</span>
+<span class="fc" id="L1242">        assertEquals(&quot;Wrong property value&quot;, rows, config.getInt(&quot;rowsPerPage&quot;));</span>
+<span class="fc" id="L1243">    }</span>
+
+    /**
+     * Sets the system property which selects a specific file managed by a
+     * MultiFileConfigurationBuilder.
+     *
+     * @param key the key to select the desired file
+     */
+    private static void switchToMultiFile(final String key)
+    {
+<span class="fc" id="L1253">        System.setProperty(MULTI_FILE_PROPERTY, key);</span>
+<span class="fc" id="L1254">    }</span>
+
+    /**
+     * Tests whether reloading support works for MultiFileConfigurationBuilder.
+     */
+    @Test
+    public void testMultiTenentConfigurationReloading()
+            throws ConfigurationException, InterruptedException
+    {
+<span class="fc" id="L1263">        final CombinedConfiguration config =</span>
+<span class="fc" id="L1264">                createMultiFileConfig(&quot;testCCMultiTenentReloading.xml&quot;);</span>
+<span class="fc" id="L1265">        final File outFile =</span>
+<span class="fc" id="L1266">                ConfigurationAssert.getOutFile(&quot;MultiFileReloadingTest.xml&quot;);</span>
+<span class="fc" id="L1267">        switchToMultiFile(outFile.getAbsolutePath());</span>
+<span class="fc" id="L1268">        final XMLConfiguration reloadConfig = new XMLConfiguration();</span>
+<span class="fc" id="L1269">        final FileHandler handler = new FileHandler(reloadConfig);</span>
+<span class="fc" id="L1270">        handler.setFile(outFile);</span>
+<span class="fc" id="L1271">        final String key = &quot;test.reload&quot;;</span>
+<span class="fc" id="L1272">        reloadConfig.setProperty(key, &quot;no&quot;);</span>
+<span class="fc" id="L1273">        handler.save();</span>
+        try
+        {
+<span class="fc" id="L1276">            assertEquals(&quot;Wrong property&quot;, &quot;no&quot;, config.getString(key));</span>
+<span class="fc" id="L1277">            final ConfigurationBuilder&lt;? extends Configuration&gt; childBuilder =</span>
+<span class="fc" id="L1278">                    builder.getNamedBuilder(&quot;clientConfig&quot;);</span>
+<span class="fc" id="L1279">            assertTrue(&quot;Not a reloading builder&quot;,</span>
+                    childBuilder instanceof ReloadingControllerSupport);
+<span class="fc" id="L1281">            final ReloadingController ctrl =</span>
+                    ((ReloadingControllerSupport) childBuilder)
+<span class="fc" id="L1283">                            .getReloadingController();</span>
+<span class="fc" id="L1284">            ctrl.checkForReloading(null); // initialize reloading</span>
+<span class="fc" id="L1285">            final BuilderEventListenerImpl l = new BuilderEventListenerImpl();</span>
+<span class="fc" id="L1286">            childBuilder.addEventListener(ConfigurationBuilderEvent.RESET, l);</span>
+<span class="fc" id="L1287">            reloadConfig.setProperty(key, &quot;yes&quot;);</span>
+<span class="fc" id="L1288">            handler.save();</span>
+
+<span class="fc" id="L1290">            int attempts = 10;</span>
+            boolean changeDetected;
+            do
+            {
+<span class="fc" id="L1294">                changeDetected = ctrl.checkForReloading(null);</span>
+<span class="fc bfc" id="L1295" title="All 2 branches covered.">                if (!changeDetected)</span>
+                {
+<span class="fc" id="L1297">                    Thread.sleep(1000);</span>
+<span class="fc" id="L1298">                    handler.save(outFile);</span>
+                }
+<span class="pc bpc" id="L1300" title="1 of 4 branches missed.">            } while (!changeDetected &amp;&amp; --attempts &gt; 0);</span>
+<span class="fc" id="L1301">            assertTrue(&quot;No change detected&quot;, changeDetected);</span>
+<span class="fc" id="L1302">            assertEquals(&quot;Wrong updated property&quot;, &quot;yes&quot;, builder</span>
+<span class="fc" id="L1303">                    .getConfiguration().getString(key));</span>
+<span class="fc" id="L1304">            final ConfigurationBuilderEvent event = l.nextEvent(ConfigurationBuilderEvent.RESET);</span>
+<span class="fc" id="L1305">            l.assertNoMoreEvents();</span>
+<span class="fc" id="L1306">            final BasicConfigurationBuilder&lt;? extends Configuration&gt; multiBuilder =</span>
+<span class="fc" id="L1307">                    (BasicConfigurationBuilder&lt;? extends Configuration&gt;) event.getSource();</span>
+<span class="fc" id="L1308">            childBuilder.removeEventListener(ConfigurationBuilderEvent.RESET, l);</span>
+<span class="fc" id="L1309">            multiBuilder.resetResult();</span>
+<span class="fc" id="L1310">            l.assertNoMoreEvents();</span>
+        }
+        finally
+        {
+<span class="fc" id="L1314">            assertTrue(&quot;Output file could not be deleted&quot;, outFile.delete());</span>
+        }
+<span class="fc" id="L1316">    }</span>
+
+    /**
+     * Tests that the combined configuration has been fully constructed
+     * (including its root node) when it is returned from the builder.
+     */
+    @Test
+    public void testRootNodeInitializedAfterCreation()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1326">        builder.configure(createParameters()</span>
+<span class="fc" id="L1327">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L1328">        final CombinedConfiguration cc = builder.getConfiguration();</span>
+<span class="fc" id="L1329">        assertNotNull(&quot;Root node not initialized&quot;, cc.getNodeModel()</span>
+<span class="fc" id="L1330">                .getNodeHandler().getRootNode());</span>
+<span class="fc" id="L1331">    }</span>
+
+    /**
+     * Tests whether a newly created instance can be read concurrently without a
+     * special synchronizer.
+     */
+    @Test
+    public void testConcurrentReadAccessWithoutSynchronizer()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1341">        builder.configure(createParameters()</span>
+<span class="fc" id="L1342">                .setFile(TEST_FILE));</span>
+<span class="fc" id="L1343">        final CombinedConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L1344">        final int threadCount = 32;</span>
+<span class="fc" id="L1345">        final CountDownLatch startLatch = new CountDownLatch(1);</span>
+<span class="fc" id="L1346">        final ReadThread[] threads = new ReadThread[threadCount];</span>
+<span class="fc bfc" id="L1347" title="All 2 branches covered.">        for (int i = 0; i &lt; threadCount; i++)</span>
+        {
+<span class="fc" id="L1349">            threads[i] = new ReadThread(config, startLatch);</span>
+<span class="fc" id="L1350">            threads[i].start();</span>
+        }
+
+<span class="fc" id="L1353">        startLatch.countDown();</span>
+<span class="fc bfc" id="L1354" title="All 2 branches covered.">        for (final ReadThread t : threads)</span>
+        {
+<span class="fc" id="L1356">            t.verify();</span>
+        }
+<span class="fc" id="L1358">    }</span>
+
+    /**
+     * Prepares a parameters object for a test for properties inheritance.
+     * @param params the {@code Parameters} object
+     * @return the builder parameters
+     */
+    private static XMLBuilderParameters prepareParamsForInheritanceTest(final Parameters params) {
+<span class="fc" id="L1366">        final DefaultExpressionEngineSymbols symbols = new DefaultExpressionEngineSymbols.Builder(</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS)
+<span class="fc" id="L1368">                .setPropertyDelimiter(&quot;/&quot;).create();</span>
+<span class="fc" id="L1369">        final DefaultExpressionEngine engine = new DefaultExpressionEngine(symbols);</span>
+<span class="fc" id="L1370">        final DefaultListDelimiterHandler listDelimiterHandler = new DefaultListDelimiterHandler(',');</span>
+<span class="fc" id="L1371">        return params.xml()</span>
+<span class="fc" id="L1372">                .setExpressionEngine(engine)</span>
+<span class="fc" id="L1373">                .setListDelimiterHandler(listDelimiterHandler).setFile(TEST_FILE);</span>
+    }
+
+    /**
+     * Tests whether builder properties can be inherited by child builders.
+     */
+    @Test
+    public void testInheritProperties() throws ConfigurationException
+    {
+<span class="fc" id="L1382">        final Parameters params = new Parameters();</span>
+<span class="fc" id="L1383">        final XMLBuilderParameters xmlParams =</span>
+<span class="fc" id="L1384">                prepareParamsForInheritanceTest(params);</span>
+<span class="fc" id="L1385">        builder.configure(xmlParams);</span>
+<span class="fc" id="L1386">        final CombinedConfiguration config = builder.getConfiguration();</span>
+
+<span class="fc" id="L1388">        List&lt;String&gt; list = config.getList(String.class, &quot;test/mixed/array&quot;);</span>
+<span class="pc bpc" id="L1389" title="1 of 2 branches missed.">        assertTrue(&quot;Wrong number of elements in list&quot;, list.size() &gt; 2);</span>
+<span class="fc" id="L1390">        final String[] stringArray = config.getStringArray(&quot;test/mixed/array&quot;);</span>
+<span class="pc bpc" id="L1391" title="1 of 2 branches missed.">        assertTrue(&quot;Wrong number of elements in array&quot;, stringArray.length &gt; 2);</span>
+<span class="fc" id="L1392">        final XMLConfiguration xmlConfig =</span>
+<span class="fc" id="L1393">                (XMLConfiguration) config.getConfiguration(&quot;xml&quot;);</span>
+<span class="fc" id="L1394">        list = xmlConfig.getList(String.class, &quot;split/list1&quot;);</span>
+<span class="fc" id="L1395">        assertEquals(&quot;Wrong number of elements in XML list&quot;, 3, list.size());</span>
+<span class="fc" id="L1396">    }</span>
+
+    /**
+     * Tests whether the inheritance of builder properties can be disabled.
+     */
+    @Test
+    public void testSuppressChildBuilderPropertyInheritance()
+            throws ConfigurationException
+    {
+<span class="fc" id="L1405">        final Parameters params = new Parameters();</span>
+<span class="fc" id="L1406">        final CombinedBuilderParameters combinedParams =</span>
+<span class="fc" id="L1407">                params.combined().setInheritSettings(false);</span>
+<span class="fc" id="L1408">        builder.configure(combinedParams,</span>
+<span class="fc" id="L1409">                prepareParamsForInheritanceTest(params));</span>
+<span class="fc" id="L1410">        final CombinedConfiguration config = builder.getConfiguration();</span>
+
+<span class="fc" id="L1412">        final XMLConfiguration xmlConfig =</span>
+<span class="fc" id="L1413">                (XMLConfiguration) config.getConfiguration(&quot;xml&quot;);</span>
+<span class="fc" id="L1414">        final List&lt;String&gt; list = xmlConfig.getList(String.class, &quot;split.list1&quot;);</span>
+<span class="fc" id="L1415">        assertEquals(&quot;Wrong number of elements in XML list&quot;, 1, list.size());</span>
+<span class="fc" id="L1416">    }</span>
+
+    /**
+     * A test builder provider implementation for testing whether providers can
+     * be defined in the definition file.
+     */
+<span class="fc" id="L1422">    public static class BuilderProviderTestImpl implements</span>
+            ConfigurationBuilderProvider
+    {
+        /** The test property key of the configuration to be created. */
+        private String propertyKey;
+
+        public String getPropertyKey()
+        {
+<span class="fc" id="L1430">            return propertyKey;</span>
+        }
+
+        public void setPropertyKey(final String propertyKey)
+        {
+<span class="fc" id="L1435">            this.propertyKey = propertyKey;</span>
+<span class="fc" id="L1436">        }</span>
+
+        @Override
+        public ConfigurationBuilder&lt;? extends Configuration&gt; getConfigurationBuilder(
+                final ConfigurationDeclaration decl) throws ConfigurationException
+        {
+<span class="fc" id="L1442">            final BaseHierarchicalConfiguration config =</span>
+                    new BaseHierarchicalConfiguration();
+<span class="fc" id="L1444">            config.addProperty(getPropertyKey(), Boolean.TRUE);</span>
+<span class="fc" id="L1445">            return new ConstantConfigurationBuilder(config);</span>
+        }
+    }
+
+    /**
+     * A test builder class which always returns the same configuration.
+     */
+    private static class ConstantConfigurationBuilder extends
+            BasicConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt;
+    {
+        private final BaseHierarchicalConfiguration configuration;
+
+        public ConstantConfigurationBuilder(final BaseHierarchicalConfiguration conf)
+        {
+<span class="fc" id="L1459">            super(BaseHierarchicalConfiguration.class);</span>
+<span class="fc" id="L1460">            configuration = conf;</span>
+<span class="fc" id="L1461">        }</span>
+
+        @Override
+        public BaseHierarchicalConfiguration getConfiguration()
+                throws ConfigurationException
+        {
+<span class="fc" id="L1467">            return configuration;</span>
+        }
+    }
+
+    /**
+     * A specialized entity resolver implementation for testing whether
+     * properties of a catalog resolver are correctly set.
+     */
+<span class="fc" id="L1475">    public static class EntityResolverWithPropertiesTestImpl extends</span>
+            CatalogResolver
+    {
+        /** The base directory. */
+        private String baseDirectory;
+
+        /** The file system. */
+        private FileSystem fileSystem;
+
+        /** The ConfigurationInterpolator. */
+        private ConfigurationInterpolator interpolator;
+
+        public FileSystem getFileSystem()
+        {
+<span class="fc" id="L1489">            return fileSystem;</span>
+        }
+
+        @Override
+        public void setFileSystem(final FileSystem fileSystem)
+        {
+<span class="fc" id="L1495">            super.setFileSystem(fileSystem);</span>
+<span class="fc" id="L1496">            this.fileSystem = fileSystem;</span>
+<span class="fc" id="L1497">        }</span>
+
+        public String getBaseDir()
+        {
+<span class="fc" id="L1501">            return baseDirectory;</span>
+        }
+
+        @Override
+        public void setBaseDir(final String baseDir)
+        {
+<span class="fc" id="L1507">            super.setBaseDir(baseDir);</span>
+<span class="fc" id="L1508">            baseDirectory = baseDir;</span>
+<span class="fc" id="L1509">        }</span>
+
+        public ConfigurationInterpolator getInterpolator()
+        {
+<span class="fc" id="L1513">            return interpolator;</span>
+        }
+
+        @Override
+        public void setInterpolator(final ConfigurationInterpolator interpolator)
+        {
+<span class="fc" id="L1519">            super.setInterpolator(interpolator);</span>
+<span class="fc" id="L1520">            this.interpolator = interpolator;</span>
+<span class="fc" id="L1521">        }</span>
+    }
+
+    /**
+     * A test file system implementation for testing whether a custom file
+     * system class can be specified in the configuration definition file.
+     */
+<span class="fc" id="L1528">    public static class FileSystemTestImpl extends DefaultFileSystem</span>
+    {
+    }
+
+    /**
+     * A test combined configuration class for testing whether a specific result
+     * configuration class can be declared in the definition configuration.
+     */
+<span class="fc" id="L1536">    public static class CombinedConfigurationTestImpl extends</span>
+            CombinedConfiguration
+    {
+    }
+
+    /**
+     * A custom Lookup implementation for testing whether lookups can be defined
+     * in the definition configuration. This lookup supports some variables
+     * referencing test files.
+     */
+    public static class TestLookup implements Lookup
+    {
+<span class="fc" id="L1548">        private final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+
+        public TestLookup()
+<span class="fc" id="L1551">        {</span>
+<span class="fc" id="L1552">            map.put(&quot;test_file_xml&quot;, &quot;test.xml&quot;);</span>
+<span class="fc" id="L1553">            map.put(&quot;test_file_combine&quot;, &quot;testcombine1.xml&quot;);</span>
+<span class="fc" id="L1554">            map.put(&quot;test_key&quot;, &quot;test.value&quot;);</span>
+<span class="fc" id="L1555">        }</span>
+
+        @Override
+        public String lookup(final String key)
+        {
+<span class="fc" id="L1560">            return map.get(key);</span>
+        }
+    }
+
+    /**
+     * A thread class for testing concurrent read access to a newly created
+     * configuration.
+     */
+    private static class ReadThread extends Thread
+    {
+        /** The configuration to access. */
+        private final CombinedConfiguration config;
+
+        /** The start latch. */
+        private final CountDownLatch startLatch;
+
+        /** The value read from the configuration. */
+        private Boolean value;
+
+        public ReadThread(final CombinedConfiguration cc, final CountDownLatch latch)
+<span class="fc" id="L1580">        {</span>
+<span class="fc" id="L1581">            config = cc;</span>
+<span class="fc" id="L1582">            startLatch = latch;</span>
+<span class="fc" id="L1583">        }</span>
+
+        @Override
+        public void run()
+        {
+            try
+            {
+<span class="fc" id="L1590">                startLatch.await();</span>
+<span class="fc" id="L1591">                value = config.getBoolean(&quot;configuration.loaded&quot;);</span>
+            }
+<span class="nc" id="L1593">            catch (final InterruptedException iex)</span>
+            {
+                // ignore
+<span class="fc" id="L1596">            }</span>
+<span class="fc" id="L1597">        }</span>
+
+        /**
+         * Verifies that the correct value was read.
+         */
+        public void verify()
+        {
+            try
+            {
+<span class="fc" id="L1606">                join();</span>
+            }
+<span class="nc" id="L1608">            catch (final InterruptedException iex)</span>
+            {
+<span class="nc" id="L1610">                fail(&quot;Waiting was interrupted: &quot; + iex);</span>
+<span class="fc" id="L1611">            }</span>
+<span class="fc" id="L1612">            assertEquals(&quot;Wrong value read&quot;, Boolean.TRUE, value);</span>
+<span class="fc" id="L1613">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

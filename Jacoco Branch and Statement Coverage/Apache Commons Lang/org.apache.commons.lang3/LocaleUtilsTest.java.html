@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocaleUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">LocaleUtilsTest.java</span></div><h1>LocaleUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+/**
+ * Unit tests for {@link LocaleUtils}.
+ */
+<span class="fc" id="L46">public class LocaleUtilsTest  {</span>
+
+<span class="fc" id="L48">    private static final Locale LOCALE_EN = new Locale(&quot;en&quot;, &quot;&quot;);</span>
+<span class="fc" id="L49">    private static final Locale LOCALE_EN_US = new Locale(&quot;en&quot;, &quot;US&quot;);</span>
+<span class="fc" id="L50">    private static final Locale LOCALE_EN_US_ZZZZ = new Locale(&quot;en&quot;, &quot;US&quot;, &quot;ZZZZ&quot;);</span>
+<span class="fc" id="L51">    private static final Locale LOCALE_FR = new Locale(&quot;fr&quot;, &quot;&quot;);</span>
+<span class="fc" id="L52">    private static final Locale LOCALE_FR_CA = new Locale(&quot;fr&quot;, &quot;CA&quot;);</span>
+<span class="fc" id="L53">    private static final Locale LOCALE_QQ = new Locale(&quot;qq&quot;, &quot;&quot;);</span>
+<span class="fc" id="L54">    private static final Locale LOCALE_QQ_ZZ = new Locale(&quot;qq&quot;, &quot;ZZ&quot;);</span>
+
+    @BeforeEach
+    public void setUp() {
+        // Testing #LANG-304. Must be called before availableLocaleSet is called.
+<span class="fc" id="L59">        LocaleUtils.isAvailableLocale(Locale.getDefault());</span>
+<span class="fc" id="L60">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Test that constructors are public, and work, etc.
+     */
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L68">        assertNotNull(new LocaleUtils());</span>
+<span class="fc" id="L69">        final Constructor&lt;?&gt;[] cons = LocaleUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L70">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L71">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L72">        assertTrue(Modifier.isPublic(LocaleUtils.class.getModifiers()));</span>
+<span class="fc" id="L73">        assertFalse(Modifier.isFinal(LocaleUtils.class.getModifiers()));</span>
+<span class="fc" id="L74">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Pass in a valid language, test toLocale.
+     *
+     * @param language  the language string
+     */
+    private static void assertValidToLocale(final String language) {
+<span class="fc" id="L83">        final Locale locale = LocaleUtils.toLocale(language);</span>
+<span class="fc" id="L84">        assertNotNull(locale, &quot;valid locale&quot;);</span>
+<span class="fc" id="L85">        assertEquals(language, locale.getLanguage());</span>
+        //country and variant are empty
+<span class="pc bpc" id="L87" title="2 of 4 branches missed.">        assertTrue(locale.getCountry() == null || locale.getCountry().isEmpty());</span>
+<span class="pc bpc" id="L88" title="2 of 4 branches missed.">        assertTrue(locale.getVariant() == null || locale.getVariant().isEmpty());</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Pass in a valid language, test toLocale.
+     *
+     * @param localeString to pass to toLocale()
+     * @param language of the resulting Locale
+     * @param country of the resulting Locale
+     */
+    private static void assertValidToLocale(final String localeString, final String language, final String country) {
+<span class="fc" id="L99">        final Locale locale = LocaleUtils.toLocale(localeString);</span>
+<span class="fc" id="L100">        assertNotNull(locale, &quot;valid locale&quot;);</span>
+<span class="fc" id="L101">        assertEquals(language, locale.getLanguage());</span>
+<span class="fc" id="L102">        assertEquals(country, locale.getCountry());</span>
+        //variant is empty
+<span class="pc bpc" id="L104" title="2 of 4 branches missed.">        assertTrue(locale.getVariant() == null || locale.getVariant().isEmpty());</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Pass in a valid language, test toLocale.
+     *
+     * @param localeString to pass to toLocale()
+     * @param language of the resulting Locale
+     * @param country of the resulting Locale
+     * @param variant of the resulting Locale
+     */
+    private static void assertValidToLocale(
+            final String localeString, final String language,
+            final String country, final String variant) {
+<span class="fc" id="L118">        final Locale locale = LocaleUtils.toLocale(localeString);</span>
+<span class="fc" id="L119">        assertNotNull(locale, &quot;valid locale&quot;);</span>
+<span class="fc" id="L120">        assertEquals(language, locale.getLanguage());</span>
+<span class="fc" id="L121">        assertEquals(country, locale.getCountry());</span>
+<span class="fc" id="L122">        assertEquals(variant, locale.getVariant());</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Test toLocale() method.
+     */
+    @Test
+    public void testToLocale_1Part() {
+<span class="fc" id="L130">        assertNull(LocaleUtils.toLocale(null));</span>
+
+<span class="fc" id="L132">        assertValidToLocale(&quot;us&quot;);</span>
+<span class="fc" id="L133">        assertValidToLocale(&quot;fr&quot;);</span>
+<span class="fc" id="L134">        assertValidToLocale(&quot;de&quot;);</span>
+<span class="fc" id="L135">        assertValidToLocale(&quot;zh&quot;);</span>
+        // Valid format but lang doesn't exist, should make instance anyway
+<span class="fc" id="L137">        assertValidToLocale(&quot;qq&quot;);</span>
+        // LANG-941: JDK 8 introduced the empty locale as one of the default locales
+<span class="fc" id="L139">        assertValidToLocale(&quot;&quot;);</span>
+
+<span class="pc" id="L141">        assertThrows(IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;Us&quot;), &quot;Should fail if not lowercase&quot;);</span>
+<span class="pc" id="L142">        assertThrows(IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;uS&quot;), &quot;Should fail if not lowercase&quot;);</span>
+<span class="pc" id="L143">        assertThrows(IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;u#&quot;), &quot;Should fail if not lowercase&quot;);</span>
+<span class="fc" id="L144">        assertThrows(</span>
+<span class="nc" id="L145">                IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;u&quot;), &quot;Must be 2 chars if less than 5&quot;);</span>
+<span class="fc" id="L146">        assertThrows(</span>
+<span class="nc" id="L147">                IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;uu_U&quot;), &quot;Must be 2 chars if less than 5&quot;);</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Test toLocale() method.
+     */
+    @Test
+    public void testToLocale_2Part() {
+<span class="fc" id="L155">        assertValidToLocale(&quot;us_EN&quot;, &quot;us&quot;, &quot;EN&quot;);</span>
+        //valid though doesn't exist
+<span class="fc" id="L157">        assertValidToLocale(&quot;us_ZH&quot;, &quot;us&quot;, &quot;ZH&quot;);</span>
+
+<span class="fc" id="L159">        assertThrows(</span>
+<span class="nc" id="L160">                IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;us-EN&quot;), &quot;Should fail as not underscore&quot;);</span>
+<span class="fc" id="L161">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L163">                () -&gt; LocaleUtils.toLocale(&quot;us_En&quot;),</span>
+                &quot;Should fail second part not uppercase&quot;);
+<span class="fc" id="L165">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L167">                () -&gt; LocaleUtils.toLocale(&quot;us_en&quot;),</span>
+                &quot;Should fail second part not uppercase&quot;);
+<span class="fc" id="L169">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L171">                () -&gt; LocaleUtils.toLocale(&quot;us_eN&quot;),</span>
+                &quot;Should fail second part not uppercase&quot;);
+<span class="fc" id="L173">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L175">                () -&gt; LocaleUtils.toLocale(&quot;uS_EN&quot;),</span>
+                &quot;Should fail first part not lowercase&quot;);
+<span class="fc" id="L177">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L179">                () -&gt; LocaleUtils.toLocale(&quot;us_E3&quot;),</span>
+                &quot;Should fail second part not uppercase&quot;);
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Test toLocale() method.
+     */
+    @Test
+    public void testToLocale_3Part() {
+<span class="fc" id="L188">        assertValidToLocale(&quot;us_EN_A&quot;, &quot;us&quot;, &quot;EN&quot;, &quot;A&quot;);</span>
+        // this isn't pretty, but was caused by a jdk bug it seems
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4210525
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        if (SystemUtils.isJavaVersionAtLeast(JAVA_1_4)) {</span>
+<span class="fc" id="L192">            assertValidToLocale(&quot;us_EN_a&quot;, &quot;us&quot;, &quot;EN&quot;, &quot;a&quot;);</span>
+<span class="fc" id="L193">            assertValidToLocale(&quot;us_EN_SFsafdFDsdfF&quot;, &quot;us&quot;, &quot;EN&quot;, &quot;SFsafdFDsdfF&quot;);</span>
+        } else {
+<span class="nc" id="L195">            assertValidToLocale(&quot;us_EN_a&quot;, &quot;us&quot;, &quot;EN&quot;, &quot;A&quot;);</span>
+<span class="nc" id="L196">            assertValidToLocale(&quot;us_EN_SFsafdFDsdfF&quot;, &quot;us&quot;, &quot;EN&quot;, &quot;SFSAFDFDSDFF&quot;);</span>
+        }
+
+<span class="fc" id="L199">        assertThrows(</span>
+<span class="nc" id="L200">                IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;us_EN-a&quot;), &quot;Should fail as not underscore&quot;);</span>
+<span class="fc" id="L201">        assertThrows(</span>
+<span class="nc" id="L202">                IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(&quot;uu_UU_&quot;), &quot;Must be 3, 5 or 7+ in length&quot;);</span>
+<span class="fc" id="L203">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Helper method for local lookups.
+     *
+     * @param locale  the input locale
+     * @param defaultLocale  the input default locale
+     * @param expected  expected results
+     */
+    private static void assertLocaleLookupList(final Locale locale, final Locale defaultLocale, final Locale[] expected) {
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        final List&lt;Locale&gt; localeList = defaultLocale == null ?</span>
+<span class="fc" id="L215">                LocaleUtils.localeLookupList(locale) :</span>
+<span class="fc" id="L216">                LocaleUtils.localeLookupList(locale, defaultLocale);</span>
+
+<span class="fc" id="L218">        assertEquals(expected.length, localeList.size());</span>
+<span class="fc" id="L219">        assertEquals(Arrays.asList(expected), localeList);</span>
+<span class="fc" id="L220">        assertUnmodifiableCollection(localeList);</span>
+<span class="fc" id="L221">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Test localeLookupList() method.
+     */
+    @Test
+    public void testLocaleLookupList_Locale() {
+<span class="fc" id="L229">        assertLocaleLookupList(null, null, new Locale[0]);</span>
+<span class="fc" id="L230">        assertLocaleLookupList(LOCALE_QQ, null, new Locale[]{LOCALE_QQ});</span>
+<span class="fc" id="L231">        assertLocaleLookupList(LOCALE_EN, null, new Locale[]{LOCALE_EN});</span>
+<span class="fc" id="L232">        assertLocaleLookupList(LOCALE_EN, null, new Locale[]{LOCALE_EN});</span>
+<span class="fc" id="L233">        assertLocaleLookupList(LOCALE_EN_US, null,</span>
+            new Locale[] {
+                LOCALE_EN_US,
+                LOCALE_EN});
+<span class="fc" id="L237">        assertLocaleLookupList(LOCALE_EN_US_ZZZZ, null,</span>
+            new Locale[] {
+                LOCALE_EN_US_ZZZZ,
+                LOCALE_EN_US,
+                LOCALE_EN});
+<span class="fc" id="L242">    }</span>
+
+    /**
+     * Test localeLookupList() method.
+     */
+    @Test
+    public void testLocaleLookupList_LocaleLocale() {
+<span class="fc" id="L249">        assertLocaleLookupList(LOCALE_QQ, LOCALE_QQ,</span>
+                new Locale[]{LOCALE_QQ});
+<span class="fc" id="L251">        assertLocaleLookupList(LOCALE_EN, LOCALE_EN,</span>
+                new Locale[]{LOCALE_EN});
+
+<span class="fc" id="L254">        assertLocaleLookupList(LOCALE_EN_US, LOCALE_EN_US,</span>
+            new Locale[]{
+                LOCALE_EN_US,
+                LOCALE_EN});
+<span class="fc" id="L258">        assertLocaleLookupList(LOCALE_EN_US, LOCALE_QQ,</span>
+            new Locale[] {
+                LOCALE_EN_US,
+                LOCALE_EN,
+                LOCALE_QQ});
+<span class="fc" id="L263">        assertLocaleLookupList(LOCALE_EN_US, LOCALE_QQ_ZZ,</span>
+            new Locale[] {
+                LOCALE_EN_US,
+                LOCALE_EN,
+                LOCALE_QQ_ZZ});
+
+<span class="fc" id="L269">        assertLocaleLookupList(LOCALE_EN_US_ZZZZ, null,</span>
+            new Locale[] {
+                LOCALE_EN_US_ZZZZ,
+                LOCALE_EN_US,
+                LOCALE_EN});
+<span class="fc" id="L274">        assertLocaleLookupList(LOCALE_EN_US_ZZZZ, LOCALE_EN_US_ZZZZ,</span>
+            new Locale[] {
+                LOCALE_EN_US_ZZZZ,
+                LOCALE_EN_US,
+                LOCALE_EN});
+<span class="fc" id="L279">        assertLocaleLookupList(LOCALE_EN_US_ZZZZ, LOCALE_QQ,</span>
+            new Locale[] {
+                LOCALE_EN_US_ZZZZ,
+                LOCALE_EN_US,
+                LOCALE_EN,
+                LOCALE_QQ});
+<span class="fc" id="L285">        assertLocaleLookupList(LOCALE_EN_US_ZZZZ, LOCALE_QQ_ZZ,</span>
+            new Locale[] {
+                LOCALE_EN_US_ZZZZ,
+                LOCALE_EN_US,
+                LOCALE_EN,
+                LOCALE_QQ_ZZ});
+<span class="fc" id="L291">        assertLocaleLookupList(LOCALE_FR_CA, LOCALE_EN,</span>
+            new Locale[] {
+                LOCALE_FR_CA,
+                LOCALE_FR,
+                LOCALE_EN});
+<span class="fc" id="L296">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Test availableLocaleList() method.
+     */
+    @Test
+    public void testAvailableLocaleList() {
+<span class="fc" id="L304">        final List&lt;Locale&gt; list = LocaleUtils.availableLocaleList();</span>
+<span class="fc" id="L305">        final List&lt;Locale&gt; list2 = LocaleUtils.availableLocaleList();</span>
+<span class="fc" id="L306">        assertNotNull(list);</span>
+<span class="fc" id="L307">        assertSame(list, list2);</span>
+<span class="fc" id="L308">        assertUnmodifiableCollection(list);</span>
+
+<span class="fc" id="L310">        final Locale[] jdkLocaleArray = Locale.getAvailableLocales();</span>
+<span class="fc" id="L311">        final List&lt;Locale&gt; jdkLocaleList = Arrays.asList(jdkLocaleArray);</span>
+<span class="fc" id="L312">        assertEquals(jdkLocaleList, list);</span>
+<span class="fc" id="L313">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Test availableLocaleSet() method.
+     */
+    @Test
+    public void testAvailableLocaleSet() {
+<span class="fc" id="L321">        final Set&lt;Locale&gt; set = LocaleUtils.availableLocaleSet();</span>
+<span class="fc" id="L322">        final Set&lt;Locale&gt; set2 = LocaleUtils.availableLocaleSet();</span>
+<span class="fc" id="L323">        assertNotNull(set);</span>
+<span class="fc" id="L324">        assertSame(set, set2);</span>
+<span class="fc" id="L325">        assertUnmodifiableCollection(set);</span>
+
+<span class="fc" id="L327">        final Locale[] jdkLocaleArray = Locale.getAvailableLocales();</span>
+<span class="fc" id="L328">        final List&lt;Locale&gt; jdkLocaleList = Arrays.asList(jdkLocaleArray);</span>
+<span class="fc" id="L329">        final Set&lt;Locale&gt; jdkLocaleSet = new HashSet&lt;&gt;(jdkLocaleList);</span>
+<span class="fc" id="L330">        assertEquals(jdkLocaleSet, set);</span>
+<span class="fc" id="L331">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Test availableLocaleSet() method.
+     */
+    @SuppressWarnings(&quot;boxing&quot;) // JUnit4 does not support primitive equality testing apart from long
+    @Test
+    public void testIsAvailableLocale() {
+<span class="fc" id="L340">        final Set&lt;Locale&gt; set = LocaleUtils.availableLocaleSet();</span>
+<span class="fc" id="L341">        assertEquals(set.contains(LOCALE_EN), LocaleUtils.isAvailableLocale(LOCALE_EN));</span>
+<span class="fc" id="L342">        assertEquals(set.contains(LOCALE_EN_US), LocaleUtils.isAvailableLocale(LOCALE_EN_US));</span>
+<span class="fc" id="L343">        assertEquals(set.contains(LOCALE_EN_US_ZZZZ), LocaleUtils.isAvailableLocale(LOCALE_EN_US_ZZZZ));</span>
+<span class="fc" id="L344">        assertEquals(set.contains(LOCALE_FR), LocaleUtils.isAvailableLocale(LOCALE_FR));</span>
+<span class="fc" id="L345">        assertEquals(set.contains(LOCALE_FR_CA), LocaleUtils.isAvailableLocale(LOCALE_FR_CA));</span>
+<span class="fc" id="L346">        assertEquals(set.contains(LOCALE_QQ), LocaleUtils.isAvailableLocale(LOCALE_QQ));</span>
+<span class="fc" id="L347">        assertEquals(set.contains(LOCALE_QQ_ZZ), LocaleUtils.isAvailableLocale(LOCALE_QQ_ZZ));</span>
+<span class="fc" id="L348">    }</span>
+
+    /**
+     * Test for 3-chars locale, further details at LANG-915
+     *
+     */
+    @Test
+    public void testThreeCharsLocale() {
+<span class="fc bfc" id="L356" title="All 2 branches covered.">        for (final String str : Arrays.asList(&quot;udm&quot;, &quot;tet&quot;)) {</span>
+<span class="fc" id="L357">            final Locale locale = LocaleUtils.toLocale(str);</span>
+<span class="fc" id="L358">            assertNotNull(locale);</span>
+<span class="fc" id="L359">            assertEquals(str, locale.getLanguage());</span>
+<span class="fc" id="L360">            assertTrue(StringUtils.isBlank(locale.getCountry()));</span>
+<span class="fc" id="L361">            assertEquals(new Locale(str), locale);</span>
+<span class="fc" id="L362">        }</span>
+<span class="fc" id="L363">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Make sure the language by country is correct. It checks that
+     * the LocaleUtils.languagesByCountry(country) call contains the
+     * array of languages passed in. It may contain more due to JVM
+     * variations.
+     *
+     * @param country
+     * @param languages array of languages that should be returned
+     */
+    private static void assertLanguageByCountry(final String country, final String[] languages) {
+<span class="fc" id="L376">        final List&lt;Locale&gt; list = LocaleUtils.languagesByCountry(country);</span>
+<span class="fc" id="L377">        final List&lt;Locale&gt; list2 = LocaleUtils.languagesByCountry(country);</span>
+<span class="fc" id="L378">        assertNotNull(list);</span>
+<span class="fc" id="L379">        assertSame(list, list2);</span>
+        //search through languages
+<span class="fc bfc" id="L381" title="All 2 branches covered.">        for (final String language : languages) {</span>
+<span class="fc" id="L382">            final Iterator&lt;Locale&gt; iterator = list.iterator();</span>
+<span class="fc" id="L383">            boolean found = false;</span>
+            // see if it was returned by the set
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L386">                final Locale locale = iterator.next();</span>
+                // should have an en empty variant
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">                assertTrue(locale.getVariant() == null</span>
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">                        || locale.getVariant().isEmpty());</span>
+<span class="fc" id="L390">                assertEquals(country, locale.getCountry());</span>
+<span class="fc bfc" id="L391" title="All 2 branches covered.">                if (language.equals(locale.getLanguage())) {</span>
+<span class="fc" id="L392">                    found = true;</span>
+<span class="fc" id="L393">                    break;</span>
+                }
+<span class="fc" id="L395">            }</span>
+<span class="fc" id="L396">            assertTrue(found, &quot;Could not find language: &quot; + language + &quot; for country: &quot; + country);</span>
+        }
+<span class="fc" id="L398">        assertUnmodifiableCollection(list);</span>
+<span class="fc" id="L399">    }</span>
+
+    /**
+     * Test languagesByCountry() method.
+     */
+    @Test
+    public void testLanguagesByCountry() {
+<span class="fc" id="L406">        assertLanguageByCountry(null, new String[0]);</span>
+<span class="fc" id="L407">        assertLanguageByCountry(&quot;GB&quot;, new String[]{&quot;en&quot;});</span>
+<span class="fc" id="L408">        assertLanguageByCountry(&quot;ZZ&quot;, new String[0]);</span>
+<span class="fc" id="L409">        assertLanguageByCountry(&quot;CH&quot;, new String[]{&quot;fr&quot;, &quot;de&quot;, &quot;it&quot;});</span>
+<span class="fc" id="L410">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Make sure the country by language is correct. It checks that
+     * the LocaleUtils.countryByLanguage(language) call contains the
+     * array of countries passed in. It may contain more due to JVM
+     * variations.
+     *
+     *
+     * @param language
+     * @param countries array of countries that should be returned
+     */
+    private static void assertCountriesByLanguage(final String language, final String[] countries) {
+<span class="fc" id="L424">        final List&lt;Locale&gt; list = LocaleUtils.countriesByLanguage(language);</span>
+<span class="fc" id="L425">        final List&lt;Locale&gt; list2 = LocaleUtils.countriesByLanguage(language);</span>
+<span class="fc" id="L426">        assertNotNull(list);</span>
+<span class="fc" id="L427">        assertSame(list, list2);</span>
+        //search through languages
+<span class="fc bfc" id="L429" title="All 2 branches covered.">        for (final String country : countries) {</span>
+<span class="fc" id="L430">            final Iterator&lt;Locale&gt; iterator = list.iterator();</span>
+<span class="fc" id="L431">            boolean found = false;</span>
+            // see if it was returned by the set
+<span class="pc bpc" id="L433" title="1 of 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L434">                final Locale locale = iterator.next();</span>
+                // should have an en empty variant
+<span class="pc bpc" id="L436" title="1 of 2 branches missed.">                assertTrue(locale.getVariant() == null</span>
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">                        || locale.getVariant().isEmpty());</span>
+<span class="fc" id="L438">                assertEquals(language, locale.getLanguage());</span>
+<span class="fc bfc" id="L439" title="All 2 branches covered.">                if (country.equals(locale.getCountry())) {</span>
+<span class="fc" id="L440">                    found = true;</span>
+<span class="fc" id="L441">                    break;</span>
+                }
+<span class="fc" id="L443">            }</span>
+<span class="fc" id="L444">            assertTrue(found, &quot;Could not find language: &quot; + country + &quot; for country: &quot; + language);</span>
+        }
+<span class="fc" id="L446">        assertUnmodifiableCollection(list);</span>
+<span class="fc" id="L447">    }</span>
+
+    /**
+     * Test countriesByLanguage() method.
+     */
+    @Test
+    public void testCountriesByLanguage() {
+<span class="fc" id="L454">        assertCountriesByLanguage(null, new String[0]);</span>
+<span class="fc" id="L455">        assertCountriesByLanguage(&quot;de&quot;, new String[]{&quot;DE&quot;, &quot;CH&quot;, &quot;AT&quot;, &quot;LU&quot;});</span>
+<span class="fc" id="L456">        assertCountriesByLanguage(&quot;zz&quot;, new String[0]);</span>
+<span class="fc" id="L457">        assertCountriesByLanguage(&quot;it&quot;, new String[]{&quot;IT&quot;, &quot;CH&quot;});</span>
+<span class="fc" id="L458">    }</span>
+
+    /**
+     * @param coll  the collection to check
+     */
+    private static void assertUnmodifiableCollection(final Collection&lt;?&gt; coll) {
+<span class="pc" id="L464">        assertThrows(UnsupportedOperationException.class, () -&gt; coll.add(null));</span>
+<span class="fc" id="L465">    }</span>
+
+    /**
+     * Tests #LANG-328 - only language+variant
+     */
+    @Test
+    public void testLang328() {
+<span class="fc" id="L472">        assertValidToLocale(&quot;fr__P&quot;, &quot;fr&quot;, &quot;&quot;, &quot;P&quot;);</span>
+<span class="fc" id="L473">        assertValidToLocale(&quot;fr__POSIX&quot;, &quot;fr&quot;, &quot;&quot;, &quot;POSIX&quot;);</span>
+<span class="fc" id="L474">    }</span>
+
+    @Test
+    public void testLanguageAndUNM49Numeric3AreaCodeLang1312() {
+<span class="fc" id="L478">        assertValidToLocale(&quot;en_001&quot;, &quot;en&quot;, &quot;001&quot;);</span>
+<span class="fc" id="L479">        assertValidToLocale(&quot;en_150&quot;, &quot;en&quot;, &quot;150&quot;);</span>
+<span class="fc" id="L480">        assertValidToLocale(&quot;ar_001&quot;, &quot;ar&quot;, &quot;001&quot;);</span>
+
+        // LANG-1312
+<span class="fc" id="L483">        assertValidToLocale(&quot;en_001_GB&quot;, &quot;en&quot;, &quot;001&quot;, &quot;GB&quot;);</span>
+<span class="fc" id="L484">        assertValidToLocale(&quot;en_150_US&quot;, &quot;en&quot;, &quot;150&quot;, &quot;US&quot;);</span>
+<span class="fc" id="L485">    }</span>
+
+    /**
+     * Tests #LANG-865, strings starting with an underscore.
+     */
+    @Test
+    public void testLang865() {
+<span class="fc" id="L492">        assertValidToLocale(&quot;_GB&quot;, &quot;&quot;, &quot;GB&quot;, &quot;&quot;);</span>
+<span class="fc" id="L493">        assertValidToLocale(&quot;_GB_P&quot;, &quot;&quot;, &quot;GB&quot;, &quot;P&quot;);</span>
+<span class="fc" id="L494">        assertValidToLocale(&quot;_GB_POSIX&quot;, &quot;&quot;, &quot;GB&quot;, &quot;POSIX&quot;);</span>
+<span class="fc" id="L495">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L497">                () -&gt; LocaleUtils.toLocale(&quot;_G&quot;),</span>
+                &quot;Must be at least 3 chars if starts with underscore&quot;);
+<span class="fc" id="L499">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L501">                () -&gt; LocaleUtils.toLocale(&quot;_Gb&quot;),</span>
+                &quot;Must be uppercase if starts with underscore&quot;);
+<span class="fc" id="L503">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L505">                () -&gt; LocaleUtils.toLocale(&quot;_gB&quot;),</span>
+                &quot;Must be uppercase if starts with underscore&quot;);
+<span class="fc" id="L507">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L509">                () -&gt; LocaleUtils.toLocale(&quot;_1B&quot;),</span>
+                &quot;Must be letter if starts with underscore&quot;);
+<span class="fc" id="L511">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L513">                () -&gt; LocaleUtils.toLocale(&quot;_G1&quot;),</span>
+                &quot;Must be letter if starts with underscore&quot;);
+<span class="fc" id="L515">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L517">                () -&gt; LocaleUtils.toLocale(&quot;_GB_&quot;),</span>
+                &quot;Must be at least 5 chars if starts with underscore&quot;);
+<span class="fc" id="L519">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L521">                () -&gt; LocaleUtils.toLocale(&quot;_GBAP&quot;),</span>
+                &quot;Must have underscore after the country if starts with underscore and is at least 5 chars&quot;);
+<span class="fc" id="L523">    }</span>
+
+    @ParameterizedTest
+    @MethodSource(&quot;java.util.Locale#getAvailableLocales&quot;)
+    public void testParseAllLocales(Locale l) {
+        // Check if it's possible to recreate the Locale using just the standard constructor
+<span class="fc" id="L529">        final Locale locale = new Locale(l.getLanguage(), l.getCountry(), l.getVariant());</span>
+<span class="fc bfc" id="L530" title="All 2 branches covered.">        if (l.equals(locale)) { // it is possible for LocaleUtils.toLocale to handle these Locales</span>
+<span class="fc" id="L531">            final String str = l.toString();</span>
+            // Look for the script/extension suffix
+<span class="fc" id="L533">            int suff = str.indexOf(&quot;_#&quot;);</span>
+<span class="fc bfc" id="L534" title="All 2 branches covered.">            if (suff == - 1) {</span>
+<span class="fc" id="L535">                suff = str.indexOf(&quot;#&quot;);</span>
+            }
+<span class="fc" id="L537">            String localeStr = str;</span>
+<span class="fc bfc" id="L538" title="All 2 branches covered.">            if (suff &gt;= 0) { // we have a suffix</span>
+<span class="pc" id="L539">                assertThrows(IllegalArgumentException.class, () -&gt; LocaleUtils.toLocale(str));</span>
+                // try without suffix
+<span class="fc" id="L541">                localeStr = str.substring(0, suff);</span>
+            }
+<span class="fc" id="L543">            final Locale loc = LocaleUtils.toLocale(localeStr);</span>
+<span class="fc" id="L544">            assertEquals(l, loc);</span>
+        }
+<span class="fc" id="L546">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

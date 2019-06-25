@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBaseConfigurationBuilderProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestBaseConfigurationBuilderProvider.java</span></div><h1>TestBaseConfigurationBuilderProvider.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.BuilderParameters;
+import org.apache.commons.configuration2.builder.ConfigurationBuilder;
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.junit.Test;
+
+/**
+ * Test class for {@code BaseConfigurationBuilderProvider}.
+ *
+ */
+<span class="fc" id="L45">public class TestBaseConfigurationBuilderProvider</span>
+{
+    /**
+     * Creates a configuration object describing a configuration source.
+     *
+     * @param reload a flag whether reload operations are supported
+     * @return the configuration object
+     */
+    private HierarchicalConfiguration&lt;?&gt; setUpConfig(final boolean reload)
+    {
+<span class="fc" id="L55">        final HierarchicalConfiguration&lt;?&gt; config = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L56">        config.addProperty(CombinedConfigurationBuilder.ATTR_RELOAD,</span>
+<span class="fc" id="L57">                Boolean.valueOf(reload));</span>
+<span class="fc" id="L58">        config.addProperty(&quot;[@throwExceptionOnMissing]&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L59">        config.addProperty(&quot;[@path]&quot;,</span>
+<span class="fc" id="L60">                ConfigurationAssert.getTestFile(&quot;test.properties&quot;)</span>
+<span class="fc" id="L61">                        .getAbsolutePath());</span>
+<span class="fc" id="L62">        config.addProperty(&quot;listDelimiterHandler[@config-class]&quot;,</span>
+<span class="fc" id="L63">                DefaultListDelimiterHandler.class.getName());</span>
+<span class="fc" id="L64">        config.addProperty(</span>
+                &quot;listDelimiterHandler.config-constrarg[@config-value]&quot;, &quot;;&quot;);
+<span class="fc" id="L66">        return config;</span>
+    }
+
+    /**
+     * Creates a configuration declaration based on the given configuration.
+     *
+     * @param declConfig the configuration for the declaration
+     * @return the declaration
+     */
+    private ConfigurationDeclaration createDeclaration(
+            final HierarchicalConfiguration&lt;?&gt; declConfig)
+    {
+<span class="fc" id="L78">        final CombinedConfigurationBuilder parentBuilder =</span>
+                new CombinedConfigurationBuilder()
+<span class="fc" id="L80">                {</span>
+                    @Override
+                    protected void initChildBuilderParameters(
+                            final BuilderParameters params)
+                    {
+                        // set a property value; this should be overridden by
+                        // child builders
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">                        if (params instanceof BasicBuilderParameters)</span>
+                        {
+<span class="fc" id="L89">                            ((BasicBuilderParameters) params)</span>
+<span class="fc" id="L90">                                    .setListDelimiterHandler(DisabledListDelimiterHandler.INSTANCE);</span>
+                        }
+<span class="fc" id="L92">                    }</span>
+                };
+<span class="fc" id="L94">        final ConfigurationDeclaration decl =</span>
+                new ConfigurationDeclaration(parentBuilder, declConfig)
+<span class="fc" id="L96">                {</span>
+                    @Override
+                    protected Object interpolate(final Object value)
+                    {
+<span class="fc" id="L100">                        return value;</span>
+                    }
+                };
+<span class="fc" id="L103">        return decl;</span>
+    }
+
+    /**
+     * Creates a default test instance.
+     *
+     * @return the test instance
+     */
+    private BaseConfigurationBuilderProvider createProvider()
+    {
+<span class="fc" id="L113">        return new BaseConfigurationBuilderProvider(</span>
+<span class="fc" id="L114">                FileBasedConfigurationBuilder.class.getName(),</span>
+<span class="fc" id="L115">                ReloadingFileBasedConfigurationBuilder.class.getName(),</span>
+<span class="fc" id="L116">                PropertiesConfiguration.class.getName(),</span>
+<span class="fc" id="L117">                Arrays.asList(FileBasedBuilderParametersImpl.class.getName()));</span>
+    }
+
+    /**
+     * Helper method for setting up a builder and checking properties of the
+     * created configuration object.
+     *
+     * @param reload a flag whether reloading is supported
+     * @return the builder created by the provider
+     * @throws ConfigurationException if an error occurs
+     */
+    private ConfigurationBuilder&lt;? extends Configuration&gt; checkBuilder(
+            final boolean reload) throws ConfigurationException
+    {
+<span class="fc" id="L131">        final HierarchicalConfiguration&lt;?&gt; declConfig = setUpConfig(reload);</span>
+<span class="fc" id="L132">        final ConfigurationDeclaration decl = createDeclaration(declConfig);</span>
+<span class="fc" id="L133">        final ConfigurationBuilder&lt;? extends Configuration&gt; builder =</span>
+<span class="fc" id="L134">                createProvider().getConfigurationBuilder(decl);</span>
+<span class="fc" id="L135">        final Configuration config = builder.getConfiguration();</span>
+<span class="fc" id="L136">        assertEquals(&quot;Wrong configuration class&quot;,</span>
+<span class="fc" id="L137">                PropertiesConfiguration.class, config.getClass());</span>
+<span class="fc" id="L138">        final PropertiesConfiguration pconfig = (PropertiesConfiguration) config;</span>
+<span class="fc" id="L139">        assertTrue(&quot;Wrong exception flag&quot;,</span>
+<span class="fc" id="L140">                pconfig.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L141">        final DefaultListDelimiterHandler listHandler =</span>
+<span class="fc" id="L142">                (DefaultListDelimiterHandler) pconfig.getListDelimiterHandler();</span>
+<span class="fc" id="L143">        assertEquals(&quot;Wrong list delimiter&quot;, ';', listHandler.getDelimiter());</span>
+<span class="fc" id="L144">        assertTrue(&quot;Configuration not loaded&quot;,</span>
+<span class="fc" id="L145">                pconfig.getBoolean(&quot;configuration.loaded&quot;));</span>
+<span class="fc" id="L146">        return builder;</span>
+    }
+
+    /**
+     * Tries to create an instance without a builder class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoBuilderClass()
+    {
+<span class="fc" id="L155">        new BaseConfigurationBuilderProvider(null, null,</span>
+<span class="nc" id="L156">                PropertiesConfiguration.class.getName(), null);</span>
+<span class="nc" id="L157">    }</span>
+
+    /**
+     * Tries to create an instance without a configuration class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoConfigurationClass()
+    {
+<span class="nc" id="L165">        new BaseConfigurationBuilderProvider(BasicConfigurationBuilder.class.getName(),</span>
+                null, null, null);
+<span class="nc" id="L167">    }</span>
+
+    /**
+     * Tests whether a builder without reloading support can be created.
+     */
+    @Test
+    public void testGetBuilderNotReloading() throws ConfigurationException
+    {
+<span class="fc" id="L175">        final ConfigurationBuilder&lt;? extends Configuration&gt; builder =</span>
+<span class="fc" id="L176">                checkBuilder(false);</span>
+<span class="fc" id="L177">        assertEquals(&quot;Wrong builder class&quot;,</span>
+<span class="fc" id="L178">                FileBasedConfigurationBuilder.class, builder.getClass());</span>
+<span class="fc" id="L179">    }</span>
+
+    /**
+     * Tests whether a builder with reloading support can be created.
+     */
+    @Test
+    public void testGetBuilderReloading() throws ConfigurationException
+    {
+<span class="fc" id="L187">        final ConfigurationBuilder&lt;? extends Configuration&gt; builder =</span>
+<span class="fc" id="L188">                checkBuilder(true);</span>
+<span class="fc" id="L189">        assertEquals(&quot;Wrong builder class&quot;,</span>
+                ReloadingFileBasedConfigurationBuilder.class,
+<span class="fc" id="L191">                builder.getClass());</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * Tries to create a reloading builder if this is not supported by the
+     * provider.
+     */
+    @Test(expected = ConfigurationException.class)
+    public void testGetReloadingBuilderNotSupported()
+            throws ConfigurationException
+    {
+<span class="fc" id="L202">        final BaseConfigurationBuilderProvider provider =</span>
+                new BaseConfigurationBuilderProvider(
+<span class="fc" id="L204">                        FileBasedConfigurationBuilder.class.getName(), null,</span>
+<span class="fc" id="L205">                        PropertiesConfiguration.class.getName(),</span>
+<span class="fc" id="L206">                        Arrays.asList(FileBasedBuilderParametersImpl.class</span>
+<span class="fc" id="L207">                                .getName()));</span>
+<span class="fc" id="L208">        final HierarchicalConfiguration&lt;?&gt; declConfig = setUpConfig(true);</span>
+<span class="fc" id="L209">        final ConfigurationDeclaration decl = createDeclaration(declConfig);</span>
+<span class="nc" id="L210">        provider.getConfigurationBuilder(decl);</span>
+<span class="nc" id="L211">    }</span>
+
+    /**
+     * Helper method for testing whether the builder's allowFailOnInit flag is
+     * set correctly.
+     *
+     * @param expFlag the expected flag value
+     * @param props the properties to set in the configuration for the
+     *        declaration
+     * @throws ConfigurationException if an error occurs
+     */
+    private void checkAllowFailOnInit(final boolean expFlag, final String... props)
+            throws ConfigurationException
+    {
+<span class="fc" id="L225">        final HierarchicalConfiguration&lt;?&gt; declConfig = setUpConfig(false);</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        for (final String key : props)</span>
+        {
+<span class="fc" id="L228">            declConfig.addProperty(key, Boolean.TRUE);</span>
+        }
+<span class="fc" id="L230">        final ConfigurationDeclaration decl = createDeclaration(declConfig);</span>
+<span class="fc" id="L231">        final BasicConfigurationBuilder&lt;? extends Configuration&gt; builder =</span>
+<span class="fc" id="L232">                (BasicConfigurationBuilder&lt;? extends Configuration&gt;) createProvider()</span>
+<span class="fc" id="L233">                        .getConfigurationBuilder(decl);</span>
+<span class="fc" id="L234">        assertEquals(&quot;Wrong flag value&quot;, expFlag, builder.isAllowFailOnInit());</span>
+<span class="fc" id="L235">    }</span>
+
+    /**
+     * Tests that the allowFailOnInit flag is not set per default on the
+     * builder.
+     */
+    @Test
+    public void testGetBuilderNoFailOnInit() throws ConfigurationException
+    {
+<span class="fc" id="L244">        checkAllowFailOnInit(false);</span>
+<span class="fc" id="L245">    }</span>
+
+    /**
+     * Tests that the allowFailOnInit flag is not set for builders which are not
+     * optional.
+     */
+    public void testGetBuilderAllowFailOnInitNotOptional()
+            throws ConfigurationException
+    {
+<span class="nc" id="L254">        checkAllowFailOnInit(false,</span>
+                CombinedConfigurationBuilder.ATTR_FORCECREATE);
+<span class="nc" id="L256">    }</span>
+
+    /**
+     * Tests whether the allowFailOnInit flag can be enabled on the builder.
+     */
+    @Test
+    public void testGetBuilderAllowFailOnInit() throws ConfigurationException
+    {
+<span class="fc" id="L264">        checkAllowFailOnInit(true,</span>
+                CombinedConfigurationBuilder.ATTR_OPTIONAL_RES,
+                CombinedConfigurationBuilder.ATTR_FORCECREATE);
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * Tests whether a null collection of parameter classes is handled
+     * correctly.
+     */
+    @Test
+    public void testInitNoParameterClasses()
+    {
+<span class="fc" id="L276">        final BaseConfigurationBuilderProvider provider =</span>
+                new BaseConfigurationBuilderProvider(
+<span class="fc" id="L278">                        BasicConfigurationBuilder.class.getName(), null,</span>
+<span class="fc" id="L279">                        PropertiesConfiguration.class.getName(), null);</span>
+<span class="fc" id="L280">        assertTrue(&quot;Got parameter classes&quot;, provider.getParameterClasses()</span>
+<span class="fc" id="L281">                .isEmpty());</span>
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Tests that the collection with parameter classes cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetParameterClassesModify()
+    {
+<span class="fc" id="L290">        final BaseConfigurationBuilderProvider provider =</span>
+                new BaseConfigurationBuilderProvider(
+<span class="fc" id="L292">                        BasicConfigurationBuilder.class.getName(), null,</span>
+<span class="fc" id="L293">                        PropertiesConfiguration.class.getName(),</span>
+<span class="fc" id="L294">                        Arrays.asList(BasicBuilderParameters.class.getName()));</span>
+<span class="nc" id="L295">        provider.getParameterClasses().clear();</span>
+<span class="nc" id="L296">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

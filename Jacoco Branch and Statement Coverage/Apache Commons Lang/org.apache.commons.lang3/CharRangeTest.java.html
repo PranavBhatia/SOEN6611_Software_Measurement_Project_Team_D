@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CharRangeTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">CharRangeTest.java</span></div><h1>CharRangeTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Modifier;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.CharRange}.
+ */
+<span class="fc" id="L37">public class CharRangeTest  {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testClass() {
+        // class changed to non-public in 3.0
+<span class="fc" id="L43">        assertFalse(Modifier.isPublic(CharRange.class.getModifiers()));</span>
+<span class="fc" id="L44">        assertTrue(Modifier.isFinal(CharRange.class.getModifiers()));</span>
+<span class="fc" id="L45">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructorAccessors_is() {
+<span class="fc" id="L50">        final CharRange rangea = CharRange.is('a');</span>
+<span class="fc" id="L51">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L52">        assertEquals('a', rangea.getEnd());</span>
+<span class="fc" id="L53">        assertFalse(rangea.isNegated());</span>
+<span class="fc" id="L54">        assertEquals(&quot;a&quot;, rangea.toString());</span>
+<span class="fc" id="L55">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isNot() {
+<span class="fc" id="L59">        final CharRange rangea = CharRange.isNot('a');</span>
+<span class="fc" id="L60">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L61">        assertEquals('a', rangea.getEnd());</span>
+<span class="fc" id="L62">        assertTrue(rangea.isNegated());</span>
+<span class="fc" id="L63">        assertEquals(&quot;^a&quot;, rangea.toString());</span>
+<span class="fc" id="L64">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isIn_Same() {
+<span class="fc" id="L68">        final CharRange rangea = CharRange.isIn('a', 'a');</span>
+<span class="fc" id="L69">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L70">        assertEquals('a', rangea.getEnd());</span>
+<span class="fc" id="L71">        assertFalse(rangea.isNegated());</span>
+<span class="fc" id="L72">        assertEquals(&quot;a&quot;, rangea.toString());</span>
+<span class="fc" id="L73">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isIn_Normal() {
+<span class="fc" id="L77">        final CharRange rangea = CharRange.isIn('a', 'e');</span>
+<span class="fc" id="L78">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L79">        assertEquals('e', rangea.getEnd());</span>
+<span class="fc" id="L80">        assertFalse(rangea.isNegated());</span>
+<span class="fc" id="L81">        assertEquals(&quot;a-e&quot;, rangea.toString());</span>
+<span class="fc" id="L82">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isIn_Reversed() {
+<span class="fc" id="L86">        final CharRange rangea = CharRange.isIn('e', 'a');</span>
+<span class="fc" id="L87">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L88">        assertEquals('e', rangea.getEnd());</span>
+<span class="fc" id="L89">        assertFalse(rangea.isNegated());</span>
+<span class="fc" id="L90">        assertEquals(&quot;a-e&quot;, rangea.toString());</span>
+<span class="fc" id="L91">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isNotIn_Same() {
+<span class="fc" id="L95">        final CharRange rangea = CharRange.isNotIn('a', 'a');</span>
+<span class="fc" id="L96">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L97">        assertEquals('a', rangea.getEnd());</span>
+<span class="fc" id="L98">        assertTrue(rangea.isNegated());</span>
+<span class="fc" id="L99">        assertEquals(&quot;^a&quot;, rangea.toString());</span>
+<span class="fc" id="L100">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isNotIn_Normal() {
+<span class="fc" id="L104">        final CharRange rangea = CharRange.isNotIn('a', 'e');</span>
+<span class="fc" id="L105">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L106">        assertEquals('e', rangea.getEnd());</span>
+<span class="fc" id="L107">        assertTrue(rangea.isNegated());</span>
+<span class="fc" id="L108">        assertEquals(&quot;^a-e&quot;, rangea.toString());</span>
+<span class="fc" id="L109">    }</span>
+
+    @Test
+    public void testConstructorAccessors_isNotIn_Reversed() {
+<span class="fc" id="L113">        final CharRange rangea = CharRange.isNotIn('e', 'a');</span>
+<span class="fc" id="L114">        assertEquals('a', rangea.getStart());</span>
+<span class="fc" id="L115">        assertEquals('e', rangea.getEnd());</span>
+<span class="fc" id="L116">        assertTrue(rangea.isNegated());</span>
+<span class="fc" id="L117">        assertEquals(&quot;^a-e&quot;, rangea.toString());</span>
+<span class="fc" id="L118">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testEquals_Object() {
+<span class="fc" id="L123">        final CharRange rangea = CharRange.is('a');</span>
+<span class="fc" id="L124">        final CharRange rangeae = CharRange.isIn('a', 'e');</span>
+<span class="fc" id="L125">        final CharRange rangenotbf = CharRange.isIn('b', 'f');</span>
+
+<span class="fc" id="L127">        assertNotEquals(null, rangea);</span>
+
+<span class="fc" id="L129">        assertEquals(rangea, rangea);</span>
+<span class="fc" id="L130">        assertEquals(rangea, CharRange.is('a'));</span>
+<span class="fc" id="L131">        assertEquals(rangeae, rangeae);</span>
+<span class="fc" id="L132">        assertEquals(rangeae, CharRange.isIn('a', 'e'));</span>
+<span class="fc" id="L133">        assertEquals(rangenotbf, rangenotbf);</span>
+<span class="fc" id="L134">        assertEquals(rangenotbf, CharRange.isIn('b', 'f'));</span>
+
+<span class="fc" id="L136">        assertNotEquals(rangea, rangeae);</span>
+<span class="fc" id="L137">        assertNotEquals(rangea, rangenotbf);</span>
+<span class="fc" id="L138">        assertNotEquals(rangeae, rangea);</span>
+<span class="fc" id="L139">        assertNotEquals(rangeae, rangenotbf);</span>
+<span class="fc" id="L140">        assertNotEquals(rangenotbf, rangea);</span>
+<span class="fc" id="L141">        assertNotEquals(rangenotbf, rangeae);</span>
+<span class="fc" id="L142">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L146">        final CharRange rangea = CharRange.is('a');</span>
+<span class="fc" id="L147">        final CharRange rangeae = CharRange.isIn('a', 'e');</span>
+<span class="fc" id="L148">        final CharRange rangenotbf = CharRange.isIn('b', 'f');</span>
+
+<span class="fc" id="L150">        assertEquals(rangea.hashCode(), rangea.hashCode());</span>
+<span class="fc" id="L151">        assertEquals(rangea.hashCode(), CharRange.is('a').hashCode());</span>
+<span class="fc" id="L152">        assertEquals(rangeae.hashCode(), rangeae.hashCode());</span>
+<span class="fc" id="L153">        assertEquals(rangeae.hashCode(), CharRange.isIn('a', 'e').hashCode());</span>
+<span class="fc" id="L154">        assertEquals(rangenotbf.hashCode(), rangenotbf.hashCode());</span>
+<span class="fc" id="L155">        assertEquals(rangenotbf.hashCode(), CharRange.isIn('b', 'f').hashCode());</span>
+
+<span class="fc" id="L157">        assertNotEquals(rangea.hashCode(), rangeae.hashCode());</span>
+<span class="fc" id="L158">        assertNotEquals(rangea.hashCode(), rangenotbf.hashCode());</span>
+<span class="fc" id="L159">        assertNotEquals(rangeae.hashCode(), rangea.hashCode());</span>
+<span class="fc" id="L160">        assertNotEquals(rangeae.hashCode(), rangenotbf.hashCode());</span>
+<span class="fc" id="L161">        assertNotEquals(rangenotbf.hashCode(), rangea.hashCode());</span>
+<span class="fc" id="L162">        assertNotEquals(rangenotbf.hashCode(), rangeae.hashCode());</span>
+<span class="fc" id="L163">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testContains_Char() {
+<span class="fc" id="L168">        CharRange range = CharRange.is('c');</span>
+<span class="fc" id="L169">        assertFalse(range.contains('b'));</span>
+<span class="fc" id="L170">        assertTrue(range.contains('c'));</span>
+<span class="fc" id="L171">        assertFalse(range.contains('d'));</span>
+<span class="fc" id="L172">        assertFalse(range.contains('e'));</span>
+
+<span class="fc" id="L174">        range = CharRange.isIn('c', 'd');</span>
+<span class="fc" id="L175">        assertFalse(range.contains('b'));</span>
+<span class="fc" id="L176">        assertTrue(range.contains('c'));</span>
+<span class="fc" id="L177">        assertTrue(range.contains('d'));</span>
+<span class="fc" id="L178">        assertFalse(range.contains('e'));</span>
+
+<span class="fc" id="L180">        range = CharRange.isIn('d', 'c');</span>
+<span class="fc" id="L181">        assertFalse(range.contains('b'));</span>
+<span class="fc" id="L182">        assertTrue(range.contains('c'));</span>
+<span class="fc" id="L183">        assertTrue(range.contains('d'));</span>
+<span class="fc" id="L184">        assertFalse(range.contains('e'));</span>
+
+<span class="fc" id="L186">        range = CharRange.isNotIn('c', 'd');</span>
+<span class="fc" id="L187">        assertTrue(range.contains('b'));</span>
+<span class="fc" id="L188">        assertFalse(range.contains('c'));</span>
+<span class="fc" id="L189">        assertFalse(range.contains('d'));</span>
+<span class="fc" id="L190">        assertTrue(range.contains('e'));</span>
+<span class="fc" id="L191">        assertTrue(range.contains((char) 0));</span>
+<span class="fc" id="L192">        assertTrue(range.contains(Character.MAX_VALUE));</span>
+<span class="fc" id="L193">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testContains_Charrange() {
+<span class="fc" id="L198">        final CharRange a = CharRange.is('a');</span>
+<span class="fc" id="L199">        final CharRange b = CharRange.is('b');</span>
+<span class="fc" id="L200">        final CharRange c = CharRange.is('c');</span>
+<span class="fc" id="L201">        final CharRange c2 = CharRange.is('c');</span>
+<span class="fc" id="L202">        final CharRange d = CharRange.is('d');</span>
+<span class="fc" id="L203">        final CharRange e = CharRange.is('e');</span>
+<span class="fc" id="L204">        final CharRange cd = CharRange.isIn('c', 'd');</span>
+<span class="fc" id="L205">        final CharRange bd = CharRange.isIn('b', 'd');</span>
+<span class="fc" id="L206">        final CharRange bc = CharRange.isIn('b', 'c');</span>
+<span class="fc" id="L207">        final CharRange ab = CharRange.isIn('a', 'b');</span>
+<span class="fc" id="L208">        final CharRange de = CharRange.isIn('d', 'e');</span>
+<span class="fc" id="L209">        final CharRange ef = CharRange.isIn('e', 'f');</span>
+<span class="fc" id="L210">        final CharRange ae = CharRange.isIn('a', 'e');</span>
+
+        // normal/normal
+<span class="fc" id="L213">        assertFalse(c.contains(b));</span>
+<span class="fc" id="L214">        assertTrue(c.contains(c));</span>
+<span class="fc" id="L215">        assertTrue(c.contains(c2));</span>
+<span class="fc" id="L216">        assertFalse(c.contains(d));</span>
+
+<span class="fc" id="L218">        assertFalse(c.contains(cd));</span>
+<span class="fc" id="L219">        assertFalse(c.contains(bd));</span>
+<span class="fc" id="L220">        assertFalse(c.contains(bc));</span>
+<span class="fc" id="L221">        assertFalse(c.contains(ab));</span>
+<span class="fc" id="L222">        assertFalse(c.contains(de));</span>
+
+<span class="fc" id="L224">        assertTrue(cd.contains(c));</span>
+<span class="fc" id="L225">        assertTrue(bd.contains(c));</span>
+<span class="fc" id="L226">        assertTrue(bc.contains(c));</span>
+<span class="fc" id="L227">        assertFalse(ab.contains(c));</span>
+<span class="fc" id="L228">        assertFalse(de.contains(c));</span>
+
+<span class="fc" id="L230">        assertTrue(ae.contains(b));</span>
+<span class="fc" id="L231">        assertTrue(ae.contains(ab));</span>
+<span class="fc" id="L232">        assertTrue(ae.contains(bc));</span>
+<span class="fc" id="L233">        assertTrue(ae.contains(cd));</span>
+<span class="fc" id="L234">        assertTrue(ae.contains(de));</span>
+
+<span class="fc" id="L236">        final CharRange notb = CharRange.isNot('b');</span>
+<span class="fc" id="L237">        final CharRange notc = CharRange.isNot('c');</span>
+<span class="fc" id="L238">        final CharRange notd = CharRange.isNot('d');</span>
+<span class="fc" id="L239">        final CharRange notab = CharRange.isNotIn('a', 'b');</span>
+<span class="fc" id="L240">        final CharRange notbc = CharRange.isNotIn('b', 'c');</span>
+<span class="fc" id="L241">        final CharRange notbd = CharRange.isNotIn('b', 'd');</span>
+<span class="fc" id="L242">        final CharRange notcd = CharRange.isNotIn('c', 'd');</span>
+<span class="fc" id="L243">        final CharRange notde = CharRange.isNotIn('d', 'e');</span>
+<span class="fc" id="L244">        final CharRange notae = CharRange.isNotIn('a', 'e');</span>
+<span class="fc" id="L245">        final CharRange all = CharRange.isIn((char) 0, Character.MAX_VALUE);</span>
+<span class="fc" id="L246">        final CharRange allbutfirst = CharRange.isIn((char) 1, Character.MAX_VALUE);</span>
+
+        // normal/negated
+<span class="fc" id="L249">        assertFalse(c.contains(notc));</span>
+<span class="fc" id="L250">        assertFalse(c.contains(notbd));</span>
+<span class="fc" id="L251">        assertTrue(all.contains(notc));</span>
+<span class="fc" id="L252">        assertTrue(all.contains(notbd));</span>
+<span class="fc" id="L253">        assertFalse(allbutfirst.contains(notc));</span>
+<span class="fc" id="L254">        assertFalse(allbutfirst.contains(notbd));</span>
+
+        // negated/normal
+<span class="fc" id="L257">        assertTrue(notc.contains(a));</span>
+<span class="fc" id="L258">        assertTrue(notc.contains(b));</span>
+<span class="fc" id="L259">        assertFalse(notc.contains(c));</span>
+<span class="fc" id="L260">        assertTrue(notc.contains(d));</span>
+<span class="fc" id="L261">        assertTrue(notc.contains(e));</span>
+
+<span class="fc" id="L263">        assertTrue(notc.contains(ab));</span>
+<span class="fc" id="L264">        assertFalse(notc.contains(bc));</span>
+<span class="fc" id="L265">        assertFalse(notc.contains(bd));</span>
+<span class="fc" id="L266">        assertFalse(notc.contains(cd));</span>
+<span class="fc" id="L267">        assertTrue(notc.contains(de));</span>
+<span class="fc" id="L268">        assertFalse(notc.contains(ae));</span>
+<span class="fc" id="L269">        assertFalse(notc.contains(all));</span>
+<span class="fc" id="L270">        assertFalse(notc.contains(allbutfirst));</span>
+
+<span class="fc" id="L272">        assertTrue(notbd.contains(a));</span>
+<span class="fc" id="L273">        assertFalse(notbd.contains(b));</span>
+<span class="fc" id="L274">        assertFalse(notbd.contains(c));</span>
+<span class="fc" id="L275">        assertFalse(notbd.contains(d));</span>
+<span class="fc" id="L276">        assertTrue(notbd.contains(e));</span>
+
+<span class="fc" id="L278">        assertTrue(notcd.contains(ab));</span>
+<span class="fc" id="L279">        assertFalse(notcd.contains(bc));</span>
+<span class="fc" id="L280">        assertFalse(notcd.contains(bd));</span>
+<span class="fc" id="L281">        assertFalse(notcd.contains(cd));</span>
+<span class="fc" id="L282">        assertFalse(notcd.contains(de));</span>
+<span class="fc" id="L283">        assertFalse(notcd.contains(ae));</span>
+<span class="fc" id="L284">        assertTrue(notcd.contains(ef));</span>
+<span class="fc" id="L285">        assertFalse(notcd.contains(all));</span>
+<span class="fc" id="L286">        assertFalse(notcd.contains(allbutfirst));</span>
+
+        // negated/negated
+<span class="fc" id="L289">        assertFalse(notc.contains(notb));</span>
+<span class="fc" id="L290">        assertTrue(notc.contains(notc));</span>
+<span class="fc" id="L291">        assertFalse(notc.contains(notd));</span>
+
+<span class="fc" id="L293">        assertFalse(notc.contains(notab));</span>
+<span class="fc" id="L294">        assertTrue(notc.contains(notbc));</span>
+<span class="fc" id="L295">        assertTrue(notc.contains(notbd));</span>
+<span class="fc" id="L296">        assertTrue(notc.contains(notcd));</span>
+<span class="fc" id="L297">        assertFalse(notc.contains(notde));</span>
+
+<span class="fc" id="L299">        assertFalse(notbd.contains(notb));</span>
+<span class="fc" id="L300">        assertFalse(notbd.contains(notc));</span>
+<span class="fc" id="L301">        assertFalse(notbd.contains(notd));</span>
+
+<span class="fc" id="L303">        assertFalse(notbd.contains(notab));</span>
+<span class="fc" id="L304">        assertFalse(notbd.contains(notbc));</span>
+<span class="fc" id="L305">        assertTrue(notbd.contains(notbd));</span>
+<span class="fc" id="L306">        assertFalse(notbd.contains(notcd));</span>
+<span class="fc" id="L307">        assertFalse(notbd.contains(notde));</span>
+<span class="fc" id="L308">        assertTrue(notbd.contains(notae));</span>
+<span class="fc" id="L309">    }</span>
+
+    @Test
+    public void testContainsNullArg() {
+<span class="fc" id="L313">        final CharRange range = CharRange.is('a');</span>
+<span class="pc" id="L314">        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -&gt; range.contains(null));</span>
+<span class="fc" id="L315">        assertEquals(&quot;The Range must not be null&quot;, e.getMessage());</span>
+<span class="fc" id="L316">    }</span>
+
+    @Test
+    public void testIterator() {
+<span class="fc" id="L320">        final CharRange a = CharRange.is('a');</span>
+<span class="fc" id="L321">        final CharRange ad = CharRange.isIn('a', 'd');</span>
+<span class="fc" id="L322">        final CharRange nota = CharRange.isNot('a');</span>
+<span class="fc" id="L323">        final CharRange emptySet = CharRange.isNotIn((char) 0, Character.MAX_VALUE);</span>
+<span class="fc" id="L324">        final CharRange notFirst = CharRange.isNotIn((char) 1, Character.MAX_VALUE);</span>
+<span class="fc" id="L325">        final CharRange notLast = CharRange.isNotIn((char) 0, (char) (Character.MAX_VALUE - 1));</span>
+
+<span class="fc" id="L327">        final Iterator&lt;Character&gt; aIt = a.iterator();</span>
+<span class="fc" id="L328">        assertNotNull(aIt);</span>
+<span class="fc" id="L329">        assertTrue(aIt.hasNext());</span>
+<span class="fc" id="L330">        assertEquals(Character.valueOf('a'), aIt.next());</span>
+<span class="fc" id="L331">        assertFalse(aIt.hasNext());</span>
+
+<span class="fc" id="L333">        final Iterator&lt;Character&gt; adIt = ad.iterator();</span>
+<span class="fc" id="L334">        assertNotNull(adIt);</span>
+<span class="fc" id="L335">        assertTrue(adIt.hasNext());</span>
+<span class="fc" id="L336">        assertEquals(Character.valueOf('a'), adIt.next());</span>
+<span class="fc" id="L337">        assertEquals(Character.valueOf('b'), adIt.next());</span>
+<span class="fc" id="L338">        assertEquals(Character.valueOf('c'), adIt.next());</span>
+<span class="fc" id="L339">        assertEquals(Character.valueOf('d'), adIt.next());</span>
+<span class="fc" id="L340">        assertFalse(adIt.hasNext());</span>
+
+<span class="fc" id="L342">        final Iterator&lt;Character&gt; notaIt = nota.iterator();</span>
+<span class="fc" id="L343">        assertNotNull(notaIt);</span>
+<span class="fc" id="L344">        assertTrue(notaIt.hasNext());</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">        while (notaIt.hasNext()) {</span>
+<span class="fc" id="L346">            final Character c = notaIt.next();</span>
+<span class="fc" id="L347">            assertNotEquals('a', c.charValue());</span>
+<span class="fc" id="L348">        }</span>
+
+<span class="fc" id="L350">        final Iterator&lt;Character&gt; emptySetIt = emptySet.iterator();</span>
+<span class="fc" id="L351">        assertNotNull(emptySetIt);</span>
+<span class="fc" id="L352">        assertFalse(emptySetIt.hasNext());</span>
+<span class="fc" id="L353">        assertThrows(NoSuchElementException.class, emptySetIt::next);</span>
+
+<span class="fc" id="L355">        final Iterator&lt;Character&gt; notFirstIt = notFirst.iterator();</span>
+<span class="fc" id="L356">        assertNotNull(notFirstIt);</span>
+<span class="fc" id="L357">        assertTrue(notFirstIt.hasNext());</span>
+<span class="fc" id="L358">        assertEquals(Character.valueOf((char) 0), notFirstIt.next());</span>
+<span class="fc" id="L359">        assertFalse(notFirstIt.hasNext());</span>
+<span class="fc" id="L360">        assertThrows(NoSuchElementException.class, notFirstIt::next);</span>
+
+<span class="fc" id="L362">        final Iterator&lt;Character&gt; notLastIt = notLast.iterator();</span>
+<span class="fc" id="L363">        assertNotNull(notLastIt);</span>
+<span class="fc" id="L364">        assertTrue(notLastIt.hasNext());</span>
+<span class="fc" id="L365">        assertEquals(Character.valueOf(Character.MAX_VALUE), notLastIt.next());</span>
+<span class="fc" id="L366">        assertFalse(notLastIt.hasNext());</span>
+<span class="fc" id="L367">        assertThrows(NoSuchElementException.class, notLastIt::next);</span>
+<span class="fc" id="L368">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L373">        CharRange range = CharRange.is('a');</span>
+<span class="fc" id="L374">        assertEquals(range, SerializationUtils.clone(range));</span>
+<span class="fc" id="L375">        range = CharRange.isIn('a', 'e');</span>
+<span class="fc" id="L376">        assertEquals(range, SerializationUtils.clone(range));</span>
+<span class="fc" id="L377">        range = CharRange.isNotIn('a', 'e');</span>
+<span class="fc" id="L378">        assertEquals(range, SerializationUtils.clone(range));</span>
+<span class="fc" id="L379">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIteratorRemove() {
+<span class="fc" id="L384">        final CharRange a = CharRange.is('a');</span>
+<span class="fc" id="L385">        final Iterator&lt;Character&gt; aIt = a.iterator();</span>
+<span class="fc" id="L386">        assertThrows(UnsupportedOperationException.class, aIt::remove);</span>
+<span class="fc" id="L387">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestReloadingController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.reloading</a> &gt; <span class="el_source">TestReloadingController.java</span></div><h1>TestReloadingController.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.reloading;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.configuration2.event.Event;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ReloadingController}.
+ *
+ */
+<span class="fc" id="L36">public class TestReloadingController</span>
+{
+    /** A mock for the detector. */
+    private ReloadingDetector detector;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L44">        detector = EasyMock.createMock(ReloadingDetector.class);</span>
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Creates a default test instance.
+     *
+     * @return the test instance
+     */
+    private ReloadingController createController()
+    {
+<span class="fc" id="L54">        return new ReloadingController(detector);</span>
+    }
+
+    /**
+     * Tries to create an instance without a detector.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoDetector()
+    {
+<span class="nc" id="L63">        new ReloadingController(null);</span>
+<span class="nc" id="L64">    }</span>
+
+    /**
+     * Tests that a newly created instance is not in reloading state.
+     */
+    @Test
+    public void testReloadingStateAfterInit()
+    {
+<span class="fc" id="L72">        assertFalse(&quot;In reloading state&quot;, createController()</span>
+<span class="fc" id="L73">                .isInReloadingState());</span>
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Creates a mock event listener.
+     *
+     * @return the mock listener
+     */
+    private static EventListener&lt;ReloadingEvent&gt; createListenerMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L85">        EventListener&lt;ReloadingEvent&gt; listener =</span>
+<span class="fc" id="L86">                EasyMock.createMock(EventListener.class);</span>
+<span class="fc" id="L87">        return listener;</span>
+    }
+
+    /**
+     * Prepares the given event listener mock to expect an event notification.
+     * The event received is stored in the given mutable object.
+     *
+     * @param l the listener mock
+     * @param evRef the reference where to store the event
+     */
+    private void expectEvent(final EventListener&lt;ReloadingEvent&gt; l,
+            final MutableObject&lt;ReloadingEvent&gt; evRef)
+    {
+<span class="fc" id="L100">        l.onEvent(EasyMock.anyObject(ReloadingEvent.class));</span>
+<span class="fc" id="L101">        EasyMock.expectLastCall().andAnswer(new IAnswer&lt;Object&gt;()</span>
+<span class="fc" id="L102">        {</span>
+            @Override
+            public Object answer() throws Throwable
+            {
+<span class="fc" id="L106">                evRef.setValue((ReloadingEvent) EasyMock.getCurrentArguments()[0]);</span>
+<span class="fc" id="L107">                return null;</span>
+            }
+        });
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests a reloading check with a positive result.
+     */
+    @Test
+    public void testCheckForReloadingTrue()
+    {
+<span class="fc" id="L118">        final EventListener&lt;ReloadingEvent&gt; l = createListenerMock();</span>
+<span class="fc" id="L119">        final EventListener&lt;ReloadingEvent&gt; lRemoved = createListenerMock();</span>
+<span class="fc" id="L120">        final MutableObject&lt;ReloadingEvent&gt; evRef = new MutableObject&lt;&gt;();</span>
+<span class="fc" id="L121">        expectEvent(l, evRef);</span>
+<span class="fc" id="L122">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L123">        EasyMock.replay(detector, l, lRemoved);</span>
+<span class="fc" id="L124">        final ReloadingController ctrl = createController();</span>
+<span class="fc" id="L125">        ctrl.addEventListener(ReloadingEvent.ANY, lRemoved);</span>
+<span class="fc" id="L126">        ctrl.addEventListener(ReloadingEvent.ANY, l);</span>
+<span class="fc" id="L127">        assertTrue(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L128">                ctrl.removeEventListener(ReloadingEvent.ANY, lRemoved));</span>
+<span class="fc" id="L129">        final Object testData = &quot;Some test data&quot;;</span>
+<span class="fc" id="L130">        assertTrue(&quot;Wrong result&quot;, ctrl.checkForReloading(testData));</span>
+<span class="fc" id="L131">        assertTrue(&quot;Not in reloading state&quot;, ctrl.isInReloadingState());</span>
+<span class="fc" id="L132">        assertSame(&quot;Wrong event source&quot;, ctrl, evRef.getValue().getSource());</span>
+<span class="fc" id="L133">        assertSame(&quot;Wrong controller&quot;, ctrl, evRef.getValue().getController());</span>
+<span class="fc" id="L134">        assertEquals(&quot;Wrong event data&quot;, testData, evRef.getValue().getData());</span>
+<span class="fc" id="L135">        EasyMock.verify(l, lRemoved, detector);</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Tests a reloading check with a negative result.
+     */
+    @Test
+    public void testCheckForReloadingFalse()
+    {
+<span class="fc" id="L144">        final EventListener&lt;ReloadingEvent&gt; l = createListenerMock();</span>
+<span class="fc" id="L145">        EasyMock.expect(detector.isReloadingRequired())</span>
+<span class="fc" id="L146">                .andReturn(Boolean.FALSE);</span>
+<span class="fc" id="L147">        EasyMock.replay(detector, l);</span>
+<span class="fc" id="L148">        final ReloadingController ctrl = createController();</span>
+<span class="fc" id="L149">        ctrl.addEventListener(ReloadingEvent.ANY, l);</span>
+<span class="fc" id="L150">        assertFalse(&quot;Wrong result&quot;, ctrl.checkForReloading(null));</span>
+<span class="fc" id="L151">        assertFalse(&quot;In reloading state&quot;, ctrl.isInReloadingState());</span>
+<span class="fc" id="L152">        EasyMock.verify(detector, l);</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * Tests that no further checks are performed when already in reloading
+     * state.
+     */
+    @Test
+    public void testCheckForReloadingInReloadingState()
+    {
+<span class="fc" id="L162">        final EventListener&lt;ReloadingEvent&gt; l = createListenerMock();</span>
+<span class="fc" id="L163">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L164">        expectEvent(l, new MutableObject&lt;ReloadingEvent&gt;());</span>
+<span class="fc" id="L165">        EasyMock.replay(detector, l);</span>
+<span class="fc" id="L166">        final ReloadingController ctrl = createController();</span>
+<span class="fc" id="L167">        ctrl.addEventListener(ReloadingEvent.ANY, l);</span>
+<span class="fc" id="L168">        assertTrue(&quot;Wrong result (1)&quot;, ctrl.checkForReloading(1));</span>
+<span class="fc" id="L169">        assertTrue(&quot;Wrong result (2)&quot;, ctrl.checkForReloading(2));</span>
+<span class="fc" id="L170">        EasyMock.verify(detector, l);</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Tests that the reloading state can be reset.
+     */
+    @Test
+    public void testResetReloadingState()
+    {
+<span class="fc" id="L179">        EasyMock.expect(detector.isReloadingRequired()).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L180">        detector.reloadingPerformed();</span>
+<span class="fc" id="L181">        EasyMock.replay(detector);</span>
+<span class="fc" id="L182">        final ReloadingController ctrl = createController();</span>
+<span class="fc" id="L183">        ctrl.checkForReloading(null);</span>
+<span class="fc" id="L184">        ctrl.resetReloadingState();</span>
+<span class="fc" id="L185">        assertFalse(&quot;In reloading state&quot;, ctrl.isInReloadingState());</span>
+<span class="fc" id="L186">        EasyMock.verify(detector);</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Tests that resetReloadingState() has no effect if the controller is not
+     * in reloading state.
+     */
+    @Test
+    public void testResetReloadingNotInReloadingState()
+    {
+<span class="fc" id="L196">        EasyMock.replay(detector);</span>
+<span class="fc" id="L197">        createController().resetReloadingState();</span>
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Tests the event type of the reloading event.
+     */
+    @Test
+    public void testReloadingEventType()
+    {
+<span class="fc" id="L206">        assertEquals(&quot;Wrong super event type&quot;, Event.ANY,</span>
+<span class="fc" id="L207">                ReloadingEvent.ANY.getSuperType());</span>
+<span class="fc" id="L208">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

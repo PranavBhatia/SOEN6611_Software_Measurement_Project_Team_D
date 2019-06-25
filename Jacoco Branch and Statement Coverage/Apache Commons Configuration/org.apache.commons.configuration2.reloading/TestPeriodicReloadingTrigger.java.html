@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestPeriodicReloadingTrigger.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.reloading</a> &gt; <span class="el_source">TestPeriodicReloadingTrigger.java</span></div><h1>TestPeriodicReloadingTrigger.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.reloading;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code PeriodicReloadingTrigger}.
+ *
+ */
+<span class="fc" id="L37">public class TestPeriodicReloadingTrigger</span>
+{
+    /** Constant for a parameter to be passed to the controller. */
+<span class="fc" id="L40">    private static final Object CTRL_PARAM = &quot;Test controller parameter&quot;;</span>
+
+    /** Constant for the period. */
+    private static final long PERIOD = 60;
+
+    /** Constant for the period's time unit. */
+<span class="fc" id="L46">    private static final TimeUnit UNIT = TimeUnit.SECONDS;</span>
+
+    /** A mock for the executor service. */
+    private ScheduledExecutorService executor;
+
+    /** A mock for the reloading controller. */
+    private ReloadingController controller;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L57">        executor = EasyMock.createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L58">        controller = EasyMock.createMock(ReloadingController.class);</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * Creates a test instance with default parameters.
+     *
+     * @return the test instance
+     */
+    private PeriodicReloadingTrigger createTrigger()
+    {
+<span class="fc" id="L68">        return new PeriodicReloadingTrigger(controller, CTRL_PARAM, PERIOD, UNIT,</span>
+                executor);
+    }
+
+    /**
+     * Tests whether a default executor service is created if necessary.
+     */
+    @Test
+    public void testDefaultExecutor()
+    {
+<span class="fc" id="L78">        final PeriodicReloadingTrigger trigger =</span>
+                new PeriodicReloadingTrigger(controller, CTRL_PARAM, PERIOD, UNIT);
+<span class="fc" id="L80">        assertNotNull(&quot;No executor service&quot;, trigger.getExecutorService());</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Tries to create an instance without a controller.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoController()
+    {
+<span class="nc" id="L89">        new PeriodicReloadingTrigger(null, CTRL_PARAM, PERIOD, UNIT);</span>
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Tests that a newly created trigger is not running.
+     */
+    @Test
+    public void testIsRunningAfterInit()
+    {
+<span class="fc" id="L98">        assertFalse(&quot;Running&quot;, createTrigger().isRunning());</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Creates a mock object for a scheduled future.
+     *
+     * @return the mock
+     */
+    private static ScheduledFuture&lt;Void&gt; createFutureMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L110">        ScheduledFuture&lt;Void&gt; mock = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L111">        return mock;</span>
+    }
+
+    /**
+     * Prepares the executor mock to expect an invocation which schedules the
+     * trigger task.
+     *
+     * @param future the future object to return
+     */
+    private void expectSchedule(final ScheduledFuture&lt;Void&gt; future)
+    {
+<span class="fc" id="L122">        executor.scheduleAtFixedRate(EasyMock.anyObject(Runnable.class),</span>
+<span class="fc" id="L123">                EasyMock.eq(PERIOD), EasyMock.eq(PERIOD), EasyMock.eq(UNIT));</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (future != null)</span>
+        {
+<span class="fc" id="L126">            EasyMock.expectLastCall().andReturn(future);</span>
+        }
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Tests whether the trigger can be started.
+     */
+    @Test
+    public void testStart()
+    {
+<span class="fc" id="L136">        final ScheduledFuture&lt;Void&gt; future = createFutureMock();</span>
+<span class="fc" id="L137">        final MutableObject&lt;Runnable&gt; refTask = new MutableObject&lt;&gt;();</span>
+<span class="fc" id="L138">        expectSchedule(null);</span>
+<span class="fc" id="L139">        EasyMock.expectLastCall().andAnswer(</span>
+                new IAnswer&lt;ScheduledFuture&lt;Void&gt;&gt;()
+<span class="fc" id="L141">                {</span>
+                    @Override
+                    public ScheduledFuture&lt;Void&gt; answer() throws Throwable
+                    {
+<span class="fc" id="L145">                        refTask.setValue((Runnable) EasyMock</span>
+<span class="fc" id="L146">                                .getCurrentArguments()[0]);</span>
+<span class="fc" id="L147">                        return future;</span>
+                    }
+                });
+<span class="fc" id="L150">        EasyMock.expect(controller.checkForReloading(CTRL_PARAM)).andReturn(</span>
+                Boolean.FALSE);
+<span class="fc" id="L152">        EasyMock.replay(future, controller, executor);</span>
+<span class="fc" id="L153">        final PeriodicReloadingTrigger trigger = createTrigger();</span>
+<span class="fc" id="L154">        trigger.start();</span>
+<span class="fc" id="L155">        assertTrue(&quot;Not started&quot;, trigger.isRunning());</span>
+<span class="fc" id="L156">        refTask.getValue().run();</span>
+<span class="fc" id="L157">        EasyMock.verify(future, controller, executor);</span>
+<span class="fc" id="L158">    }</span>
+
+    /**
+     * Tests whether start() is a noop if the trigger is already running.
+     */
+    @Test
+    public void testStartTwice()
+    {
+<span class="fc" id="L166">        final ScheduledFuture&lt;Void&gt; future = createFutureMock();</span>
+<span class="fc" id="L167">        expectSchedule(future);</span>
+<span class="fc" id="L168">        EasyMock.replay(future, controller, executor);</span>
+<span class="fc" id="L169">        final PeriodicReloadingTrigger trigger = createTrigger();</span>
+<span class="fc" id="L170">        trigger.start();</span>
+<span class="fc" id="L171">        trigger.start();</span>
+<span class="fc" id="L172">        EasyMock.verify(future, controller, executor);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Tests stop() if the trigger is not running.
+     */
+    @Test
+    public void testStopNotRunning()
+    {
+<span class="fc" id="L181">        EasyMock.replay(controller, executor);</span>
+<span class="fc" id="L182">        createTrigger().stop();</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Tests whether a running trigger can be stopped.
+     */
+    @Test
+    public void testStop()
+    {
+<span class="fc" id="L191">        final ScheduledFuture&lt;Void&gt; future = createFutureMock();</span>
+<span class="fc" id="L192">        expectSchedule(future);</span>
+<span class="fc" id="L193">        EasyMock.expect(future.cancel(false)).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L194">        EasyMock.replay(future, controller, executor);</span>
+<span class="fc" id="L195">        final PeriodicReloadingTrigger trigger = createTrigger();</span>
+<span class="fc" id="L196">        trigger.start();</span>
+<span class="fc" id="L197">        trigger.stop();</span>
+<span class="fc" id="L198">        assertFalse(&quot;Still running&quot;, trigger.isRunning());</span>
+<span class="fc" id="L199">        EasyMock.verify(future, controller, executor);</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Tests a shutdown operation.
+     */
+    @Test
+    public void testShutdown()
+    {
+<span class="fc" id="L208">        final ScheduledFuture&lt;Void&gt; future = createFutureMock();</span>
+<span class="fc" id="L209">        expectSchedule(future);</span>
+<span class="fc" id="L210">        EasyMock.expect(future.cancel(false)).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L211">        executor.shutdown();</span>
+<span class="fc" id="L212">        EasyMock.replay(future, controller, executor);</span>
+<span class="fc" id="L213">        final PeriodicReloadingTrigger trigger = createTrigger();</span>
+<span class="fc" id="L214">        trigger.start();</span>
+<span class="fc" id="L215">        trigger.shutdown();</span>
+<span class="fc" id="L216">        EasyMock.verify(future, controller, executor);</span>
+<span class="fc" id="L217">    }</span>
+
+    /**
+     * Tests a shutdown operation which excludes the executor service.
+     */
+    @Test
+    public void testShutdownNoExecutor()
+    {
+<span class="fc" id="L225">        EasyMock.replay(controller, executor);</span>
+<span class="fc" id="L226">        createTrigger().shutdown(false);</span>
+<span class="fc" id="L227">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

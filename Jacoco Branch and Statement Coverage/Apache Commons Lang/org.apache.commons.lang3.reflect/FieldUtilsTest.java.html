@@ -1,0 +1,1064 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.reflect</a> &gt; <span class="el_source">FieldUtilsTest.java</span></div><h1>FieldUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.reflect;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.reflect.testbed.Ambig;
+import org.apache.commons.lang3.reflect.testbed.Annotated;
+import org.apache.commons.lang3.reflect.testbed.Foo;
+import org.apache.commons.lang3.reflect.testbed.PrivatelyShadowedChild;
+import org.apache.commons.lang3.reflect.testbed.PublicChild;
+import org.apache.commons.lang3.reflect.testbed.PubliclyShadowedChild;
+import org.apache.commons.lang3.reflect.testbed.StaticContainer;
+import org.apache.commons.lang3.reflect.testbed.StaticContainerChild;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+/**
+ * Unit tests FieldUtils
+ */
+<span class="fc" id="L54">public class FieldUtilsTest {</span>
+
+    private static final String JACOCO_DATA_FIELD_NAME = &quot;$jacocoData&quot;;
+<span class="fc" id="L57">    static final Integer I0 = Integer.valueOf(0);</span>
+<span class="fc" id="L58">    static final Integer I1 = Integer.valueOf(1);</span>
+<span class="fc" id="L59">    static final Double D0 = Double.valueOf(0.0);</span>
+<span class="fc" id="L60">    static final Double D1 = Double.valueOf(1.0);</span>
+
+    @Annotated
+    private PublicChild publicChild;
+    private PubliclyShadowedChild publiclyShadowedChild;
+    @Annotated
+    private PrivatelyShadowedChild privatelyShadowedChild;
+<span class="fc" id="L67">    private final Class&lt;? super PublicChild&gt; parentClass = PublicChild.class.getSuperclass();</span>
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L71">        StaticContainer.reset();</span>
+<span class="fc" id="L72">        publicChild = new PublicChild();</span>
+<span class="fc" id="L73">        publiclyShadowedChild = new PubliclyShadowedChild();</span>
+<span class="fc" id="L74">        privatelyShadowedChild = new PrivatelyShadowedChild();</span>
+<span class="fc" id="L75">    }</span>
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L79">        assertNotNull(new FieldUtils());</span>
+<span class="fc" id="L80">        final Constructor&lt;?&gt;[] cons = FieldUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L81">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L82">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L83">        assertTrue(Modifier.isPublic(FieldUtils.class.getModifiers()));</span>
+<span class="fc" id="L84">        assertFalse(Modifier.isFinal(FieldUtils.class.getModifiers()));</span>
+<span class="fc" id="L85">    }</span>
+
+    @Test
+    public void testGetField() {
+<span class="fc" id="L89">        assertEquals(Foo.class, FieldUtils.getField(PublicChild.class, &quot;VALUE&quot;).getDeclaringClass());</span>
+<span class="fc" id="L90">        assertEquals(parentClass, FieldUtils.getField(PublicChild.class, &quot;s&quot;).getDeclaringClass());</span>
+<span class="fc" id="L91">        assertNull(FieldUtils.getField(PublicChild.class, &quot;b&quot;));</span>
+<span class="fc" id="L92">        assertNull(FieldUtils.getField(PublicChild.class, &quot;i&quot;));</span>
+<span class="fc" id="L93">        assertNull(FieldUtils.getField(PublicChild.class, &quot;d&quot;));</span>
+<span class="fc" id="L94">        assertEquals(Foo.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;VALUE&quot;).getDeclaringClass());</span>
+<span class="fc" id="L95">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;s&quot;).getDeclaringClass());</span>
+<span class="fc" id="L96">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;b&quot;).getDeclaringClass());</span>
+<span class="fc" id="L97">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;i&quot;).getDeclaringClass());</span>
+<span class="fc" id="L98">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;d&quot;).getDeclaringClass());</span>
+<span class="fc" id="L99">        assertEquals(Foo.class, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;VALUE&quot;).getDeclaringClass());</span>
+<span class="fc" id="L100">        assertEquals(parentClass, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;s&quot;).getDeclaringClass());</span>
+<span class="fc" id="L101">        assertNull(FieldUtils.getField(PrivatelyShadowedChild.class, &quot;b&quot;));</span>
+<span class="fc" id="L102">        assertNull(FieldUtils.getField(PrivatelyShadowedChild.class, &quot;i&quot;));</span>
+<span class="fc" id="L103">        assertNull(FieldUtils.getField(PrivatelyShadowedChild.class, &quot;d&quot;));</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testGetFieldIllegalArgumentException1() {
+<span class="pc" id="L108">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(null, &quot;none&quot;));</span>
+<span class="fc" id="L109">    }</span>
+
+    @Test
+    public void testGetFieldIllegalArgumentException2() {
+<span class="pc" id="L113">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(PublicChild.class, null));</span>
+<span class="fc" id="L114">    }</span>
+
+    @Test
+    public void testGetFieldIllegalArgumentException3() {
+<span class="pc" id="L118">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(PublicChild.class, &quot;&quot;));</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    public void testGetFieldIllegalArgumentException4() {
+<span class="pc" id="L123">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(PublicChild.class, &quot; &quot;));</span>
+<span class="fc" id="L124">    }</span>
+
+    @Test
+    public void testGetFieldForceAccess() {
+<span class="fc" id="L128">        assertEquals(PublicChild.class, FieldUtils.getField(PublicChild.class, &quot;VALUE&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L129">        assertEquals(parentClass, FieldUtils.getField(PublicChild.class, &quot;s&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L130">        assertEquals(parentClass, FieldUtils.getField(PublicChild.class, &quot;b&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L131">        assertEquals(parentClass, FieldUtils.getField(PublicChild.class, &quot;i&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L132">        assertEquals(parentClass, FieldUtils.getField(PublicChild.class, &quot;d&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L133">        assertEquals(Foo.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;VALUE&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L134">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;s&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L135">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;b&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L136">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;i&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L137">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getField(PubliclyShadowedChild.class, &quot;d&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L138">        assertEquals(Foo.class, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;VALUE&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L139">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;s&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L140">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;b&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L141">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;i&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L142">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getField(PrivatelyShadowedChild.class, &quot;d&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L143">    }</span>
+
+    @Test
+    public void testGetFieldForceAccessIllegalArgumentException1() {
+<span class="pc" id="L147">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(null, &quot;none&quot;, true));</span>
+<span class="fc" id="L148">    }</span>
+
+    @Test
+    public void testGetFieldForceAccessIllegalArgumentException2() {
+<span class="pc" id="L152">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(PublicChild.class, null, true));</span>
+<span class="fc" id="L153">    }</span>
+
+    @Test
+    public void testGetFieldForceAccessIllegalArgumentException3() {
+<span class="pc" id="L157">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(PublicChild.class, &quot;&quot;, true));</span>
+<span class="fc" id="L158">    }</span>
+
+    @Test
+    public void testGetFieldForceAccessIllegalArgumentException4() {
+<span class="pc" id="L162">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(PublicChild.class, &quot; &quot;, true));</span>
+<span class="fc" id="L163">    }</span>
+
+    @Test
+    public void testGetAllFields() {
+<span class="fc" id="L167">        assertArrayEquals(new Field[0], FieldUtils.getAllFields(Object.class));</span>
+<span class="fc" id="L168">        final Field[] fieldsNumber = Number.class.getDeclaredFields();</span>
+<span class="fc" id="L169">        assertArrayEquals(fieldsNumber, FieldUtils.getAllFields(Number.class));</span>
+<span class="fc" id="L170">        final Field[] fieldsInteger = Integer.class.getDeclaredFields();</span>
+<span class="fc" id="L171">        assertArrayEquals(ArrayUtils.addAll(fieldsInteger, fieldsNumber), FieldUtils.getAllFields(Integer.class));</span>
+<span class="fc" id="L172">        final Field[] allFields = FieldUtils.getAllFields(PublicChild.class);</span>
+        // Under Jacoco,0.8.1 and Java 10, the field count is 7.
+<span class="fc" id="L174">        int expected = 5;</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        for (Field field : allFields) {</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">            if (field.getName().equals(JACOCO_DATA_FIELD_NAME)) {</span>
+<span class="fc" id="L177">                expected++;</span>
+            }
+        }
+<span class="fc" id="L180">        assertEquals(expected, allFields.length, Arrays.toString(allFields));</span>
+<span class="fc" id="L181">    }</span>
+
+    @Test
+    public void testGetAllFieldsList() {
+<span class="fc" id="L185">        assertEquals(0, FieldUtils.getAllFieldsList(Object.class).size());</span>
+<span class="fc" id="L186">        final List&lt;Field&gt; fieldsNumber = Arrays.asList(Number.class.getDeclaredFields());</span>
+<span class="fc" id="L187">        assertEquals(fieldsNumber, FieldUtils.getAllFieldsList(Number.class));</span>
+<span class="fc" id="L188">        final List&lt;Field&gt; fieldsInteger = Arrays.asList(Integer.class.getDeclaredFields());</span>
+<span class="fc" id="L189">        final List&lt;Field&gt; allFieldsInteger = new ArrayList&lt;&gt;(fieldsInteger);</span>
+<span class="fc" id="L190">        allFieldsInteger.addAll(fieldsNumber);</span>
+<span class="fc" id="L191">        assertEquals(allFieldsInteger, FieldUtils.getAllFieldsList(Integer.class));</span>
+<span class="fc" id="L192">        final List&lt;Field&gt; allFields = FieldUtils.getAllFieldsList(PublicChild.class);</span>
+        // Under Jacoco,0.8.1 and Java 10, the field count is 7.
+<span class="fc" id="L194">        int expected = 5;</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        for (Field field : allFields) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">            if (field.getName().equals(JACOCO_DATA_FIELD_NAME)) {</span>
+<span class="fc" id="L197">                expected++;</span>
+            }
+<span class="fc" id="L199">        }</span>
+<span class="fc" id="L200">        assertEquals(expected, allFields.size(), allFields.toString());</span>
+
+<span class="fc" id="L202">    }</span>
+
+    @Test
+    public void testGetFieldsWithAnnotation() throws NoSuchFieldException {
+<span class="fc" id="L206">        assertArrayEquals(new Field[0], FieldUtils.getFieldsWithAnnotation(Object.class, Annotated.class));</span>
+<span class="fc" id="L207">        final Field[] annotatedFields = new Field[]{</span>
+<span class="fc" id="L208">                FieldUtilsTest.class.getDeclaredField(&quot;publicChild&quot;),</span>
+<span class="fc" id="L209">                FieldUtilsTest.class.getDeclaredField(&quot;privatelyShadowedChild&quot;)</span>
+        };
+<span class="fc" id="L211">        assertArrayEquals(annotatedFields, FieldUtils.getFieldsWithAnnotation(FieldUtilsTest.class, Annotated.class));</span>
+<span class="fc" id="L212">    }</span>
+
+    @Test
+    public void testGetFieldsWithAnnotationIllegalArgumentException1() {
+<span class="pc" id="L216">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getFieldsWithAnnotation(FieldUtilsTest.class, null));</span>
+<span class="fc" id="L217">    }</span>
+
+    @Test
+    public void testGetFieldsWithAnnotationIllegalArgumentException2() {
+<span class="pc" id="L221">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getFieldsWithAnnotation(null, Annotated.class));</span>
+<span class="fc" id="L222">    }</span>
+
+    @Test
+    public void testGetFieldsWithAnnotationIllegalArgumentException3() {
+<span class="pc" id="L226">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getFieldsWithAnnotation(null, null));</span>
+<span class="fc" id="L227">    }</span>
+
+    @Test
+    public void testGetFieldsListWithAnnotation() throws NoSuchFieldException {
+<span class="fc" id="L231">        assertEquals(0, FieldUtils.getFieldsListWithAnnotation(Object.class, Annotated.class).size());</span>
+<span class="fc" id="L232">        final List&lt;Field&gt; annotatedFields = Arrays.asList(</span>
+<span class="fc" id="L233">                FieldUtilsTest.class.getDeclaredField(&quot;publicChild&quot;),</span>
+<span class="fc" id="L234">                FieldUtilsTest.class.getDeclaredField(&quot;privatelyShadowedChild&quot;)</span>
+        );
+<span class="fc" id="L236">        final List&lt;Field&gt; fieldUtilsTestAnnotatedFields = FieldUtils.getFieldsListWithAnnotation(FieldUtilsTest.class, Annotated.class);</span>
+<span class="fc" id="L237">        assertEquals(annotatedFields.size(), fieldUtilsTestAnnotatedFields.size());</span>
+<span class="fc" id="L238">        assertTrue(fieldUtilsTestAnnotatedFields.contains(annotatedFields.get(0)));</span>
+<span class="fc" id="L239">        assertTrue(fieldUtilsTestAnnotatedFields.contains(annotatedFields.get(1)));</span>
+<span class="fc" id="L240">    }</span>
+
+    @Test
+    public void testGetFieldsListWithAnnotationIllegalArgumentException1() {
+<span class="pc" id="L244">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getFieldsListWithAnnotation(FieldUtilsTest.class, null));</span>
+<span class="fc" id="L245">    }</span>
+
+    @Test
+    public void testGetFieldsListWithAnnotationIllegalArgumentException2() {
+<span class="pc" id="L249">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getFieldsListWithAnnotation(null, Annotated.class));</span>
+<span class="fc" id="L250">    }</span>
+
+    @Test
+    public void testGetFieldsListWithAnnotationIllegalArgumentException3() {
+<span class="pc" id="L254">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getFieldsListWithAnnotation(null, null));</span>
+<span class="fc" id="L255">    }</span>
+
+    @Test
+    public void testGetDeclaredField() {
+<span class="fc" id="L259">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L260">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;s&quot;));</span>
+<span class="fc" id="L261">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;b&quot;));</span>
+<span class="fc" id="L262">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;i&quot;));</span>
+<span class="fc" id="L263">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;d&quot;));</span>
+<span class="fc" id="L264">        assertNull(FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L265">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;s&quot;).getDeclaringClass());</span>
+<span class="fc" id="L266">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;b&quot;).getDeclaringClass());</span>
+<span class="fc" id="L267">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;i&quot;).getDeclaringClass());</span>
+<span class="fc" id="L268">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;d&quot;).getDeclaringClass());</span>
+<span class="fc" id="L269">        assertNull(FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L270">        assertNull(FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;s&quot;));</span>
+<span class="fc" id="L271">        assertNull(FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;b&quot;));</span>
+<span class="fc" id="L272">        assertNull(FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;i&quot;));</span>
+<span class="fc" id="L273">        assertNull(FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;d&quot;));</span>
+<span class="fc" id="L274">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldAccessIllegalArgumentException1() {
+<span class="pc" id="L278">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(null, &quot;none&quot;));</span>
+<span class="fc" id="L279">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldAccessIllegalArgumentException2() {
+<span class="pc" id="L283">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(PublicChild.class, null));</span>
+<span class="fc" id="L284">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldAccessIllegalArgumentException3() {
+<span class="pc" id="L288">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(PublicChild.class, &quot;&quot;));</span>
+<span class="fc" id="L289">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldAccessIllegalArgumentException4() {
+<span class="pc" id="L293">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(PublicChild.class, &quot; &quot;));</span>
+<span class="fc" id="L294">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldForceAccess() {
+<span class="fc" id="L298">        assertEquals(PublicChild.class, FieldUtils.getDeclaredField(PublicChild.class, &quot;VALUE&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L299">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;s&quot;, true));</span>
+<span class="fc" id="L300">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;b&quot;, true));</span>
+<span class="fc" id="L301">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;i&quot;, true));</span>
+<span class="fc" id="L302">        assertNull(FieldUtils.getDeclaredField(PublicChild.class, &quot;d&quot;, true));</span>
+<span class="fc" id="L303">        assertNull(FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L304">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;s&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L305">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;b&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L306">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;i&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L307">        assertEquals(PubliclyShadowedChild.class, FieldUtils.getDeclaredField(PubliclyShadowedChild.class, &quot;d&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L308">        assertNull(FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L309">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;s&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L310">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;b&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L311">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;i&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L312">        assertEquals(PrivatelyShadowedChild.class, FieldUtils.getDeclaredField(PrivatelyShadowedChild.class, &quot;d&quot;, true).getDeclaringClass());</span>
+<span class="fc" id="L313">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldForceAccessIllegalArgumentException1() {
+<span class="pc" id="L317">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(null, &quot;none&quot;, true));</span>
+<span class="fc" id="L318">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldForceAccessIllegalArgumentException2() {
+<span class="pc" id="L322">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(PublicChild.class, null, true));</span>
+<span class="fc" id="L323">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldForceAccessIllegalArgumentException3() {
+<span class="pc" id="L327">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(PublicChild.class, &quot;&quot;, true));</span>
+<span class="fc" id="L328">    }</span>
+
+    @Test
+    public void testGetDeclaredFieldForceAccessIllegalArgumentException4() {
+<span class="pc" id="L332">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getDeclaredField(PublicChild.class, &quot; &quot;, true));</span>
+<span class="fc" id="L333">    }</span>
+
+    @Test
+    public void testReadStaticField() throws Exception {
+<span class="fc" id="L337">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(FieldUtils.getField(Foo.class, &quot;VALUE&quot;)));</span>
+<span class="fc" id="L338">    }</span>
+
+    @Test
+    public void testReadStaticFieldIllegalArgumentException1() {
+<span class="pc" id="L342">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readStaticField(null));</span>
+<span class="fc" id="L343">    }</span>
+
+    @Test
+    public void testReadStaticFieldIllegalArgumentException2() throws Exception {
+<span class="fc" id="L347">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(FieldUtils.getField(Foo.class, &quot;VALUE&quot;)));</span>
+<span class="fc" id="L348">        final Field nonStaticField = FieldUtils.getField(PublicChild.class, &quot;s&quot;);</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">        assumeTrue(nonStaticField != null);</span>
+<span class="pc" id="L350">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readStaticField(nonStaticField));</span>
+<span class="fc" id="L351">    }</span>
+
+    @Test
+    public void testReadStaticFieldForceAccess() throws Exception {
+<span class="fc" id="L355">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(FieldUtils.getField(Foo.class, &quot;VALUE&quot;)));</span>
+<span class="fc" id="L356">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(FieldUtils.getField(PublicChild.class, &quot;VALUE&quot;)));</span>
+<span class="fc" id="L357">    }</span>
+
+    @Test
+    public void testReadStaticFieldForceAccessIllegalArgumentException1() {
+<span class="pc" id="L361">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readStaticField(null, true));</span>
+<span class="fc" id="L362">    }</span>
+
+    @Test
+    public void testReadStaticFieldForceAccessIllegalArgumentException2() {
+<span class="fc" id="L366">        final Field nonStaticField = FieldUtils.getField(PublicChild.class, &quot;s&quot;, true);</span>
+<span class="pc bpc" id="L367" title="1 of 2 branches missed.">        assumeTrue(nonStaticField != null);</span>
+<span class="pc" id="L368">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readStaticField(nonStaticField));</span>
+<span class="fc" id="L369">    }</span>
+
+    @Test
+    public void testReadNamedStaticField() throws Exception {
+<span class="fc" id="L373">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(Foo.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L374">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(PubliclyShadowedChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L375">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(PrivatelyShadowedChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L376">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(PublicChild.class, &quot;VALUE&quot;));</span>
+
+<span class="fc" id="L378">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L380">                () -&gt; FieldUtils.readStaticField(null, &quot;none&quot;),</span>
+                &quot;null class should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L383">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L385">                () -&gt; FieldUtils.readStaticField(Foo.class, null),</span>
+                &quot;null field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L388">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L390">                () -&gt; FieldUtils.readStaticField(Foo.class, &quot;&quot;),</span>
+                &quot;empty field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L393">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L395">                () -&gt; FieldUtils.readStaticField(Foo.class, &quot; &quot;),</span>
+                &quot;blank field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L398">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L400">                () -&gt; FieldUtils.readStaticField(Foo.class, &quot;does_not_exist&quot;),</span>
+                &quot;a field that doesn't exist should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L403">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L405">                () -&gt; FieldUtils.readStaticField(PublicChild.class, &quot;s&quot;),</span>
+                &quot;non-static field should cause an IllegalArgumentException&quot;);
+<span class="fc" id="L407">    }</span>
+
+    @Test
+    public void testReadNamedStaticFieldForceAccess() throws Exception {
+<span class="fc" id="L411">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(Foo.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L412">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(PubliclyShadowedChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L413">        assertEquals(Foo.VALUE, FieldUtils.readStaticField(PrivatelyShadowedChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L414">        assertEquals(&quot;child&quot;, FieldUtils.readStaticField(PublicChild.class, &quot;VALUE&quot;, true));</span>
+
+<span class="fc" id="L416">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L418">                () -&gt; FieldUtils.readStaticField(null, &quot;none&quot;, true),</span>
+                &quot;null class should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L421">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L423">                () -&gt; FieldUtils.readStaticField(Foo.class, null, true),</span>
+                &quot;null field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L426">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L428">                () -&gt; FieldUtils.readStaticField(Foo.class, &quot;&quot;, true),</span>
+                &quot;empty field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L431">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L433">                () -&gt; FieldUtils.readStaticField(Foo.class, &quot; &quot;, true),</span>
+                &quot;blank field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L436">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L438">                () -&gt; FieldUtils.readStaticField(Foo.class, &quot;does_not_exist&quot;, true),</span>
+                &quot;a field that doesn't exist should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L441">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L443">                () -&gt; FieldUtils.readStaticField(PublicChild.class, &quot;s&quot;, false),</span>
+                &quot;non-static field should cause an IllegalArgumentException&quot;);
+<span class="fc" id="L445">    }</span>
+
+    @Test
+    public void testReadDeclaredNamedStaticField() throws Exception {
+<span class="fc" id="L449">        assertEquals(Foo.VALUE, FieldUtils.readDeclaredStaticField(Foo.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L450">        assertThrows(</span>
+<span class="nc" id="L451">                IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredStaticField(PublicChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L452">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L454">                () -&gt; FieldUtils.readDeclaredStaticField(PubliclyShadowedChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L455">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L457">                () -&gt; FieldUtils.readDeclaredStaticField(PrivatelyShadowedChild.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L458">    }</span>
+
+    @Test
+    public void testReadDeclaredNamedStaticFieldForceAccess() throws Exception {
+<span class="fc" id="L462">        assertEquals(Foo.VALUE, FieldUtils.readDeclaredStaticField(Foo.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L463">        assertEquals(&quot;child&quot;, FieldUtils.readDeclaredStaticField(PublicChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L464">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L466">                () -&gt; FieldUtils.readDeclaredStaticField(PubliclyShadowedChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L467">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L469">                () -&gt; FieldUtils.readDeclaredStaticField(PrivatelyShadowedChild.class, &quot;VALUE&quot;, true));</span>
+<span class="fc" id="L470">    }</span>
+
+    @Test
+    public void testReadField() throws Exception {
+<span class="fc" id="L474">        final Field parentS = FieldUtils.getDeclaredField(parentClass, &quot;s&quot;);</span>
+<span class="fc" id="L475">        assertEquals(&quot;s&quot;, FieldUtils.readField(parentS, publicChild));</span>
+<span class="fc" id="L476">        assertEquals(&quot;s&quot;, FieldUtils.readField(parentS, publiclyShadowedChild));</span>
+<span class="fc" id="L477">        assertEquals(&quot;s&quot;, FieldUtils.readField(parentS, privatelyShadowedChild));</span>
+<span class="fc" id="L478">        final Field parentB = FieldUtils.getDeclaredField(parentClass, &quot;b&quot;, true);</span>
+<span class="fc" id="L479">        assertEquals(Boolean.FALSE, FieldUtils.readField(parentB, publicChild));</span>
+<span class="fc" id="L480">        assertEquals(Boolean.FALSE, FieldUtils.readField(parentB, publiclyShadowedChild));</span>
+<span class="fc" id="L481">        assertEquals(Boolean.FALSE, FieldUtils.readField(parentB, privatelyShadowedChild));</span>
+<span class="fc" id="L482">        final Field parentI = FieldUtils.getDeclaredField(parentClass, &quot;i&quot;, true);</span>
+<span class="fc" id="L483">        assertEquals(I0, FieldUtils.readField(parentI, publicChild));</span>
+<span class="fc" id="L484">        assertEquals(I0, FieldUtils.readField(parentI, publiclyShadowedChild));</span>
+<span class="fc" id="L485">        assertEquals(I0, FieldUtils.readField(parentI, privatelyShadowedChild));</span>
+<span class="fc" id="L486">        final Field parentD = FieldUtils.getDeclaredField(parentClass, &quot;d&quot;, true);</span>
+<span class="fc" id="L487">        assertEquals(D0, FieldUtils.readField(parentD, publicChild));</span>
+<span class="fc" id="L488">        assertEquals(D0, FieldUtils.readField(parentD, publiclyShadowedChild));</span>
+<span class="fc" id="L489">        assertEquals(D0, FieldUtils.readField(parentD, privatelyShadowedChild));</span>
+
+<span class="fc" id="L491">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L493">                () -&gt; FieldUtils.readField(null, publicChild),</span>
+                &quot;a null field should cause an IllegalArgumentException&quot;);
+<span class="fc" id="L495">    }</span>
+
+    @Test
+    public void testReadFieldForceAccess() throws Exception {
+<span class="fc" id="L499">        final Field parentS = FieldUtils.getDeclaredField(parentClass, &quot;s&quot;);</span>
+<span class="fc" id="L500">        parentS.setAccessible(false);</span>
+<span class="fc" id="L501">        assertEquals(&quot;s&quot;, FieldUtils.readField(parentS, publicChild, true));</span>
+<span class="fc" id="L502">        assertEquals(&quot;s&quot;, FieldUtils.readField(parentS, publiclyShadowedChild, true));</span>
+<span class="fc" id="L503">        assertEquals(&quot;s&quot;, FieldUtils.readField(parentS, privatelyShadowedChild, true));</span>
+<span class="fc" id="L504">        final Field parentB = FieldUtils.getDeclaredField(parentClass, &quot;b&quot;, true);</span>
+<span class="fc" id="L505">        parentB.setAccessible(false);</span>
+<span class="fc" id="L506">        assertEquals(Boolean.FALSE, FieldUtils.readField(parentB, publicChild, true));</span>
+<span class="fc" id="L507">        assertEquals(Boolean.FALSE, FieldUtils.readField(parentB, publiclyShadowedChild, true));</span>
+<span class="fc" id="L508">        assertEquals(Boolean.FALSE, FieldUtils.readField(parentB, privatelyShadowedChild, true));</span>
+<span class="fc" id="L509">        final Field parentI = FieldUtils.getDeclaredField(parentClass, &quot;i&quot;, true);</span>
+<span class="fc" id="L510">        parentI.setAccessible(false);</span>
+<span class="fc" id="L511">        assertEquals(I0, FieldUtils.readField(parentI, publicChild, true));</span>
+<span class="fc" id="L512">        assertEquals(I0, FieldUtils.readField(parentI, publiclyShadowedChild, true));</span>
+<span class="fc" id="L513">        assertEquals(I0, FieldUtils.readField(parentI, privatelyShadowedChild, true));</span>
+<span class="fc" id="L514">        final Field parentD = FieldUtils.getDeclaredField(parentClass, &quot;d&quot;, true);</span>
+<span class="fc" id="L515">        parentD.setAccessible(false);</span>
+<span class="fc" id="L516">        assertEquals(D0, FieldUtils.readField(parentD, publicChild, true));</span>
+<span class="fc" id="L517">        assertEquals(D0, FieldUtils.readField(parentD, publiclyShadowedChild, true));</span>
+<span class="fc" id="L518">        assertEquals(D0, FieldUtils.readField(parentD, privatelyShadowedChild, true));</span>
+
+<span class="fc" id="L520">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L522">                () -&gt; FieldUtils.readField(null, publicChild, true),</span>
+                &quot;a null field should cause an IllegalArgumentException&quot;);
+<span class="fc" id="L524">    }</span>
+
+    @Test
+    public void testReadNamedField() throws Exception {
+<span class="fc" id="L528">        assertEquals(&quot;s&quot;, FieldUtils.readField(publicChild, &quot;s&quot;));</span>
+<span class="fc" id="L529">        assertEquals(&quot;ss&quot;, FieldUtils.readField(publiclyShadowedChild, &quot;s&quot;));</span>
+<span class="fc" id="L530">        assertEquals(&quot;s&quot;, FieldUtils.readField(privatelyShadowedChild, &quot;s&quot;));</span>
+
+<span class="fc" id="L532">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L534">                () -&gt; FieldUtils.readField(publicChild, null),</span>
+                &quot;a null field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L537">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L539">                () -&gt; FieldUtils.readField(publicChild, &quot;&quot;),</span>
+                &quot;an empty field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L542">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L544">                () -&gt; FieldUtils.readField(publicChild, &quot; &quot;),</span>
+                &quot;a blank field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L547">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L549">                () -&gt; FieldUtils.readField((Object) null, &quot;none&quot;),</span>
+                &quot;a null target should cause an IllegalArgumentException&quot;);
+
+<span class="pc" id="L552">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readField(publicChild, &quot;b&quot;));</span>
+
+<span class="fc" id="L554">        assertEquals(Boolean.TRUE, FieldUtils.readField(publiclyShadowedChild, &quot;b&quot;));</span>
+<span class="pc" id="L555">        assertThrows( IllegalArgumentException.class, () -&gt; FieldUtils.readField(privatelyShadowedChild, &quot;b&quot;));</span>
+<span class="pc" id="L556">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readField(publicChild, &quot;i&quot;));</span>
+<span class="fc" id="L557">        assertEquals(I1, FieldUtils.readField(publiclyShadowedChild, &quot;i&quot;));</span>
+<span class="pc" id="L558">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readField(privatelyShadowedChild, &quot;i&quot;));</span>
+<span class="pc" id="L559">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readField(publicChild, &quot;d&quot;));</span>
+<span class="fc" id="L560">        assertEquals(D1, FieldUtils.readField(publiclyShadowedChild, &quot;d&quot;));</span>
+<span class="pc" id="L561">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readField(privatelyShadowedChild, &quot;d&quot;));</span>
+<span class="fc" id="L562">    }</span>
+
+    @Test
+    public void testReadNamedFieldForceAccess() throws Exception {
+<span class="fc" id="L566">        assertEquals(&quot;s&quot;, FieldUtils.readField(publicChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L567">        assertEquals(&quot;ss&quot;, FieldUtils.readField(publiclyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L568">        assertEquals(&quot;ss&quot;, FieldUtils.readField(privatelyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L569">        assertEquals(Boolean.FALSE, FieldUtils.readField(publicChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L570">        assertEquals(Boolean.TRUE, FieldUtils.readField(publiclyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L571">        assertEquals(Boolean.TRUE, FieldUtils.readField(privatelyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L572">        assertEquals(I0, FieldUtils.readField(publicChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L573">        assertEquals(I1, FieldUtils.readField(publiclyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L574">        assertEquals(I1, FieldUtils.readField(privatelyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L575">        assertEquals(D0, FieldUtils.readField(publicChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L576">        assertEquals(D1, FieldUtils.readField(publiclyShadowedChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L577">        assertEquals(D1, FieldUtils.readField(privatelyShadowedChild, &quot;d&quot;, true));</span>
+
+<span class="fc" id="L579">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L581">                () -&gt; FieldUtils.readField(publicChild, null, true),</span>
+                &quot;a null field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L584">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L586">                () -&gt; FieldUtils.readField(publicChild, &quot;&quot;, true),</span>
+                &quot;an empty field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L589">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L591">                () -&gt; FieldUtils.readField(publicChild, &quot; &quot;, true),</span>
+                &quot;a blank field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L594">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L596">                () -&gt; FieldUtils.readField((Object) null, &quot;none&quot;, true),</span>
+                &quot;a null target should cause an IllegalArgumentException&quot;);
+<span class="fc" id="L598">    }</span>
+
+    @Test
+    public void testReadDeclaredNamedField() throws Exception {
+<span class="fc" id="L602">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L604">                () -&gt; FieldUtils.readDeclaredField(publicChild, null),</span>
+                &quot;a null field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L607">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L609">                () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;&quot;),</span>
+                &quot;an empty field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L612">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L614">                () -&gt; FieldUtils.readDeclaredField(publicChild, &quot; &quot;),</span>
+                &quot;a blank field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L617">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L619">                () -&gt; FieldUtils.readDeclaredField(null, &quot;none&quot;),</span>
+                &quot;a null target should cause an IllegalArgumentException&quot;);
+
+<span class="pc" id="L622">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;s&quot;));</span>
+<span class="fc" id="L623">        assertEquals(&quot;ss&quot;, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;s&quot;));</span>
+<span class="pc" id="L624">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;s&quot;));</span>
+<span class="pc" id="L625">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;b&quot;));</span>
+<span class="fc" id="L626">        assertEquals(Boolean.TRUE, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;b&quot;));</span>
+<span class="pc" id="L627">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;b&quot;));</span>
+<span class="pc" id="L628">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;i&quot;));</span>
+<span class="fc" id="L629">        assertEquals(I1, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;i&quot;));</span>
+<span class="pc" id="L630">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;i&quot;));</span>
+<span class="pc" id="L631">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;d&quot;));</span>
+<span class="fc" id="L632">        assertEquals(D1, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;d&quot;));</span>
+<span class="pc" id="L633">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;d&quot;));</span>
+<span class="fc" id="L634">    }</span>
+
+    @Test
+    public void testReadDeclaredNamedFieldForceAccess() throws Exception {
+<span class="fc" id="L638">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L640">                () -&gt; FieldUtils.readDeclaredField(publicChild, null, true),</span>
+                &quot;a null field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L643">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L645">                () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;&quot;, true),</span>
+                &quot;an empty field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L648">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L650">                () -&gt; FieldUtils.readDeclaredField(publicChild, &quot; &quot;, true),</span>
+                &quot;a blank field name should cause an IllegalArgumentException&quot;);
+
+<span class="fc" id="L653">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L655">                () -&gt; FieldUtils.readDeclaredField(null, &quot;none&quot;, true),</span>
+                &quot;a null target should cause an IllegalArgumentException&quot;);
+
+<span class="pc" id="L658">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L659">        assertEquals(&quot;ss&quot;, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L660">        assertEquals(&quot;ss&quot;, FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;s&quot;, true));</span>
+<span class="pc" id="L661">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L662">        assertEquals(Boolean.TRUE, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L663">        assertEquals(Boolean.TRUE, FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;b&quot;, true));</span>
+<span class="pc" id="L664">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L665">        assertEquals(I1, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L666">        assertEquals(I1, FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;i&quot;, true));</span>
+<span class="pc" id="L667">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.readDeclaredField(publicChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L668">        assertEquals(D1, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L669">        assertEquals(D1, FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L670">    }</span>
+
+    @Test
+    public void testWriteStaticField() throws Exception {
+<span class="fc" id="L674">        Field field = StaticContainer.class.getDeclaredField(&quot;mutablePublic&quot;);</span>
+<span class="fc" id="L675">        FieldUtils.writeStaticField(field, &quot;new&quot;);</span>
+<span class="fc" id="L676">        assertEquals(&quot;new&quot;, StaticContainer.mutablePublic);</span>
+<span class="fc" id="L677">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L679">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;mutableProtected&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L680">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L682">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;mutablePackage&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L683">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L685">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;mutablePrivate&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L686">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L688">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PUBLIC&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L689">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L691">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PROTECTED&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L692">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L694">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PACKAGE&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L695">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L697">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PRIVATE&quot;), &quot;new&quot;));</span>
+<span class="fc" id="L698">    }</span>
+
+    @Test
+    public void testWriteStaticFieldForceAccess() throws Exception {
+<span class="fc" id="L702">        Field field = StaticContainer.class.getDeclaredField(&quot;mutablePublic&quot;);</span>
+<span class="fc" id="L703">        FieldUtils.writeStaticField(field, &quot;new&quot;, true);</span>
+<span class="fc" id="L704">        assertEquals(&quot;new&quot;, StaticContainer.mutablePublic);</span>
+<span class="fc" id="L705">        field = StaticContainer.class.getDeclaredField(&quot;mutableProtected&quot;);</span>
+<span class="fc" id="L706">        FieldUtils.writeStaticField(field, &quot;new&quot;, true);</span>
+<span class="fc" id="L707">        assertEquals(&quot;new&quot;, StaticContainer.getMutableProtected());</span>
+<span class="fc" id="L708">        field = StaticContainer.class.getDeclaredField(&quot;mutablePackage&quot;);</span>
+<span class="fc" id="L709">        FieldUtils.writeStaticField(field, &quot;new&quot;, true);</span>
+<span class="fc" id="L710">        assertEquals(&quot;new&quot;, StaticContainer.getMutablePackage());</span>
+<span class="fc" id="L711">        field = StaticContainer.class.getDeclaredField(&quot;mutablePrivate&quot;);</span>
+<span class="fc" id="L712">        FieldUtils.writeStaticField(field, &quot;new&quot;, true);</span>
+<span class="fc" id="L713">        assertEquals(&quot;new&quot;, StaticContainer.getMutablePrivate());</span>
+<span class="fc" id="L714">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L716">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PUBLIC&quot;), &quot;new&quot;, true));</span>
+<span class="fc" id="L717">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L719">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PROTECTED&quot;), &quot;new&quot;, true));</span>
+<span class="fc" id="L720">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L722">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PACKAGE&quot;), &quot;new&quot;, true));</span>
+<span class="fc" id="L723">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L725">                () -&gt; FieldUtils.writeStaticField(StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PRIVATE&quot;), &quot;new&quot;, true));</span>
+<span class="fc" id="L726">    }</span>
+
+    @Test
+    public void testWriteNamedStaticField() throws Exception {
+<span class="fc" id="L730">        FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutablePublic&quot;, &quot;new&quot;);</span>
+<span class="fc" id="L731">        assertEquals(&quot;new&quot;, StaticContainer.mutablePublic);</span>
+<span class="fc" id="L732">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L734">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutableProtected&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L735">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L737">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutablePackage&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L738">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L740">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutablePrivate&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L741">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L743">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PUBLIC&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L744">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L746">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PROTECTED&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L747">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L749">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PACKAGE&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L750">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L752">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PRIVATE&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L753">    }</span>
+
+    @Test
+    public void testWriteNamedStaticFieldForceAccess() throws Exception {
+<span class="fc" id="L757">        FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutablePublic&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L758">        assertEquals(&quot;new&quot;, StaticContainer.mutablePublic);</span>
+<span class="fc" id="L759">        FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutableProtected&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L760">        assertEquals(&quot;new&quot;, StaticContainer.getMutableProtected());</span>
+<span class="fc" id="L761">        FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutablePackage&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L762">        assertEquals(&quot;new&quot;, StaticContainer.getMutablePackage());</span>
+<span class="fc" id="L763">        FieldUtils.writeStaticField(StaticContainerChild.class, &quot;mutablePrivate&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L764">        assertEquals(&quot;new&quot;, StaticContainer.getMutablePrivate());</span>
+<span class="fc" id="L765">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L767">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PUBLIC&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L768">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L770">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PROTECTED&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L771">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L773">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PACKAGE&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L774">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L776">                () -&gt; FieldUtils.writeStaticField(StaticContainerChild.class, &quot;IMMUTABLE_PRIVATE&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L777">    }</span>
+
+    @Test
+    public void testWriteDeclaredNamedStaticField() throws Exception {
+<span class="fc" id="L781">        FieldUtils.writeStaticField(StaticContainer.class, &quot;mutablePublic&quot;, &quot;new&quot;);</span>
+<span class="fc" id="L782">        assertEquals(&quot;new&quot;, StaticContainer.mutablePublic);</span>
+<span class="fc" id="L783">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L785">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutableProtected&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L786">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L788">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutablePackage&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L789">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L791">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutablePrivate&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L792">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L794">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PUBLIC&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L795">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L797">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PROTECTED&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L798">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L800">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PACKAGE&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L801">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L803">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PRIVATE&quot;, &quot;new&quot;));</span>
+<span class="fc" id="L804">    }</span>
+
+    @Test
+    public void testWriteDeclaredNamedStaticFieldForceAccess() throws Exception {
+<span class="fc" id="L808">        FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutablePublic&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L809">        assertEquals(&quot;new&quot;, StaticContainer.mutablePublic);</span>
+<span class="fc" id="L810">        FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutableProtected&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L811">        assertEquals(&quot;new&quot;, StaticContainer.getMutableProtected());</span>
+<span class="fc" id="L812">        FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutablePackage&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L813">        assertEquals(&quot;new&quot;, StaticContainer.getMutablePackage());</span>
+<span class="fc" id="L814">        FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;mutablePrivate&quot;, &quot;new&quot;, true);</span>
+<span class="fc" id="L815">        assertEquals(&quot;new&quot;, StaticContainer.getMutablePrivate());</span>
+<span class="fc" id="L816">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L818">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PUBLIC&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L819">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L821">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PROTECTED&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L822">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L824">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PACKAGE&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L825">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L827">                () -&gt; FieldUtils.writeDeclaredStaticField(StaticContainer.class, &quot;IMMUTABLE_PRIVATE&quot;, &quot;new&quot;, true));</span>
+<span class="fc" id="L828">    }</span>
+
+    @Test
+    public void testWriteField() throws Exception {
+<span class="fc" id="L832">        Field field = parentClass.getDeclaredField(&quot;s&quot;);</span>
+<span class="fc" id="L833">        FieldUtils.writeField(field, publicChild, &quot;S&quot;);</span>
+<span class="fc" id="L834">        assertEquals(&quot;S&quot;, field.get(publicChild));</span>
+<span class="fc" id="L835">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L837">                () -&gt; FieldUtils.writeField(parentClass.getDeclaredField(&quot;b&quot;), publicChild, Boolean.TRUE));</span>
+<span class="fc" id="L838">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L840">                () -&gt; FieldUtils.writeField(parentClass.getDeclaredField(&quot;i&quot;), publicChild, Integer.valueOf(Integer.MAX_VALUE)));</span>
+<span class="fc" id="L841">        assertThrows(</span>
+                IllegalAccessException.class,
+<span class="nc" id="L843">                () -&gt; FieldUtils.writeField(parentClass.getDeclaredField(&quot;d&quot;), publicChild, Double.valueOf(Double.MAX_VALUE)));</span>
+<span class="fc" id="L844">    }</span>
+
+    @Test
+    public void testWriteFieldForceAccess() throws Exception {
+<span class="fc" id="L848">        Field field = parentClass.getDeclaredField(&quot;s&quot;);</span>
+<span class="fc" id="L849">        FieldUtils.writeField(field, publicChild, &quot;S&quot;, true);</span>
+<span class="fc" id="L850">        assertEquals(&quot;S&quot;, field.get(publicChild));</span>
+<span class="fc" id="L851">        field = parentClass.getDeclaredField(&quot;b&quot;);</span>
+<span class="fc" id="L852">        FieldUtils.writeField(field, publicChild, Boolean.TRUE, true);</span>
+<span class="fc" id="L853">        assertEquals(Boolean.TRUE, field.get(publicChild));</span>
+<span class="fc" id="L854">        field = parentClass.getDeclaredField(&quot;i&quot;);</span>
+<span class="fc" id="L855">        FieldUtils.writeField(field, publicChild, Integer.valueOf(Integer.MAX_VALUE), true);</span>
+<span class="fc" id="L856">        assertEquals(Integer.valueOf(Integer.MAX_VALUE), field.get(publicChild));</span>
+<span class="fc" id="L857">        field = parentClass.getDeclaredField(&quot;d&quot;);</span>
+<span class="fc" id="L858">        FieldUtils.writeField(field, publicChild, Double.valueOf(Double.MAX_VALUE), true);</span>
+<span class="fc" id="L859">        assertEquals(Double.valueOf(Double.MAX_VALUE), field.get(publicChild));</span>
+<span class="fc" id="L860">    }</span>
+
+    @Test
+    public void testWriteNamedField() throws Exception {
+<span class="fc" id="L864">        FieldUtils.writeField(publicChild, &quot;s&quot;, &quot;S&quot;);</span>
+<span class="fc" id="L865">        assertEquals(&quot;S&quot;, FieldUtils.readField(publicChild, &quot;s&quot;));</span>
+<span class="pc" id="L866">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.writeField(publicChild, &quot;b&quot;, Boolean.TRUE));</span>
+<span class="pc" id="L867">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.writeField(publicChild, &quot;i&quot;, Integer.valueOf(1)));</span>
+<span class="fc" id="L868">        assertThrows(</span>
+<span class="nc" id="L869">                IllegalArgumentException.class, () -&gt; FieldUtils.writeField(publicChild, &quot;d&quot;, Double.valueOf(1.0)));</span>
+
+<span class="fc" id="L871">        FieldUtils.writeField(publiclyShadowedChild, &quot;s&quot;, &quot;S&quot;);</span>
+<span class="fc" id="L872">        assertEquals(&quot;S&quot;, FieldUtils.readField(publiclyShadowedChild, &quot;s&quot;));</span>
+<span class="fc" id="L873">        FieldUtils.writeField(publiclyShadowedChild, &quot;b&quot;, Boolean.FALSE);</span>
+<span class="fc" id="L874">        assertEquals(Boolean.FALSE, FieldUtils.readField(publiclyShadowedChild, &quot;b&quot;));</span>
+<span class="fc" id="L875">        FieldUtils.writeField(publiclyShadowedChild, &quot;i&quot;, Integer.valueOf(0));</span>
+<span class="fc" id="L876">        assertEquals(Integer.valueOf(0), FieldUtils.readField(publiclyShadowedChild, &quot;i&quot;));</span>
+<span class="fc" id="L877">        FieldUtils.writeField(publiclyShadowedChild, &quot;d&quot;, Double.valueOf(0.0));</span>
+<span class="fc" id="L878">        assertEquals(Double.valueOf(0.0), FieldUtils.readField(publiclyShadowedChild, &quot;d&quot;));</span>
+
+<span class="fc" id="L880">        FieldUtils.writeField(privatelyShadowedChild, &quot;s&quot;, &quot;S&quot;);</span>
+<span class="fc" id="L881">        assertEquals(&quot;S&quot;, FieldUtils.readField(privatelyShadowedChild, &quot;s&quot;));</span>
+<span class="fc" id="L882">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L884">                () -&gt; FieldUtils.writeField(privatelyShadowedChild, &quot;b&quot;, Boolean.TRUE));</span>
+<span class="fc" id="L885">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L887">                () -&gt; FieldUtils.writeField(privatelyShadowedChild, &quot;i&quot;, Integer.valueOf(1)));</span>
+<span class="fc" id="L888">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L890">                () -&gt; FieldUtils.writeField(privatelyShadowedChild, &quot;d&quot;, Double.valueOf(1.0)));</span>
+<span class="fc" id="L891">    }</span>
+
+    @Test
+    public void testWriteNamedFieldForceAccess() throws Exception {
+<span class="fc" id="L895">        FieldUtils.writeField(publicChild, &quot;s&quot;, &quot;S&quot;, true);</span>
+<span class="fc" id="L896">        assertEquals(&quot;S&quot;, FieldUtils.readField(publicChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L897">        FieldUtils.writeField(publicChild, &quot;b&quot;, Boolean.TRUE, true);</span>
+<span class="fc" id="L898">        assertEquals(Boolean.TRUE, FieldUtils.readField(publicChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L899">        FieldUtils.writeField(publicChild, &quot;i&quot;, Integer.valueOf(1), true);</span>
+<span class="fc" id="L900">        assertEquals(Integer.valueOf(1), FieldUtils.readField(publicChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L901">        FieldUtils.writeField(publicChild, &quot;d&quot;, Double.valueOf(1.0), true);</span>
+<span class="fc" id="L902">        assertEquals(Double.valueOf(1.0), FieldUtils.readField(publicChild, &quot;d&quot;, true));</span>
+
+<span class="fc" id="L904">        FieldUtils.writeField(publiclyShadowedChild, &quot;s&quot;, &quot;S&quot;, true);</span>
+<span class="fc" id="L905">        assertEquals(&quot;S&quot;, FieldUtils.readField(publiclyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L906">        FieldUtils.writeField(publiclyShadowedChild, &quot;b&quot;, Boolean.FALSE, true);</span>
+<span class="fc" id="L907">        assertEquals(Boolean.FALSE, FieldUtils.readField(publiclyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L908">        FieldUtils.writeField(publiclyShadowedChild, &quot;i&quot;, Integer.valueOf(0), true);</span>
+<span class="fc" id="L909">        assertEquals(Integer.valueOf(0), FieldUtils.readField(publiclyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L910">        FieldUtils.writeField(publiclyShadowedChild, &quot;d&quot;, Double.valueOf(0.0), true);</span>
+<span class="fc" id="L911">        assertEquals(Double.valueOf(0.0), FieldUtils.readField(publiclyShadowedChild, &quot;d&quot;, true));</span>
+
+<span class="fc" id="L913">        FieldUtils.writeField(privatelyShadowedChild, &quot;s&quot;, &quot;S&quot;, true);</span>
+<span class="fc" id="L914">        assertEquals(&quot;S&quot;, FieldUtils.readField(privatelyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L915">        FieldUtils.writeField(privatelyShadowedChild, &quot;b&quot;, Boolean.FALSE, true);</span>
+<span class="fc" id="L916">        assertEquals(Boolean.FALSE, FieldUtils.readField(privatelyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L917">        FieldUtils.writeField(privatelyShadowedChild, &quot;i&quot;, Integer.valueOf(0), true);</span>
+<span class="fc" id="L918">        assertEquals(Integer.valueOf(0), FieldUtils.readField(privatelyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L919">        FieldUtils.writeField(privatelyShadowedChild, &quot;d&quot;, Double.valueOf(0.0), true);</span>
+<span class="fc" id="L920">        assertEquals(Double.valueOf(0.0), FieldUtils.readField(privatelyShadowedChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L921">    }</span>
+
+    @Test
+    public void testWriteDeclaredNamedField() throws Exception {
+<span class="pc" id="L925">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;s&quot;, &quot;S&quot;));</span>
+<span class="fc" id="L926">        assertThrows(</span>
+<span class="nc" id="L927">                IllegalArgumentException.class, () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;b&quot;, Boolean.TRUE));</span>
+<span class="fc" id="L928">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L930">                () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;i&quot;, Integer.valueOf(1)));</span>
+<span class="fc" id="L931">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L933">                () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;d&quot;, Double.valueOf(1.0)));</span>
+
+<span class="fc" id="L935">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;s&quot;, &quot;S&quot;);</span>
+<span class="fc" id="L936">        assertEquals(&quot;S&quot;, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;s&quot;));</span>
+<span class="fc" id="L937">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;b&quot;, Boolean.FALSE);</span>
+<span class="fc" id="L938">        assertEquals(Boolean.FALSE, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;b&quot;));</span>
+<span class="fc" id="L939">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;i&quot;, Integer.valueOf(0));</span>
+<span class="fc" id="L940">        assertEquals(Integer.valueOf(0), FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;i&quot;));</span>
+<span class="fc" id="L941">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;d&quot;, Double.valueOf(0.0));</span>
+<span class="fc" id="L942">        assertEquals(Double.valueOf(0.0), FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;d&quot;));</span>
+
+<span class="fc" id="L944">        assertThrows(</span>
+<span class="nc" id="L945">                IllegalArgumentException.class, () -&gt; FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;s&quot;, &quot;S&quot;));</span>
+<span class="fc" id="L946">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L948">                () -&gt; FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;b&quot;, Boolean.TRUE));</span>
+<span class="fc" id="L949">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L951">                () -&gt; FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;i&quot;, Integer.valueOf(1)));</span>
+<span class="fc" id="L952">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L954">                () -&gt; FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;d&quot;, Double.valueOf(1.0)));</span>
+<span class="fc" id="L955">    }</span>
+
+    @Test
+    public void testWriteDeclaredNamedFieldForceAccess() throws Exception {
+<span class="pc" id="L959">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;s&quot;, &quot;S&quot;, true));</span>
+<span class="fc" id="L960">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L962">                () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;b&quot;, Boolean.TRUE, true));</span>
+<span class="fc" id="L963">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L965">                () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;i&quot;, Integer.valueOf(1), true));</span>
+<span class="fc" id="L966">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L968">                () -&gt; FieldUtils.writeDeclaredField(publicChild, &quot;d&quot;, Double.valueOf(1.0), true));</span>
+
+<span class="fc" id="L970">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;s&quot;, &quot;S&quot;, true);</span>
+<span class="fc" id="L971">        assertEquals(&quot;S&quot;, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L972">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;b&quot;, Boolean.FALSE, true);</span>
+<span class="fc" id="L973">        assertEquals(Boolean.FALSE, FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L974">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;i&quot;, Integer.valueOf(0), true);</span>
+<span class="fc" id="L975">        assertEquals(Integer.valueOf(0), FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L976">        FieldUtils.writeDeclaredField(publiclyShadowedChild, &quot;d&quot;, Double.valueOf(0.0), true);</span>
+<span class="fc" id="L977">        assertEquals(Double.valueOf(0.0), FieldUtils.readDeclaredField(publiclyShadowedChild, &quot;d&quot;, true));</span>
+
+<span class="fc" id="L979">        FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;s&quot;, &quot;S&quot;, true);</span>
+<span class="fc" id="L980">        assertEquals(&quot;S&quot;, FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;s&quot;, true));</span>
+<span class="fc" id="L981">        FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;b&quot;, Boolean.FALSE, true);</span>
+<span class="fc" id="L982">        assertEquals(Boolean.FALSE, FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;b&quot;, true));</span>
+<span class="fc" id="L983">        FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;i&quot;, Integer.valueOf(0), true);</span>
+<span class="fc" id="L984">        assertEquals(Integer.valueOf(0), FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;i&quot;, true));</span>
+<span class="fc" id="L985">        FieldUtils.writeDeclaredField(privatelyShadowedChild, &quot;d&quot;, Double.valueOf(0.0), true);</span>
+<span class="fc" id="L986">        assertEquals(Double.valueOf(0.0), FieldUtils.readDeclaredField(privatelyShadowedChild, &quot;d&quot;, true));</span>
+<span class="fc" id="L987">    }</span>
+
+    @Test
+    public void testAmbig() {
+<span class="pc" id="L991">        assertThrows(IllegalArgumentException.class, () -&gt; FieldUtils.getField(Ambig.class, &quot;VALUE&quot;));</span>
+<span class="fc" id="L992">    }</span>
+
+    @Test
+    public void testRemoveFinalModifier() throws Exception {
+<span class="fc" id="L996">        final Field field = StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PRIVATE_2&quot;);</span>
+<span class="fc" id="L997">        assertFalse(field.isAccessible());</span>
+<span class="fc" id="L998">        assertTrue(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L999">        callRemoveFinalModifierCheckForException(field, true);</span>
+<span class="pc bpc" id="L1000" title="1 of 2 branches missed.">        if (SystemUtils.isJavaVersionAtMost(JavaVersion.JAVA_11)) {</span>
+<span class="fc" id="L1001">            assertFalse(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1002">            assertFalse(field.isAccessible());</span>
+        }
+<span class="fc" id="L1004">    }</span>
+
+    @Test
+    public void testRemoveFinalModifierWithAccess() throws Exception {
+<span class="fc" id="L1008">        final Field field = StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PRIVATE_2&quot;);</span>
+<span class="fc" id="L1009">        assertFalse(field.isAccessible());</span>
+<span class="fc" id="L1010">        assertTrue(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1011">        callRemoveFinalModifierCheckForException(field, true);</span>
+<span class="pc bpc" id="L1012" title="1 of 2 branches missed.">        if (SystemUtils.isJavaVersionAtMost(JavaVersion.JAVA_11)) {</span>
+<span class="fc" id="L1013">            assertFalse(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1014">            assertFalse(field.isAccessible());</span>
+        }
+<span class="fc" id="L1016">    }</span>
+
+    @Test
+    public void testRemoveFinalModifierWithoutAccess() throws Exception {
+<span class="fc" id="L1020">        final Field field = StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PRIVATE_2&quot;);</span>
+<span class="fc" id="L1021">        assertFalse(field.isAccessible());</span>
+<span class="fc" id="L1022">        assertTrue(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1023">        callRemoveFinalModifierCheckForException(field, false);</span>
+<span class="pc bpc" id="L1024" title="1 of 2 branches missed.">        if (SystemUtils.isJavaVersionAtMost(JavaVersion.JAVA_11)) {</span>
+<span class="fc" id="L1025">            assertTrue(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1026">            assertFalse(field.isAccessible());</span>
+        }
+<span class="fc" id="L1028">    }</span>
+
+    @Test
+    public void testRemoveFinalModifierAccessNotNeeded() throws Exception {
+<span class="fc" id="L1032">        final Field field = StaticContainer.class.getDeclaredField(&quot;IMMUTABLE_PACKAGE&quot;);</span>
+<span class="fc" id="L1033">        assertFalse(field.isAccessible());</span>
+<span class="fc" id="L1034">        assertTrue(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1035">        callRemoveFinalModifierCheckForException(field, false);</span>
+<span class="pc bpc" id="L1036" title="1 of 2 branches missed.">        if (SystemUtils.isJavaVersionAtMost(JavaVersion.JAVA_11)) {</span>
+<span class="fc" id="L1037">            assertTrue(Modifier.isFinal(field.getModifiers()));</span>
+<span class="fc" id="L1038">            assertFalse(field.isAccessible());</span>
+        }
+<span class="fc" id="L1040">    }</span>
+
+    /**
+     * Read the &lt;code&gt;@deprecated&lt;/code&gt; notice on
+     * {@link FieldUtils#removeFinalModifier(Field, boolean)}.
+     *
+     * @param field {@link Field} to be curried into
+     *              {@link FieldUtils#removeFinalModifier(Field, boolean)}.
+     * @param forceAccess {@link Boolean} to be curried into
+     *              {@link FieldUtils#removeFinalModifier(Field, boolean)}.
+     */
+    private void callRemoveFinalModifierCheckForException(Field field, Boolean forceAccess) {
+        try {
+<span class="fc" id="L1053">            FieldUtils.removeFinalModifier(field, forceAccess);</span>
+<span class="nc" id="L1054">        } catch (UnsupportedOperationException exception) {</span>
+<span class="nc bnc" id="L1055" title="All 2 branches missed.">            if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_12)) {</span>
+<span class="nc" id="L1056">                assertTrue(exception.getCause() instanceof NoSuchFieldException);</span>
+            } else {
+<span class="nc" id="L1058">                fail(&quot;No exception should be thrown for java prior to 12.0&quot;);</span>
+            }
+<span class="fc" id="L1060">        }</span>
+<span class="fc" id="L1061">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

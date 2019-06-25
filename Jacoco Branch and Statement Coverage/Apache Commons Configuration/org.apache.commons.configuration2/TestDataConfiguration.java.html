@@ -1,0 +1,2619 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDataConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestDataConfiguration.java</span></div><h1>TestDataConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.awt.Color;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+
+import org.apache.commons.configuration2.convert.DefaultConversionHandler;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+import junitx.framework.ArrayAssert;
+import junitx.framework.ListAssert;
+
+/**
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L57">public class TestDataConfiguration</span>
+{
+    /** Constant for the date pattern used by tests. */
+    private static final String DATE_PATTERN = &quot;yyyy-MM-dd&quot;;
+
+    /** The test instance. */
+    private DataConfiguration conf;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L68">        final BaseConfiguration baseConfig = new BaseConfiguration();</span>
+<span class="fc" id="L69">        baseConfig.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L70">        conf = new DataConfiguration(baseConfig);</span>
+
+        // empty value
+<span class="fc" id="L73">        conf.addProperty(&quot;empty&quot;, &quot;&quot;);</span>
+
+        // lists of boolean
+<span class="fc" id="L76">        conf.addProperty(&quot;boolean.list1&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L77">        conf.addProperty(&quot;boolean.list1&quot;, &quot;false&quot;);</span>
+<span class="fc" id="L78">        conf.addProperty(&quot;boolean.list2&quot;, &quot;true, false&quot;);</span>
+<span class="fc" id="L79">        conf.addProperty(&quot;boolean.list3&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L80">        conf.addProperty(&quot;boolean.list3&quot;, Boolean.FALSE);</span>
+<span class="fc" id="L81">        conf.addPropertyDirect(&quot;boolean.list4&quot;, new Boolean[] { Boolean.TRUE, Boolean.FALSE });</span>
+<span class="fc" id="L82">        conf.addPropertyDirect(&quot;boolean.list5&quot;, new boolean[] { true, false });</span>
+<span class="fc" id="L83">        final List&lt;Object&gt; booleans = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L84">        booleans.add(Boolean.TRUE);</span>
+<span class="fc" id="L85">        booleans.add(Boolean.FALSE);</span>
+<span class="fc" id="L86">        conf.addProperty(&quot;boolean.list6&quot;, booleans);</span>
+<span class="fc" id="L87">        conf.addProperty(&quot;boolean.string&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L88">        conf.addProperty(&quot;boolean.object&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L89">        conf.addProperty(&quot;boolean.list.interpolated&quot;, &quot;${boolean.string},false&quot;);</span>
+
+        // lists of bytes
+<span class="fc" id="L92">        conf.addProperty(&quot;byte.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L93">        conf.addProperty(&quot;byte.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L94">        conf.addProperty(&quot;byte.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L95">        conf.addProperty(&quot;byte.list3&quot;, new Byte(&quot;1&quot;));</span>
+<span class="fc" id="L96">        conf.addProperty(&quot;byte.list3&quot;, new Byte(&quot;2&quot;));</span>
+<span class="fc" id="L97">        conf.addPropertyDirect(&quot;byte.list4&quot;, new Byte[] { new Byte(&quot;1&quot;), new Byte(&quot;2&quot;) });</span>
+<span class="fc" id="L98">        conf.addPropertyDirect(&quot;byte.list5&quot;, new byte[] { 1, 2 });</span>
+<span class="fc" id="L99">        final List&lt;Object&gt; bytes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L100">        bytes.add(new Byte(&quot;1&quot;));</span>
+<span class="fc" id="L101">        bytes.add(new Byte(&quot;2&quot;));</span>
+<span class="fc" id="L102">        conf.addProperty(&quot;byte.list6&quot;, bytes);</span>
+<span class="fc" id="L103">        conf.addProperty(&quot;byte.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L104">        conf.addProperty(&quot;byte.object&quot;, new Byte(&quot;1&quot;));</span>
+<span class="fc" id="L105">        conf.addProperty(&quot;byte.list.interpolated&quot;, &quot;${byte.string},2&quot;);</span>
+
+        // lists of shorts
+<span class="fc" id="L108">        conf.addProperty(&quot;short.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L109">        conf.addProperty(&quot;short.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L110">        conf.addProperty(&quot;short.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L111">        conf.addProperty(&quot;short.list3&quot;, new Short(&quot;1&quot;));</span>
+<span class="fc" id="L112">        conf.addProperty(&quot;short.list3&quot;, new Short(&quot;2&quot;));</span>
+<span class="fc" id="L113">        conf.addPropertyDirect(&quot;short.list4&quot;, new Short[] { new Short(&quot;1&quot;), new Short(&quot;2&quot;) });</span>
+<span class="fc" id="L114">        conf.addPropertyDirect(&quot;short.list5&quot;, new short[] { 1, 2 });</span>
+<span class="fc" id="L115">        final List&lt;Object&gt; shorts = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L116">        shorts.add(new Short(&quot;1&quot;));</span>
+<span class="fc" id="L117">        shorts.add(new Short(&quot;2&quot;));</span>
+<span class="fc" id="L118">        conf.addProperty(&quot;short.list6&quot;, shorts);</span>
+<span class="fc" id="L119">        conf.addProperty(&quot;short.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L120">        conf.addProperty(&quot;short.object&quot;, new Short(&quot;1&quot;));</span>
+<span class="fc" id="L121">        conf.addProperty(&quot;short.list.interpolated&quot;, &quot;${short.string},2&quot;);</span>
+
+        // lists of integers
+<span class="fc" id="L124">        conf.addProperty(&quot;integer.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L125">        conf.addProperty(&quot;integer.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L126">        conf.addProperty(&quot;integer.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L127">        conf.addProperty(&quot;integer.list3&quot;, new Integer(&quot;1&quot;));</span>
+<span class="fc" id="L128">        conf.addProperty(&quot;integer.list3&quot;, new Integer(&quot;2&quot;));</span>
+<span class="fc" id="L129">        conf.addPropertyDirect(&quot;integer.list4&quot;, new Integer[] { new Integer(&quot;1&quot;), new Integer(&quot;2&quot;) });</span>
+<span class="fc" id="L130">        conf.addPropertyDirect(&quot;integer.list5&quot;, new int[] { 1, 2 });</span>
+<span class="fc" id="L131">        final List&lt;Object&gt; integers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L132">        integers.add(new Integer(&quot;1&quot;));</span>
+<span class="fc" id="L133">        integers.add(new Integer(&quot;2&quot;));</span>
+<span class="fc" id="L134">        conf.addProperty(&quot;integer.list6&quot;, integers);</span>
+<span class="fc" id="L135">        conf.addProperty(&quot;integer.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L136">        conf.addProperty(&quot;integer.object&quot;, new Integer(&quot;1&quot;));</span>
+<span class="fc" id="L137">        conf.addProperty(&quot;integer.list.interpolated&quot;, &quot;${integer.string},2&quot;);</span>
+
+        // lists of longs
+<span class="fc" id="L140">        conf.addProperty(&quot;long.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L141">        conf.addProperty(&quot;long.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L142">        conf.addProperty(&quot;long.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L143">        conf.addProperty(&quot;long.list3&quot;, new Long(&quot;1&quot;));</span>
+<span class="fc" id="L144">        conf.addProperty(&quot;long.list3&quot;, new Long(&quot;2&quot;));</span>
+<span class="fc" id="L145">        conf.addPropertyDirect(&quot;long.list4&quot;, new Long[] { new Long(&quot;1&quot;), new Long(&quot;2&quot;) });</span>
+<span class="fc" id="L146">        conf.addPropertyDirect(&quot;long.list5&quot;, new long[] { 1, 2 });</span>
+<span class="fc" id="L147">        final List&lt;Object&gt; longs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L148">        longs.add(new Long(&quot;1&quot;));</span>
+<span class="fc" id="L149">        longs.add(new Long(&quot;2&quot;));</span>
+<span class="fc" id="L150">        conf.addProperty(&quot;long.list6&quot;, longs);</span>
+<span class="fc" id="L151">        conf.addProperty(&quot;long.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L152">        conf.addProperty(&quot;long.object&quot;, new Long(&quot;1&quot;));</span>
+<span class="fc" id="L153">        conf.addProperty(&quot;long.list.interpolated&quot;, &quot;${long.string},2&quot;);</span>
+
+        // lists of floats
+<span class="fc" id="L156">        conf.addProperty(&quot;float.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L157">        conf.addProperty(&quot;float.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L158">        conf.addProperty(&quot;float.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L159">        conf.addProperty(&quot;float.list3&quot;, new Float(&quot;1&quot;));</span>
+<span class="fc" id="L160">        conf.addProperty(&quot;float.list3&quot;, new Float(&quot;2&quot;));</span>
+<span class="fc" id="L161">        conf.addPropertyDirect(&quot;float.list4&quot;, new Float[] { new Float(&quot;1&quot;), new Float(&quot;2&quot;) });</span>
+<span class="fc" id="L162">        conf.addPropertyDirect(&quot;float.list5&quot;, new float[] { 1, 2 });</span>
+<span class="fc" id="L163">        final List&lt;Object&gt; floats = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L164">        floats.add(new Float(&quot;1&quot;));</span>
+<span class="fc" id="L165">        floats.add(new Float(&quot;2&quot;));</span>
+<span class="fc" id="L166">        conf.addProperty(&quot;float.list6&quot;, floats);</span>
+<span class="fc" id="L167">        conf.addProperty(&quot;float.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L168">        conf.addProperty(&quot;float.object&quot;, new Float(&quot;1&quot;));</span>
+<span class="fc" id="L169">        conf.addProperty(&quot;float.list.interpolated&quot;, &quot;${float.string},2&quot;);</span>
+
+        // lists of doubles
+<span class="fc" id="L172">        conf.addProperty(&quot;double.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L173">        conf.addProperty(&quot;double.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L174">        conf.addProperty(&quot;double.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L175">        conf.addProperty(&quot;double.list3&quot;, new Double(&quot;1&quot;));</span>
+<span class="fc" id="L176">        conf.addProperty(&quot;double.list3&quot;, new Double(&quot;2&quot;));</span>
+<span class="fc" id="L177">        conf.addPropertyDirect(&quot;double.list4&quot;, new Double[] { new Double(&quot;1&quot;), new Double(&quot;2&quot;) });</span>
+<span class="fc" id="L178">        conf.addPropertyDirect(&quot;double.list5&quot;, new double[] { 1, 2 });</span>
+<span class="fc" id="L179">        final List&lt;Object&gt; doubles = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L180">        doubles.add(new Double(&quot;1&quot;));</span>
+<span class="fc" id="L181">        doubles.add(new Double(&quot;2&quot;));</span>
+<span class="fc" id="L182">        conf.addProperty(&quot;double.list6&quot;, doubles);</span>
+<span class="fc" id="L183">        conf.addProperty(&quot;double.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L184">        conf.addProperty(&quot;double.object&quot;, new Double(&quot;1&quot;));</span>
+<span class="fc" id="L185">        conf.addProperty(&quot;double.list.interpolated&quot;, &quot;${double.string},2&quot;);</span>
+
+        // lists of big integers
+<span class="fc" id="L188">        conf.addProperty(&quot;biginteger.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L189">        conf.addProperty(&quot;biginteger.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L190">        conf.addProperty(&quot;biginteger.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L191">        conf.addProperty(&quot;biginteger.list3&quot;, new BigInteger(&quot;1&quot;));</span>
+<span class="fc" id="L192">        conf.addProperty(&quot;biginteger.list3&quot;, new BigInteger(&quot;2&quot;));</span>
+<span class="fc" id="L193">        conf.addPropertyDirect(&quot;biginteger.list4&quot;, new BigInteger[] { new BigInteger(&quot;1&quot;), new BigInteger(&quot;2&quot;) });</span>
+<span class="fc" id="L194">        final List&lt;Object&gt; bigintegers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L195">        bigintegers.add(new BigInteger(&quot;1&quot;));</span>
+<span class="fc" id="L196">        bigintegers.add(new BigInteger(&quot;2&quot;));</span>
+<span class="fc" id="L197">        conf.addProperty(&quot;biginteger.list6&quot;, bigintegers);</span>
+<span class="fc" id="L198">        conf.addProperty(&quot;biginteger.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L199">        conf.addProperty(&quot;biginteger.object&quot;, new BigInteger(&quot;1&quot;));</span>
+<span class="fc" id="L200">        conf.addProperty(&quot;biginteger.list.interpolated&quot;, &quot;${biginteger.string},2&quot;);</span>
+
+        // lists of big decimals
+<span class="fc" id="L203">        conf.addProperty(&quot;bigdecimal.list1&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L204">        conf.addProperty(&quot;bigdecimal.list1&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L205">        conf.addProperty(&quot;bigdecimal.list2&quot;, &quot;1, 2&quot;);</span>
+<span class="fc" id="L206">        conf.addProperty(&quot;bigdecimal.list3&quot;, new BigDecimal(&quot;1&quot;));</span>
+<span class="fc" id="L207">        conf.addProperty(&quot;bigdecimal.list3&quot;, new BigDecimal(&quot;2&quot;));</span>
+<span class="fc" id="L208">        conf.addPropertyDirect(&quot;bigdecimal.list4&quot;, new BigDecimal[] { new BigDecimal(&quot;1&quot;), new BigDecimal(&quot;2&quot;) });</span>
+<span class="fc" id="L209">        final List&lt;Object&gt; bigdecimals = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L210">        bigdecimals.add(new BigDecimal(&quot;1&quot;));</span>
+<span class="fc" id="L211">        bigdecimals.add(new BigDecimal(&quot;2&quot;));</span>
+<span class="fc" id="L212">        conf.addProperty(&quot;bigdecimal.list6&quot;, bigdecimals);</span>
+<span class="fc" id="L213">        conf.addProperty(&quot;bigdecimal.string&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L214">        conf.addProperty(&quot;bigdecimal.object&quot;, new BigDecimal(&quot;1&quot;));</span>
+<span class="fc" id="L215">        conf.addProperty(&quot;bigdecimal.list.interpolated&quot;, &quot;${bigdecimal.string},2&quot;);</span>
+
+        // URIs
+<span class="fc" id="L218">        final String uri1 = &quot;http://jakarta.apache.org&quot;;</span>
+<span class="fc" id="L219">        final String uri2 = &quot;http://www.apache.org&quot;;</span>
+<span class="fc" id="L220">        conf.addProperty(&quot;uri.string&quot;, uri1);</span>
+<span class="fc" id="L221">        conf.addProperty(&quot;uri.string.interpolated&quot;, &quot;${uri.string}&quot;);</span>
+<span class="fc" id="L222">        conf.addProperty(&quot;uri.object&quot;, new URI(uri1));</span>
+<span class="fc" id="L223">        conf.addProperty(&quot;uri.list1&quot;, uri1);</span>
+<span class="fc" id="L224">        conf.addProperty(&quot;uri.list1&quot;, uri2);</span>
+<span class="fc" id="L225">        conf.addProperty(&quot;uri.list2&quot;, uri1 + &quot;, &quot; + uri2);</span>
+<span class="fc" id="L226">        conf.addProperty(&quot;uri.list3&quot;, new URI(uri1));</span>
+<span class="fc" id="L227">        conf.addProperty(&quot;uri.list3&quot;, new URI(uri2));</span>
+<span class="fc" id="L228">        conf.addPropertyDirect(&quot;uri.list4&quot;, new URI[] { new URI(uri1), new URI(uri2) });</span>
+<span class="fc" id="L229">        final List&lt;Object&gt; uris = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L230">        uris.add(new URI(uri1));</span>
+<span class="fc" id="L231">        uris.add(new URI(uri2));</span>
+<span class="fc" id="L232">        conf.addProperty(&quot;uri.list6&quot;, uris);</span>
+<span class="fc" id="L233">        conf.addProperty(&quot;uri.list.interpolated&quot;, &quot;${uri.string},&quot; + uri2);</span>
+
+        // URLs
+<span class="fc" id="L236">        final String url1 = &quot;http://jakarta.apache.org&quot;;</span>
+<span class="fc" id="L237">        final String url2 = &quot;http://www.apache.org&quot;;</span>
+<span class="fc" id="L238">        conf.addProperty(&quot;url.string&quot;, url1);</span>
+<span class="fc" id="L239">        conf.addProperty(&quot;url.string.interpolated&quot;, &quot;${url.string}&quot;);</span>
+<span class="fc" id="L240">        conf.addProperty(&quot;url.object&quot;, new URL(url1));</span>
+<span class="fc" id="L241">        conf.addProperty(&quot;url.list1&quot;, url1);</span>
+<span class="fc" id="L242">        conf.addProperty(&quot;url.list1&quot;, url2);</span>
+<span class="fc" id="L243">        conf.addProperty(&quot;url.list2&quot;, url1 + &quot;, &quot; + url2);</span>
+<span class="fc" id="L244">        conf.addProperty(&quot;url.list3&quot;, new URL(url1));</span>
+<span class="fc" id="L245">        conf.addProperty(&quot;url.list3&quot;, new URL(url2));</span>
+<span class="fc" id="L246">        conf.addPropertyDirect(&quot;url.list4&quot;, new URL[] { new URL(url1), new URL(url2) });</span>
+<span class="fc" id="L247">        final List&lt;Object&gt; urls = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L248">        urls.add(new URL(url1));</span>
+<span class="fc" id="L249">        urls.add(new URL(url2));</span>
+<span class="fc" id="L250">        conf.addProperty(&quot;url.list6&quot;, urls);</span>
+<span class="fc" id="L251">        conf.addProperty(&quot;url.list.interpolated&quot;, &quot;${url.string},&quot; + url2);</span>
+
+        // Locales
+<span class="fc" id="L254">        conf.addProperty(&quot;locale.string&quot;, &quot;fr&quot;);</span>
+<span class="fc" id="L255">        conf.addProperty(&quot;locale.string.interpolated&quot;, &quot;${locale.string}&quot;);</span>
+<span class="fc" id="L256">        conf.addProperty(&quot;locale.object&quot;, Locale.FRENCH);</span>
+<span class="fc" id="L257">        conf.addProperty(&quot;locale.list1&quot;, &quot;fr&quot;);</span>
+<span class="fc" id="L258">        conf.addProperty(&quot;locale.list1&quot;, &quot;de&quot;);</span>
+<span class="fc" id="L259">        conf.addProperty(&quot;locale.list2&quot;, &quot;fr, de&quot;);</span>
+<span class="fc" id="L260">        conf.addProperty(&quot;locale.list3&quot;, Locale.FRENCH);</span>
+<span class="fc" id="L261">        conf.addProperty(&quot;locale.list3&quot;, Locale.GERMAN);</span>
+<span class="fc" id="L262">        conf.addPropertyDirect(&quot;locale.list4&quot;, new Locale[] { Locale.FRENCH, Locale.GERMAN });</span>
+<span class="fc" id="L263">        final List&lt;Object&gt; locales = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L264">        locales.add(Locale.FRENCH);</span>
+<span class="fc" id="L265">        locales.add(Locale.GERMAN);</span>
+<span class="fc" id="L266">        conf.addProperty(&quot;locale.list6&quot;, locales);</span>
+<span class="fc" id="L267">        conf.addProperty(&quot;locale.list.interpolated&quot;, &quot;${locale.string},de&quot;);</span>
+
+        // Colors
+<span class="fc" id="L270">        final String color1 = &quot;FF0000&quot;;</span>
+<span class="fc" id="L271">        final String color2 = &quot;0000FF&quot;;</span>
+<span class="fc" id="L272">        conf.addProperty(&quot;color.string&quot;, color1);</span>
+<span class="fc" id="L273">        conf.addProperty(&quot;color.string.interpolated&quot;, &quot;${color.string}&quot;);</span>
+<span class="fc" id="L274">        conf.addProperty(&quot;color.object&quot;, Color.red);</span>
+<span class="fc" id="L275">        conf.addProperty(&quot;color.list1&quot;, color1);</span>
+<span class="fc" id="L276">        conf.addProperty(&quot;color.list1&quot;, color2);</span>
+<span class="fc" id="L277">        conf.addProperty(&quot;color.list2&quot;, color1 + &quot;, &quot; + color2);</span>
+<span class="fc" id="L278">        conf.addProperty(&quot;color.list3&quot;, Color.red);</span>
+<span class="fc" id="L279">        conf.addProperty(&quot;color.list3&quot;, Color.blue);</span>
+<span class="fc" id="L280">        conf.addPropertyDirect(&quot;color.list4&quot;, new Color[] { Color.red, Color.blue });</span>
+<span class="fc" id="L281">        final List&lt;Object&gt; colors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L282">        colors.add(Color.red);</span>
+<span class="fc" id="L283">        colors.add(Color.blue);</span>
+<span class="fc" id="L284">        conf.addProperty(&quot;color.list6&quot;, colors);</span>
+<span class="fc" id="L285">        conf.addProperty(&quot;color.list.interpolated&quot;, &quot;${color.string},&quot; + color2);</span>
+
+        // Dates &amp; Calendars
+<span class="fc" id="L288">        final String pattern = DATE_PATTERN;</span>
+<span class="fc" id="L289">        final DateFormat format = new SimpleDateFormat(pattern);</span>
+<span class="fc" id="L290">        conf.setProperty(DataConfiguration.DATE_FORMAT_KEY, pattern);</span>
+
+<span class="fc" id="L292">        final Date date1 = format.parse(&quot;2004-01-01&quot;);</span>
+<span class="fc" id="L293">        final Date date2 = format.parse(&quot;2004-12-31&quot;);</span>
+<span class="fc" id="L294">        final Calendar calendar1 = Calendar.getInstance();</span>
+<span class="fc" id="L295">        calendar1.setTime(date1);</span>
+<span class="fc" id="L296">        final Calendar calendar2 = Calendar.getInstance();</span>
+<span class="fc" id="L297">        calendar2.setTime(date2);</span>
+
+<span class="fc" id="L299">        conf.addProperty(&quot;date.string&quot;, &quot;2004-01-01&quot;);</span>
+<span class="fc" id="L300">        conf.addProperty(&quot;date.string.interpolated&quot;, &quot;${date.string}&quot;);</span>
+<span class="fc" id="L301">        conf.addProperty(&quot;date.object&quot;, date1);</span>
+<span class="fc" id="L302">        conf.addProperty(&quot;date.list1&quot;, &quot;2004-01-01&quot;);</span>
+<span class="fc" id="L303">        conf.addProperty(&quot;date.list1&quot;, &quot;2004-12-31&quot;);</span>
+<span class="fc" id="L304">        conf.addProperty(&quot;date.list2&quot;, &quot;2004-01-01, 2004-12-31&quot;);</span>
+<span class="fc" id="L305">        conf.addProperty(&quot;date.list3&quot;, date1);</span>
+<span class="fc" id="L306">        conf.addProperty(&quot;date.list3&quot;, date2);</span>
+<span class="fc" id="L307">        conf.addPropertyDirect(&quot;date.list4&quot;, new Date[] { date1, date2 });</span>
+<span class="fc" id="L308">        conf.addPropertyDirect(&quot;date.list5&quot;, new Calendar[] { calendar1, calendar2 });</span>
+<span class="fc" id="L309">        final List&lt;Object&gt; dates = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L310">        dates.add(date1);</span>
+<span class="fc" id="L311">        dates.add(date2);</span>
+<span class="fc" id="L312">        conf.addProperty(&quot;date.list6&quot;, dates);</span>
+<span class="fc" id="L313">        conf.addProperty(&quot;date.list.interpolated&quot;, &quot;${date.string},2004-12-31&quot;);</span>
+<span class="fc" id="L314">        conf.addPropertyDirect(&quot;date.list7&quot;, new String[] { &quot;2004-01-01&quot;, &quot;2004-12-31&quot; });</span>
+
+<span class="fc" id="L316">        conf.addProperty(&quot;calendar.string&quot;, &quot;2004-01-01&quot;);</span>
+<span class="fc" id="L317">        conf.addProperty(&quot;calendar.string.interpolated&quot;, &quot;${calendar.string}&quot;);</span>
+<span class="fc" id="L318">        conf.addProperty(&quot;calendar.object&quot;, calendar1);</span>
+<span class="fc" id="L319">        conf.addProperty(&quot;calendar.list1&quot;, &quot;2004-01-01&quot;);</span>
+<span class="fc" id="L320">        conf.addProperty(&quot;calendar.list1&quot;, &quot;2004-12-31&quot;);</span>
+<span class="fc" id="L321">        conf.addProperty(&quot;calendar.list2&quot;, &quot;2004-01-01, 2004-12-31&quot;);</span>
+<span class="fc" id="L322">        conf.addProperty(&quot;calendar.list3&quot;, calendar1);</span>
+<span class="fc" id="L323">        conf.addProperty(&quot;calendar.list3&quot;, calendar2);</span>
+<span class="fc" id="L324">        conf.addPropertyDirect(&quot;calendar.list4&quot;, new Calendar[] { calendar1, calendar2 });</span>
+<span class="fc" id="L325">        conf.addPropertyDirect(&quot;calendar.list5&quot;, new Date[] { date1, date2 });</span>
+<span class="fc" id="L326">        final List&lt;Object&gt; calendars = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L327">        calendars.add(date1);</span>
+<span class="fc" id="L328">        calendars.add(date2);</span>
+<span class="fc" id="L329">        conf.addProperty(&quot;calendar.list6&quot;, calendars);</span>
+<span class="fc" id="L330">        conf.addProperty(&quot;calendar.list.interpolated&quot;, &quot;${calendar.string},2004-12-31&quot;);</span>
+<span class="fc" id="L331">        conf.addPropertyDirect(&quot;calendar.list7&quot;, new String[] { &quot;2004-01-01&quot;, &quot;2004-12-31&quot; });</span>
+
+        // host address
+<span class="fc" id="L334">        conf.addProperty(&quot;ip.string&quot;, &quot;127.0.0.1&quot;);</span>
+<span class="fc" id="L335">        conf.addProperty(&quot;ip.string.interpolated&quot;, &quot;${ip.string}&quot;);</span>
+<span class="fc" id="L336">        conf.addProperty(&quot;ip.object&quot;, InetAddress.getByName(&quot;127.0.0.1&quot;));</span>
+
+        // email address
+<span class="fc" id="L339">        conf.addProperty(&quot;email.string&quot;, &quot;ebourg@apache.org&quot;);</span>
+<span class="fc" id="L340">        conf.addProperty(&quot;email.string.interpolated&quot;, &quot;${email.string}&quot;);</span>
+<span class="fc" id="L341">        conf.addProperty(&quot;email.object&quot;, createInternetAddress(&quot;ebourg@apache.org&quot;));</span>
+<span class="fc" id="L342">    }</span>
+
+    @Test
+    public void testGetConfiguration()
+    {
+<span class="fc" id="L347">        final Configuration baseconf = new BaseConfiguration();</span>
+<span class="fc" id="L348">        final DataConfiguration conf = new DataConfiguration(baseconf);</span>
+
+<span class="fc" id="L350">        assertEquals(&quot;base configuration&quot;, baseconf, conf.getConfiguration());</span>
+<span class="fc" id="L351">    }</span>
+
+    @Test
+    public void testIsEmpty()
+    {
+<span class="fc" id="L356">        final Configuration baseconf = new BaseConfiguration();</span>
+<span class="fc" id="L357">        final DataConfiguration conf = new DataConfiguration(baseconf);</span>
+
+<span class="fc" id="L359">        assertTrue(&quot;not empty&quot;, conf.isEmpty());</span>
+
+<span class="fc" id="L361">        baseconf.setProperty(&quot;foo&quot;, &quot;bar&quot;);</span>
+
+<span class="fc" id="L363">        assertFalse(&quot;empty&quot;, conf.isEmpty());</span>
+<span class="fc" id="L364">    }</span>
+
+    @Test
+    public void testContainsKey()
+    {
+<span class="fc" id="L369">        final Configuration baseconf = new BaseConfiguration();</span>
+<span class="fc" id="L370">        final DataConfiguration conf = new DataConfiguration(baseconf);</span>
+
+<span class="fc" id="L372">        assertFalse(conf.containsKey(&quot;foo&quot;));</span>
+
+<span class="fc" id="L374">        baseconf.setProperty(&quot;foo&quot;, &quot;bar&quot;);</span>
+
+<span class="fc" id="L376">        assertTrue(conf.containsKey(&quot;foo&quot;));</span>
+<span class="fc" id="L377">    }</span>
+
+    @Test
+    public void testGetKeys()
+    {
+<span class="fc" id="L382">        final Configuration baseconf = new BaseConfiguration();</span>
+<span class="fc" id="L383">        final DataConfiguration conf = new DataConfiguration(baseconf);</span>
+
+<span class="fc" id="L385">        baseconf.setProperty(&quot;foo&quot;, &quot;bar&quot;);</span>
+
+<span class="fc" id="L387">        final Iterator&lt;String&gt; it = conf.getKeys();</span>
+<span class="fc" id="L388">        assertTrue(&quot;the iterator is empty&quot;, it.hasNext());</span>
+<span class="fc" id="L389">        assertEquals(&quot;unique key&quot;, &quot;foo&quot;, it.next());</span>
+<span class="fc" id="L390">        assertFalse(&quot;the iterator is not exhausted&quot;, it.hasNext());</span>
+<span class="fc" id="L391">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetInvalidType()
+    {
+<span class="nc" id="L396">        conf.get(Boolean.class, &quot;url.object&quot;, null);</span>
+<span class="nc" id="L397">    }</span>
+
+    @Test
+    public void testGetUnknown()
+    {
+<span class="fc" id="L402">        assertNull(&quot;non null object for a missing key&quot;, conf.get(Object.class, &quot;unknownkey&quot;));</span>
+<span class="fc" id="L403">    }</span>
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetUnknownException()
+    {
+<span class="fc" id="L408">        conf.setThrowExceptionOnMissing(true);</span>
+<span class="nc" id="L409">        conf.get(Object.class, &quot;unknownkey&quot;);</span>
+<span class="nc" id="L410">    }</span>
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetArrayInvalidDefaultType()
+    {
+<span class="nc" id="L415">        conf.getArray(Boolean.class, &quot;unknownkey&quot;, new URL[] {});</span>
+<span class="nc" id="L416">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetPrimitiveArrayInvalidType()
+    {
+<span class="nc" id="L421">        conf.getArray(Boolean.TYPE, &quot;calendar.list4&quot;);</span>
+<span class="nc" id="L422">    }</span>
+
+    @Test
+    public void testGetBooleanArray()
+    {
+        // missing list
+<span class="fc" id="L428">        final boolean[] defaultValue = new boolean[] { false, true };</span>
+<span class="fc" id="L429">        ArrayAssert.assertEquals(defaultValue, conf.getBooleanArray(&quot;boolean.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L431">        final boolean[] expected = new boolean[] { true, false };</span>
+
+        // list of strings
+<span class="fc" id="L434">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L437">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list2&quot;));</span>
+
+        // list of Boolean objects
+<span class="fc" id="L440">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list3&quot;));</span>
+
+        // array of Boolean objects
+<span class="fc" id="L443">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list4&quot;));</span>
+
+        // array of boolean primitives
+<span class="fc" id="L446">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list5&quot;));</span>
+
+        // list of Boolean objects
+<span class="fc" id="L449">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L452">        ArrayAssert.assertEquals(expected, conf.getBooleanArray(&quot;boolean.list.interpolated&quot;));</span>
+
+        // single boolean values
+<span class="fc" id="L455">        ArrayAssert.assertEquals(new boolean[] { true }, conf.getBooleanArray(&quot;boolean.string&quot;));</span>
+<span class="fc" id="L456">        ArrayAssert.assertEquals(new boolean[] { true }, conf.getBooleanArray(&quot;boolean.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L459">        ArrayAssert.assertEquals(new boolean[] { }, conf.getBooleanArray(&quot;empty&quot;));</span>
+<span class="fc" id="L460">    }</span>
+
+    @Test
+    public void testGetBooleanList()
+    {
+        // missing list
+<span class="fc" id="L466">        ListAssert.assertEquals(null, conf.getBooleanList(&quot;boolean.list&quot;, null));</span>
+
+<span class="fc" id="L468">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L469">        expected.add(Boolean.TRUE);</span>
+<span class="fc" id="L470">        expected.add(Boolean.FALSE);</span>
+
+        // list of strings
+<span class="fc" id="L473">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L476">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list2&quot;));</span>
+
+        // list of Boolean objects
+<span class="fc" id="L479">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list3&quot;));</span>
+
+        // array of Boolean objects
+<span class="fc" id="L482">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list4&quot;));</span>
+
+        // array of boolean primitives
+<span class="fc" id="L485">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list5&quot;));</span>
+
+        // list of Boolean objects
+<span class="fc" id="L488">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L491">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.list.interpolated&quot;));</span>
+
+        // single boolean values
+<span class="fc" id="L494">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L495">        expected.add(Boolean.TRUE);</span>
+<span class="fc" id="L496">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.string&quot;));</span>
+<span class="fc" id="L497">        ListAssert.assertEquals(expected, conf.getBooleanList(&quot;boolean.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L500">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getBooleanList(&quot;empty&quot;));</span>
+<span class="fc" id="L501">    }</span>
+
+    @Test
+    public void testGetByteArray()
+    {
+        // missing list
+<span class="fc" id="L507">        final byte[] defaultValue = new byte[] { 1, 2};</span>
+<span class="fc" id="L508">        ArrayAssert.assertEquals(defaultValue, conf.getByteArray(&quot;byte.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L510">        final byte[] expected = new byte[] { 1, 2 };</span>
+
+        // list of strings
+<span class="fc" id="L513">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L516">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list2&quot;));</span>
+
+        // list of Byte objects
+<span class="fc" id="L519">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list3&quot;));</span>
+
+        // array of Byte objects
+<span class="fc" id="L522">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list4&quot;));</span>
+
+        // array of byte primitives
+<span class="fc" id="L525">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list5&quot;));</span>
+
+        // list of Byte objects
+<span class="fc" id="L528">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L531">        ArrayAssert.assertEquals(expected, conf.getByteArray(&quot;byte.list.interpolated&quot;));</span>
+
+        // single byte values
+<span class="fc" id="L534">        ArrayAssert.assertEquals(new byte[] { 1 }, conf.getByteArray(&quot;byte.string&quot;));</span>
+<span class="fc" id="L535">        ArrayAssert.assertEquals(new byte[] { 1 }, conf.getByteArray(&quot;byte.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L538">        ArrayAssert.assertEquals(new byte[] { }, conf.getByteArray(&quot;empty&quot;));</span>
+<span class="fc" id="L539">    }</span>
+
+    @Test
+    public void testGetByteList()
+    {
+        // missing list
+<span class="fc" id="L545">        ListAssert.assertEquals(null, conf.getByteList(&quot;byte.list&quot;, null));</span>
+
+<span class="fc" id="L547">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L548">        expected.add(new Byte(&quot;1&quot;));</span>
+<span class="fc" id="L549">        expected.add(new Byte(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L552">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L555">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list2&quot;));</span>
+
+        // list of Byte objects
+<span class="fc" id="L558">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list3&quot;));</span>
+
+        // array of Byte objects
+<span class="fc" id="L561">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list4&quot;));</span>
+
+        // array of byte primitives
+<span class="fc" id="L564">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list5&quot;));</span>
+
+        // list of Byte objects
+<span class="fc" id="L567">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L570">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.list.interpolated&quot;));</span>
+
+        // single byte values
+<span class="fc" id="L573">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L574">        expected.add(new Byte(&quot;1&quot;));</span>
+<span class="fc" id="L575">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.string&quot;));</span>
+<span class="fc" id="L576">        ListAssert.assertEquals(expected, conf.getByteList(&quot;byte.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L579">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getByteList(&quot;empty&quot;));</span>
+<span class="fc" id="L580">    }</span>
+
+    @Test
+    public void testGetShortArray()
+    {
+        // missing list
+<span class="fc" id="L586">        final short[] defaultValue = new short[] { 2, 1};</span>
+<span class="fc" id="L587">        ArrayAssert.assertEquals(defaultValue, conf.getShortArray(&quot;short.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L589">        final short[] expected = new short[] { 1, 2 };</span>
+
+        // list of strings
+<span class="fc" id="L592">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L595">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list2&quot;));</span>
+
+        // list of Byte objects
+<span class="fc" id="L598">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list3&quot;));</span>
+
+        // array of Byte objects
+<span class="fc" id="L601">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list4&quot;));</span>
+
+        // array of byte primitives
+<span class="fc" id="L604">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list5&quot;));</span>
+
+        // list of Byte objects
+<span class="fc" id="L607">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L610">        ArrayAssert.assertEquals(expected, conf.getShortArray(&quot;short.list.interpolated&quot;));</span>
+
+        // single byte values
+<span class="fc" id="L613">        ArrayAssert.assertEquals(new short[] { 1 }, conf.getShortArray(&quot;short.string&quot;));</span>
+<span class="fc" id="L614">        ArrayAssert.assertEquals(new short[] { 1 }, conf.getShortArray(&quot;short.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L617">        ArrayAssert.assertEquals(new short[] { }, conf.getShortArray(&quot;empty&quot;));</span>
+<span class="fc" id="L618">    }</span>
+
+    @Test
+    public void testGetShortList()
+    {
+        // missing list
+<span class="fc" id="L624">        ListAssert.assertEquals(null, conf.getShortList(&quot;short.list&quot;, null));</span>
+
+<span class="fc" id="L626">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L627">        expected.add(new Short(&quot;1&quot;));</span>
+<span class="fc" id="L628">        expected.add(new Short(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L631">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L634">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list2&quot;));</span>
+
+        // list of Short objects
+<span class="fc" id="L637">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list3&quot;));</span>
+
+        // array of Short objects
+<span class="fc" id="L640">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list4&quot;));</span>
+
+        // array of short primitives
+<span class="fc" id="L643">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list5&quot;));</span>
+
+        // list of Short objects
+<span class="fc" id="L646">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L649">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.list.interpolated&quot;));</span>
+
+        // single short values
+<span class="fc" id="L652">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L653">        expected.add(new Short(&quot;1&quot;));</span>
+<span class="fc" id="L654">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.string&quot;));</span>
+<span class="fc" id="L655">        ListAssert.assertEquals(expected, conf.getShortList(&quot;short.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L658">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getShortList(&quot;empty&quot;));</span>
+<span class="fc" id="L659">    }</span>
+
+    @Test
+    public void testGetIntegerArray()
+    {
+        // missing list
+<span class="fc" id="L665">        final int[] defaultValue = new int[] { 2, 1};</span>
+<span class="fc" id="L666">        ArrayAssert.assertEquals(defaultValue, conf.getIntArray(&quot;integer.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L668">        final int[] expected = new int[] { 1, 2 };</span>
+
+        // list of strings
+<span class="fc" id="L671">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L674">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list2&quot;));</span>
+
+        // list of Integer objects
+<span class="fc" id="L677">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list3&quot;));</span>
+
+        // array of Integer objects
+<span class="fc" id="L680">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list4&quot;));</span>
+
+        // array of int primitives
+<span class="fc" id="L683">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list5&quot;));</span>
+
+        // list of Integer objects
+<span class="fc" id="L686">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L689">        ArrayAssert.assertEquals(expected, conf.getIntArray(&quot;integer.list.interpolated&quot;));</span>
+
+        // single int values
+<span class="fc" id="L692">        ArrayAssert.assertEquals(new int[] { 1 }, conf.getIntArray(&quot;integer.string&quot;));</span>
+<span class="fc" id="L693">        ArrayAssert.assertEquals(new int[] { 1 }, conf.getIntArray(&quot;integer.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L696">        ArrayAssert.assertEquals(new int[] { }, conf.getIntArray(&quot;empty&quot;));</span>
+<span class="fc" id="L697">    }</span>
+
+    @Test
+    public void testGetIntegerList()
+    {
+        // missing list
+<span class="fc" id="L703">        ListAssert.assertEquals(null, conf.getIntegerList(&quot;integer.list&quot;, null));</span>
+
+<span class="fc" id="L705">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L706">        expected.add(new Integer(&quot;1&quot;));</span>
+<span class="fc" id="L707">        expected.add(new Integer(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L710">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L713">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list2&quot;));</span>
+
+        // list of Integer objects
+<span class="fc" id="L716">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list3&quot;));</span>
+
+        // array of Integer objects
+<span class="fc" id="L719">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list4&quot;));</span>
+
+        // array of int primitives
+<span class="fc" id="L722">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list5&quot;));</span>
+
+        // list of Integer objects
+<span class="fc" id="L725">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L728">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.list.interpolated&quot;));</span>
+
+        // single int values
+<span class="fc" id="L731">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L732">        expected.add(new Integer(&quot;1&quot;));</span>
+<span class="fc" id="L733">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.string&quot;));</span>
+<span class="fc" id="L734">        ListAssert.assertEquals(expected, conf.getIntegerList(&quot;integer.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L737">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getIntegerList(&quot;empty&quot;));</span>
+<span class="fc" id="L738">    }</span>
+
+    @Test
+    public void testGetLongArray()
+    {
+        // missing list
+<span class="fc" id="L744">        final long[] defaultValue = new long[] { 2, 1};</span>
+<span class="fc" id="L745">        ArrayAssert.assertEquals(defaultValue, conf.getLongArray(&quot;long.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L747">        final long[] expected = new long[] { 1, 2 };</span>
+
+        // list of strings
+<span class="fc" id="L750">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L753">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list2&quot;));</span>
+
+        // list of Long objects
+<span class="fc" id="L756">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list3&quot;));</span>
+
+        // array of Long objects
+<span class="fc" id="L759">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list4&quot;));</span>
+
+        // array of long primitives
+<span class="fc" id="L762">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list5&quot;));</span>
+
+        // list of Long objects
+<span class="fc" id="L765">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L768">        ArrayAssert.assertEquals(expected, conf.getLongArray(&quot;long.list.interpolated&quot;));</span>
+
+        // single long values
+<span class="fc" id="L771">        ArrayAssert.assertEquals(new long[] { 1 }, conf.getLongArray(&quot;long.string&quot;));</span>
+<span class="fc" id="L772">        ArrayAssert.assertEquals(new long[] { 1 }, conf.getLongArray(&quot;long.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L775">        ArrayAssert.assertEquals(new long[] { }, conf.getLongArray(&quot;empty&quot;));</span>
+<span class="fc" id="L776">    }</span>
+
+    @Test
+    public void testGetLongList()
+    {
+        // missing list
+<span class="fc" id="L782">        ListAssert.assertEquals(null, conf.getLongList(&quot;long.list&quot;, null));</span>
+
+<span class="fc" id="L784">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L785">        expected.add(new Long(&quot;1&quot;));</span>
+<span class="fc" id="L786">        expected.add(new Long(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L789">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L792">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list2&quot;));</span>
+
+        // list of Long objects
+<span class="fc" id="L795">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list3&quot;));</span>
+
+        // array of Long objects
+<span class="fc" id="L798">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list4&quot;));</span>
+
+        // array of long primitives
+<span class="fc" id="L801">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list5&quot;));</span>
+
+        // list of Long objects
+<span class="fc" id="L804">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L807">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.list.interpolated&quot;));</span>
+
+        // single long values
+<span class="fc" id="L810">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L811">        expected.add(new Long(&quot;1&quot;));</span>
+<span class="fc" id="L812">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.string&quot;));</span>
+<span class="fc" id="L813">        ListAssert.assertEquals(expected, conf.getLongList(&quot;long.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L816">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getLongList(&quot;empty&quot;));</span>
+<span class="fc" id="L817">    }</span>
+
+    @Test
+    public void testGetFloatArray()
+    {
+        // missing list
+<span class="fc" id="L823">        final float[] defaultValue = new float[] { 2, 1};</span>
+<span class="fc" id="L824">        ArrayAssert.assertEquals(defaultValue, conf.getFloatArray(&quot;float.list&quot;, defaultValue), 0);</span>
+
+<span class="fc" id="L826">        final float[] expected = new float[] { 1, 2 };</span>
+
+        // list of strings
+<span class="fc" id="L829">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list1&quot;), 0);</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L832">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list2&quot;), 0);</span>
+
+        // list of Float objects
+<span class="fc" id="L835">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list3&quot;), 0);</span>
+
+        // array of Float objects
+<span class="fc" id="L838">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list4&quot;), 0);</span>
+
+        // array of float primitives
+<span class="fc" id="L841">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list5&quot;), 0);</span>
+
+        // list of Float objects
+<span class="fc" id="L844">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list6&quot;), 0);</span>
+
+        // list of interpolated values
+<span class="fc" id="L847">        ArrayAssert.assertEquals(expected, conf.getFloatArray(&quot;float.list.interpolated&quot;), 0);</span>
+
+        // single float values
+<span class="fc" id="L850">        ArrayAssert.assertEquals(new float[] { 1 }, conf.getFloatArray(&quot;float.string&quot;), 0);</span>
+<span class="fc" id="L851">        ArrayAssert.assertEquals(new float[] { 1 }, conf.getFloatArray(&quot;float.object&quot;), 0);</span>
+
+        // empty array
+<span class="fc" id="L854">        ArrayAssert.assertEquals(new float[] { }, conf.getFloatArray(&quot;empty&quot;), 0);</span>
+<span class="fc" id="L855">    }</span>
+
+    @Test
+    public void testGetFloatList()
+    {
+        // missing list
+<span class="fc" id="L861">        ListAssert.assertEquals(null, conf.getFloatList(&quot;float.list&quot;, null));</span>
+
+<span class="fc" id="L863">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L864">        expected.add(new Float(&quot;1&quot;));</span>
+<span class="fc" id="L865">        expected.add(new Float(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L868">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L871">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list2&quot;));</span>
+
+        // list of Float objects
+<span class="fc" id="L874">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list3&quot;));</span>
+
+        // array of Float objects
+<span class="fc" id="L877">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list4&quot;));</span>
+
+        // array of float primitives
+<span class="fc" id="L880">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list5&quot;));</span>
+
+        // list of Float objects
+<span class="fc" id="L883">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L886">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.list.interpolated&quot;));</span>
+
+        // single float values
+<span class="fc" id="L889">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L890">        expected.add(new Float(&quot;1&quot;));</span>
+<span class="fc" id="L891">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.string&quot;));</span>
+<span class="fc" id="L892">        ListAssert.assertEquals(expected, conf.getFloatList(&quot;float.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L895">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getFloatList(&quot;empty&quot;));</span>
+<span class="fc" id="L896">    }</span>
+
+    @Test
+    public void testGetDoubleArray()
+    {
+        // missing list
+<span class="fc" id="L902">        final double[] defaultValue = new double[] { 2, 1 };</span>
+<span class="fc" id="L903">        ArrayAssert.assertEquals(defaultValue, conf.getDoubleArray(&quot;double.list&quot;, defaultValue), 0);</span>
+
+<span class="fc" id="L905">        final double[] expected = new double[] { 1, 2 };</span>
+
+        // list of strings
+<span class="fc" id="L908">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list1&quot;), 0);</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L911">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list2&quot;), 0);</span>
+
+        // list of Double objects
+<span class="fc" id="L914">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list3&quot;), 0);</span>
+
+        // array of Double objects
+<span class="fc" id="L917">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list4&quot;), 0);</span>
+
+        // array of double primitives
+<span class="fc" id="L920">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list5&quot;), 0);</span>
+
+        // list of Double objects
+<span class="fc" id="L923">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list6&quot;), 0);</span>
+
+        // list of interpolated values
+<span class="fc" id="L926">        ArrayAssert.assertEquals(expected, conf.getDoubleArray(&quot;double.list.interpolated&quot;), 0);</span>
+
+        // single double values
+<span class="fc" id="L929">        ArrayAssert.assertEquals(new double[] { 1 }, conf.getDoubleArray(&quot;double.string&quot;), 0);</span>
+<span class="fc" id="L930">        ArrayAssert.assertEquals(new double[] { 1 }, conf.getDoubleArray(&quot;double.object&quot;), 0);</span>
+
+        // empty array
+<span class="fc" id="L933">        ArrayAssert.assertEquals(new double[] { }, conf.getDoubleArray(&quot;empty&quot;), 0);</span>
+<span class="fc" id="L934">    }</span>
+
+    @Test
+    public void testGetDoubleList()
+    {
+        // missing list
+<span class="fc" id="L940">        ListAssert.assertEquals(null, conf.getDoubleList(&quot;double.list&quot;, null));</span>
+
+<span class="fc" id="L942">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L943">        expected.add(new Double(&quot;1&quot;));</span>
+<span class="fc" id="L944">        expected.add(new Double(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L947">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L950">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list2&quot;));</span>
+
+        // list of Double objects
+<span class="fc" id="L953">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list3&quot;));</span>
+
+        // array of Double objects
+<span class="fc" id="L956">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list4&quot;));</span>
+
+        // array of double primitives
+<span class="fc" id="L959">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list5&quot;));</span>
+
+        // list of Double objects
+<span class="fc" id="L962">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L965">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.list.interpolated&quot;));</span>
+
+        // single double values
+<span class="fc" id="L968">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L969">        expected.add(new Double(&quot;1&quot;));</span>
+<span class="fc" id="L970">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.string&quot;));</span>
+<span class="fc" id="L971">        ListAssert.assertEquals(expected, conf.getDoubleList(&quot;double.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L974">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getDoubleList(&quot;empty&quot;));</span>
+<span class="fc" id="L975">    }</span>
+
+    @Test
+    public void testGetBigIntegerArray()
+    {
+        // missing list
+<span class="fc" id="L981">        final BigInteger[] defaultValue = new BigInteger[] { new BigInteger(&quot;2&quot;), new BigInteger(&quot;1&quot;) };</span>
+<span class="fc" id="L982">        ArrayAssert.assertEquals(defaultValue, conf.getBigIntegerArray(&quot;biginteger.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L984">        final BigInteger[] expected = new BigInteger[] { new BigInteger(&quot;1&quot;), new BigInteger(&quot;2&quot;) };</span>
+
+        // list of strings
+<span class="fc" id="L987">        ArrayAssert.assertEquals(expected, conf.getBigIntegerArray(&quot;biginteger.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L990">        ArrayAssert.assertEquals(expected, conf.getBigIntegerArray(&quot;biginteger.list2&quot;));</span>
+
+        // list of BigInteger objects
+<span class="fc" id="L993">        ArrayAssert.assertEquals(expected, conf.getBigIntegerArray(&quot;biginteger.list3&quot;));</span>
+
+        // array of BigInteger objects
+<span class="fc" id="L996">        ArrayAssert.assertEquals(expected, conf.getBigIntegerArray(&quot;biginteger.list4&quot;));</span>
+
+        // list of BigInteger objects
+<span class="fc" id="L999">        ArrayAssert.assertEquals(expected, conf.getBigIntegerArray(&quot;biginteger.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1002">        ArrayAssert.assertEquals(expected, conf.getBigIntegerArray(&quot;biginteger.list.interpolated&quot;));</span>
+
+        // single BigInteger values
+<span class="fc" id="L1005">        ArrayAssert.assertEquals(new BigInteger[] { new BigInteger(&quot;1&quot;) }, conf.getBigIntegerArray(&quot;biginteger.string&quot;));</span>
+<span class="fc" id="L1006">        ArrayAssert.assertEquals(new BigInteger[] { new BigInteger(&quot;1&quot;) }, conf.getBigIntegerArray(&quot;biginteger.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1009">        ArrayAssert.assertEquals(new BigInteger[] { }, conf.getBigIntegerArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1010">    }</span>
+
+    @Test
+    public void testGetBigIntegerList()
+    {
+        // missing list
+<span class="fc" id="L1016">        final List&lt;BigInteger&gt; bigIntegerList = conf.getBigIntegerList(&quot;biginteger.list&quot;, null);</span>
+<span class="fc" id="L1017">        ListAssert.assertEquals(null, bigIntegerList);</span>
+
+<span class="fc" id="L1019">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1020">        expected.add(new BigInteger(&quot;1&quot;));</span>
+<span class="fc" id="L1021">        expected.add(new BigInteger(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L1024">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1027">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.list2&quot;));</span>
+
+        // list of BigInteger objects
+<span class="fc" id="L1030">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.list3&quot;));</span>
+
+        // array of BigInteger objects
+<span class="fc" id="L1033">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.list4&quot;));</span>
+
+        // list of BigInteger objects
+<span class="fc" id="L1036">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1039">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.list.interpolated&quot;));</span>
+
+        // single BigInteger values
+<span class="fc" id="L1042">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1043">        expected.add(new BigInteger(&quot;1&quot;));</span>
+<span class="fc" id="L1044">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.string&quot;));</span>
+<span class="fc" id="L1045">        ListAssert.assertEquals(expected, conf.getBigIntegerList(&quot;biginteger.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1048">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getBigIntegerList(&quot;empty&quot;));</span>
+<span class="fc" id="L1049">    }</span>
+
+    @Test
+    public void testGetBigDecimalArray()
+    {
+        // missing list
+<span class="fc" id="L1055">        final BigDecimal[] defaultValue = new BigDecimal[] { new BigDecimal(&quot;2&quot;), new BigDecimal(&quot;1&quot;) };</span>
+<span class="fc" id="L1056">        ArrayAssert.assertEquals(defaultValue, conf.getBigDecimalArray(&quot;bigdecimal.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1058">        final BigDecimal[] expected = new BigDecimal[] { new BigDecimal(&quot;1&quot;), new BigDecimal(&quot;2&quot;) };</span>
+
+        // list of strings
+<span class="fc" id="L1061">        ArrayAssert.assertEquals(expected, conf.getBigDecimalArray(&quot;bigdecimal.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1064">        ArrayAssert.assertEquals(expected, conf.getBigDecimalArray(&quot;bigdecimal.list2&quot;));</span>
+
+        // list of BigDecimal objects
+<span class="fc" id="L1067">        ArrayAssert.assertEquals(expected, conf.getBigDecimalArray(&quot;bigdecimal.list3&quot;));</span>
+
+        // array of BigDecimal objects
+<span class="fc" id="L1070">        ArrayAssert.assertEquals(expected, conf.getBigDecimalArray(&quot;bigdecimal.list4&quot;));</span>
+
+        // list of BigDecimal objects
+<span class="fc" id="L1073">        ArrayAssert.assertEquals(expected, conf.getBigDecimalArray(&quot;bigdecimal.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1076">        ArrayAssert.assertEquals(expected, conf.getBigDecimalArray(&quot;bigdecimal.list.interpolated&quot;));</span>
+
+        // single BigDecimal values
+<span class="fc" id="L1079">        ArrayAssert.assertEquals(new BigDecimal[] { new BigDecimal(&quot;1&quot;) }, conf.getBigDecimalArray(&quot;bigdecimal.string&quot;));</span>
+<span class="fc" id="L1080">        ArrayAssert.assertEquals(new BigDecimal[] { new BigDecimal(&quot;1&quot;) }, conf.getBigDecimalArray(&quot;bigdecimal.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1083">        ArrayAssert.assertEquals(new BigDecimal[] { }, conf.getBigDecimalArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1084">    }</span>
+
+    @Test
+    public void testGetBigDecimalList()
+    {
+        // missing list
+<span class="fc" id="L1090">        ListAssert.assertEquals(null, conf.getBigDecimalList(&quot;bigdecimal.list&quot;, null));</span>
+
+<span class="fc" id="L1092">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1093">        expected.add(new BigDecimal(&quot;1&quot;));</span>
+<span class="fc" id="L1094">        expected.add(new BigDecimal(&quot;2&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L1097">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1100">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.list2&quot;));</span>
+
+        // list of BigDecimal objects
+<span class="fc" id="L1103">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.list3&quot;));</span>
+
+        // array of BigDecimal objects
+<span class="fc" id="L1106">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.list4&quot;));</span>
+
+        // list of BigDecimal objects
+<span class="fc" id="L1109">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1112">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.list.interpolated&quot;));</span>
+
+        // single BigDecimal values
+<span class="fc" id="L1115">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1116">        expected.add(new BigDecimal(&quot;1&quot;));</span>
+<span class="fc" id="L1117">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.string&quot;));</span>
+<span class="fc" id="L1118">        ListAssert.assertEquals(expected, conf.getBigDecimalList(&quot;bigdecimal.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1121">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getBigDecimalList(&quot;empty&quot;));</span>
+<span class="fc" id="L1122">    }</span>
+
+    @Test
+    public void testGetURI() throws Exception
+    {
+        // missing URI
+<span class="fc" id="L1128">        final URI defaultValue = new URI(&quot;http://www.google.com&quot;);</span>
+<span class="fc" id="L1129">        assertEquals(defaultValue, conf.getURI(&quot;url&quot;, defaultValue));</span>
+
+<span class="fc" id="L1131">        final URI expected = new URI(&quot;http://jakarta.apache.org&quot;);</span>
+
+        // URI string
+<span class="fc" id="L1134">        assertEquals(expected, conf.getURI(&quot;uri.string&quot;));</span>
+
+        // URI object
+<span class="fc" id="L1137">        assertEquals(expected, conf.getURI(&quot;uri.object&quot;));</span>
+
+        // interpolated value
+<span class="fc" id="L1140">        assertEquals(expected, conf.getURI(&quot;uri.string.interpolated&quot;));</span>
+<span class="fc" id="L1141">    }</span>
+
+    @Test
+    public void testGetURIArray() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1147">        final URI[] defaultValue = new URI[] { new URI(&quot;http://www.apache.org&quot;), new URI(&quot;http://jakarta.apache.org&quot;) };</span>
+<span class="fc" id="L1148">        ArrayAssert.assertEquals(defaultValue, conf.getURIArray(&quot;url.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1150">        final URI[] expected = new URI[] { new URI(&quot;http://jakarta.apache.org&quot;), new URI(&quot;http://www.apache.org&quot;) };</span>
+
+        // list of strings
+<span class="fc" id="L1153">        ArrayAssert.assertEquals(expected, conf.getURIArray(&quot;uri.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1156">        ArrayAssert.assertEquals(expected, conf.getURIArray(&quot;uri.list2&quot;));</span>
+
+        // list of URI objects
+<span class="fc" id="L1159">        ArrayAssert.assertEquals(expected, conf.getURIArray(&quot;uri.list3&quot;));</span>
+
+        // array of URI objects
+<span class="fc" id="L1162">        ArrayAssert.assertEquals(expected, conf.getURIArray(&quot;uri.list4&quot;));</span>
+
+        // list of URI objects
+<span class="fc" id="L1165">        ArrayAssert.assertEquals(expected, conf.getURIArray(&quot;uri.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1168">        ArrayAssert.assertEquals(expected, conf.getURIArray(&quot;uri.list.interpolated&quot;));</span>
+
+        // single URI values
+<span class="fc" id="L1171">        ArrayAssert.assertEquals(new URI[] { new URI(&quot;http://jakarta.apache.org&quot;) }, conf.getURIArray(&quot;uri.string&quot;));</span>
+<span class="fc" id="L1172">        ArrayAssert.assertEquals(new URI[] { new URI(&quot;http://jakarta.apache.org&quot;) }, conf.getURIArray(&quot;uri.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1175">        ArrayAssert.assertEquals(new URI[] { }, conf.getURIArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1176">    }</span>
+
+    @Test
+    public void testGetURIList() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1182">        ListAssert.assertEquals(null, conf.getURIList(&quot;uri.list&quot;, null));</span>
+
+<span class="fc" id="L1184">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1185">        expected.add(new URI(&quot;http://jakarta.apache.org&quot;));</span>
+<span class="fc" id="L1186">        expected.add(new URI(&quot;http://www.apache.org&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L1189">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1192">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.list2&quot;));</span>
+
+        // list of URI objects
+<span class="fc" id="L1195">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.list3&quot;));</span>
+
+        // array of URI objects
+<span class="fc" id="L1198">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.list4&quot;));</span>
+
+        // list of URI objects
+<span class="fc" id="L1201">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1204">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.list.interpolated&quot;));</span>
+
+        // single URI values
+<span class="fc" id="L1207">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1208">        expected.add(new URI(&quot;http://jakarta.apache.org&quot;));</span>
+<span class="fc" id="L1209">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.string&quot;));</span>
+<span class="fc" id="L1210">        ListAssert.assertEquals(expected, conf.getURIList(&quot;uri.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1213">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getURIList(&quot;empty&quot;));</span>
+<span class="fc" id="L1214">    }</span>
+
+    @Test
+    public void testGetURL() throws Exception
+    {
+        // missing URL
+<span class="fc" id="L1220">        final URL defaultValue = new URL(&quot;http://www.google.com&quot;);</span>
+<span class="fc" id="L1221">        assertEquals(defaultValue, conf.getURL(&quot;url&quot;, defaultValue));</span>
+
+<span class="fc" id="L1223">        final URL expected = new URL(&quot;http://jakarta.apache.org&quot;);</span>
+
+        // URL string
+<span class="fc" id="L1226">        assertEquals(expected, conf.getURL(&quot;url.string&quot;));</span>
+
+        // URL object
+<span class="fc" id="L1229">        assertEquals(expected, conf.getURL(&quot;url.object&quot;));</span>
+
+        // interpolated value
+<span class="fc" id="L1232">        assertEquals(expected, conf.getURL(&quot;url.string.interpolated&quot;));</span>
+<span class="fc" id="L1233">    }</span>
+
+    @Test
+    public void testGetURLArray() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1239">        final URL[] defaultValue = new URL[] { new URL(&quot;http://www.apache.org&quot;), new URL(&quot;http://jakarta.apache.org&quot;) };</span>
+<span class="fc" id="L1240">        ArrayAssert.assertEquals(defaultValue, conf.getURLArray(&quot;url.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1242">        final URL[] expected = new URL[] { new URL(&quot;http://jakarta.apache.org&quot;), new URL(&quot;http://www.apache.org&quot;) };</span>
+
+        // list of strings
+<span class="fc" id="L1245">        ArrayAssert.assertEquals(expected, conf.getURLArray(&quot;url.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1248">        ArrayAssert.assertEquals(expected, conf.getURLArray(&quot;url.list2&quot;));</span>
+
+        // list of URL objects
+<span class="fc" id="L1251">        ArrayAssert.assertEquals(expected, conf.getURLArray(&quot;url.list3&quot;));</span>
+
+        // array of URL objects
+<span class="fc" id="L1254">        ArrayAssert.assertEquals(expected, conf.getURLArray(&quot;url.list4&quot;));</span>
+
+        // list of URL objects
+<span class="fc" id="L1257">        ArrayAssert.assertEquals(expected, conf.getURLArray(&quot;url.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1260">        ArrayAssert.assertEquals(expected, conf.getURLArray(&quot;url.list.interpolated&quot;));</span>
+
+        // single URL values
+<span class="fc" id="L1263">        ArrayAssert.assertEquals(new URL[] { new URL(&quot;http://jakarta.apache.org&quot;) }, conf.getURLArray(&quot;url.string&quot;));</span>
+<span class="fc" id="L1264">        ArrayAssert.assertEquals(new URL[] { new URL(&quot;http://jakarta.apache.org&quot;) }, conf.getURLArray(&quot;url.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1267">        ArrayAssert.assertEquals(new URL[] { }, conf.getURLArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1268">    }</span>
+
+    @Test
+    public void testGetURLList() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1274">        ListAssert.assertEquals(null, conf.getURLList(&quot;url.list&quot;, null));</span>
+
+<span class="fc" id="L1276">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1277">        expected.add(new URL(&quot;http://jakarta.apache.org&quot;));</span>
+<span class="fc" id="L1278">        expected.add(new URL(&quot;http://www.apache.org&quot;));</span>
+
+        // list of strings
+<span class="fc" id="L1281">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1284">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.list2&quot;));</span>
+
+        // list of URL objects
+<span class="fc" id="L1287">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.list3&quot;));</span>
+
+        // array of URL objects
+<span class="fc" id="L1290">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.list4&quot;));</span>
+
+        // list of URL objects
+<span class="fc" id="L1293">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1296">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.list.interpolated&quot;));</span>
+
+        // single URL values
+<span class="fc" id="L1299">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1300">        expected.add(new URL(&quot;http://jakarta.apache.org&quot;));</span>
+<span class="fc" id="L1301">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.string&quot;));</span>
+<span class="fc" id="L1302">        ListAssert.assertEquals(expected, conf.getURLList(&quot;url.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1305">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getURLList(&quot;empty&quot;));</span>
+<span class="fc" id="L1306">    }</span>
+
+    @Test
+    public void testGetLocale()
+    {
+        // language
+<span class="fc" id="L1312">        conf.setProperty(&quot;locale&quot;, &quot;fr&quot;);</span>
+<span class="fc" id="L1313">        assertEquals(&quot;language&quot;, new Locale(&quot;fr&quot;, &quot;&quot;), conf.getLocale(&quot;locale&quot;));</span>
+
+        // language + variant
+<span class="fc" id="L1316">        conf.setProperty(&quot;locale&quot;, &quot;fr__POSIX&quot;);</span>
+<span class="fc" id="L1317">        assertEquals(&quot;language + variant&quot;, new Locale(&quot;fr&quot;, &quot;&quot;, &quot;POSIX&quot;), conf.getLocale(&quot;locale&quot;));</span>
+
+        // country
+<span class="fc" id="L1320">        conf.setProperty(&quot;locale&quot;, &quot;_FR&quot;);</span>
+<span class="fc" id="L1321">        assertEquals(&quot;country&quot;, new Locale(&quot;&quot;, &quot;FR&quot;), conf.getLocale(&quot;locale&quot;));</span>
+
+        // country + variant
+<span class="fc" id="L1324">        conf.setProperty(&quot;locale&quot;, &quot;_FR_WIN&quot;);</span>
+<span class="fc" id="L1325">        assertEquals(&quot;country + variant&quot;, new Locale(&quot;&quot;, &quot;FR&quot;, &quot;WIN&quot;), conf.getLocale(&quot;locale&quot;));</span>
+
+        // language + country
+<span class="fc" id="L1328">        conf.setProperty(&quot;locale&quot;, &quot;fr_FR&quot;);</span>
+<span class="fc" id="L1329">        assertEquals(&quot;language + country&quot;, new Locale(&quot;fr&quot;, &quot;FR&quot;), conf.getLocale(&quot;locale&quot;));</span>
+
+        // language + country + variant
+<span class="fc" id="L1332">        conf.setProperty(&quot;locale&quot;, &quot;fr_FR_MAC&quot;);</span>
+<span class="fc" id="L1333">        assertEquals(&quot;language + country + variant&quot;, new Locale(&quot;fr&quot;, &quot;FR&quot;, &quot;MAC&quot;), conf.getLocale(&quot;locale&quot;));</span>
+
+        // default value
+<span class="fc" id="L1336">        conf.setProperty(&quot;locale&quot;, &quot;fr&quot;);</span>
+<span class="fc" id="L1337">        assertEquals(&quot;Existing key with default value&quot;, Locale.FRENCH, conf.getLocale(&quot;locale&quot;, Locale.GERMAN));</span>
+<span class="fc" id="L1338">        assertEquals(&quot;Missing key with default value&quot;, Locale.GERMAN, conf.getLocale(&quot;localeNotInConfig&quot;, Locale.GERMAN));</span>
+
+        // interpolated value
+<span class="fc" id="L1341">        assertEquals(Locale.FRENCH, conf.getLocale(&quot;locale.string.interpolated&quot;));</span>
+<span class="fc" id="L1342">    }</span>
+
+    @Test
+    public void testGetLocaleArray() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1348">        final Locale[] defaultValue = new Locale[] { Locale.GERMAN, Locale.FRENCH };</span>
+<span class="fc" id="L1349">        ArrayAssert.assertEquals(defaultValue, conf.getLocaleArray(&quot;locale.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1351">        final Locale[] expected = new Locale[] { Locale.FRENCH, Locale.GERMAN };</span>
+
+        // list of strings
+<span class="fc" id="L1354">        ArrayAssert.assertEquals(expected, conf.getLocaleArray(&quot;locale.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1357">        ArrayAssert.assertEquals(expected, conf.getLocaleArray(&quot;locale.list2&quot;));</span>
+
+        // list of Locale objects
+<span class="fc" id="L1360">        ArrayAssert.assertEquals(expected, conf.getLocaleArray(&quot;locale.list3&quot;));</span>
+
+        // array of Locale objects
+<span class="fc" id="L1363">        ArrayAssert.assertEquals(expected, conf.getLocaleArray(&quot;locale.list4&quot;));</span>
+
+        // list of Locale objects
+<span class="fc" id="L1366">        ArrayAssert.assertEquals(expected, conf.getLocaleArray(&quot;locale.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1369">        ArrayAssert.assertEquals(expected, conf.getLocaleArray(&quot;locale.list.interpolated&quot;));</span>
+
+        // single Locale values
+<span class="fc" id="L1372">        ArrayAssert.assertEquals(new Locale[] { Locale.FRENCH }, conf.getLocaleArray(&quot;locale.string&quot;));</span>
+<span class="fc" id="L1373">        ArrayAssert.assertEquals(new Locale[] { Locale.FRENCH }, conf.getLocaleArray(&quot;locale.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1376">        ArrayAssert.assertEquals(new Locale[] { }, conf.getLocaleArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1377">    }</span>
+
+    @Test
+    public void testGetLocaleList() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1383">        ListAssert.assertEquals(null, conf.getLocaleList(&quot;locale.list&quot;, null));</span>
+
+<span class="fc" id="L1385">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1386">        expected.add(Locale.FRENCH);</span>
+<span class="fc" id="L1387">        expected.add(Locale.GERMAN);</span>
+
+        // list of strings
+<span class="fc" id="L1390">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1393">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.list2&quot;));</span>
+
+        // list of Locale objects
+<span class="fc" id="L1396">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.list3&quot;));</span>
+
+        // array of Locale objects
+<span class="fc" id="L1399">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.list4&quot;));</span>
+
+        // list of Locale objects
+<span class="fc" id="L1402">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1405">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.list.interpolated&quot;));</span>
+
+        // single Locale values
+<span class="fc" id="L1408">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1409">        expected.add(Locale.FRENCH);</span>
+<span class="fc" id="L1410">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.string&quot;));</span>
+<span class="fc" id="L1411">        ListAssert.assertEquals(expected, conf.getLocaleList(&quot;locale.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1414">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getLocaleList(&quot;empty&quot;));</span>
+<span class="fc" id="L1415">    }</span>
+
+    @Test
+    public void testGetColor()
+    {
+        // RRGGBB
+<span class="fc" id="L1421">        conf.setProperty(&quot;color&quot;, &quot;FF0000&quot;);</span>
+<span class="fc" id="L1422">        assertEquals(&quot;color&quot;, Color.red, conf.getColor(&quot;color&quot;));</span>
+
+        // #RRGGBB
+<span class="fc" id="L1425">        conf.setProperty(&quot;color&quot;, &quot;#00FF00&quot;);</span>
+<span class="fc" id="L1426">        assertEquals(&quot;color&quot;, Color.green, conf.getColor(&quot;color&quot;));</span>
+
+        // #RRGGBBAA
+<span class="fc" id="L1429">        conf.setProperty(&quot;color&quot;, &quot;#01030507&quot;);</span>
+<span class="fc" id="L1430">        final Color color = conf.getColor(&quot;color&quot;);</span>
+<span class="fc" id="L1431">        assertNotNull(&quot;null color&quot;, color);</span>
+<span class="fc" id="L1432">        assertEquals(&quot;red&quot;,   1, color.getRed());</span>
+<span class="fc" id="L1433">        assertEquals(&quot;green&quot;, 3, color.getGreen());</span>
+<span class="fc" id="L1434">        assertEquals(&quot;blue&quot;,  5, color.getBlue());</span>
+<span class="fc" id="L1435">        assertEquals(&quot;alpha&quot;, 7, color.getAlpha());</span>
+
+        // interpolated value
+<span class="fc" id="L1438">        assertEquals(Color.red, conf.getColor(&quot;color.string.interpolated&quot;));</span>
+
+        // default value
+<span class="fc" id="L1441">        assertEquals(Color.cyan, conf.getColor(&quot;unknownkey&quot;, Color.cyan));</span>
+<span class="fc" id="L1442">    }</span>
+
+    @Test
+    public void testGetColorArray() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1448">        final Color[] defaultValue = new Color[] { Color.red, Color.blue };</span>
+<span class="fc" id="L1449">        ArrayAssert.assertEquals(defaultValue, conf.getColorArray(&quot;color.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1451">        final Color[] expected = new Color[] { Color.red, Color.blue };</span>
+
+        // list of strings
+<span class="fc" id="L1454">        ArrayAssert.assertEquals(expected, conf.getColorArray(&quot;color.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1457">        ArrayAssert.assertEquals(expected, conf.getColorArray(&quot;color.list2&quot;));</span>
+
+        // list of Color objects
+<span class="fc" id="L1460">        ArrayAssert.assertEquals(expected, conf.getColorArray(&quot;color.list3&quot;));</span>
+
+        // array of Color objects
+<span class="fc" id="L1463">        ArrayAssert.assertEquals(expected, conf.getColorArray(&quot;color.list4&quot;));</span>
+
+        // list of Color objects
+<span class="fc" id="L1466">        ArrayAssert.assertEquals(expected, conf.getColorArray(&quot;color.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1469">        ArrayAssert.assertEquals(expected, conf.getColorArray(&quot;color.list.interpolated&quot;));</span>
+
+        // single Color values
+<span class="fc" id="L1472">        ArrayAssert.assertEquals(new Color[] { Color.red }, conf.getColorArray(&quot;color.string&quot;));</span>
+<span class="fc" id="L1473">        ArrayAssert.assertEquals(new Color[] { Color.red }, conf.getColorArray(&quot;color.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1476">        ArrayAssert.assertEquals(new Color[] { }, conf.getColorArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1477">    }</span>
+
+    @Test
+    public void testGetColorList() throws Exception
+    {
+        // missing list
+<span class="fc" id="L1483">        ListAssert.assertEquals(null, conf.getColorList(&quot;color.list&quot;, null));</span>
+
+<span class="fc" id="L1485">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1486">        expected.add(Color.red);</span>
+<span class="fc" id="L1487">        expected.add(Color.blue);</span>
+
+        // list of strings
+<span class="fc" id="L1490">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1493">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.list2&quot;));</span>
+
+        // list of Color objects
+<span class="fc" id="L1496">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.list3&quot;));</span>
+
+        // array of Color objects
+<span class="fc" id="L1499">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.list4&quot;));</span>
+
+        // list of Color objects
+<span class="fc" id="L1502">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1505">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.list.interpolated&quot;));</span>
+
+        // single Color values
+<span class="fc" id="L1508">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1509">        expected.add(Color.red);</span>
+<span class="fc" id="L1510">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.string&quot;));</span>
+<span class="fc" id="L1511">        ListAssert.assertEquals(expected, conf.getColorList(&quot;color.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1514">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getColorList(&quot;empty&quot;));</span>
+<span class="fc" id="L1515">    }</span>
+
+    /**
+     * Returns the expected test date.
+     *
+     * @return the expected test date
+     * @throws ParseException if the date cannot be parsed
+     */
+    private static Date expectedDate() throws ParseException
+    {
+<span class="fc" id="L1525">        final DateFormat format = new SimpleDateFormat(DATE_PATTERN);</span>
+<span class="fc" id="L1526">        return format.parse(&quot;2004-01-01&quot;);</span>
+    }
+
+    @Test
+    public void testGetDate() throws Exception
+    {
+<span class="fc" id="L1532">        final Date expected = expectedDate();</span>
+
+        // missing Date
+<span class="fc" id="L1535">        final Date defaultValue = new Date();</span>
+<span class="fc" id="L1536">        assertEquals(defaultValue, conf.getDate(&quot;date&quot;, defaultValue));</span>
+<span class="fc" id="L1537">        assertNull(&quot;non null object for a missing key&quot;, conf.getDate(&quot;unknownkey&quot;, DATE_PATTERN));</span>
+
+<span class="fc" id="L1539">        conf.setThrowExceptionOnMissing(true);</span>
+
+        try
+        {
+<span class="nc" id="L1543">            conf.getDate(&quot;unknownkey&quot;, DATE_PATTERN);</span>
+<span class="nc" id="L1544">            fail(&quot;NoSuchElementException should be thrown for missing properties&quot;);</span>
+        }
+<span class="fc" id="L1546">        catch (final NoSuchElementException e)</span>
+        {
+            // expected
+<span class="nc" id="L1549">        }</span>
+
+
+        // Date string
+<span class="fc" id="L1553">        assertEquals(expected, conf.getDate(&quot;date.string&quot;));</span>
+<span class="fc" id="L1554">        assertEquals(expected, conf.getDate(&quot;date.string&quot;, DATE_PATTERN));</span>
+
+        // Date object
+<span class="fc" id="L1557">        assertEquals(expected, conf.getDate(&quot;date.object&quot;));</span>
+
+        // Calendar object
+<span class="fc" id="L1560">        assertEquals(expected, conf.getDate(&quot;calendar.object&quot;));</span>
+
+        // interpolated value
+<span class="fc" id="L1563">        assertEquals(expected, conf.getDate(&quot;date.string.interpolated&quot;));</span>
+<span class="fc" id="L1564">    }</span>
+
+    /**
+     * Tests a conversion to a Date if no property is set with the date format,
+     * and the format is directly passed in.
+     */
+    @Test
+    public void testGetDateNoFormatPropertyDirectlySpecified() throws Exception
+    {
+<span class="fc" id="L1573">        conf.clearProperty(DataConfiguration.DATE_FORMAT_KEY);</span>
+<span class="fc" id="L1574">        assertEquals(&quot;Wrong result&quot;, expectedDate(), conf.getDate(&quot;date.string&quot;, DATE_PATTERN));</span>
+<span class="fc" id="L1575">    }</span>
+
+    /**
+     * Tests a conversion to a Date if no property is set with the date format,
+     * and the format is specified in the conversion handler.
+     */
+    @Test
+    public void testGetDateNoFormatPropertyConversionHandler() throws Exception
+    {
+<span class="fc" id="L1584">        conf.clearProperty(DataConfiguration.DATE_FORMAT_KEY);</span>
+<span class="fc" id="L1585">        final DefaultConversionHandler handler = new DefaultConversionHandler();</span>
+<span class="fc" id="L1586">        handler.setDateFormat(DATE_PATTERN);</span>
+<span class="fc" id="L1587">        conf.setConversionHandler(handler);</span>
+<span class="fc" id="L1588">        assertEquals(&quot;Wrong result&quot;, expectedDate(), conf.getDate(&quot;date.string&quot;));</span>
+<span class="fc" id="L1589">    }</span>
+
+    @Test
+    public void testGetDateArray() throws Exception
+    {
+<span class="fc" id="L1594">        final DateFormat format = new SimpleDateFormat(DATE_PATTERN);</span>
+<span class="fc" id="L1595">        final Date date1 = format.parse(&quot;2004-01-01&quot;);</span>
+<span class="fc" id="L1596">        final Date date2 = format.parse(&quot;2004-12-31&quot;);</span>
+
+        // missing list
+<span class="fc" id="L1599">        final Date[] defaultValue = new Date[] { date2, date1 };</span>
+<span class="fc" id="L1600">        ArrayAssert.assertEquals(defaultValue, conf.getDateArray(&quot;date.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1602">        final Date[] expected = new Date[] { date1, date2 };</span>
+
+        // list of strings
+<span class="fc" id="L1605">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1608">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list2&quot;));</span>
+
+        // list of Date objects
+<span class="fc" id="L1611">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list3&quot;));</span>
+
+        // array of Date objects
+<span class="fc" id="L1614">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list4&quot;));</span>
+
+        // list of Calendar objects
+<span class="fc" id="L1617">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list5&quot;));</span>
+
+        // list of Date objects
+<span class="fc" id="L1620">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1623">        ArrayAssert.assertEquals(expected, conf.getDateArray(&quot;date.list.interpolated&quot;));</span>
+
+        // single Date values
+<span class="fc" id="L1626">        ArrayAssert.assertEquals(new Date[] { date1 }, conf.getDateArray(&quot;date.string&quot;));</span>
+<span class="fc" id="L1627">        ArrayAssert.assertEquals(new Date[] { date1 }, conf.getDateArray(&quot;date.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1630">        ArrayAssert.assertEquals(new Date[] { }, conf.getDateArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1631">    }</span>
+
+    @Test
+    public void testGetDateArrayWithFormat() throws Exception
+    {
+<span class="fc" id="L1636">        final DateFormat format = new SimpleDateFormat(&quot;MM/dd/yyyy&quot;);</span>
+<span class="fc" id="L1637">        final Date date1 = format.parse(&quot;01/01/2004&quot;);</span>
+<span class="fc" id="L1638">        final Date date2 = format.parse(&quot;12/31/2004&quot;);</span>
+<span class="fc" id="L1639">        final Date[] expected = new Date[] { date1, date2 };</span>
+
+<span class="fc" id="L1641">        conf.addProperty(&quot;date.format&quot;, &quot;01/01/2004&quot;);</span>
+<span class="fc" id="L1642">        conf.addProperty(&quot;date.format&quot;, &quot;12/31/2004&quot;);</span>
+<span class="fc" id="L1643">        ArrayAssert.assertEquals(&quot;Wrong dates with format&quot;, expected, conf.getDateArray(&quot;date.format&quot;, &quot;MM/dd/yyyy&quot;));</span>
+<span class="fc" id="L1644">    }</span>
+
+    @Test
+    public void testGetDateList() throws Exception
+    {
+<span class="fc" id="L1649">        final DateFormat format = new SimpleDateFormat(DATE_PATTERN);</span>
+<span class="fc" id="L1650">        final Date date1 = format.parse(&quot;2004-01-01&quot;);</span>
+<span class="fc" id="L1651">        final Date date2 = format.parse(&quot;2004-12-31&quot;);</span>
+
+        // missing list
+<span class="fc" id="L1654">        final List&lt;Date&gt; nullList = null;</span>
+<span class="fc" id="L1655">        ListAssert.assertEquals(null, conf.getDateList(&quot;date.list&quot;, nullList));</span>
+
+<span class="fc" id="L1657">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1658">        expected.add(date1);</span>
+<span class="fc" id="L1659">        expected.add(date2);</span>
+
+        // list of strings
+<span class="fc" id="L1662">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list1&quot;));</span>
+<span class="fc" id="L1663">        ListAssert.assertEquals(expected, conf.getList(Date.class, &quot;date.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1666">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list2&quot;));</span>
+
+        // list of Date objects
+<span class="fc" id="L1669">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list3&quot;));</span>
+
+        // array of Date objects
+<span class="fc" id="L1672">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list4&quot;));</span>
+
+        // list of Calendar objects
+<span class="fc" id="L1675">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list5&quot;));</span>
+
+        // list of Date objects
+<span class="fc" id="L1678">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list6&quot;));</span>
+
+        // array of strings
+<span class="fc" id="L1681">        ListAssert.assertEquals(expected, conf.getList(Date.class, &quot;date.list7&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1684">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.list.interpolated&quot;));</span>
+
+        // single Date values
+<span class="fc" id="L1687">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1688">        expected.add(date1);</span>
+<span class="fc" id="L1689">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.string&quot;));</span>
+<span class="fc" id="L1690">        ListAssert.assertEquals(expected, conf.getDateList(&quot;date.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1693">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getDateList(&quot;empty&quot;));</span>
+<span class="fc" id="L1694">    }</span>
+
+    @Test
+    public void testGetCalendar() throws Exception
+    {
+<span class="fc" id="L1699">        final DateFormat format = new SimpleDateFormat(DATE_PATTERN);</span>
+
+        // missing Date
+<span class="fc" id="L1702">        final Calendar defaultValue = Calendar.getInstance();</span>
+<span class="fc" id="L1703">        defaultValue.setTime(new Date());</span>
+<span class="fc" id="L1704">        assertEquals(defaultValue, conf.getCalendar(&quot;calendar&quot;, defaultValue));</span>
+<span class="fc" id="L1705">        assertNull(&quot;non null object for a missing key&quot;, conf.getCalendar(&quot;unknownkey&quot;, DATE_PATTERN));</span>
+
+<span class="fc" id="L1707">        conf.setThrowExceptionOnMissing(true);</span>
+
+        try
+        {
+<span class="nc" id="L1711">            conf.getCalendar(&quot;unknownkey&quot;, DATE_PATTERN);</span>
+<span class="nc" id="L1712">            fail(&quot;NoSuchElementException should be thrown for missing properties&quot;);</span>
+        }
+<span class="fc" id="L1714">        catch (final NoSuchElementException e)</span>
+        {
+            // expected
+<span class="nc" id="L1717">        }</span>
+
+<span class="fc" id="L1719">        final Calendar expected = Calendar.getInstance();</span>
+<span class="fc" id="L1720">        expected.setTime(format.parse(&quot;2004-01-01&quot;));</span>
+
+        // Calendar string
+<span class="fc" id="L1723">        assertEquals(expected, conf.getCalendar(&quot;calendar.string&quot;));</span>
+<span class="fc" id="L1724">        assertEquals(expected, conf.getCalendar(&quot;calendar.string&quot;,  DATE_PATTERN));</span>
+
+        // Calendar object
+<span class="fc" id="L1727">        assertEquals(expected, conf.getCalendar(&quot;calendar.object&quot;));</span>
+
+        // Date object
+<span class="fc" id="L1730">        assertEquals(expected, conf.getCalendar(&quot;date.object&quot;));</span>
+
+        // interpolated value
+<span class="fc" id="L1733">        assertEquals(expected, conf.getCalendar(&quot;calendar.string.interpolated&quot;));</span>
+<span class="fc" id="L1734">    }</span>
+
+    @Test
+    public void testGetCalendarArray() throws Exception
+    {
+<span class="fc" id="L1739">        final DateFormat format = new SimpleDateFormat(DATE_PATTERN);</span>
+<span class="fc" id="L1740">        final Date date1 = format.parse(&quot;2004-01-01&quot;);</span>
+<span class="fc" id="L1741">        final Date date2 = format.parse(&quot;2004-12-31&quot;);</span>
+<span class="fc" id="L1742">        final Calendar calendar1 = Calendar.getInstance();</span>
+<span class="fc" id="L1743">        calendar1.setTime(date1);</span>
+<span class="fc" id="L1744">        final Calendar calendar2 = Calendar.getInstance();</span>
+<span class="fc" id="L1745">        calendar2.setTime(date2);</span>
+
+        // missing list
+<span class="fc" id="L1748">        final Calendar[] defaultValue = new Calendar[] { calendar2, calendar1 };</span>
+<span class="fc" id="L1749">        ArrayAssert.assertEquals(defaultValue, conf.getCalendarArray(&quot;calendar.list&quot;, defaultValue));</span>
+
+<span class="fc" id="L1751">        final Calendar[] expected = new Calendar[] { calendar1, calendar2 };</span>
+
+        // list of strings
+<span class="fc" id="L1754">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1757">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list2&quot;));</span>
+
+        // list of Calendar objects
+<span class="fc" id="L1760">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list3&quot;));</span>
+
+        // array of Calendar objects
+<span class="fc" id="L1763">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list4&quot;));</span>
+
+        // list of Date objects
+<span class="fc" id="L1766">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list5&quot;));</span>
+
+        // list of Calendar objects
+<span class="fc" id="L1769">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list6&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1772">        ArrayAssert.assertEquals(expected, conf.getCalendarArray(&quot;calendar.list.interpolated&quot;));</span>
+
+        // single Calendar values
+<span class="fc" id="L1775">        ArrayAssert.assertEquals(new Calendar[] { calendar1 }, conf.getCalendarArray(&quot;calendar.string&quot;));</span>
+<span class="fc" id="L1776">        ArrayAssert.assertEquals(new Calendar[] { calendar1 }, conf.getCalendarArray(&quot;calendar.object&quot;));</span>
+
+        // empty array
+<span class="fc" id="L1779">        ArrayAssert.assertEquals(new Calendar[] { }, conf.getCalendarArray(&quot;empty&quot;));</span>
+<span class="fc" id="L1780">    }</span>
+
+    @Test
+    public void testGetCalendarArrayWithFormat() throws Exception
+    {
+<span class="fc" id="L1785">        final DateFormat format = new SimpleDateFormat(&quot;MM/dd/yyyy&quot;);</span>
+<span class="fc" id="L1786">        final Date date1 = format.parse(&quot;01/01/2004&quot;);</span>
+<span class="fc" id="L1787">        final Date date2 = format.parse(&quot;12/31/2004&quot;);</span>
+
+<span class="fc" id="L1789">        final Calendar calendar1 = Calendar.getInstance();</span>
+<span class="fc" id="L1790">        calendar1.setTime(date1);</span>
+<span class="fc" id="L1791">        final Calendar calendar2 = Calendar.getInstance();</span>
+<span class="fc" id="L1792">        calendar2.setTime(date2);</span>
+<span class="fc" id="L1793">        final Calendar[] expected = new Calendar[] { calendar1, calendar2 };</span>
+
+<span class="fc" id="L1795">        conf.addProperty(&quot;calendar.format&quot;, &quot;01/01/2004&quot;);</span>
+<span class="fc" id="L1796">        conf.addProperty(&quot;calendar.format&quot;, &quot;12/31/2004&quot;);</span>
+<span class="fc" id="L1797">        ArrayAssert.assertEquals(&quot;Wrong calendars with format&quot;, expected, conf.getCalendarArray(&quot;calendar.format&quot;, &quot;MM/dd/yyyy&quot;));</span>
+<span class="fc" id="L1798">    }</span>
+
+    @Test
+    public void testGetCalendarList() throws Exception
+    {
+<span class="fc" id="L1803">        final DateFormat format = new SimpleDateFormat(DATE_PATTERN);</span>
+<span class="fc" id="L1804">        final Date date1 = format.parse(&quot;2004-01-01&quot;);</span>
+<span class="fc" id="L1805">        final Date date2 = format.parse(&quot;2004-12-31&quot;);</span>
+<span class="fc" id="L1806">        final Calendar calendar1 = Calendar.getInstance();</span>
+<span class="fc" id="L1807">        calendar1.setTime(date1);</span>
+<span class="fc" id="L1808">        final Calendar calendar2 = Calendar.getInstance();</span>
+<span class="fc" id="L1809">        calendar2.setTime(date2);</span>
+
+        // missing list
+<span class="fc" id="L1812">        final List&lt;Calendar&gt; nullList = null;</span>
+<span class="fc" id="L1813">        ListAssert.assertEquals(null, conf.getCalendarList(&quot;calendar.list&quot;, nullList));</span>
+
+<span class="fc" id="L1815">        List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1816">        expected.add(calendar1);</span>
+<span class="fc" id="L1817">        expected.add(calendar2);</span>
+
+        // list of strings
+<span class="fc" id="L1820">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list1&quot;));</span>
+<span class="fc" id="L1821">        ListAssert.assertEquals(expected, conf.getList(Calendar.class, &quot;calendar.list1&quot;));</span>
+
+        // list of strings, comma separated
+<span class="fc" id="L1824">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list2&quot;));</span>
+
+        // list of Calendar objects
+<span class="fc" id="L1827">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list3&quot;));</span>
+
+        // array of Calendar objects
+<span class="fc" id="L1830">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list4&quot;));</span>
+
+        // list of Date objects
+<span class="fc" id="L1833">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list5&quot;));</span>
+
+        // list of Calendar objects
+<span class="fc" id="L1836">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list6&quot;));</span>
+
+        // array of strings
+<span class="fc" id="L1839">        ListAssert.assertEquals(expected, conf.getList(Calendar.class, &quot;calendar.list7&quot;));</span>
+
+        // list of interpolated values
+<span class="fc" id="L1842">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;calendar.list.interpolated&quot;));</span>
+
+        // single Calendar values
+<span class="fc" id="L1845">        expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1846">        expected.add(calendar1);</span>
+<span class="fc" id="L1847">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;date.string&quot;));</span>
+<span class="fc" id="L1848">        ListAssert.assertEquals(expected, conf.getCalendarList(&quot;date.object&quot;));</span>
+
+        // empty list
+<span class="fc" id="L1851">        ListAssert.assertEquals(new ArrayList&lt;&gt;(), conf.getCalendarList(&quot;empty&quot;));</span>
+<span class="fc" id="L1852">    }</span>
+
+    @Test
+    public void testGetInetAddress() throws Exception
+    {
+<span class="fc" id="L1857">        final InetAddress expected = InetAddress.getByName(&quot;127.0.0.1&quot;);</span>
+
+        // address as string
+<span class="fc" id="L1860">        assertEquals(expected, conf.get(InetAddress.class, &quot;ip.string&quot;));</span>
+
+        // address object
+<span class="fc" id="L1863">        assertEquals(expected, conf.get(InetAddress.class, &quot;ip.object&quot;));</span>
+
+        // interpolated value
+<span class="fc" id="L1866">        assertEquals(expected, conf.get(InetAddress.class, &quot;ip.string.interpolated&quot;));</span>
+<span class="fc" id="L1867">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetInetAddressInvalidType()
+    {
+<span class="fc" id="L1872">        conf.setProperty(&quot;ip.unknownhost&quot;, &quot;foo&quot;);</span>
+<span class="nc" id="L1873">        conf.get(InetAddress.class, &quot;ip.unknownhost&quot;);</span>
+<span class="nc" id="L1874">    }</span>
+
+    @Test
+    public void testGetInternetAddress() throws Exception
+    {
+<span class="fc" id="L1879">        final Object expected = createInternetAddress(&quot;ebourg@apache.org&quot;);</span>
+
+        // address as string
+<span class="fc" id="L1882">        assertEquals(expected, conf.get(expected.getClass(), &quot;email.string&quot;));</span>
+
+        // address object
+<span class="fc" id="L1885">        assertEquals(expected, conf.get(expected.getClass(), &quot;email.object&quot;));</span>
+
+        // interpolated value
+<span class="fc" id="L1888">        assertEquals(expected, conf.get(expected.getClass(), &quot;email.string.interpolated&quot;));</span>
+
+<span class="fc" id="L1890">        conf.setProperty(&quot;email.invalid&quot;, &quot;ebourg@apache@org&quot;);</span>
+        try
+        {
+<span class="nc" id="L1893">            conf.get(expected.getClass(), &quot;email.invalid&quot;);</span>
+<span class="nc" id="L1894">            fail(&quot;ConversionException should be thrown for invalid emails&quot;);</span>
+        }
+<span class="fc" id="L1896">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1899">        }</span>
+<span class="fc" id="L1900">    }</span>
+
+    @Test(expected = ConversionException.class)
+    public void testGetInternetAddressInvalidType() throws Exception
+    {
+<span class="fc" id="L1905">        final Object expected = createInternetAddress(&quot;ebourg@apache.org&quot;);</span>
+<span class="fc" id="L1906">        conf.setProperty(&quot;email.invalid&quot;, &quot;ebourg@apache@org&quot;);</span>
+<span class="nc" id="L1907">        conf.get(expected.getClass(), &quot;email.invalid&quot;);</span>
+<span class="nc" id="L1908">    }</span>
+
+    /**
+     * Create an instance of InternetAddress. This trick is necessary to
+     * compile and run the test with Java 1.3 and the javamail-1.4 which
+     * is not compatible with Java 1.3
+     */
+    private Object createInternetAddress(final String email) throws Exception
+    {
+<span class="fc" id="L1917">        final Class&lt;?&gt; cls = Class.forName(&quot;javax.mail.internet.InternetAddress&quot;);</span>
+<span class="fc" id="L1918">        return cls.getConstructor(new Class[]{String.class}).newInstance(new Object[]{email});</span>
+    }
+
+    @Test
+    public void testConversionException() throws Exception
+    {
+<span class="fc" id="L1924">        conf.addProperty(&quot;key1&quot;, new Object());</span>
+<span class="fc" id="L1925">        conf.addProperty(&quot;key2&quot;, &quot;xxxxxx&quot;);</span>
+
+        try
+        {
+<span class="nc" id="L1929">            conf.getBooleanArray(&quot;key1&quot;);</span>
+<span class="nc" id="L1930">            fail(&quot;getBooleanArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1932">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1935">        }</span>
+
+        try
+        {
+<span class="nc" id="L1939">            conf.getBooleanArray(&quot;key2&quot;);</span>
+<span class="nc" id="L1940">            fail(&quot;getBooleanArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1942">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1945">        }</span>
+
+        try
+        {
+<span class="nc" id="L1949">            conf.getBooleanList(&quot;key1&quot;);</span>
+<span class="nc" id="L1950">            fail(&quot;getBooleanList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1952">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1955">        }</span>
+
+        try
+        {
+<span class="nc" id="L1959">            conf.getBooleanList(&quot;key2&quot;);</span>
+<span class="nc" id="L1960">            fail(&quot;getBooleanList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1962">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1965">        }</span>
+
+        try
+        {
+<span class="nc" id="L1969">            conf.getByteArray(&quot;key1&quot;);</span>
+<span class="nc" id="L1970">            fail(&quot;getByteArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1972">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1975">        }</span>
+
+        try
+        {
+<span class="nc" id="L1979">            conf.getByteArray(&quot;key2&quot;);</span>
+<span class="nc" id="L1980">            fail(&quot;getByteArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1982">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1985">        }</span>
+
+        try
+        {
+<span class="nc" id="L1989">            conf.getByteList(&quot;key1&quot;);</span>
+<span class="nc" id="L1990">            fail(&quot;getByteList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L1992">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L1995">        }</span>
+
+        try
+        {
+<span class="nc" id="L1999">            conf.getByteList(&quot;key2&quot;);</span>
+<span class="nc" id="L2000">            fail(&quot;getByteList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2002">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2005">        }</span>
+
+        try
+        {
+<span class="nc" id="L2009">            conf.getShortArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2010">            fail(&quot;getShortArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2012">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2015">        }</span>
+
+        try
+        {
+<span class="nc" id="L2019">            conf.getShortArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2020">            fail(&quot;getShortArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2022">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2025">        }</span>
+
+        try
+        {
+<span class="nc" id="L2029">            conf.getShortList(&quot;key1&quot;);</span>
+<span class="nc" id="L2030">            fail(&quot;getShortList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2032">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2035">        }</span>
+
+        try
+        {
+<span class="nc" id="L2039">            conf.getShortList(&quot;key2&quot;);</span>
+<span class="nc" id="L2040">            fail(&quot;getShortList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2042">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2045">        }</span>
+
+        try
+        {
+<span class="nc" id="L2049">            conf.getIntArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2050">            fail(&quot;getIntArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2052">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2055">        }</span>
+
+        try
+        {
+<span class="nc" id="L2059">            conf.getIntArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2060">            fail(&quot;getIntArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2062">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2065">        }</span>
+
+        try
+        {
+<span class="nc" id="L2069">            conf.getIntegerList(&quot;key1&quot;);</span>
+<span class="nc" id="L2070">            fail(&quot;getIntegerList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2072">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2075">        }</span>
+
+        try
+        {
+<span class="nc" id="L2079">            conf.getIntegerList(&quot;key2&quot;);</span>
+<span class="nc" id="L2080">            fail(&quot;getIntegerList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2082">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2085">        }</span>
+
+        try
+        {
+<span class="nc" id="L2089">            conf.getLongArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2090">            fail(&quot;getLongArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2092">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2095">        }</span>
+
+        try
+        {
+<span class="nc" id="L2099">            conf.getLongArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2100">            fail(&quot;getLongArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2102">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2105">        }</span>
+
+        try
+        {
+<span class="nc" id="L2109">            conf.getLongList(&quot;key1&quot;);</span>
+<span class="nc" id="L2110">            fail(&quot;getLongList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2112">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2115">        }</span>
+
+        try
+        {
+<span class="nc" id="L2119">            conf.getLongList(&quot;key2&quot;);</span>
+<span class="nc" id="L2120">            fail(&quot;getLongList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2122">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2125">        }</span>
+
+        try
+        {
+<span class="nc" id="L2129">            conf.getFloatArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2130">            fail(&quot;getFloatArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2132">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2135">        }</span>
+
+        try
+        {
+<span class="nc" id="L2139">            conf.getFloatArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2140">            fail(&quot;getFloatArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2142">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2145">        }</span>
+
+        try
+        {
+<span class="nc" id="L2149">            conf.getFloatList(&quot;key1&quot;);</span>
+<span class="nc" id="L2150">            fail(&quot;getFloatList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2152">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2155">        }</span>
+
+        try
+        {
+<span class="nc" id="L2159">            conf.getFloatList(&quot;key2&quot;);</span>
+<span class="nc" id="L2160">            fail(&quot;getFloatList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2162">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2165">        }</span>
+
+        try
+        {
+<span class="nc" id="L2169">            conf.getDoubleArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2170">            fail(&quot;getDoubleArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2172">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2175">        }</span>
+
+        try
+        {
+<span class="nc" id="L2179">            conf.getDoubleArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2180">            fail(&quot;getDoubleArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2182">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2185">        }</span>
+
+        try
+        {
+<span class="nc" id="L2189">            conf.getDoubleList(&quot;key1&quot;);</span>
+<span class="nc" id="L2190">            fail(&quot;getDoubleList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2192">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2195">        }</span>
+
+        try
+        {
+<span class="nc" id="L2199">            conf.getDoubleList(&quot;key2&quot;);</span>
+<span class="nc" id="L2200">            fail(&quot;getDoubleList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2202">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2205">        }</span>
+
+        try
+        {
+<span class="nc" id="L2209">            conf.getBigIntegerArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2210">            fail(&quot;getBigIntegerArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2212">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2215">        }</span>
+
+        try
+        {
+<span class="nc" id="L2219">            conf.getBigIntegerArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2220">            fail(&quot;getBigIntegerArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2222">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2225">        }</span>
+
+        try
+        {
+<span class="nc" id="L2229">            conf.getBigIntegerList(&quot;key1&quot;);</span>
+<span class="nc" id="L2230">            fail(&quot;getBigIntegerList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2232">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2235">        }</span>
+
+        try
+        {
+<span class="nc" id="L2239">            conf.getBigIntegerList(&quot;key2&quot;);</span>
+<span class="nc" id="L2240">            fail(&quot;getBigIntegerList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2242">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2245">        }</span>
+
+        try
+        {
+<span class="nc" id="L2249">            conf.getBigDecimalArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2250">            fail(&quot;getBigDecimalArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2252">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2255">        }</span>
+
+        try
+        {
+<span class="nc" id="L2259">            conf.getBigDecimalArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2260">            fail(&quot;getBigDecimalArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2262">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2265">        }</span>
+
+        try
+        {
+<span class="nc" id="L2269">            conf.getBigDecimalList(&quot;key1&quot;);</span>
+<span class="nc" id="L2270">            fail(&quot;getBigDecimalList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2272">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2275">        }</span>
+
+        try
+        {
+<span class="nc" id="L2279">            conf.getBigDecimalList(&quot;key2&quot;);</span>
+<span class="nc" id="L2280">            fail(&quot;getBigDecimalList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2282">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2285">        }</span>
+
+        try
+        {
+<span class="nc" id="L2289">            conf.getURLArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2290">            fail(&quot;getURLArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2292">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2295">        }</span>
+
+        try
+        {
+<span class="nc" id="L2299">            conf.getURLArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2300">            fail(&quot;getURLArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2302">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2305">        }</span>
+
+        try
+        {
+<span class="nc" id="L2309">            conf.getURLList(&quot;key1&quot;);</span>
+<span class="nc" id="L2310">            fail(&quot;getURLList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2312">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2315">        }</span>
+
+        try
+        {
+<span class="nc" id="L2319">            conf.getURLList(&quot;key2&quot;);</span>
+<span class="nc" id="L2320">            fail(&quot;getURLList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2322">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2325">        }</span>
+
+        try
+        {
+<span class="nc" id="L2329">            conf.getLocaleArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2330">            fail(&quot;getLocaleArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2332">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2335">        }</span>
+
+        try
+        {
+<span class="nc" id="L2339">            conf.getLocaleArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2340">            fail(&quot;getLocaleArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2342">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2345">        }</span>
+
+        try
+        {
+<span class="nc" id="L2349">            conf.getLocaleList(&quot;key1&quot;);</span>
+<span class="nc" id="L2350">            fail(&quot;getLocaleList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2352">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2355">        }</span>
+
+        try
+        {
+<span class="nc" id="L2359">            conf.getLocaleList(&quot;key2&quot;);</span>
+<span class="nc" id="L2360">            fail(&quot;getLocaleList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2362">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2365">        }</span>
+
+        try
+        {
+<span class="nc" id="L2369">            conf.getColorArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2370">            fail(&quot;getColorArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2372">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2375">        }</span>
+
+        try
+        {
+<span class="nc" id="L2379">            conf.getColorArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2380">            fail(&quot;getColorArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2382">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2385">        }</span>
+
+        try
+        {
+<span class="nc" id="L2389">            conf.getColorList(&quot;key1&quot;);</span>
+<span class="nc" id="L2390">            fail(&quot;getColorList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2392">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2395">        }</span>
+
+        try
+        {
+<span class="nc" id="L2399">            conf.getColorList(&quot;key2&quot;);</span>
+<span class="nc" id="L2400">            fail(&quot;getColorList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2402">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2405">        }</span>
+
+        try
+        {
+<span class="nc" id="L2409">            conf.getDateArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2410">            fail(&quot;getDateArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2412">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2415">        }</span>
+
+        try
+        {
+<span class="nc" id="L2419">            conf.getDate(&quot;key1&quot;, DATE_PATTERN);</span>
+<span class="nc" id="L2420">            fail(&quot;getDate didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2422">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2425">        }</span>
+
+        try
+        {
+<span class="nc" id="L2429">            conf.getDate(&quot;key2&quot;, DATE_PATTERN);</span>
+<span class="nc" id="L2430">            fail(&quot;getDate didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2432">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2435">        }</span>
+
+        try
+        {
+<span class="nc" id="L2439">            conf.getDateArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2440">            fail(&quot;getDateArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2442">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2445">        }</span>
+
+        try
+        {
+<span class="nc" id="L2449">            conf.getDateList(&quot;key1&quot;);</span>
+<span class="nc" id="L2450">            fail(&quot;getDateList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2452">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2455">        }</span>
+
+        try
+        {
+<span class="nc" id="L2459">            conf.getDateList(&quot;key2&quot;);</span>
+<span class="nc" id="L2460">            fail(&quot;getDateList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2462">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2465">        }</span>
+
+        try
+        {
+<span class="nc" id="L2469">            conf.getCalendar(&quot;key1&quot;, DATE_PATTERN);</span>
+<span class="nc" id="L2470">            fail(&quot;getCalendar didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2472">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2475">        }</span>
+
+        try
+        {
+<span class="nc" id="L2479">            conf.getCalendar(&quot;key2&quot;,DATE_PATTERN);</span>
+<span class="nc" id="L2480">            fail(&quot;getCalendar didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2482">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2485">        }</span>
+
+        try
+        {
+<span class="nc" id="L2489">            conf.getCalendarArray(&quot;key1&quot;);</span>
+<span class="nc" id="L2490">            fail(&quot;getCalendarArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2492">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2495">        }</span>
+
+        try
+        {
+<span class="nc" id="L2499">            conf.getCalendarArray(&quot;key2&quot;);</span>
+<span class="nc" id="L2500">            fail(&quot;getCalendarArray didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2502">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2505">        }</span>
+
+        try
+        {
+<span class="nc" id="L2509">            conf.getCalendarList(&quot;key1&quot;);</span>
+<span class="nc" id="L2510">            fail(&quot;getCalendarList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2512">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2515">        }</span>
+
+        try
+        {
+<span class="nc" id="L2519">            conf.getCalendarList(&quot;key2&quot;);</span>
+<span class="nc" id="L2520">            fail(&quot;getCalendarList didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2522">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2525">        }</span>
+
+        try
+        {
+<span class="nc" id="L2529">            conf.get(InetAddress.class, &quot;key1&quot;);</span>
+<span class="nc" id="L2530">            fail(&quot;getInetAddress didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2532">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2535">        }</span>
+
+        try
+        {
+<span class="nc" id="L2539">            conf.get(Class.forName(&quot;javax.mail.internet.InternetAddress&quot;), &quot;key1&quot;);</span>
+<span class="nc" id="L2540">            fail(&quot;getInternetAddress didn't throw a ConversionException&quot;);</span>
+        }
+<span class="fc" id="L2542">        catch (final ConversionException e)</span>
+        {
+            // expected
+<span class="nc" id="L2545">        }</span>
+<span class="fc" id="L2546">    }</span>
+
+    /**
+     * Tests whether a string property can be obtained through get() if no type
+     * conversion is required.
+     */
+    @Test
+    public void testGetPropertyWithoutConversion()
+    {
+<span class="fc" id="L2555">        final String key = &quot;test.str&quot;;</span>
+<span class="fc" id="L2556">        final String value = &quot;someTestValue&quot;;</span>
+<span class="fc" id="L2557">        conf.addProperty(key, value);</span>
+<span class="fc" id="L2558">        assertEquals(&quot;Wrong result&quot;, value, conf.get(String.class, key));</span>
+<span class="fc" id="L2559">    }</span>
+
+    /**
+     * Tests whether properties can be cleared.
+     */
+    @Test
+    public void testClearProperty()
+    {
+<span class="fc" id="L2567">        final String key = &quot;test.property&quot;;</span>
+<span class="fc" id="L2568">        conf.addProperty(key, &quot;someValue&quot;);</span>
+<span class="fc" id="L2569">        conf.clearProperty(key);</span>
+<span class="fc" id="L2570">        assertFalse(&quot;Property still found&quot;, conf.containsKey(key));</span>
+<span class="fc" id="L2571">    }</span>
+
+    /**
+     * Tests the implementation of clearPropertyDirect().
+     */
+    @Test
+    public void testClearPropertyDirect()
+    {
+<span class="fc" id="L2579">        final String key = &quot;test.property&quot;;</span>
+<span class="fc" id="L2580">        conf.addProperty(key, &quot;someValue&quot;);</span>
+<span class="fc" id="L2581">        conf.clearPropertyDirect(key);</span>
+<span class="fc" id="L2582">        assertFalse(&quot;Property still found&quot;, conf.containsKey(key));</span>
+<span class="fc" id="L2583">    }</span>
+
+    /**
+     * Tests clearPropertyDirect() if the wrapped configuration does not extend
+     * AbstractConfiguration.
+     */
+    @Test
+    public void testClearPropertyDirectNoAbstractConf()
+    {
+<span class="fc" id="L2592">        final Configuration wrapped = EasyMock.createMock(Configuration.class);</span>
+<span class="fc" id="L2593">        final String key = &quot;test.property&quot;;</span>
+<span class="fc" id="L2594">        wrapped.clearProperty(key);</span>
+<span class="fc" id="L2595">        EasyMock.replay(wrapped);</span>
+<span class="fc" id="L2596">        conf = new DataConfiguration(wrapped);</span>
+<span class="fc" id="L2597">        conf.clearPropertyDirect(key);</span>
+<span class="fc" id="L2598">        EasyMock.verify(wrapped);</span>
+<span class="fc" id="L2599">    }</span>
+
+    /**
+     * Tests that the cause of a conversion exception is kept.
+     */
+    @Test
+    public void testConversionExceptionCause()
+    {
+        try
+        {
+<span class="nc" id="L2609">            conf.get(Integer.TYPE, &quot;uri.string&quot;);</span>
+<span class="nc" id="L2610">            fail(&quot;No conversion exception thrown!&quot;);</span>
+        }
+<span class="fc" id="L2612">        catch (final ConversionException cex)</span>
+        {
+<span class="fc" id="L2614">            assertTrue(&quot;Wrong cause&quot;,</span>
+<span class="fc" id="L2615">                    cex.getCause() instanceof NumberFormatException);</span>
+<span class="nc" id="L2616">        }</span>
+<span class="fc" id="L2617">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

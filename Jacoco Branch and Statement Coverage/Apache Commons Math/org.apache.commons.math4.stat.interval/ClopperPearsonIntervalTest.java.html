@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClopperPearsonIntervalTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_math4$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math4.stat.interval</a> &gt; <span class="el_source">ClopperPearsonIntervalTest.java</span></div><h1>ClopperPearsonIntervalTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math4.stat.interval;
+
+import org.apache.commons.math4.stat.interval.BinomialConfidenceInterval;
+import org.apache.commons.math4.stat.interval.ClopperPearsonInterval;
+import org.apache.commons.math4.stat.interval.ConfidenceInterval;
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ * Test cases for the ClopperPearsonInterval class.
+ *
+ */
+<span class="fc" id="L29">public class ClopperPearsonIntervalTest extends BinomialConfidenceIntervalAbstractTest {</span>
+
+    @Override
+    protected BinomialConfidenceInterval createBinomialConfidenceInterval() {
+<span class="fc" id="L33">        return new ClopperPearsonInterval();</span>
+    }
+
+    @Test
+    public void testStandardInterval() {
+<span class="fc" id="L38">        ConfidenceInterval confidenceInterval = createStandardTestInterval();</span>
+<span class="fc" id="L39">        Assert.assertEquals(0.07873857, confidenceInterval.getLowerBound(), 1E-5);</span>
+<span class="fc" id="L40">        Assert.assertEquals(0.1248658, confidenceInterval.getUpperBound(), 1E-5);</span>
+<span class="fc" id="L41">    }</span>
+
+    @Test
+    public void testMath1401() {
+<span class="fc" id="L45">        ConfidenceInterval interval = new ClopperPearsonInterval().createInterval(1, 1, 0.95);</span>
+<span class="fc" id="L46">        Assert.assertEquals(0.025, interval.getLowerBound(), 1e-16);</span>
+<span class="fc" id="L47">        Assert.assertEquals(1, interval.getUpperBound(), 0d);</span>
+<span class="fc" id="L48">    }</span>
+
+    // number of successes = 0, number of trials = N
+    @Test
+    public void testCase1() {
+        // Check correctness against values obtained with the Python statsmodels.stats.proportion.proportion_confint
+<span class="fc" id="L54">        final int successes = 0;</span>
+<span class="fc" id="L55">        final int trials = 10;</span>
+<span class="fc" id="L56">        final double confidenceLevel = 0.95;</span>
+
+        // proportion_confint(0,10,method='beta') = (0, 0.3084971078187608)
+<span class="fc" id="L59">        final ConfidenceInterval expected = new ConfidenceInterval(0,</span>
+                                                                   0.3084971078187608,
+                                                                   confidenceLevel);
+
+<span class="fc" id="L63">        check(expected, createBinomialConfidenceInterval().createInterval(trials, successes, confidenceLevel));</span>
+<span class="fc" id="L64">    }</span>
+
+    // number of successes = number of trials = N
+    @Test
+    public void testCase2() {
+        // Check correctness against values obtained with the Python statsmodels.stats.proportion.proportion_confint
+<span class="fc" id="L70">        final int successes = 10;</span>
+<span class="fc" id="L71">        final int trials = 10;</span>
+<span class="fc" id="L72">        final double confidenceLevel = 0.95;</span>
+
+        // prop.proportion_confint(10,10,method='beta') = (0.6915028921812392, 1)
+<span class="fc" id="L75">        final ConfidenceInterval expected = new ConfidenceInterval(0.6915028921812392,</span>
+                                                                   1,
+                                                                   confidenceLevel);
+
+<span class="fc" id="L79">        check(expected, createBinomialConfidenceInterval().createInterval(trials, successes, confidenceLevel));</span>
+<span class="fc" id="L80">    }</span>
+
+    // number of successes = k, number of trials = N, 0 &lt; k &lt; N
+    @Test
+    public void testCase3() {
+        // Check correctness against values obtained with the Python statsmodels.stats.proportion.proportion_confint
+<span class="fc" id="L86">        final int successes = 3;</span>
+<span class="fc" id="L87">        final int trials = 10;</span>
+<span class="fc" id="L88">        final double confidenceLevel = 0.95;</span>
+
+        // prop.proportion_confint(3,10,method='beta') = (0.06673951117773447, 0.6524528500599972)
+<span class="fc" id="L91">        final ConfidenceInterval expected = new ConfidenceInterval(0.06673951117773447,</span>
+                                                                   0.6524528500599972,
+                                                                   confidenceLevel);
+
+<span class="fc" id="L95">        check(expected, createBinomialConfidenceInterval().createInterval(trials, successes, confidenceLevel));</span>
+<span class="fc" id="L96">    }</span>
+
+    private void check(ConfidenceInterval expected,
+                       ConfidenceInterval actual) {
+<span class="fc" id="L100">        final double relTol = 1.0e-6; // Reasonable relative tolerance for floating point comparison</span>
+        // Compare bounds using a relative tolerance
+<span class="fc" id="L102">        Assert.assertEquals(expected.getLowerBound(),</span>
+<span class="fc" id="L103">                            actual.getLowerBound(),</span>
+<span class="fc" id="L104">                            relTol * (1.0 + Math.abs(expected.getLowerBound())));</span>
+<span class="fc" id="L105">        Assert.assertEquals(expected.getUpperBound(),</span>
+<span class="fc" id="L106">                            actual.getUpperBound(),</span>
+<span class="fc" id="L107">                            relTol * (1.0 + Math.abs(expected.getUpperBound())));</span>
+        // The confidence level must be exact
+<span class="fc" id="L109">        Assert.assertEquals(expected.getConfidenceLevel(),</span>
+<span class="fc" id="L110">                            actual.getConfidenceLevel(),</span>
+                            0.0);
+<span class="fc" id="L112">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

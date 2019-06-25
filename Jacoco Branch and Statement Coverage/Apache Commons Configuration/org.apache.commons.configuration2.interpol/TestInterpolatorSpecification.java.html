@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestInterpolatorSpecification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.interpol</a> &gt; <span class="el_source">TestInterpolatorSpecification.java</span></div><h1>TestInterpolatorSpecification.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.interpol;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code InterpolatorSpecification}.
+ *
+ */
+<span class="fc" id="L36">public class TestInterpolatorSpecification</span>
+{
+    /** Constant for a prefix for a prefix lookup. */
+    private static final String PREFIX1 = &quot;p1&quot;;
+
+    /** Constant for another prefix for a prefix lookup. */
+    private static final String PREFIX2 = &quot;p2&quot;;
+
+    /** The builder for creating new instances. */
+    private InterpolatorSpecification.Builder builder;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L50">        builder = new InterpolatorSpecification.Builder();</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Convenience method for creating a mock object.
+     *
+     * @param cls the class of the mock
+     * @param &lt;T&gt; the type of the mock
+     * @return the mock
+     */
+    private static &lt;T&gt; T createMock(final Class&lt;T&gt; cls)
+    {
+<span class="fc" id="L62">        final T mock = EasyMock.createMock(cls);</span>
+<span class="fc" id="L63">        EasyMock.replay(mock);</span>
+<span class="fc" id="L64">        return mock;</span>
+    }
+
+    /**
+     * Convenience method for creating a mock lookup.
+     *
+     * @return the mock lookup
+     */
+    private static Lookup createLookup()
+    {
+<span class="fc" id="L74">        return createMock(Lookup.class);</span>
+    }
+
+    /**
+     * Checks whether the given test object contains the expected prefix
+     * lookups.
+     *
+     * @param spec the object to be tested
+     * @param prefLook1 prefix lookup 1
+     * @param prefLook2 prefix lookup 2
+     */
+    private static void checkPrefixLookups(final InterpolatorSpecification spec,
+            final Lookup prefLook1, final Lookup prefLook2)
+    {
+<span class="fc" id="L88">        assertEquals(&quot;Wrong number of prefix lookups&quot;, 2, spec</span>
+<span class="fc" id="L89">                .getPrefixLookups().size());</span>
+<span class="fc" id="L90">        assertSame(&quot;Wrong prefix lookup 1&quot;, prefLook1, spec.getPrefixLookups()</span>
+<span class="fc" id="L91">                .get(PREFIX1));</span>
+<span class="fc" id="L92">        assertSame(&quot;Wrong prefix lookup 2&quot;, prefLook2, spec.getPrefixLookups()</span>
+<span class="fc" id="L93">                .get(PREFIX2));</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Checks whether the given test object contains the expected default
+     * lookups.
+     *
+     * @param spec the object to be tested
+     * @param defLook1 default lookup 1
+     * @param defLook2 default lookup 2
+     */
+    private static void checkDefaultLookups(final InterpolatorSpecification spec,
+            final Lookup defLook1, final Lookup defLook2)
+    {
+<span class="fc" id="L107">        assertEquals(&quot;Wrong number of default lookups&quot;, 2, spec</span>
+<span class="fc" id="L108">                .getDefaultLookups().size());</span>
+<span class="fc" id="L109">        assertTrue(&quot;Wrong default lookups&quot;, spec.getDefaultLookups()</span>
+<span class="fc" id="L110">                .containsAll(Arrays.asList(defLook1, defLook2)));</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Tests whether an instance with all possible properties can be set.
+     */
+    @Test
+    public void testCreateInstance()
+    {
+<span class="fc" id="L119">        final Lookup prefLook1 = createLookup();</span>
+<span class="fc" id="L120">        final Lookup prefLook2 = createLookup();</span>
+<span class="fc" id="L121">        final Lookup defLook1 = createLookup();</span>
+<span class="fc" id="L122">        final Lookup defLook2 = createLookup();</span>
+<span class="fc" id="L123">        final ConfigurationInterpolator interpolator =</span>
+<span class="fc" id="L124">                createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L125">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L126">                createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L127">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L128">                builder.withPrefixLookup(PREFIX1, prefLook1)</span>
+<span class="fc" id="L129">                        .withDefaultLookup(defLook1)</span>
+<span class="fc" id="L130">                        .withPrefixLookup(PREFIX2, prefLook2)</span>
+<span class="fc" id="L131">                        .withParentInterpolator(parent)</span>
+<span class="fc" id="L132">                        .withDefaultLookup(defLook2)</span>
+<span class="fc" id="L133">                        .withInterpolator(interpolator).create();</span>
+<span class="fc" id="L134">        assertSame(&quot;Wrong interpolator&quot;, interpolator, spec.getInterpolator());</span>
+<span class="fc" id="L135">        assertSame(&quot;Wrong parent interpolator&quot;, parent,</span>
+<span class="fc" id="L136">                spec.getParentInterpolator());</span>
+<span class="fc" id="L137">        checkPrefixLookups(spec, prefLook1, prefLook2);</span>
+<span class="fc" id="L138">        checkDefaultLookups(spec, defLook1, defLook2);</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Tests whether lookups can be set passing in full collections.
+     */
+    @Test
+    public void testCreateInstanceCollections()
+    {
+<span class="fc" id="L147">        final Lookup prefLook1 = createLookup();</span>
+<span class="fc" id="L148">        final Lookup prefLook2 = createLookup();</span>
+<span class="fc" id="L149">        final Lookup defLook1 = createLookup();</span>
+<span class="fc" id="L150">        final Lookup defLook2 = createLookup();</span>
+<span class="fc" id="L151">        final Map&lt;String, Lookup&gt; prefixLookups = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L152">        prefixLookups.put(PREFIX1, prefLook1);</span>
+<span class="fc" id="L153">        prefixLookups.put(PREFIX2, prefLook2);</span>
+<span class="fc" id="L154">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L155">                builder.withPrefixLookups(prefixLookups)</span>
+<span class="fc" id="L156">                        .withDefaultLookups(Arrays.asList(defLook1, defLook2))</span>
+<span class="fc" id="L157">                        .create();</span>
+<span class="fc" id="L158">        checkPrefixLookups(spec, prefLook1, prefLook2);</span>
+<span class="fc" id="L159">        checkDefaultLookups(spec, defLook1, defLook2);</span>
+<span class="fc" id="L160">    }</span>
+
+    /**
+     * Tests whether a null map with prefix lookups is accepted.
+     */
+    @Test
+    public void testWithPrefixLookupsNull()
+    {
+<span class="fc" id="L168">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L169">                builder.withPrefixLookups(null).create();</span>
+<span class="fc" id="L170">        assertTrue(&quot;No empty map with prefix lookups&quot;, spec.getPrefixLookups()</span>
+<span class="fc" id="L171">                .isEmpty());</span>
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Tests whether a null collection with default lookups is accepted.
+     */
+    @Test
+    public void testWithDefaultLookupsNull()
+    {
+<span class="fc" id="L180">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L181">                builder.withDefaultLookups(null).create();</span>
+<span class="fc" id="L182">        assertTrue(&quot;No empty default lookups collection&quot;, spec</span>
+<span class="fc" id="L183">                .getDefaultLookups().isEmpty());</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Tests whether a null prefix causes an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testWithPrefixLookupNoPrefix()
+    {
+<span class="nc" id="L192">        builder.withPrefixLookup(null, createLookup());</span>
+<span class="nc" id="L193">    }</span>
+
+    /**
+     * Tests whether a null prefix lookup causes an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testWithPrefixLookupNoLookup()
+    {
+<span class="nc" id="L201">        builder.withPrefixLookup(PREFIX1, null);</span>
+<span class="nc" id="L202">    }</span>
+
+    /**
+     * Tests whether a null default lookup causes an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testWithDefaultLookupNull()
+    {
+<span class="nc" id="L210">        builder.withDefaultLookup(null);</span>
+<span class="nc" id="L211">    }</span>
+
+    /**
+     * Tests that the map with prefix lookups cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetPrefixLookupsModify()
+    {
+<span class="fc" id="L219">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L220">                builder.withPrefixLookup(PREFIX1, createLookup()).create();</span>
+<span class="nc" id="L221">        spec.getPrefixLookups().put(PREFIX1, createLookup());</span>
+<span class="nc" id="L222">    }</span>
+
+    /**
+     * Tests that the collection with default lookups cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDefaultLookupsModify()
+    {
+<span class="fc" id="L230">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L231">                builder.withDefaultLookup(createLookup()).create();</span>
+<span class="nc" id="L232">        spec.getDefaultLookups().add(createLookup());</span>
+<span class="nc" id="L233">    }</span>
+
+    /**
+     * Tests whether a builder can be reused.
+     */
+    @Test
+    public void testBuilderReuse()
+    {
+<span class="fc" id="L241">        builder.withDefaultLookup(createLookup())</span>
+<span class="fc" id="L242">                .withInterpolator(createMock(ConfigurationInterpolator.class))</span>
+<span class="fc" id="L243">                .withPrefixLookup(&quot;test&quot;, createLookup())</span>
+<span class="fc" id="L244">                .withParentInterpolator(</span>
+<span class="fc" id="L245">                        createMock(ConfigurationInterpolator.class)).create();</span>
+<span class="fc" id="L246">        final Lookup prefLook1 = createLookup();</span>
+<span class="fc" id="L247">        final Lookup prefLook2 = createLookup();</span>
+<span class="fc" id="L248">        final Lookup defLook1 = createLookup();</span>
+<span class="fc" id="L249">        final Lookup defLook2 = createLookup();</span>
+<span class="fc" id="L250">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L251">                createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L252">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L253">                builder.withPrefixLookup(PREFIX1, prefLook1)</span>
+<span class="fc" id="L254">                        .withPrefixLookup(PREFIX2, prefLook2)</span>
+<span class="fc" id="L255">                        .withDefaultLookups(Arrays.asList(defLook1, defLook2))</span>
+<span class="fc" id="L256">                        .withParentInterpolator(parent).create();</span>
+<span class="fc" id="L257">        assertNull(&quot;Got an interpolator&quot;, spec.getInterpolator());</span>
+<span class="fc" id="L258">        assertSame(&quot;Wrong parent interpolator&quot;, parent,</span>
+<span class="fc" id="L259">                spec.getParentInterpolator());</span>
+<span class="fc" id="L260">        checkPrefixLookups(spec, prefLook1, prefLook2);</span>
+<span class="fc" id="L261">        checkDefaultLookups(spec, defLook1, defLook2);</span>
+<span class="fc" id="L262">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

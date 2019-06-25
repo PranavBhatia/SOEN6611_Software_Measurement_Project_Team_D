@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDatabaseConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestDatabaseConfiguration.java</span></div><h1>TestDatabaseConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import javax.sql.DataSource;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.configuration2.builder.fluent.DatabaseBuilderParameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationErrorEvent;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.ErrorListenerTestImpl;
+import org.apache.commons.configuration2.event.EventType;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.easymock.EasyMock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test for database stored configurations.  Note, when running this Unit
+ * Test in Eclipse it sometimes takes a couple tries. Otherwise you may get
+ * database is already in use by another process errors.
+ *
+ */
+<span class="fc" id="L49">public class TestDatabaseConfiguration</span>
+{
+    /** Constant for another configuration name. */
+    private static final String CONFIG_NAME2 = &quot;anotherTestConfig&quot;;
+
+    /** An error listener for testing whether internal errors occurred.*/
+    private ErrorListenerTestImpl listener;
+
+    /** The test helper. */
+    private DatabaseConfigurationTestHelper helper;
+
+    @Before
+    public void setUp() throws Exception
+    {
+        /*
+         * Thread.sleep may or may not help with the database is already in
+         * use exception.
+         */
+        //Thread.sleep(1000);
+
+        // set up the datasource
+
+<span class="fc" id="L71">        helper = new DatabaseConfigurationTestHelper();</span>
+<span class="fc" id="L72">        helper.setUp();</span>
+<span class="fc" id="L73">    }</span>
+
+    @After
+    public void tearDown() throws Exception
+    {
+        // if an error listener is defined, we check whether an error occurred
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if(listener != null)</span>
+        {
+<span class="nc" id="L81">            listener.done();</span>
+        }
+<span class="fc" id="L83">        helper.tearDown();</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Creates a database configuration with default values.
+     *
+     * @return the configuration
+     * @throws ConfigurationException if an error occurs
+     */
+    private PotentialErrorDatabaseConfiguration setUpConfig()
+            throws ConfigurationException
+    {
+<span class="fc" id="L95">        return helper.setUpConfig(PotentialErrorDatabaseConfiguration.class);</span>
+    }
+
+    /**
+     * Creates an error listener and adds it to the specified configuration.
+     *
+     * @param config the configuration
+     */
+    private void setUpErrorListener(final PotentialErrorDatabaseConfiguration config)
+    {
+        // remove log listener to avoid exception longs
+<span class="fc" id="L106">        config.clearErrorListeners();</span>
+<span class="fc" id="L107">        listener = new ErrorListenerTestImpl(config);</span>
+<span class="fc" id="L108">        config.addEventListener(ConfigurationErrorEvent.ANY, listener);</span>
+<span class="fc" id="L109">        config.failOnConnect = true;</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Prepares a test for a database error. Sets up a config and registers an
+     * error listener.
+     *
+     * @return the initialized configuration
+     * @throws ConfigurationException if an error occurs
+     */
+    private PotentialErrorDatabaseConfiguration setUpErrorConfig()
+            throws ConfigurationException
+    {
+<span class="fc" id="L122">        final PotentialErrorDatabaseConfiguration config = setUpConfig();</span>
+<span class="fc" id="L123">        setUpErrorListener(config);</span>
+<span class="fc" id="L124">        return config;</span>
+    }
+
+    /**
+     * Checks the error listener for an expected error. The properties of the
+     * error event will be compared with the expected values.
+     *
+     * @param type the expected type of the error event
+     * @param opType the expected operation type
+     * @param key the expected property key
+     * @param value the expected property value
+     */
+    private void checkErrorListener(
+            final EventType&lt;? extends ConfigurationErrorEvent&gt; type,
+            final EventType&lt;?&gt; opType, final String key, final Object value)
+    {
+<span class="fc" id="L140">        final Throwable exception = listener.checkEvent(type, opType, key, value);</span>
+<span class="fc" id="L141">        assertTrue(&quot;Wrong exception&quot;, exception instanceof SQLException);</span>
+<span class="fc" id="L142">        listener = null; // mark as checked</span>
+<span class="fc" id="L143">    }</span>
+
+    @Test
+    public void testAddPropertyDirectSingle() throws ConfigurationException
+    {
+<span class="fc" id="L148">        final DatabaseConfiguration config = helper.setUpConfig();</span>
+<span class="fc" id="L149">        config.addPropertyDirect(&quot;key&quot;, &quot;value&quot;);</span>
+
+<span class="fc" id="L151">        assertTrue(&quot;missing property&quot;, config.containsKey(&quot;key&quot;));</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Tests whether a commit is performed after a property was added.
+     */
+    @Test
+    public void testAddPropertyDirectCommit() throws ConfigurationException
+    {
+<span class="fc" id="L160">        helper.setAutoCommit(false);</span>
+<span class="fc" id="L161">        final DatabaseConfiguration config = helper.setUpConfig();</span>
+<span class="fc" id="L162">        config.addPropertyDirect(&quot;key&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L163">        assertTrue(&quot;missing property&quot;, config.containsKey(&quot;key&quot;));</span>
+<span class="fc" id="L164">    }</span>
+
+    @Test
+    public void testAddPropertyDirectMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L169">        final DatabaseConfiguration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L170">        config.addPropertyDirect(&quot;key&quot;, &quot;value&quot;);</span>
+
+<span class="fc" id="L172">        assertTrue(&quot;missing property&quot;, config.containsKey(&quot;key&quot;));</span>
+<span class="fc" id="L173">    }</span>
+
+    @Test
+    public void testAddNonStringProperty() throws ConfigurationException
+    {
+<span class="fc" id="L178">        final DatabaseConfiguration config = helper.setUpConfig();</span>
+<span class="fc" id="L179">        config.addPropertyDirect(&quot;boolean&quot;, Boolean.TRUE);</span>
+
+<span class="fc" id="L181">        assertTrue(&quot;missing property&quot;, config.containsKey(&quot;boolean&quot;));</span>
+<span class="fc" id="L182">    }</span>
+
+    @Test
+    public void testGetPropertyDirectSingle() throws ConfigurationException
+    {
+<span class="fc" id="L187">        final Configuration config = setUpConfig();</span>
+
+<span class="fc" id="L189">        assertEquals(&quot;property1&quot;, &quot;value1&quot;, config.getProperty(&quot;key1&quot;));</span>
+<span class="fc" id="L190">        assertEquals(&quot;property2&quot;, &quot;value2&quot;, config.getProperty(&quot;key2&quot;));</span>
+<span class="fc" id="L191">        assertEquals(&quot;unknown property&quot;, null, config.getProperty(&quot;key3&quot;));</span>
+<span class="fc" id="L192">    }</span>
+
+    @Test
+    public void testGetPropertyDirectMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L197">        final Configuration config = helper.setUpMultiConfig();</span>
+
+<span class="fc" id="L199">        assertEquals(&quot;property1&quot;, &quot;value1&quot;, config.getProperty(&quot;key1&quot;));</span>
+<span class="fc" id="L200">        assertEquals(&quot;property2&quot;, &quot;value2&quot;, config.getProperty(&quot;key2&quot;));</span>
+<span class="fc" id="L201">        assertEquals(&quot;unknown property&quot;, null, config.getProperty(&quot;key3&quot;));</span>
+<span class="fc" id="L202">    }</span>
+
+    @Test
+    public void testClearPropertySingle() throws ConfigurationException
+    {
+<span class="fc" id="L207">        final Configuration config = helper.setUpConfig();</span>
+<span class="fc" id="L208">        config.clearProperty(&quot;key1&quot;);</span>
+
+<span class="fc" id="L210">        assertFalse(&quot;property not cleared&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L211">    }</span>
+
+    @Test
+    public void testClearPropertyMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L216">        final Configuration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L217">        config.clearProperty(&quot;key1&quot;);</span>
+
+<span class="fc" id="L219">        assertFalse(&quot;property not cleared&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Tests that another configuration is not affected when clearing
+     * properties.
+     */
+    @Test
+    public void testClearPropertyMultipleOtherConfig() throws ConfigurationException
+    {
+<span class="fc" id="L229">        final DatabaseConfiguration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L230">        final DatabaseConfiguration config2 =</span>
+<span class="fc" id="L231">                helper.setUpMultiConfig(DatabaseConfiguration.class,</span>
+                        CONFIG_NAME2);
+<span class="fc" id="L233">        config2.addProperty(&quot;key1&quot;, &quot;some test&quot;);</span>
+<span class="fc" id="L234">        config.clearProperty(&quot;key1&quot;);</span>
+<span class="fc" id="L235">        assertFalse(&quot;property not cleared&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L236">        assertTrue(&quot;Property cleared in other config&quot;, config2</span>
+<span class="fc" id="L237">                .containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L238">    }</span>
+
+    /**
+     * Tests whether a commit is performed after a property was cleared.
+     */
+    @Test
+    public void testClearPropertyCommit() throws ConfigurationException
+    {
+<span class="fc" id="L246">        helper.setAutoCommit(false);</span>
+<span class="fc" id="L247">        final Configuration config = helper.setUpConfig();</span>
+<span class="fc" id="L248">        config.clearProperty(&quot;key1&quot;);</span>
+<span class="fc" id="L249">        assertFalse(&quot;property not cleared&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L250">    }</span>
+
+    @Test
+    public void testClearSingle() throws ConfigurationException
+    {
+<span class="fc" id="L255">        final Configuration config = helper.setUpConfig();</span>
+<span class="fc" id="L256">        config.clear();</span>
+
+<span class="fc" id="L258">        assertTrue(&quot;configuration is not cleared&quot;, config.isEmpty());</span>
+<span class="fc" id="L259">    }</span>
+
+    @Test
+    public void testClearMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L264">        final Configuration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L265">        config.clear();</span>
+
+<span class="fc" id="L267">        assertTrue(&quot;configuration is not cleared&quot;, config.isEmpty());</span>
+<span class="fc" id="L268">    }</span>
+
+    /**
+     * Tests whether a commit is performed after a clear operation.
+     */
+    @Test
+    public void testClearCommit() throws ConfigurationException
+    {
+<span class="fc" id="L276">        helper.setAutoCommit(false);</span>
+<span class="fc" id="L277">        final Configuration config = helper.setUpConfig();</span>
+<span class="fc" id="L278">        config.clear();</span>
+<span class="fc" id="L279">        assertTrue(&quot;configuration is not cleared&quot;, config.isEmpty());</span>
+<span class="fc" id="L280">    }</span>
+
+    @Test
+    public void testGetKeysSingle() throws ConfigurationException
+    {
+<span class="fc" id="L285">        final Configuration config = setUpConfig();</span>
+<span class="fc" id="L286">        final Iterator&lt;String&gt; it = config.getKeys();</span>
+
+<span class="fc" id="L288">        assertEquals(&quot;1st key&quot;, &quot;key1&quot;, it.next());</span>
+<span class="fc" id="L289">        assertEquals(&quot;2nd key&quot;, &quot;key2&quot;, it.next());</span>
+<span class="fc" id="L290">    }</span>
+
+    @Test
+    public void testGetKeysMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L295">        final Configuration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L296">        final Iterator&lt;String&gt; it = config.getKeys();</span>
+
+<span class="fc" id="L298">        assertEquals(&quot;1st key&quot;, &quot;key1&quot;, it.next());</span>
+<span class="fc" id="L299">        assertEquals(&quot;2nd key&quot;, &quot;key2&quot;, it.next());</span>
+<span class="fc" id="L300">    }</span>
+
+    @Test
+    public void testContainsKeySingle() throws ConfigurationException
+    {
+<span class="fc" id="L305">        final Configuration config = setUpConfig();</span>
+<span class="fc" id="L306">        assertTrue(&quot;missing key1&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L307">        assertTrue(&quot;missing key2&quot;, config.containsKey(&quot;key2&quot;));</span>
+<span class="fc" id="L308">    }</span>
+
+    @Test
+    public void testContainsKeyMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L313">        final Configuration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L314">        assertTrue(&quot;missing key1&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L315">        assertTrue(&quot;missing key2&quot;, config.containsKey(&quot;key2&quot;));</span>
+<span class="fc" id="L316">    }</span>
+
+    @Test
+    public void testIsEmptySingle() throws ConfigurationException
+    {
+<span class="fc" id="L321">        final Configuration config1 = setUpConfig();</span>
+<span class="fc" id="L322">        assertFalse(&quot;The configuration is empty&quot;, config1.isEmpty());</span>
+<span class="fc" id="L323">    }</span>
+
+    @Test
+    public void testIsEmptyMultiple() throws ConfigurationException
+    {
+<span class="fc" id="L328">        final Configuration config1 = helper.setUpMultiConfig();</span>
+<span class="fc" id="L329">        assertFalse(&quot;The configuration named 'test' is empty&quot;, config1.isEmpty());</span>
+
+<span class="fc" id="L331">        final Configuration config2 = helper.setUpMultiConfig(DatabaseConfiguration.class, &quot;testIsEmpty&quot;);</span>
+<span class="fc" id="L332">        assertTrue(&quot;The configuration named 'testIsEmpty' is not empty&quot;, config2.isEmpty());</span>
+<span class="fc" id="L333">    }</span>
+
+    @Test
+    public void testGetList() throws ConfigurationException
+    {
+<span class="fc" id="L338">        final DatabaseBuilderParameters params = helper.setUpDefaultParameters().setTable(&quot;configurationList&quot;);</span>
+<span class="fc" id="L339">        final Configuration config1 = helper.createConfig(DatabaseConfiguration.class, params);</span>
+<span class="fc" id="L340">        final List&lt;Object&gt; list = config1.getList(&quot;key3&quot;);</span>
+<span class="fc" id="L341">        assertEquals(3,list.size());</span>
+<span class="fc" id="L342">    }</span>
+
+    @Test
+    public void testGetKeys() throws ConfigurationException
+    {
+<span class="fc" id="L347">        final DatabaseBuilderParameters params = helper.setUpDefaultParameters().setTable(&quot;configurationList&quot;);</span>
+<span class="fc" id="L348">        final Configuration config1 = helper.createConfig(DatabaseConfiguration.class, params);</span>
+<span class="fc" id="L349">        final Iterator&lt;String&gt; i = config1.getKeys();</span>
+<span class="fc" id="L350">        assertTrue(i.hasNext());</span>
+<span class="fc" id="L351">        final Object key = i.next();</span>
+<span class="fc" id="L352">        assertEquals(&quot;key3&quot;,key.toString());</span>
+<span class="fc" id="L353">        assertFalse(i.hasNext());</span>
+<span class="fc" id="L354">    }</span>
+
+    @Test
+    public void testClearSubset() throws ConfigurationException
+    {
+<span class="fc" id="L359">        final Configuration config = setUpConfig();</span>
+
+<span class="fc" id="L361">        final Configuration subset = config.subset(&quot;key1&quot;);</span>
+<span class="fc" id="L362">        subset.clear();</span>
+
+<span class="fc" id="L364">        assertTrue(&quot;the subset is not empty&quot;, subset.isEmpty());</span>
+<span class="fc" id="L365">        assertFalse(&quot;the parent configuration is empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L366">    }</span>
+
+    /**
+     * Tests whether the configuration has already an error listener registered
+     * that is used for logging.
+     */
+    @Test
+    public void testLogErrorListener() throws ConfigurationException
+    {
+<span class="fc" id="L375">        final DatabaseConfiguration config = helper.setUpConfig();</span>
+<span class="fc" id="L376">        assertEquals(&quot;No error listener registered&quot;, 1, config</span>
+<span class="fc" id="L377">                .getEventListeners(ConfigurationErrorEvent.ANY).size());</span>
+<span class="fc" id="L378">    }</span>
+
+    /**
+     * Tests handling of errors in getProperty().
+     */
+    @Test
+    public void testGetPropertyError() throws ConfigurationException
+    {
+<span class="fc" id="L386">        setUpErrorConfig().getProperty(&quot;key1&quot;);</span>
+<span class="fc" id="L387">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, &quot;key1&quot;, null);
+<span class="fc" id="L389">    }</span>
+
+    /**
+     * Tests handling of errors in addPropertyDirect().
+     */
+    @Test
+    public void testAddPropertyError() throws ConfigurationException
+    {
+<span class="fc" id="L397">        setUpErrorConfig().addProperty(&quot;key1&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L398">        checkErrorListener(ConfigurationErrorEvent.WRITE,</span>
+                ConfigurationEvent.ADD_PROPERTY, &quot;key1&quot;, &quot;value&quot;);
+<span class="fc" id="L400">    }</span>
+
+    /**
+     * Tests handling of errors in isEmpty().
+     */
+    @Test
+    public void testIsEmptyError() throws ConfigurationException
+    {
+<span class="fc" id="L408">        assertTrue(&quot;Wrong return value for failure&quot;, setUpErrorConfig().isEmpty());</span>
+<span class="fc" id="L409">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, null, null);
+<span class="fc" id="L411">    }</span>
+
+    /**
+     * Tests handling of errors in containsKey().
+     */
+    @Test
+    public void testContainsKeyError() throws ConfigurationException
+    {
+<span class="fc" id="L419">        assertFalse(&quot;Wrong return value for failure&quot;, setUpErrorConfig().containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L420">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, &quot;key1&quot;, null);
+<span class="fc" id="L422">    }</span>
+
+    /**
+     * Tests handling of errors in clearProperty().
+     */
+    @Test
+    public void testClearPropertyError() throws ConfigurationException
+    {
+<span class="fc" id="L430">        setUpErrorConfig().clearProperty(&quot;key1&quot;);</span>
+<span class="fc" id="L431">        checkErrorListener(ConfigurationErrorEvent.WRITE,</span>
+                ConfigurationEvent.CLEAR_PROPERTY, &quot;key1&quot;, null);
+<span class="fc" id="L433">    }</span>
+
+    /**
+     * Tests handling of errors in clear().
+     */
+    @Test
+    public void testClearError() throws ConfigurationException
+    {
+<span class="fc" id="L441">        setUpErrorConfig().clear();</span>
+<span class="fc" id="L442">        checkErrorListener(ConfigurationErrorEvent.WRITE,</span>
+                ConfigurationEvent.CLEAR, null, null);
+<span class="fc" id="L444">    }</span>
+
+    /**
+     * Tests handling of errors in getKeys().
+     */
+    @Test
+    public void testGetKeysError() throws ConfigurationException
+    {
+<span class="fc" id="L452">        final Iterator&lt;String&gt; it = setUpErrorConfig().getKeys();</span>
+<span class="fc" id="L453">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, null, null);
+<span class="fc" id="L455">        assertFalse(&quot;Iteration is not empty&quot;, it.hasNext());</span>
+<span class="fc" id="L456">    }</span>
+
+    /**
+     * Tests obtaining a property as list whose value contains the list
+     * delimiter. Multiple values should be returned.
+     */
+    @Test
+    public void testGetListWithDelimiter() throws ConfigurationException
+    {
+<span class="fc" id="L465">        final DatabaseConfiguration config = setUpConfig();</span>
+<span class="fc" id="L466">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(';'));</span>
+<span class="fc" id="L467">        final List&lt;Object&gt; values = config.getList(&quot;keyMulti&quot;);</span>
+<span class="fc" id="L468">        assertEquals(&quot;Wrong number of list elements&quot;, 3, values.size());</span>
+<span class="fc" id="L469">        assertEquals(&quot;Wrong list element 0&quot;, &quot;a&quot;, values.get(0));</span>
+<span class="fc" id="L470">        assertEquals(&quot;Wrong list element 2&quot;, &quot;c&quot;, values.get(2));</span>
+<span class="fc" id="L471">    }</span>
+
+    /**
+     * Tests obtaining a property whose value contains the list delimiter when
+     * delimiter parsing is disabled.
+     */
+    @Test
+    public void testGetListWithDelimiterParsingDisabled() throws ConfigurationException
+    {
+<span class="fc" id="L480">        final DatabaseConfiguration config = setUpConfig();</span>
+<span class="fc" id="L481">        assertEquals(&quot;Wrong value of property&quot;, &quot;a;b;c&quot;, config.getString(&quot;keyMulti&quot;));</span>
+<span class="fc" id="L482">    }</span>
+
+    /**
+     * Tests adding a property containing the list delimiter. When this property
+     * is queried multiple values should be returned.
+     */
+    @Test
+    public void testAddWithDelimiter() throws ConfigurationException
+    {
+<span class="fc" id="L491">        final DatabaseConfiguration config = setUpConfig();</span>
+<span class="fc" id="L492">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(';'));</span>
+<span class="fc" id="L493">        config.addProperty(&quot;keyList&quot;, &quot;1;2;3&quot;);</span>
+<span class="fc" id="L494">        final String[] values = config.getStringArray(&quot;keyList&quot;);</span>
+<span class="fc" id="L495">        assertEquals(&quot;Wrong number of property values&quot;, 3, values.length);</span>
+<span class="fc" id="L496">        assertEquals(&quot;Wrong value at index 1&quot;, &quot;2&quot;, values[1]);</span>
+<span class="fc" id="L497">    }</span>
+
+    /**
+     * Tests setProperty() if the property value contains the list delimiter.
+     */
+    @Test
+    public void testSetPropertyWithDelimiter() throws ConfigurationException
+    {
+<span class="fc" id="L505">        final DatabaseConfiguration config = helper.setUpMultiConfig();</span>
+<span class="fc" id="L506">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(';'));</span>
+<span class="fc" id="L507">        config.setProperty(&quot;keyList&quot;, &quot;1;2;3&quot;);</span>
+<span class="fc" id="L508">        final String[] values = config.getStringArray(&quot;keyList&quot;);</span>
+<span class="fc" id="L509">        assertEquals(&quot;Wrong number of property values&quot;, 3, values.length);</span>
+<span class="fc" id="L510">        assertEquals(&quot;Wrong value at index 1&quot;, &quot;2&quot;, values[1]);</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tests whether a CLOB as a property value is handled correctly.
+     */
+    @Test
+    public void testExtractPropertyValueCLOB() throws ConfigurationException,
+            SQLException
+    {
+<span class="fc" id="L520">        final ResultSet rs = EasyMock.createMock(ResultSet.class);</span>
+<span class="fc" id="L521">        final Clob clob = EasyMock.createMock(Clob.class);</span>
+<span class="fc" id="L522">        final String content = &quot;This is the content of the test CLOB!&quot;;</span>
+<span class="fc" id="L523">        EasyMock.expect(rs.getObject(DatabaseConfigurationTestHelper.COL_VALUE))</span>
+<span class="fc" id="L524">                .andReturn(clob);</span>
+<span class="fc" id="L525">        EasyMock.expect(clob.length())</span>
+<span class="fc" id="L526">                .andReturn(Long.valueOf(content.length()));</span>
+<span class="fc" id="L527">        EasyMock.expect(clob.getSubString(1, content.length())).andReturn(</span>
+                content);
+<span class="fc" id="L529">        EasyMock.replay(rs, clob);</span>
+<span class="fc" id="L530">        final DatabaseConfiguration config = helper.setUpConfig();</span>
+<span class="fc" id="L531">        assertEquals(&quot;Wrong extracted value&quot;, content,</span>
+<span class="fc" id="L532">                config.extractPropertyValue(rs));</span>
+<span class="fc" id="L533">        EasyMock.verify(rs, clob);</span>
+<span class="fc" id="L534">    }</span>
+
+    /**
+     * Tests whether an empty CLOB is correctly handled by
+     * extractPropertyValue().
+     */
+    @Test
+    public void testExtractPropertyValueCLOBEmpty()
+            throws ConfigurationException, SQLException
+    {
+<span class="fc" id="L544">        final ResultSet rs = EasyMock.createMock(ResultSet.class);</span>
+<span class="fc" id="L545">        final Clob clob = EasyMock.createMock(Clob.class);</span>
+<span class="fc" id="L546">        EasyMock.expect(rs.getObject(DatabaseConfigurationTestHelper.COL_VALUE))</span>
+<span class="fc" id="L547">                .andReturn(clob);</span>
+<span class="fc" id="L548">        EasyMock.expect(clob.length()).andReturn(0L);</span>
+<span class="fc" id="L549">        EasyMock.replay(rs, clob);</span>
+<span class="fc" id="L550">        final DatabaseConfiguration config = helper.setUpConfig();</span>
+<span class="fc" id="L551">        assertEquals(&quot;Wrong extracted value&quot;, &quot;&quot;,</span>
+<span class="fc" id="L552">                config.extractPropertyValue(rs));</span>
+<span class="fc" id="L553">        EasyMock.verify(rs, clob);</span>
+<span class="fc" id="L554">    }</span>
+
+    /**
+     * A specialized database configuration implementation that can be
+     * configured to throw an exception when obtaining a connection. This way
+     * database exceptions can be simulated.
+     */
+<span class="fc" id="L561">    public static class PotentialErrorDatabaseConfiguration extends DatabaseConfiguration</span>
+    {
+        /** A flag whether a getConnection() call should fail. */
+        boolean failOnConnect;
+
+        @Override
+        public DataSource getDatasource()
+        {
+<span class="fc bfc" id="L569" title="All 2 branches covered.">            if (failOnConnect)</span>
+            {
+<span class="fc" id="L571">                final DataSource ds = EasyMock.createMock(DataSource.class);</span>
+                try
+                {
+<span class="fc" id="L574">                    EasyMock.expect(ds.getConnection()).andThrow(</span>
+                            new SQLException(&quot;Simulated DB error&quot;));
+                }
+<span class="nc" id="L577">                catch (final SQLException e)</span>
+                {
+                    // should not happen
+<span class="nc" id="L580">                    throw new AssertionError(&quot;Unexpected exception!&quot;);</span>
+<span class="fc" id="L581">                }</span>
+<span class="fc" id="L582">                EasyMock.replay(ds);</span>
+<span class="fc" id="L583">                return ds;</span>
+            }
+<span class="fc" id="L585">            return super.getDatasource();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestImmutableConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestImmutableConfiguration.java</span></div><h1>TestImmutableConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.junit.Test;
+
+/**
+ * A test class which tests functionality related to immutable configurations.
+ *
+ */
+<span class="fc" id="L40">public class TestImmutableConfiguration</span>
+{
+    /** Constant for the name of a test properties file. */
+    private static final String TEST_FILE = &quot;test.properties&quot;;
+
+    /**
+     * Tries to create an immutable configuration from a null object.
+     */
+    @Test(expected = NullPointerException.class)
+    public void testUnmodifiableConfigurationNull()
+    {
+<span class="nc" id="L51">        ConfigurationUtils.unmodifiableConfiguration(null);</span>
+<span class="nc" id="L52">    }</span>
+
+    /**
+     * Creates a test configuration object filled with properties.
+     *
+     * @return the test configuration
+     * @throws ConfigurationException if an error occurs
+     */
+    private static PropertiesConfiguration createTestConfig()
+            throws ConfigurationException
+    {
+<span class="fc" id="L63">        return new FileBasedConfigurationBuilder&lt;&gt;(</span>
+<span class="fc" id="L64">                PropertiesConfiguration.class).configure(</span>
+<span class="fc" id="L65">                new FileBasedBuilderParametersImpl().setFile(ConfigurationAssert</span>
+<span class="fc" id="L66">                        .getTestFile(TEST_FILE))).getConfiguration();</span>
+    }
+
+    /**
+     * Tests whether data can be accessed from an unmodifiable configuration.
+     */
+    @Test
+    public void testUnmodifiableConfigurationAccess()
+            throws ConfigurationException
+    {
+<span class="fc" id="L76">        final Configuration confOrg = createTestConfig();</span>
+<span class="fc" id="L77">        final ImmutableConfiguration conf =</span>
+<span class="fc" id="L78">                ConfigurationUtils.unmodifiableConfiguration(confOrg);</span>
+<span class="fc" id="L79">        assertFalse(&quot;Empty&quot;, conf.isEmpty());</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = confOrg.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L82">            final String key = it.next();</span>
+<span class="fc" id="L83">            assertTrue(&quot;Key not contained: &quot; + key, conf.containsKey(key));</span>
+<span class="fc" id="L84">            assertEquals(&quot;Wrong value for &quot; + key, confOrg.getProperty(key),</span>
+<span class="fc" id="L85">                    conf.getProperty(key));</span>
+<span class="fc" id="L86">        }</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Tests different access methods for properties.
+     */
+    @Test
+    public void testUnmodifiableConfigurationOtherTypes()
+            throws ConfigurationException
+    {
+        final ImmutableConfiguration conf =
+                ConfigurationUtils
+<span class="fc" id="L98">                        .unmodifiableConfiguration(createTestConfig());</span>
+<span class="fc" id="L99">        assertEquals(&quot;Wrong byte&quot;, (byte) 10, conf.getByte(&quot;test.byte&quot;));</span>
+<span class="fc" id="L100">        assertEquals(&quot;Wrong boolean&quot;, true, conf.getBoolean(&quot;test.boolean&quot;));</span>
+<span class="fc" id="L101">        assertEquals(&quot;Wrong double&quot;, 10.25, conf.getDouble(&quot;test.double&quot;), .05);</span>
+<span class="fc" id="L102">        assertEquals(&quot;Wrong float&quot;, 20.25f, conf.getFloat(&quot;test.float&quot;), .05);</span>
+<span class="fc" id="L103">        assertEquals(&quot;Wrong int&quot;, 10, conf.getInt(&quot;test.integer&quot;));</span>
+<span class="fc" id="L104">        assertEquals(&quot;Wrong long&quot;, 1000000L, conf.getLong(&quot;test.long&quot;));</span>
+<span class="fc" id="L105">        assertEquals(&quot;Wrong short&quot;, (short) 1, conf.getShort(&quot;test.short&quot;));</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Obtains all keys from the given iteration.
+     *
+     * @param it the iterator
+     * @return a set with all keys
+     */
+    private static Set&lt;String&gt; fetchKeys(final Iterator&lt;String&gt; it)
+    {
+<span class="fc" id="L116">        final Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        while (it.hasNext())</span>
+        {
+<span class="fc" id="L119">            keys.add(it.next());</span>
+        }
+<span class="fc" id="L121">        return keys;</span>
+    }
+
+    /**
+     * Tests an iteration over the keys of the immutable configuration.
+     */
+    @Test
+    public void testUnmodifiableConfigurationIterate()
+            throws ConfigurationException
+    {
+<span class="fc" id="L131">        final Configuration confOrg = createTestConfig();</span>
+<span class="fc" id="L132">        final ImmutableConfiguration conf =</span>
+<span class="fc" id="L133">                ConfigurationUtils.unmodifiableConfiguration(confOrg);</span>
+<span class="fc" id="L134">        assertEquals(&quot;Different keys&quot;, fetchKeys(confOrg.getKeys()),</span>
+<span class="fc" id="L135">                fetchKeys(conf.getKeys()));</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Tests that it is not possible to remove keys using the iterator.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testUnmodifiableConfigurationIteratorRemove()
+            throws ConfigurationException
+    {
+        final ImmutableConfiguration conf =
+                ConfigurationUtils
+<span class="fc" id="L147">                        .unmodifiableConfiguration(createTestConfig());</span>
+<span class="fc" id="L148">        final Iterator&lt;String&gt; it = conf.getKeys();</span>
+<span class="fc" id="L149">        it.next();</span>
+<span class="nc" id="L150">        it.remove();</span>
+<span class="nc" id="L151">    }</span>
+
+    /**
+     * Tests whether an update of the original configuration is visible for the
+     * immutable view.
+     */
+    @Test
+    public void testUnmodifiableConfigurationLiveUpdate()
+            throws ConfigurationException
+    {
+<span class="fc" id="L161">        final Configuration confOrg = createTestConfig();</span>
+<span class="fc" id="L162">        final ImmutableConfiguration conf =</span>
+<span class="fc" id="L163">                ConfigurationUtils.unmodifiableConfiguration(confOrg);</span>
+<span class="fc" id="L164">        final String key = &quot;new.property&quot;;</span>
+<span class="fc" id="L165">        final String value = &quot;new value&quot;;</span>
+<span class="fc" id="L166">        confOrg.addProperty(key, value);</span>
+<span class="fc" id="L167">        assertEquals(&quot;Value not set&quot;, value, conf.getString(key));</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * Tests that a cast to a mutable configuration is not possible.
+     */
+    @Test(expected = ClassCastException.class)
+    public void testUnmodifiableConfigurationCast()
+            throws ConfigurationException
+    {
+        final ImmutableConfiguration conf =
+                ConfigurationUtils
+<span class="nc" id="L179">                        .unmodifiableConfiguration(createTestConfig());</span>
+<span class="nc" id="L180">        final Configuration mutableConf = (Configuration) conf;</span>
+<span class="nc" id="L181">        mutableConf.clear();</span>
+<span class="nc" id="L182">    }</span>
+
+    /**
+     * Tests whether an immutable subset can be queried.
+     */
+    @Test
+    public void testImmutableSubset() throws ConfigurationException
+    {
+        final ImmutableConfiguration conf =
+                ConfigurationUtils
+<span class="fc" id="L192">                        .unmodifiableConfiguration(createTestConfig());</span>
+<span class="fc" id="L193">        final ImmutableConfiguration subset = conf.immutableSubset(&quot;test&quot;);</span>
+<span class="fc" id="L194">        assertFalse(&quot;No content&quot;, subset.isEmpty());</span>
+<span class="fc" id="L195">        assertEquals(&quot;Wrong value&quot;, 1000000, subset.getLong(&quot;long&quot;));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests whether an unmodifiable hierarchical configuration can be created.
+     */
+    @Test
+    public void testUnmodifiableHierarchicalConfiguration()
+    {
+<span class="fc" id="L204">        final HierarchicalConfiguration&lt;?&gt; conf = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L205">        final String key = &quot;test&quot;;</span>
+<span class="fc" id="L206">        conf.addProperty(key, Boolean.TRUE);</span>
+<span class="fc" id="L207">        final ImmutableHierarchicalConfiguration ihc =</span>
+<span class="fc" id="L208">                ConfigurationUtils.unmodifiableConfiguration(conf);</span>
+<span class="fc" id="L209">        assertTrue(&quot;Property not found&quot;, ihc.getBoolean(key));</span>
+<span class="fc" id="L210">        assertEquals(&quot;Wrong max index&quot;, 0, ihc.getMaxIndex(key));</span>
+<span class="fc" id="L211">    }</span>
+
+    /**
+     * Tests that exceptions thrown by the wrapped configuration are handled
+     * correctly.
+     */
+    @Test
+    public void testExceptionHandling()
+    {
+<span class="fc" id="L220">        final PropertiesConfiguration config = new PropertiesConfiguration();</span>
+<span class="fc" id="L221">        final String property = &quot;nonExistingProperty&quot;;</span>
+<span class="fc" id="L222">        config.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L223">        final ImmutableConfiguration ic =</span>
+<span class="fc" id="L224">                ConfigurationUtils.unmodifiableConfiguration(config);</span>
+        try
+        {
+<span class="nc" id="L227">            ic.getString(property);</span>
+<span class="nc" id="L228">            fail(&quot;Exception for missing property not thrown!&quot;);</span>
+        }
+<span class="fc" id="L230">        catch (final NoSuchElementException e)</span>
+        {
+<span class="fc" id="L232">            assertThat(&quot;Wrong message&quot;, e.getMessage(),</span>
+<span class="fc" id="L233">                    containsString(property));</span>
+<span class="nc" id="L234">        }</span>
+<span class="fc" id="L235">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CharUtilsPerfRun.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">CharUtilsPerfRun.java</span></div><h1>CharUtilsPerfRun.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import java.text.NumberFormat;
+import java.util.Calendar;
+
+/**
+ * Tests the difference in performance between CharUtils and CharSet.
+ *
+ * Sample runs:
+
+Now: Thu Mar 18 14:29:48 PST 2004
+Sun Microsystems Inc. Java(TM) 2 Runtime Environment, Standard Edition 1.3.1_10-b03
+Sun Microsystems Inc. Java HotSpot(TM) Client VM 1.3.1_10-b03
+Windows XP 5.1 x86 pentium i486 i386
+Do nothing: 0 milliseconds.
+run_CharUtils_isAsciiNumeric: 4,545 milliseconds.
+run_inlined_CharUtils_isAsciiNumeric: 3,417 milliseconds.
+run_inlined_CharUtils_isAsciiNumeric: 85,679 milliseconds.
+
+
+Now: Thu Mar 18 14:24:51 PST 2004
+Sun Microsystems Inc. Java(TM) 2 Runtime Environment, Standard Edition 1.4.2_04-b05
+Sun Microsystems Inc. Java HotSpot(TM) Client VM 1.4.2_04-b05
+Windows XP 5.1 x86 pentium i486 i386
+Do nothing: 0 milliseconds.
+run_CharUtils_isAsciiNumeric: 2,578 milliseconds.
+run_inlined_CharUtils_isAsciiNumeric: 2,477 milliseconds.
+run_inlined_CharUtils_isAsciiNumeric: 114,429 milliseconds.
+
+Now: Thu Mar 18 14:27:55 PST 2004
+Sun Microsystems Inc. Java(TM) 2 Runtime Environment, Standard Edition 1.4.2_04-b05
+Sun Microsystems Inc. Java HotSpot(TM) Server VM 1.4.2_04-b05
+Windows XP 5.1 x86 pentium i486 i386
+Do nothing: 0 milliseconds.
+run_CharUtils_isAsciiNumeric: 630 milliseconds.
+run_inlined_CharUtils_isAsciiNumeric: 709 milliseconds.
+run_inlined_CharUtils_isAsciiNumeric: 84,420 milliseconds.
+
+
+ */
+<span class="nc" id="L58">public class CharUtilsPerfRun {</span>
+    private static final String VERSION = &quot;$Id$&quot;;
+
+    private static final int WARM_UP = 100;
+
+    private static final int COUNT = 5000;
+
+    private static final char[] CHAR_SAMPLES;
+
+    static {
+<span class="nc" id="L68">        CHAR_SAMPLES = new char[Character.MAX_VALUE];</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (char i = Character.MIN_VALUE; i &lt; Character.MAX_VALUE; i++) {</span>
+<span class="nc" id="L70">            CHAR_SAMPLES[i] = i;</span>
+        }
+<span class="nc" id="L72">    }</span>
+
+    public static void main(final String[] args) {
+<span class="nc" id="L75">        new CharUtilsPerfRun().run();</span>
+<span class="nc" id="L76">    }</span>
+
+    private void printSysInfo() {
+<span class="nc" id="L79">        System.out.println(VERSION);</span>
+<span class="nc" id="L80">        System.out.println(&quot;Now: &quot; + Calendar.getInstance().getTime());</span>
+<span class="nc" id="L81">        System.out.println(System.getProperty(&quot;java.vendor&quot;)</span>
+                + &quot; &quot;
+<span class="nc" id="L83">                + System.getProperty(&quot;java.runtime.name&quot;)</span>
+                + &quot; &quot;
+<span class="nc" id="L85">                + System.getProperty(&quot;java.runtime.version&quot;));</span>
+<span class="nc" id="L86">        System.out.println(System.getProperty(&quot;java.vm.vendor&quot;)</span>
+                + &quot; &quot;
+<span class="nc" id="L88">                + System.getProperty(&quot;java.vm.name&quot;)</span>
+                + &quot; &quot;
+<span class="nc" id="L90">                + System.getProperty(&quot;java.vm.version&quot;));</span>
+<span class="nc" id="L91">        System.out.println(System.getProperty(&quot;os.name&quot;)</span>
+            + &quot; &quot;
+<span class="nc" id="L93">            + System.getProperty(&quot;os.version&quot;)</span>
+            + &quot; &quot;
+<span class="nc" id="L95">            + System.getProperty(&quot;os.arch&quot;)</span>
+            + &quot; &quot;
+<span class="nc" id="L97">            + System.getProperty(&quot;sun.cpu.isalist&quot;));</span>
+<span class="nc" id="L98">    }</span>
+
+    private void run() {
+<span class="nc" id="L101">        this.printSysInfo();</span>
+        long start;
+<span class="nc" id="L103">        start = System.currentTimeMillis();</span>
+<span class="nc" id="L104">        this.printlnTotal(&quot;Do nothing&quot;, start);</span>
+<span class="nc" id="L105">        run_CharUtils_isAsciiNumeric(WARM_UP);</span>
+<span class="nc" id="L106">        start = System.currentTimeMillis();</span>
+<span class="nc" id="L107">        run_CharUtils_isAsciiNumeric(COUNT);</span>
+<span class="nc" id="L108">        this.printlnTotal(&quot;run_CharUtils_isAsciiNumeric&quot;, start);</span>
+<span class="nc" id="L109">        run_inlined_CharUtils_isAsciiNumeric(WARM_UP);</span>
+<span class="nc" id="L110">        start = System.currentTimeMillis();</span>
+<span class="nc" id="L111">        run_inlined_CharUtils_isAsciiNumeric(COUNT);</span>
+<span class="nc" id="L112">        this.printlnTotal(&quot;run_inlined_CharUtils_isAsciiNumeric&quot;, start);</span>
+<span class="nc" id="L113">        run_CharSet(WARM_UP);</span>
+<span class="nc" id="L114">        start = System.currentTimeMillis();</span>
+<span class="nc" id="L115">        run_CharSet(COUNT);</span>
+<span class="nc" id="L116">        this.printlnTotal(&quot;run_CharSet&quot;, start);</span>
+<span class="nc" id="L117">    }</span>
+
+    private int run_CharSet(final int loopCount) {
+<span class="nc" id="L120">        int t = 0;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        for (int i = 0; i &lt; loopCount; i++) {</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            for (final char ch : CHAR_SAMPLES) {</span>
+<span class="nc" id="L123">                final boolean b = CharSet.ASCII_NUMERIC.contains(ch);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">                t += b ? 1 : 0;</span>
+            }
+        }
+<span class="nc" id="L127">        return t;</span>
+    }
+
+    private int run_CharUtils_isAsciiNumeric(final int loopCount) {
+<span class="nc" id="L131">        int t = 0;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        for (int i = 0; i &lt; loopCount; i++) {</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            for (final char ch : CHAR_SAMPLES) {</span>
+<span class="nc" id="L134">                final boolean b = CharUtils.isAsciiNumeric(ch);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                t += b ? 1 : 0;</span>
+            }
+        }
+<span class="nc" id="L138">        return t;</span>
+    }
+
+    private int run_inlined_CharUtils_isAsciiNumeric(final int loopCount) {
+<span class="nc" id="L142">        int t = 0;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (int i = 0; i &lt; loopCount; i++) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            for (final char ch : CHAR_SAMPLES) {</span>
+<span class="nc bnc" id="L145" title="All 4 branches missed.">                final boolean b = ch &gt;= '0' &amp;&amp; ch &lt;= '9';</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                t += b ? 1 : 0;</span>
+            }
+        }
+<span class="nc" id="L149">        return t;</span>
+    }
+
+    private void printlnTotal(final String prefix, final long start) {
+<span class="nc" id="L153">        final long total = System.currentTimeMillis() - start;</span>
+<span class="nc" id="L154">        System.out.println(prefix + &quot;: &quot; + NumberFormat.getInstance().format(total) + &quot; milliseconds.&quot;);</span>
+<span class="nc" id="L155">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

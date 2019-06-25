@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestInMemoryNodeModelReferences.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestInMemoryNodeModelReferences.java</span></div><h1>TestInMemoryNodeModelReferences.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * A test class for {@code InMemoryNodeModel} which tests functionality related
+ * to node references. This test class creates a model for the test structure
+ * with authors data. Each node is associated a string reference object with the
+ * node name. It can then be checked whether updates of the hierarchy do not
+ * affect the references.
+ *
+ */
+<span class="fc" id="L44">public class TestInMemoryNodeModelReferences</span>
+{
+    /** A mock resolver. */
+    private NodeKeyResolver&lt;ImmutableNode&gt; resolver;
+
+    /** The test model. */
+    private InMemoryNodeModel model;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L55">        resolver = NodeStructureHelper.createResolverMock();</span>
+<span class="fc" id="L56">        NodeStructureHelper.expectResolveKeyForQueries(resolver);</span>
+<span class="fc" id="L57">        NodeStructureHelper.expectResolveAddKeys(resolver);</span>
+<span class="fc" id="L58">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L59">        model = new InMemoryNodeModel();</span>
+<span class="fc" id="L60">        final Map&lt;ImmutableNode, String&gt; references = createReferences();</span>
+<span class="fc" id="L61">        model.mergeRoot(NodeStructureHelper.ROOT_AUTHORS_TREE, null,</span>
+<span class="fc" id="L62">                references, NodeStructureHelper.ROOT_AUTHORS_TREE.getNodeName(), resolver);</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Creates the initial reference data for the test hierarchy.
+     *
+     * @return the map with reference data
+     */
+    private Map&lt;ImmutableNode, String&gt; createReferences()
+    {
+<span class="fc" id="L72">        final Collection&lt;ImmutableNode&gt; nodes =</span>
+<span class="fc" id="L73">                collectNodes(NodeStructureHelper.ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L74">        nodes.remove(NodeStructureHelper.ROOT_AUTHORS_TREE);</span>
+<span class="fc" id="L75">        final Map&lt;ImmutableNode, String&gt; refs = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        for (final ImmutableNode node : nodes)</span>
+        {
+<span class="fc" id="L78">            refs.put(node, node.getNodeName());</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">        return refs;</span>
+    }
+
+    /**
+     * Returns a flat collection of all nodes contained in the specified nodes
+     * hierarchy.
+     *
+     * @param root the root node of the hierarchy
+     * @return a collection with all nodes in this hierarchy
+     */
+    private Collection&lt;ImmutableNode&gt; collectNodes(final ImmutableNode root)
+    {
+<span class="fc" id="L92">        final Set&lt;ImmutableNode&gt; nodes = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L93">        NodeTreeWalker.INSTANCE.walkBFS(root,</span>
+                new ConfigurationNodeVisitorAdapter&lt;ImmutableNode&gt;()
+<span class="fc" id="L95">                {</span>
+                    @Override
+                    public void visitBeforeChildren(final ImmutableNode node,
+                            final NodeHandler&lt;ImmutableNode&gt; handler)
+                    {
+<span class="fc" id="L100">                        nodes.add(node);</span>
+<span class="fc" id="L101">                    }</span>
+<span class="fc" id="L102">                }, model.getNodeHandler());</span>
+<span class="fc" id="L103">        return nodes;</span>
+    }
+
+    /**
+     * Tests whether the stored references can be queried.
+     */
+    @Test
+    public void testQueryReferences()
+    {
+<span class="fc" id="L112">        final ReferenceNodeHandler handler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L113">        final Collection&lt;ImmutableNode&gt; nodes = collectNodes(handler.getRootNode());</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        for (final ImmutableNode node : nodes)</span>
+        {
+<span class="fc" id="L116">            assertEquals(&quot;Wrong reference&quot;, node.getNodeName(),</span>
+<span class="fc" id="L117">                    handler.getReference(node));</span>
+<span class="fc" id="L118">        }</span>
+<span class="fc" id="L119">    }</span>
+
+    /**
+     * Tests the reference returned for an unknown node.
+     */
+    @Test
+    public void testQueryReferenceUnknown()
+    {
+<span class="fc" id="L127">        final ReferenceNodeHandler handler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L128">        assertNull(&quot;Got a reference&quot;,</span>
+<span class="fc" id="L129">                handler.getReference(new ImmutableNode.Builder().create()));</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * Tests whether references can be queried after an update operation.
+     */
+    @Test
+    public void testQueryReferencesAfterUpdate()
+    {
+<span class="fc" id="L138">        model.addProperty(&quot;Simmons.Hyperion&quot;, Collections.singleton(&quot;Lamia&quot;),</span>
+                resolver);
+<span class="fc" id="L140">        final ReferenceNodeHandler handler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L141">        assertEquals(&quot;Wrong reference 1&quot;, &quot;Hyperion&quot;,</span>
+<span class="fc" id="L142">                handler.getReference(NodeStructureHelper.nodeForKey(model,</span>
+                        &quot;Simmons/Hyperion&quot;)));
+<span class="fc" id="L144">        assertEquals(&quot;Wrong reference 2&quot;, &quot;Simmons&quot;,</span>
+<span class="fc" id="L145">                handler.getReference(NodeStructureHelper.nodeForKey(model,</span>
+                        &quot;Simmons&quot;)));
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Tests whether the removed references can be queried if there are none.
+     */
+    @Test
+    public void testQueryRemovedReferencesEmpty()
+    {
+<span class="fc" id="L155">        final ReferenceNodeHandler handler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L156">        assertTrue(&quot;Got removed references&quot;, handler.removedReferences()</span>
+<span class="fc" id="L157">                .isEmpty());</span>
+<span class="fc" id="L158">    }</span>
+
+    /**
+     * Tests whether removed references can be queried.
+     */
+    @Test
+    public void testQueryRemovedReferencesAfterRemove()
+    {
+<span class="fc" id="L166">        model.clearTree(&quot;Simmons&quot;, resolver);</span>
+<span class="fc" id="L167">        final ReferenceNodeHandler handler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L168">        final List&lt;Object&gt; removedRefs = handler.removedReferences();</span>
+<span class="fc" id="L169">        final int authorIdx = 2;</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.worksLength(authorIdx); i++)</span>
+        {
+<span class="fc" id="L172">            assertTrue(</span>
+                    &quot;Work not found: &quot; + i,
+<span class="fc" id="L174">                    removedRefs.contains(NodeStructureHelper.work(authorIdx, i)));</span>
+<span class="fc" id="L175">            for (int j = 0; j &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">                    .personaeLength(authorIdx, i); j++)</span>
+            {
+<span class="fc" id="L178">                assertTrue(&quot;Persona not found: &quot; + j,</span>
+<span class="fc" id="L179">                        removedRefs.contains(NodeStructureHelper.persona(</span>
+                                authorIdx, i, j)));
+            }
+        }
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Tests that the list with removed references cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRemovedReferencesModify()
+    {
+<span class="fc" id="L191">        model.clearTree(&quot;Simmons&quot;, resolver);</span>
+<span class="fc" id="L192">        final ReferenceNodeHandler handler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L193">        final List&lt;Object&gt; removedRefs = handler.removedReferences();</span>
+<span class="nc" id="L194">        removedRefs.add(&quot;another one&quot;);</span>
+<span class="nc" id="L195">    }</span>
+
+    /**
+     * Tests whether a value is taken into account when the root node is merged.
+     */
+    @Test
+    public void testMergeRootWithValue()
+    {
+<span class="fc" id="L203">        final ImmutableNode node = NodeStructureHelper.createNode(&quot;newNode&quot;, &quot;test&quot;);</span>
+<span class="fc" id="L204">        model.mergeRoot(node, null, null, null, resolver);</span>
+<span class="fc" id="L205">        final ImmutableNode root = model.getNodeHandler().getRootNode();</span>
+<span class="fc" id="L206">        assertEquals(&quot;Wrong node name&quot;,</span>
+<span class="fc" id="L207">                NodeStructureHelper.ROOT_AUTHORS_TREE.getNodeName(),</span>
+<span class="fc" id="L208">                root.getNodeName());</span>
+<span class="fc" id="L209">        assertEquals(&quot;Wrong node value&quot;, &quot;test&quot;, root.getValue());</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Tests whether the name of the root node can be changed during a merge
+     * operation.
+     */
+    @Test
+    public void testMergeRootOverrideName()
+    {
+<span class="fc" id="L219">        final ImmutableNode node = NodeStructureHelper.createNode(&quot;newNode&quot;, null);</span>
+<span class="fc" id="L220">        final String newName = &quot;newRootNode&quot;;</span>
+
+<span class="fc" id="L222">        model.mergeRoot(node, newName, null, null, resolver);</span>
+<span class="fc" id="L223">        final ImmutableNode root = model.getNodeHandler().getRootNode();</span>
+<span class="fc" id="L224">        assertEquals(&quot;Wrong root name&quot;, newName, root.getNodeName());</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tests whether attributes are taken into account by a merge operation.
+     */
+    @Test
+    public void testMergeRootWithAttributes()
+    {
+<span class="fc" id="L233">        final ImmutableNode node =</span>
+<span class="fc" id="L234">                new ImmutableNode.Builder().addAttribute(&quot;key&quot;, &quot;value&quot;)</span>
+<span class="fc" id="L235">                        .create();</span>
+<span class="fc" id="L236">        model.mergeRoot(node, null, null, null, resolver);</span>
+<span class="fc" id="L237">        final ImmutableNode root = model.getNodeHandler().getRootNode();</span>
+<span class="fc" id="L238">        assertEquals(&quot;Wrong number of attributes&quot;, 1, root.getAttributes()</span>
+<span class="fc" id="L239">                .size());</span>
+<span class="fc" id="L240">        assertEquals(&quot;Wrong attribute&quot;, &quot;value&quot;, root.getAttributes()</span>
+<span class="fc" id="L241">                .get(&quot;key&quot;));</span>
+<span class="fc" id="L242">    }</span>
+
+    /**
+     * Tests whether mergeRoot() handles an explicit reference object for the
+     * root node correctly.
+     */
+    @Test
+    public void testMergeRootReference()
+    {
+<span class="fc" id="L251">        final Object rootRef = 20140404210508L;</span>
+<span class="fc" id="L252">        final ImmutableNode node = NodeStructureHelper.createNode(&quot;newNode&quot;, null);</span>
+
+<span class="fc" id="L254">        model.mergeRoot(node, null, null, rootRef, resolver);</span>
+<span class="fc" id="L255">        final ReferenceNodeHandler refHandler = model.getReferenceNodeHandler();</span>
+<span class="fc" id="L256">        final ImmutableNode checkNode =</span>
+<span class="fc" id="L257">                NodeStructureHelper.nodeForKey(model, &quot;Simmons/Ilium&quot;);</span>
+<span class="fc" id="L258">        assertEquals(&quot;Wrong reference for node&quot;, checkNode.getNodeName(),</span>
+<span class="fc" id="L259">                refHandler.getReference(checkNode));</span>
+<span class="fc" id="L260">        assertEquals(&quot;Wrong root reference&quot;, rootRef,</span>
+<span class="fc" id="L261">                refHandler.getReference(refHandler.getRootNode()));</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Tests whether the root node of the model can be replaced.
+     */
+    @Test
+    public void testReplaceRoot()
+    {
+<span class="fc" id="L270">        final NodeSelector selector = new NodeSelector(&quot;Simmons.Hyperion&quot;);</span>
+<span class="fc" id="L271">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L272">        final ImmutableNode trackedNode = model.getTrackedNode(selector);</span>
+<span class="fc" id="L273">        model.addProperty(&quot;Simmons.Hyperion.Lamia&quot;,</span>
+<span class="fc" id="L274">                Collections.singleton(&quot;new person&quot;), resolver);</span>
+
+<span class="fc" id="L276">        model.replaceRoot(NodeStructureHelper.ROOT_AUTHORS_TREE, resolver);</span>
+<span class="fc" id="L277">        final ImmutableNode node = model.getTrackedNode(selector);</span>
+<span class="fc" id="L278">        assertEquals(&quot;Wrong tracked node&quot;, trackedNode, node);</span>
+<span class="fc" id="L279">        assertFalse(&quot;Node is detached&quot;, model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L280">        assertNull(&quot;Reference not cleared&quot;, model.getReferenceNodeHandler()</span>
+<span class="fc" id="L281">                .getReference(trackedNode));</span>
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Tries to call replaceRoot() with a null node.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testReplaceRootNull()
+    {
+<span class="nc" id="L290">        model.replaceRoot(null, resolver);</span>
+<span class="nc" id="L291">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

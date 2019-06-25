@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestJNDIConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestJNDIConfiguration.java</span></div><h1>TestJNDIConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.apache.commons.configuration2.event.ConfigurationErrorEvent;
+import org.apache.commons.configuration2.event.ErrorListenerTestImpl;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.event.EventType;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test to see if the JNDIConfiguration works properly.
+ *
+ */
+<span class="fc" id="L46">public class TestJNDIConfiguration {</span>
+
+<span class="fc" id="L48">    public static final String CONTEXT_FACTORY = MockInitialContextFactory.class.getName();</span>
+
+    private PotentialErrorJNDIConfiguration conf;
+    private NonStringTestHolder nonStringTestHolder;
+
+    /** A test error listener for counting internal errors.*/
+    private ErrorListenerTestImpl listener;
+
+    @Before
+    public void setUp() throws Exception {
+
+<span class="fc" id="L59">        System.setProperty(&quot;java.naming.factory.initial&quot;, CONTEXT_FACTORY);</span>
+
+<span class="fc" id="L61">        final Properties props = new Properties();</span>
+<span class="fc" id="L62">        props.put(&quot;java.naming.factory.initial&quot;, CONTEXT_FACTORY);</span>
+<span class="fc" id="L63">        final Context ctx = new InitialContext(props);</span>
+<span class="fc" id="L64">        conf = new PotentialErrorJNDIConfiguration(ctx);</span>
+
+<span class="fc" id="L66">        nonStringTestHolder = new NonStringTestHolder();</span>
+<span class="fc" id="L67">        nonStringTestHolder.setConfiguration(conf);</span>
+
+<span class="fc" id="L69">        listener = new ErrorListenerTestImpl(conf);</span>
+<span class="fc" id="L70">        conf.addEventListener(ConfigurationErrorEvent.ANY, listener);</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Clears the test environment. If an error listener is defined, checks
+     * whether no error event was received.
+     */
+    @After
+    public void tearDown() throws Exception
+    {
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (listener != null)</span>
+        {
+<span class="fc" id="L82">            listener.done();</span>
+        }
+<span class="fc" id="L84">    }</span>
+
+    @Test
+    public void testBoolean() throws Exception {
+<span class="fc" id="L88">        nonStringTestHolder.testBoolean();</span>
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testBooleanDefaultValue() throws Exception {
+<span class="fc" id="L93">        nonStringTestHolder.testBooleanDefaultValue();</span>
+<span class="fc" id="L94">    }</span>
+
+    @Test
+    public void testByte() throws Exception {
+<span class="fc" id="L98">        nonStringTestHolder.testByte();</span>
+<span class="fc" id="L99">    }</span>
+
+    @Test
+    public void testDouble() throws Exception {
+<span class="fc" id="L103">        nonStringTestHolder.testDouble();</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testDoubleDefaultValue() throws Exception {
+<span class="fc" id="L108">        nonStringTestHolder.testDoubleDefaultValue();</span>
+<span class="fc" id="L109">    }</span>
+
+    @Test
+    public void testFloat() throws Exception {
+<span class="fc" id="L113">        nonStringTestHolder.testFloat();</span>
+<span class="fc" id="L114">    }</span>
+
+    @Test
+    public void testFloatDefaultValue() throws Exception {
+<span class="fc" id="L118">        nonStringTestHolder.testFloatDefaultValue();</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    public void testInteger() throws Exception {
+<span class="fc" id="L123">        nonStringTestHolder.testInteger();</span>
+<span class="fc" id="L124">    }</span>
+
+    @Test
+    public void testIntegerDefaultValue() throws Exception {
+<span class="fc" id="L128">        nonStringTestHolder.testIntegerDefaultValue();</span>
+<span class="fc" id="L129">    }</span>
+
+    @Test
+    public void testLong() throws Exception {
+<span class="fc" id="L133">        nonStringTestHolder.testLong();</span>
+<span class="fc" id="L134">    }</span>
+
+    @Test
+    public void testLongDefaultValue() throws Exception {
+<span class="fc" id="L138">        nonStringTestHolder.testLongDefaultValue();</span>
+<span class="fc" id="L139">    }</span>
+
+    @Test
+    public void testShort() throws Exception {
+<span class="fc" id="L143">        nonStringTestHolder.testShort();</span>
+<span class="fc" id="L144">    }</span>
+
+    @Test
+    public void testShortDefaultValue() throws Exception {
+<span class="fc" id="L148">        nonStringTestHolder.testShortDefaultValue();</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    public void testListMissing() throws Exception {
+<span class="fc" id="L153">        nonStringTestHolder.testListMissing();</span>
+<span class="fc" id="L154">    }</span>
+
+    @Test
+    public void testSubset() throws Exception {
+<span class="fc" id="L158">        nonStringTestHolder.testSubset();</span>
+<span class="fc" id="L159">    }</span>
+
+    @Test
+    public void testProperties() throws Exception {
+<span class="fc" id="L163">        final Object o = conf.getProperty(&quot;test.boolean&quot;);</span>
+<span class="fc" id="L164">        assertNotNull(o);</span>
+<span class="fc" id="L165">        assertEquals(&quot;true&quot;, o.toString());</span>
+<span class="fc" id="L166">    }</span>
+
+    @Test
+    public void testContainsKey()
+    {
+<span class="fc" id="L171">        final String key = &quot;test.boolean&quot;;</span>
+<span class="fc" id="L172">        assertTrue(&quot;'&quot; + key + &quot;' not found&quot;, conf.containsKey(key));</span>
+
+<span class="fc" id="L174">        conf.clearProperty(key);</span>
+<span class="fc" id="L175">        assertFalse(&quot;'&quot; + key + &quot;' still found&quot;, conf.containsKey(key));</span>
+<span class="fc" id="L176">    }</span>
+
+    @Test
+    public void testChangePrefix()
+    {
+<span class="fc" id="L181">        assertEquals(&quot;'test.boolean' property&quot;, &quot;true&quot;, conf.getString(&quot;test.boolean&quot;));</span>
+<span class="fc" id="L182">        assertEquals(&quot;'boolean' property&quot;, null, conf.getString(&quot;boolean&quot;));</span>
+
+        // change the prefix
+<span class="fc" id="L185">        conf.setPrefix(&quot;test&quot;);</span>
+<span class="fc" id="L186">        assertEquals(&quot;'test.boolean' property&quot;, null, conf.getString(&quot;test.boolean&quot;));</span>
+<span class="fc" id="L187">        assertEquals(&quot;'boolean' property&quot;, &quot;true&quot;, conf.getString(&quot;boolean&quot;));</span>
+<span class="fc" id="L188">    }</span>
+
+    @Test
+    public void testResetRemovedProperties() throws Exception
+    {
+<span class="fc" id="L193">        assertEquals(&quot;'test.boolean' property&quot;, &quot;true&quot;, conf.getString(&quot;test.boolean&quot;));</span>
+
+        // remove the property
+<span class="fc" id="L196">        conf.clearProperty(&quot;test.boolean&quot;);</span>
+<span class="fc" id="L197">        assertEquals(&quot;'test.boolean' property&quot;, null, conf.getString(&quot;test.boolean&quot;));</span>
+
+        // change the context
+<span class="fc" id="L200">        conf.setContext(new InitialContext());</span>
+
+        // get the property
+<span class="fc" id="L203">        assertEquals(&quot;'test.boolean' property&quot;, &quot;true&quot;, conf.getString(&quot;test.boolean&quot;));</span>
+<span class="fc" id="L204">    }</span>
+
+    @Test
+    public void testConstructor() throws Exception
+    {
+        // test the constructor accepting a context
+<span class="fc" id="L210">        JNDIConfiguration c = new JNDIConfiguration(new InitialContext());</span>
+
+<span class="fc" id="L212">        assertEquals(&quot;'test.boolean' property&quot;, &quot;true&quot;, c.getString(&quot;test.boolean&quot;));</span>
+
+        // test the constructor accepting a context and a prefix
+<span class="fc" id="L215">        c = new JNDIConfiguration(new InitialContext(), &quot;test&quot;);</span>
+
+<span class="fc" id="L217">        assertEquals(&quot;'boolean' property&quot;, &quot;true&quot;, c.getString(&quot;boolean&quot;));</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Configures the test config to throw an exception.
+     */
+    private PotentialErrorJNDIConfiguration setUpErrorConfig()
+    {
+<span class="fc" id="L225">        conf.installException();</span>
+        // remove log error listener to avoid output in tests
+<span class="fc" id="L227">        final Iterator&lt;EventListener&lt;? super ConfigurationErrorEvent&gt;&gt; iterator =</span>
+<span class="fc" id="L228">                conf.getEventListeners(ConfigurationErrorEvent.ANY).iterator();</span>
+<span class="fc" id="L229">        conf.removeEventListener(ConfigurationErrorEvent.ANY, iterator.next());</span>
+<span class="fc" id="L230">        return conf;</span>
+    }
+
+    /**
+     * Tests whether the expected error events have been received.
+     *
+     * @param type the expected event type
+     * @param opEventType the event type of the failed operation
+     * @param propName the name of the property
+     * @param propValue the property value
+     */
+    private void checkErrorListener(
+            final EventType&lt;? extends ConfigurationErrorEvent&gt; type,
+            final EventType&lt;?&gt; opEventType, final String propName, final Object propValue)
+    {
+<span class="fc" id="L245">        final Throwable exception =</span>
+<span class="fc" id="L246">                listener.checkEvent(type, opEventType, propName, propValue);</span>
+<span class="fc" id="L247">        assertTrue(&quot;Wrong exception class&quot;,</span>
+                exception instanceof NamingException);
+<span class="fc" id="L249">        listener = null;</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Tests whether a JNDI configuration registers an error log listener.
+     */
+    @Test
+    public void testLogListener() throws NamingException
+    {
+<span class="fc" id="L258">        final JNDIConfiguration c = new JNDIConfiguration();</span>
+<span class="fc" id="L259">        assertEquals(&quot;No error log listener registered&quot;, 1, c</span>
+<span class="fc" id="L260">                .getEventListeners(ConfigurationErrorEvent.ANY).size());</span>
+<span class="fc" id="L261">    }</span>
+
+    /**
+     * Tests handling of errors in getKeys().
+     */
+    @Test
+    public void testGetKeysError()
+    {
+<span class="fc" id="L269">        assertFalse(&quot;Iteration not empty&quot;, setUpErrorConfig().getKeys()</span>
+<span class="fc" id="L270">                .hasNext());</span>
+<span class="fc" id="L271">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, null, null);
+<span class="fc" id="L273">    }</span>
+
+    /**
+     * Tests handling of errors in isEmpty().
+     */
+    @Test
+    public void testIsEmptyError() throws Exception
+    {
+<span class="fc" id="L281">        assertTrue(&quot;Error config not empty&quot;, setUpErrorConfig().isEmpty());</span>
+<span class="fc" id="L282">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, null, null);
+<span class="fc" id="L284">    }</span>
+
+    /**
+     * Tests handling of errors in the containsKey() method.
+     */
+    @Test
+    public void testContainsKeyError()
+    {
+<span class="fc" id="L292">        assertFalse(&quot;Key contained after error&quot;, setUpErrorConfig()</span>
+<span class="fc" id="L293">                .containsKey(&quot;key&quot;));</span>
+<span class="fc" id="L294">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, &quot;key&quot;, null);
+<span class="fc" id="L296">    }</span>
+
+    /**
+     * Tests handling of errors in getProperty().
+     */
+    @Test
+    public void testGetPropertyError()
+    {
+<span class="fc" id="L304">        assertNull(&quot;Wrong property value after error&quot;, setUpErrorConfig()</span>
+<span class="fc" id="L305">                .getProperty(&quot;key&quot;));</span>
+<span class="fc" id="L306">        checkErrorListener(ConfigurationErrorEvent.READ,</span>
+                ConfigurationErrorEvent.READ, &quot;key&quot;, null);
+<span class="fc" id="L308">    }</span>
+
+    /**
+     * Tests the getKeys() method when there are cycles in the tree.
+     */
+    @Test
+    public void testGetKeysWithCycles() throws NamingException
+    {
+<span class="fc" id="L316">        final Hashtable&lt;Object, Object&gt; env = new Hashtable&lt;&gt;();</span>
+<span class="fc" id="L317">        env.put(MockInitialContextFactory.PROP_CYCLES, Boolean.TRUE);</span>
+<span class="fc" id="L318">        final InitialContext initCtx = new InitialContext(env);</span>
+<span class="fc" id="L319">        final JNDIConfiguration c = new JNDIConfiguration(initCtx);</span>
+<span class="fc" id="L320">        c.getKeys(&quot;cycle&quot;);</span>
+<span class="fc" id="L321">    }</span>
+
+    /**
+     * Tests getKeys() if no data is found. This should not cause a problem and
+     * not notify the error listeners.
+     */
+    @Test
+    public void testGetKeysNoData()
+    {
+<span class="fc" id="L330">        conf.installException(new NameNotFoundException(&quot;Test exception&quot;));</span>
+<span class="fc" id="L331">        assertFalse(&quot;Got keys&quot;, conf.getKeys().hasNext());</span>
+<span class="fc" id="L332">        listener.done();</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * A special JNDI configuration implementation that can be configured to
+     * throw an exception when accessing the base context. Used for testing the
+     * exception handling.
+     */
+    public static class PotentialErrorJNDIConfiguration extends
+            JNDIConfiguration
+    {
+        /** An exception to be thrown by getBaseContext(). */
+        private NamingException exception;
+
+        public PotentialErrorJNDIConfiguration(final Context ctx)
+        {
+<span class="fc" id="L348">            super(ctx);</span>
+<span class="fc" id="L349">        }</span>
+
+        /**
+         * Prepares this object to throw an exception when the JNDI context is
+         * queried.
+         *
+         * @param nex the exception to be thrown
+         */
+        public void installException(final NamingException nex)
+        {
+<span class="fc" id="L359">            exception = nex;</span>
+<span class="fc" id="L360">        }</span>
+
+        /**
+         * Prepares this object to throw a standard exception when the JNDI
+         * context is queried.
+         */
+        public void installException()
+        {
+<span class="fc" id="L368">            installException(new NamingException(&quot;Simulated JNDI exception!&quot;));</span>
+<span class="fc" id="L369">        }</span>
+
+        /**
+         * Returns the JNDI context. Optionally throws an exception.
+         */
+        @Override
+        public Context getBaseContext() throws NamingException
+        {
+<span class="fc bfc" id="L377" title="All 2 branches covered.">            if (exception != null)</span>
+            {
+<span class="fc" id="L379">                throw exception;</span>
+            }
+<span class="fc" id="L381">            return super.getBaseContext();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationNodePointerFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree.xpath</a> &gt; <span class="el_source">TestConfigurationNodePointerFactory.java</span></div><h1>TestConfigurationNodePointerFactory.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree.xpath;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.ri.JXPathContextReferenceImpl;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for ConfigurationNodePointerFactory. This class does not directly
+ * call the factory's methods, but rather checks if it can be installed in a
+ * {@code JXPathContext} and if XPath expressions can be evaluated.
+ *
+ */
+<span class="fc" id="L37">public class TestConfigurationNodePointerFactory extends AbstractXPathTest</span>
+{
+    /** Stores the JXPathContext used for testing. */
+    private JXPathContext context;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L45">        JXPathContextReferenceImpl</span>
+<span class="fc" id="L46">                .addNodePointerFactory(new ConfigurationNodePointerFactory());</span>
+<span class="fc" id="L47">    }</span>
+
+    @Override
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L53">        super.setUp();</span>
+<span class="fc" id="L54">        context = new XPathContextFactory().createContext(root, handler);</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Tests simple XPath expressions.
+     */
+    @Test
+    public void testSimpleXPath()
+    {
+<span class="fc" id="L63">        List&lt;?&gt; results = context.selectNodes(CHILD_NAME1);</span>
+<span class="fc" id="L64">        assertEquals(&quot;Incorrect number of results&quot;, 2, results.size());</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        for (final Object result : results) {</span>
+<span class="fc" id="L66">            final ImmutableNode node = (ImmutableNode) result;</span>
+<span class="fc" id="L67">            assertEquals(&quot;Incorrect node name&quot;, CHILD_NAME1, node.getNodeName());</span>
+<span class="fc" id="L68">        }</span>
+
+<span class="fc" id="L70">        results = context.selectNodes(&quot;/&quot; + CHILD_NAME1);</span>
+<span class="fc" id="L71">        assertEquals(&quot;Incorrect number of results&quot;, 2, results.size());</span>
+
+<span class="fc" id="L73">        results = context.selectNodes(CHILD_NAME2 + &quot;/&quot; + CHILD_NAME1 + &quot;/&quot;</span>
+                + CHILD_NAME2);
+<span class="fc" id="L75">        assertEquals(&quot;Incorrect number of results&quot;, 18, results.size());</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Tests using indices to specify elements.
+     */
+    @Test
+    public void testIndices()
+    {
+<span class="fc" id="L84">        assertEquals(&quot;Incorrect value&quot;, &quot;1.2.3&quot;, context.getValue(&quot;/&quot;</span>
+                + CHILD_NAME2 + &quot;[1]/&quot; + CHILD_NAME1 + &quot;[1]/&quot; + CHILD_NAME2
+                + &quot;[2]&quot;));
+<span class="fc" id="L87">        assertEquals(&quot;Incorrect value of last node&quot;, String</span>
+<span class="fc" id="L88">                .valueOf(CHILD_COUNT), context.getValue(CHILD_NAME2</span>
+                + &quot;[last()]&quot;));
+
+<span class="fc" id="L91">        final List&lt;?&gt; nodes = context.selectNodes(&quot;/&quot; + CHILD_NAME1 + &quot;[1]/*&quot;);</span>
+<span class="fc" id="L92">        assertEquals(&quot;Wrong number of children&quot;, CHILD_COUNT, nodes.size());</span>
+<span class="fc" id="L93">        int index = 1;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (final Iterator&lt;?&gt; it = nodes.iterator(); it.hasNext(); index++)</span>
+        {
+<span class="fc" id="L96">            final ImmutableNode node = (ImmutableNode) it.next();</span>
+<span class="fc" id="L97">            assertEquals(&quot;Wrong node value for child &quot; + index, &quot;2.&quot; + index,</span>
+<span class="fc" id="L98">                    node.getValue());</span>
+        }
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Tests whether the attribute of a node can be queried.
+     */
+    @Test
+    public void testQueryAttribute()
+    {
+<span class="fc" id="L108">        assertEquals(&quot;Incorrect attribute value&quot;, &quot;1&quot;, context.getValue(&quot;/&quot;</span>
+                + CHILD_NAME2 + &quot;[1]/@&quot; + ATTR_NAME));
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests whether an attribute of the root node can be queried.
+     */
+    @Test
+    public void testQueryRootAttribute()
+    {
+<span class="fc" id="L118">        assertEquals(&quot;Did not find attribute of root node&quot;, &quot;true&quot;, context</span>
+<span class="fc" id="L119">                .getValue(&quot;@&quot; + ATTR_ROOT));</span>
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Tests accessing a node's text.
+     */
+    @Test
+    public void testText()
+    {
+<span class="fc" id="L128">        final List&lt;?&gt; nodes = context.selectNodes(&quot;//&quot; + CHILD_NAME2</span>
+                + &quot;[text()='1.1.1']&quot;);
+<span class="fc" id="L130">        assertEquals(&quot;Incorrect number of result nodes&quot;, 1, nodes.size());</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests accessing the parent axis.
+     */
+    @Test
+    public void testParentAxis()
+    {
+<span class="fc" id="L139">        final List&lt;?&gt; nodes = context.selectNodes(&quot;/&quot; + CHILD_NAME2 + &quot;/parent::*&quot;);</span>
+<span class="fc" id="L140">        assertEquals(&quot;Wrong number of parent nodes&quot;, 1, nodes.size());</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Tests accessing the following sibling axis.
+     */
+    @Test
+    public void testFollowingSiblingAxis()
+    {
+<span class="fc" id="L149">        final List&lt;?&gt; nodes = context.selectNodes(&quot;/&quot; + CHILD_NAME1</span>
+                + &quot;[2]/following-sibling::*&quot;);
+<span class="fc" id="L151">        assertEquals(&quot;Wrong number of following siblings&quot;, 1, nodes.size());</span>
+<span class="fc" id="L152">        final ImmutableNode node = (ImmutableNode) nodes.get(0);</span>
+<span class="fc" id="L153">        assertEquals(&quot;Wrong node type&quot;, CHILD_NAME2, node.getNodeName());</span>
+<span class="fc" id="L154">        assertEquals(&quot;Wrong index&quot;, String.valueOf(CHILD_COUNT), node</span>
+<span class="fc" id="L155">                .getValue());</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Tests accessing the preceding sibling axis.
+     */
+    @Test
+    public void testPrecedingSiblingAxis()
+    {
+<span class="fc" id="L164">        final List&lt;?&gt; nodes = context.selectNodes(&quot;/&quot; + CHILD_NAME1</span>
+                + &quot;[2]/preceding-sibling::*&quot;);
+<span class="fc" id="L166">        assertEquals(&quot;Wrong number of preceding siblings&quot;, 3, nodes.size());</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        for (int index = 0, value = 3; index &lt; nodes.size(); index++, value--)</span>
+        {
+<span class="fc" id="L169">            assertEquals(&quot;Wrong node index&quot;, String.valueOf(value),</span>
+<span class="fc" id="L170">                    ((ImmutableNode) nodes.get(index)).getValue());</span>
+        }
+<span class="fc" id="L172">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

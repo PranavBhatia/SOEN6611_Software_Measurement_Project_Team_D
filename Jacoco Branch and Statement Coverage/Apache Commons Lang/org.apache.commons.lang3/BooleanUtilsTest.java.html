@@ -1,0 +1,1018 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BooleanUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">BooleanUtilsTest.java</span></div><h1>BooleanUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.BooleanUtils}.
+ */
+<span class="fc" id="L35">public class BooleanUtilsTest {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L40">        assertNotNull(new BooleanUtils());</span>
+<span class="fc" id="L41">        final Constructor&lt;?&gt;[] cons = BooleanUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L42">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L43">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L44">        assertTrue(Modifier.isPublic(BooleanUtils.class.getModifiers()));</span>
+<span class="fc" id="L45">        assertFalse(Modifier.isFinal(BooleanUtils.class.getModifiers()));</span>
+<span class="fc" id="L46">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_negate_Boolean() {
+<span class="fc" id="L51">        assertSame(null, BooleanUtils.negate(null));</span>
+<span class="fc" id="L52">        assertSame(Boolean.TRUE, BooleanUtils.negate(Boolean.FALSE));</span>
+<span class="fc" id="L53">        assertSame(Boolean.FALSE, BooleanUtils.negate(Boolean.TRUE));</span>
+<span class="fc" id="L54">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_isTrue_Boolean() {
+<span class="fc" id="L59">        assertTrue(BooleanUtils.isTrue(Boolean.TRUE));</span>
+<span class="fc" id="L60">        assertFalse(BooleanUtils.isTrue(Boolean.FALSE));</span>
+<span class="fc" id="L61">        assertFalse(BooleanUtils.isTrue(null));</span>
+<span class="fc" id="L62">    }</span>
+
+    @Test
+    public void test_isNotTrue_Boolean() {
+<span class="fc" id="L66">        assertFalse(BooleanUtils.isNotTrue(Boolean.TRUE));</span>
+<span class="fc" id="L67">        assertTrue(BooleanUtils.isNotTrue(Boolean.FALSE));</span>
+<span class="fc" id="L68">        assertTrue(BooleanUtils.isNotTrue(null));</span>
+<span class="fc" id="L69">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_isFalse_Boolean() {
+<span class="fc" id="L74">        assertFalse(BooleanUtils.isFalse(Boolean.TRUE));</span>
+<span class="fc" id="L75">        assertTrue(BooleanUtils.isFalse(Boolean.FALSE));</span>
+<span class="fc" id="L76">        assertFalse(BooleanUtils.isFalse(null));</span>
+<span class="fc" id="L77">    }</span>
+
+    @Test
+    public void test_isNotFalse_Boolean() {
+<span class="fc" id="L81">        assertTrue(BooleanUtils.isNotFalse(Boolean.TRUE));</span>
+<span class="fc" id="L82">        assertFalse(BooleanUtils.isNotFalse(Boolean.FALSE));</span>
+<span class="fc" id="L83">        assertTrue(BooleanUtils.isNotFalse(null));</span>
+<span class="fc" id="L84">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toBoolean_Boolean() {
+<span class="fc" id="L89">        assertTrue(BooleanUtils.toBoolean(Boolean.TRUE));</span>
+<span class="fc" id="L90">        assertFalse(BooleanUtils.toBoolean(Boolean.FALSE));</span>
+<span class="fc" id="L91">        assertFalse(BooleanUtils.toBoolean((Boolean) null));</span>
+<span class="fc" id="L92">    }</span>
+
+    @Test
+    public void test_toBooleanDefaultIfNull_Boolean_boolean() {
+<span class="fc" id="L96">        assertTrue(BooleanUtils.toBooleanDefaultIfNull(Boolean.TRUE, true));</span>
+<span class="fc" id="L97">        assertTrue(BooleanUtils.toBooleanDefaultIfNull(Boolean.TRUE, false));</span>
+<span class="fc" id="L98">        assertFalse(BooleanUtils.toBooleanDefaultIfNull(Boolean.FALSE, true));</span>
+<span class="fc" id="L99">        assertFalse(BooleanUtils.toBooleanDefaultIfNull(Boolean.FALSE, false));</span>
+<span class="fc" id="L100">        assertTrue(BooleanUtils.toBooleanDefaultIfNull(null, true));</span>
+<span class="fc" id="L101">        assertFalse(BooleanUtils.toBooleanDefaultIfNull(null, false));</span>
+<span class="fc" id="L102">    }</span>
+
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toBoolean_int() {
+<span class="fc" id="L108">        assertTrue(BooleanUtils.toBoolean(1));</span>
+<span class="fc" id="L109">        assertTrue(BooleanUtils.toBoolean(-1));</span>
+<span class="fc" id="L110">        assertFalse(BooleanUtils.toBoolean(0));</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    public void test_toBooleanObject_int() {
+<span class="fc" id="L115">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(1));</span>
+<span class="fc" id="L116">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(-1));</span>
+<span class="fc" id="L117">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(0));</span>
+<span class="fc" id="L118">    }</span>
+
+    @Test
+    public void test_toBooleanObject_Integer() {
+<span class="fc" id="L122">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(Integer.valueOf(1)));</span>
+<span class="fc" id="L123">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(Integer.valueOf(-1)));</span>
+<span class="fc" id="L124">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(Integer.valueOf(0)));</span>
+<span class="fc" id="L125">        assertNull(BooleanUtils.toBooleanObject((Integer) null));</span>
+<span class="fc" id="L126">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toBoolean_int_int_int() {
+<span class="fc" id="L131">        assertTrue(BooleanUtils.toBoolean(6, 6, 7));</span>
+<span class="fc" id="L132">        assertFalse(BooleanUtils.toBoolean(7, 6, 7));</span>
+<span class="fc" id="L133">    }</span>
+
+    @Test
+    public void test_toBoolean_int_int_int_noMatch() {
+<span class="pc" id="L137">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.toBoolean(8, 6, 7));</span>
+<span class="fc" id="L138">    }</span>
+
+    @Test
+    public void test_toBoolean_Integer_Integer_Integer() {
+<span class="fc" id="L142">        final Integer six = Integer.valueOf(6);</span>
+<span class="fc" id="L143">        final Integer seven = Integer.valueOf(7);</span>
+
+<span class="fc" id="L145">        assertTrue(BooleanUtils.toBoolean(null, null, seven));</span>
+<span class="fc" id="L146">        assertFalse(BooleanUtils.toBoolean(null, six, null));</span>
+
+<span class="fc" id="L148">        assertTrue(BooleanUtils.toBoolean(Integer.valueOf(6), six, seven));</span>
+<span class="fc" id="L149">        assertFalse(BooleanUtils.toBoolean(Integer.valueOf(7), six, seven));</span>
+<span class="fc" id="L150">    }</span>
+
+    @Test
+    public void test_toBoolean_Integer_Integer_Integer_nullValue() {
+<span class="fc" id="L154">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L155">                () -&gt; BooleanUtils.toBoolean(null, Integer.valueOf(6), Integer.valueOf(7)));</span>
+<span class="fc" id="L156">    }</span>
+
+    @Test
+    public void test_toBoolean_Integer_Integer_Integer_noMatch() {
+<span class="fc" id="L160">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L161">                () -&gt; BooleanUtils.toBoolean(Integer.valueOf(8), Integer.valueOf(6), Integer.valueOf(7)));</span>
+<span class="fc" id="L162">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toBooleanObject_int_int_int() {
+<span class="fc" id="L167">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(6, 6, 7, 8));</span>
+<span class="fc" id="L168">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(7, 6, 7, 8));</span>
+<span class="fc" id="L169">        assertNull(BooleanUtils.toBooleanObject(8, 6, 7, 8));</span>
+<span class="fc" id="L170">    }</span>
+
+    @Test
+    public void test_toBooleanObject_int_int_int_noMatch() {
+<span class="pc" id="L174">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.toBooleanObject(9, 6, 7, 8));</span>
+<span class="fc" id="L175">    }</span>
+
+    @Test
+    public void test_toBooleanObject_Integer_Integer_Integer_Integer() {
+<span class="fc" id="L179">        final Integer six = Integer.valueOf(6);</span>
+<span class="fc" id="L180">        final Integer seven = Integer.valueOf(7);</span>
+<span class="fc" id="L181">        final Integer eight = Integer.valueOf(8);</span>
+
+<span class="fc" id="L183">        assertSame(Boolean.TRUE, BooleanUtils.toBooleanObject(null, null, seven, eight));</span>
+<span class="fc" id="L184">        assertSame(Boolean.FALSE, BooleanUtils.toBooleanObject(null, six, null, eight));</span>
+<span class="fc" id="L185">        assertSame(null, BooleanUtils.toBooleanObject(null, six, seven, null));</span>
+
+<span class="fc" id="L187">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(Integer.valueOf(6), six, seven, eight));</span>
+<span class="fc" id="L188">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(Integer.valueOf(7), six, seven, eight));</span>
+<span class="fc" id="L189">        assertNull(BooleanUtils.toBooleanObject(Integer.valueOf(8), six, seven, eight));</span>
+<span class="fc" id="L190">    }</span>
+
+    @Test
+    public void test_toBooleanObject_Integer_Integer_Integer_Integer_nullValue() {
+<span class="fc" id="L194">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L195">                () -&gt; BooleanUtils.toBooleanObject(null, Integer.valueOf(6), Integer.valueOf(7), Integer.valueOf(8)));</span>
+<span class="fc" id="L196">    }</span>
+
+    @Test
+    public void test_toBooleanObject_Integer_Integer_Integer_Integer_noMatch() {
+<span class="fc" id="L200">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L201">                () -&gt; BooleanUtils.toBooleanObject(Integer.valueOf(9), Integer.valueOf(6), Integer.valueOf(7), Integer.valueOf(8)));</span>
+<span class="fc" id="L202">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toInteger_boolean() {
+<span class="fc" id="L207">        assertEquals(1, BooleanUtils.toInteger(true));</span>
+<span class="fc" id="L208">        assertEquals(0, BooleanUtils.toInteger(false));</span>
+<span class="fc" id="L209">    }</span>
+
+    @Test
+    public void test_toIntegerObject_boolean() {
+<span class="fc" id="L213">        assertEquals(Integer.valueOf(1), BooleanUtils.toIntegerObject(true));</span>
+<span class="fc" id="L214">        assertEquals(Integer.valueOf(0), BooleanUtils.toIntegerObject(false));</span>
+<span class="fc" id="L215">    }</span>
+
+    @Test
+    public void test_toIntegerObject_Boolean() {
+<span class="fc" id="L219">        assertEquals(Integer.valueOf(1), BooleanUtils.toIntegerObject(Boolean.TRUE));</span>
+<span class="fc" id="L220">        assertEquals(Integer.valueOf(0), BooleanUtils.toIntegerObject(Boolean.FALSE));</span>
+<span class="fc" id="L221">        assertNull(BooleanUtils.toIntegerObject(null));</span>
+<span class="fc" id="L222">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toInteger_boolean_int_int() {
+<span class="fc" id="L227">        assertEquals(6, BooleanUtils.toInteger(true, 6, 7));</span>
+<span class="fc" id="L228">        assertEquals(7, BooleanUtils.toInteger(false, 6, 7));</span>
+<span class="fc" id="L229">    }</span>
+
+    @Test
+    public void test_toInteger_Boolean_int_int_int() {
+<span class="fc" id="L233">        assertEquals(6, BooleanUtils.toInteger(Boolean.TRUE, 6, 7, 8));</span>
+<span class="fc" id="L234">        assertEquals(7, BooleanUtils.toInteger(Boolean.FALSE, 6, 7, 8));</span>
+<span class="fc" id="L235">        assertEquals(8, BooleanUtils.toInteger(null, 6, 7, 8));</span>
+<span class="fc" id="L236">    }</span>
+
+    @Test
+    public void test_toIntegerObject_boolean_Integer_Integer() {
+<span class="fc" id="L240">        final Integer six = Integer.valueOf(6);</span>
+<span class="fc" id="L241">        final Integer seven = Integer.valueOf(7);</span>
+<span class="fc" id="L242">        assertEquals(six, BooleanUtils.toIntegerObject(true, six, seven));</span>
+<span class="fc" id="L243">        assertEquals(seven, BooleanUtils.toIntegerObject(false, six, seven));</span>
+<span class="fc" id="L244">    }</span>
+
+    @Test
+    public void test_toIntegerObject_Boolean_Integer_Integer_Integer() {
+<span class="fc" id="L248">        final Integer six = Integer.valueOf(6);</span>
+<span class="fc" id="L249">        final Integer seven = Integer.valueOf(7);</span>
+<span class="fc" id="L250">        final Integer eight = Integer.valueOf(8);</span>
+<span class="fc" id="L251">        assertEquals(six, BooleanUtils.toIntegerObject(Boolean.TRUE, six, seven, eight));</span>
+<span class="fc" id="L252">        assertEquals(seven, BooleanUtils.toIntegerObject(Boolean.FALSE, six, seven, eight));</span>
+<span class="fc" id="L253">        assertEquals(eight, BooleanUtils.toIntegerObject(null, six, seven, eight));</span>
+<span class="fc" id="L254">        assertNull(BooleanUtils.toIntegerObject(null, six, seven, null));</span>
+<span class="fc" id="L255">    }</span>
+
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toBooleanObject_String() {
+<span class="fc" id="L261">        assertNull(BooleanUtils.toBooleanObject((String) null));</span>
+<span class="fc" id="L262">        assertNull(BooleanUtils.toBooleanObject(&quot;&quot;));</span>
+<span class="fc" id="L263">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;false&quot;));</span>
+<span class="fc" id="L264">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;no&quot;));</span>
+<span class="fc" id="L265">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;off&quot;));</span>
+<span class="fc" id="L266">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;FALSE&quot;));</span>
+<span class="fc" id="L267">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;NO&quot;));</span>
+<span class="fc" id="L268">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;OFF&quot;));</span>
+<span class="fc" id="L269">        assertNull(BooleanUtils.toBooleanObject(&quot;oof&quot;));</span>
+<span class="fc" id="L270">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;true&quot;));</span>
+<span class="fc" id="L271">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;yes&quot;));</span>
+<span class="fc" id="L272">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;on&quot;));</span>
+<span class="fc" id="L273">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;TRUE&quot;));</span>
+<span class="fc" id="L274">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;ON&quot;));</span>
+<span class="fc" id="L275">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;YES&quot;));</span>
+<span class="fc" id="L276">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;TruE&quot;));</span>
+<span class="fc" id="L277">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;TruE&quot;));</span>
+
+<span class="fc" id="L279">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;y&quot;)); // yes</span>
+<span class="fc" id="L280">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;Y&quot;));</span>
+<span class="fc" id="L281">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;t&quot;)); // true</span>
+<span class="fc" id="L282">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;T&quot;));</span>
+<span class="fc" id="L283">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;f&quot;)); // false</span>
+<span class="fc" id="L284">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;F&quot;));</span>
+<span class="fc" id="L285">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;n&quot;)); // No</span>
+<span class="fc" id="L286">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;N&quot;));</span>
+<span class="fc" id="L287">        assertNull(BooleanUtils.toBooleanObject(&quot;z&quot;));</span>
+
+<span class="fc" id="L289">        assertNull(BooleanUtils.toBooleanObject(&quot;ab&quot;));</span>
+<span class="fc" id="L290">        assertNull(BooleanUtils.toBooleanObject(&quot;yoo&quot;));</span>
+<span class="fc" id="L291">        assertNull(BooleanUtils.toBooleanObject(&quot;true &quot;));</span>
+<span class="fc" id="L292">        assertNull(BooleanUtils.toBooleanObject(&quot;ono&quot;));</span>
+<span class="fc" id="L293">    }</span>
+
+    @Test
+    public void test_toBooleanObject_String_String_String_String() {
+<span class="fc" id="L297">        assertSame(Boolean.TRUE, BooleanUtils.toBooleanObject(null, null, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L298">        assertSame(Boolean.FALSE, BooleanUtils.toBooleanObject(null, &quot;Y&quot;, null, &quot;U&quot;));</span>
+<span class="fc" id="L299">        assertSame(null, BooleanUtils.toBooleanObject(null, &quot;Y&quot;, &quot;N&quot;, null));</span>
+
+<span class="fc" id="L301">        assertEquals(Boolean.TRUE, BooleanUtils.toBooleanObject(&quot;Y&quot;, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L302">        assertEquals(Boolean.FALSE, BooleanUtils.toBooleanObject(&quot;N&quot;, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L303">        assertNull(BooleanUtils.toBooleanObject(&quot;U&quot;, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L304">    }</span>
+
+    @Test
+    public void test_toBooleanObject_String_String_String_String_nullValue() {
+<span class="pc" id="L308">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.toBooleanObject(null, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L309">    }</span>
+
+    @Test
+    public void test_toBooleanObject_String_String_String_String_noMatch() {
+<span class="pc" id="L313">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.toBooleanObject(&quot;X&quot;, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L314">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toBoolean_String() {
+<span class="fc" id="L319">        assertFalse(BooleanUtils.toBoolean((String) null));</span>
+<span class="fc" id="L320">        assertFalse(BooleanUtils.toBoolean(&quot;&quot;));</span>
+<span class="fc" id="L321">        assertFalse(BooleanUtils.toBoolean(&quot;off&quot;));</span>
+<span class="fc" id="L322">        assertFalse(BooleanUtils.toBoolean(&quot;oof&quot;));</span>
+<span class="fc" id="L323">        assertFalse(BooleanUtils.toBoolean(&quot;yep&quot;));</span>
+<span class="fc" id="L324">        assertFalse(BooleanUtils.toBoolean(&quot;trux&quot;));</span>
+<span class="fc" id="L325">        assertFalse(BooleanUtils.toBoolean(&quot;false&quot;));</span>
+<span class="fc" id="L326">        assertFalse(BooleanUtils.toBoolean(&quot;a&quot;));</span>
+<span class="fc" id="L327">        assertTrue(BooleanUtils.toBoolean(&quot;true&quot;)); // interned handled differently</span>
+<span class="fc" id="L328">        assertTrue(BooleanUtils.toBoolean(new StringBuilder(&quot;tr&quot;).append(&quot;ue&quot;).toString()));</span>
+<span class="fc" id="L329">        assertTrue(BooleanUtils.toBoolean(&quot;truE&quot;));</span>
+<span class="fc" id="L330">        assertTrue(BooleanUtils.toBoolean(&quot;trUe&quot;));</span>
+<span class="fc" id="L331">        assertTrue(BooleanUtils.toBoolean(&quot;trUE&quot;));</span>
+<span class="fc" id="L332">        assertTrue(BooleanUtils.toBoolean(&quot;tRue&quot;));</span>
+<span class="fc" id="L333">        assertTrue(BooleanUtils.toBoolean(&quot;tRuE&quot;));</span>
+<span class="fc" id="L334">        assertTrue(BooleanUtils.toBoolean(&quot;tRUe&quot;));</span>
+<span class="fc" id="L335">        assertTrue(BooleanUtils.toBoolean(&quot;tRUE&quot;));</span>
+<span class="fc" id="L336">        assertTrue(BooleanUtils.toBoolean(&quot;TRUE&quot;));</span>
+<span class="fc" id="L337">        assertTrue(BooleanUtils.toBoolean(&quot;TRUe&quot;));</span>
+<span class="fc" id="L338">        assertTrue(BooleanUtils.toBoolean(&quot;TRuE&quot;));</span>
+<span class="fc" id="L339">        assertTrue(BooleanUtils.toBoolean(&quot;TRue&quot;));</span>
+<span class="fc" id="L340">        assertTrue(BooleanUtils.toBoolean(&quot;TrUE&quot;));</span>
+<span class="fc" id="L341">        assertTrue(BooleanUtils.toBoolean(&quot;TrUe&quot;));</span>
+<span class="fc" id="L342">        assertTrue(BooleanUtils.toBoolean(&quot;TruE&quot;));</span>
+<span class="fc" id="L343">        assertTrue(BooleanUtils.toBoolean(&quot;True&quot;));</span>
+<span class="fc" id="L344">        assertTrue(BooleanUtils.toBoolean(&quot;on&quot;));</span>
+<span class="fc" id="L345">        assertTrue(BooleanUtils.toBoolean(&quot;oN&quot;));</span>
+<span class="fc" id="L346">        assertTrue(BooleanUtils.toBoolean(&quot;On&quot;));</span>
+<span class="fc" id="L347">        assertTrue(BooleanUtils.toBoolean(&quot;ON&quot;));</span>
+<span class="fc" id="L348">        assertTrue(BooleanUtils.toBoolean(&quot;yes&quot;));</span>
+<span class="fc" id="L349">        assertTrue(BooleanUtils.toBoolean(&quot;yeS&quot;));</span>
+<span class="fc" id="L350">        assertTrue(BooleanUtils.toBoolean(&quot;yEs&quot;));</span>
+<span class="fc" id="L351">        assertTrue(BooleanUtils.toBoolean(&quot;yES&quot;));</span>
+<span class="fc" id="L352">        assertTrue(BooleanUtils.toBoolean(&quot;Yes&quot;));</span>
+<span class="fc" id="L353">        assertTrue(BooleanUtils.toBoolean(&quot;YeS&quot;));</span>
+<span class="fc" id="L354">        assertTrue(BooleanUtils.toBoolean(&quot;YEs&quot;));</span>
+<span class="fc" id="L355">        assertTrue(BooleanUtils.toBoolean(&quot;YES&quot;));</span>
+<span class="fc" id="L356">        assertFalse(BooleanUtils.toBoolean(&quot;yes?&quot;));</span>
+<span class="fc" id="L357">        assertFalse(BooleanUtils.toBoolean(&quot;tru&quot;));</span>
+
+<span class="fc" id="L359">        assertFalse(BooleanUtils.toBoolean(&quot;no&quot;));</span>
+<span class="fc" id="L360">        assertFalse(BooleanUtils.toBoolean(&quot;off&quot;));</span>
+<span class="fc" id="L361">        assertFalse(BooleanUtils.toBoolean(&quot;yoo&quot;));</span>
+<span class="fc" id="L362">    }</span>
+
+    @Test
+    public void test_toBoolean_String_String_String() {
+<span class="fc" id="L366">        assertTrue(BooleanUtils.toBoolean(null, null, &quot;N&quot;));</span>
+<span class="fc" id="L367">        assertFalse(BooleanUtils.toBoolean(null, &quot;Y&quot;, null));</span>
+<span class="fc" id="L368">        assertTrue(BooleanUtils.toBoolean(&quot;Y&quot;, &quot;Y&quot;, &quot;N&quot;));</span>
+<span class="fc" id="L369">        assertTrue(BooleanUtils.toBoolean(&quot;Y&quot;, new String(&quot;Y&quot;), new String(&quot;N&quot;)));</span>
+<span class="fc" id="L370">        assertFalse(BooleanUtils.toBoolean(&quot;N&quot;, &quot;Y&quot;, &quot;N&quot;));</span>
+<span class="fc" id="L371">        assertFalse(BooleanUtils.toBoolean(&quot;N&quot;, new String(&quot;Y&quot;), new String(&quot;N&quot;)));</span>
+<span class="fc" id="L372">        assertTrue(BooleanUtils.toBoolean((String) null, null, null));</span>
+<span class="fc" id="L373">        assertTrue(BooleanUtils.toBoolean(&quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;));</span>
+<span class="fc" id="L374">        assertTrue(BooleanUtils.toBoolean(&quot;Y&quot;, new String(&quot;Y&quot;), new String(&quot;Y&quot;)));</span>
+<span class="fc" id="L375">    }</span>
+
+    @Test
+    public void test_toBoolean_String_String_String_nullValue() {
+<span class="pc" id="L379">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.toBoolean(null, &quot;Y&quot;, &quot;N&quot;));</span>
+<span class="fc" id="L380">    }</span>
+
+    @Test
+    public void test_toBoolean_String_String_String_noMatch() {
+<span class="pc" id="L384">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.toBoolean(&quot;X&quot;, &quot;Y&quot;, &quot;N&quot;));</span>
+<span class="fc" id="L385">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toStringTrueFalse_Boolean() {
+<span class="fc" id="L390">        assertNull(BooleanUtils.toStringTrueFalse(null));</span>
+<span class="fc" id="L391">        assertEquals(&quot;true&quot;, BooleanUtils.toStringTrueFalse(Boolean.TRUE));</span>
+<span class="fc" id="L392">        assertEquals(&quot;false&quot;, BooleanUtils.toStringTrueFalse(Boolean.FALSE));</span>
+<span class="fc" id="L393">    }</span>
+
+    @Test
+    public void test_toStringOnOff_Boolean() {
+<span class="fc" id="L397">        assertNull(BooleanUtils.toStringOnOff(null));</span>
+<span class="fc" id="L398">        assertEquals(&quot;on&quot;, BooleanUtils.toStringOnOff(Boolean.TRUE));</span>
+<span class="fc" id="L399">        assertEquals(&quot;off&quot;, BooleanUtils.toStringOnOff(Boolean.FALSE));</span>
+<span class="fc" id="L400">    }</span>
+
+    @Test
+    public void test_toStringYesNo_Boolean() {
+<span class="fc" id="L404">        assertNull(BooleanUtils.toStringYesNo(null));</span>
+<span class="fc" id="L405">        assertEquals(&quot;yes&quot;, BooleanUtils.toStringYesNo(Boolean.TRUE));</span>
+<span class="fc" id="L406">        assertEquals(&quot;no&quot;, BooleanUtils.toStringYesNo(Boolean.FALSE));</span>
+<span class="fc" id="L407">    }</span>
+
+    @Test
+    public void test_toString_Boolean_String_String_String() {
+<span class="fc" id="L411">        assertEquals(&quot;U&quot;, BooleanUtils.toString(null, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L412">        assertEquals(&quot;Y&quot;, BooleanUtils.toString(Boolean.TRUE, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L413">        assertEquals(&quot;N&quot;, BooleanUtils.toString(Boolean.FALSE, &quot;Y&quot;, &quot;N&quot;, &quot;U&quot;));</span>
+<span class="fc" id="L414">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void test_toStringTrueFalse_boolean() {
+<span class="fc" id="L419">        assertEquals(&quot;true&quot;, BooleanUtils.toStringTrueFalse(true));</span>
+<span class="fc" id="L420">        assertEquals(&quot;false&quot;, BooleanUtils.toStringTrueFalse(false));</span>
+<span class="fc" id="L421">    }</span>
+
+    @Test
+    public void test_toStringOnOff_boolean() {
+<span class="fc" id="L425">        assertEquals(&quot;on&quot;, BooleanUtils.toStringOnOff(true));</span>
+<span class="fc" id="L426">        assertEquals(&quot;off&quot;, BooleanUtils.toStringOnOff(false));</span>
+<span class="fc" id="L427">    }</span>
+
+    @Test
+    public void test_toStringYesNo_boolean() {
+<span class="fc" id="L431">        assertEquals(&quot;yes&quot;, BooleanUtils.toStringYesNo(true));</span>
+<span class="fc" id="L432">        assertEquals(&quot;no&quot;, BooleanUtils.toStringYesNo(false));</span>
+<span class="fc" id="L433">    }</span>
+
+    @Test
+    public void test_toString_boolean_String_String_String() {
+<span class="fc" id="L437">        assertEquals(&quot;Y&quot;, BooleanUtils.toString(true, &quot;Y&quot;, &quot;N&quot;));</span>
+<span class="fc" id="L438">        assertEquals(&quot;N&quot;, BooleanUtils.toString(false, &quot;Y&quot;, &quot;N&quot;));</span>
+<span class="fc" id="L439">    }</span>
+
+    //  testXor
+    //  -----------------------------------------------------------------------
+    @Test
+    public void testXor_primitive_nullInput() {
+<span class="pc" id="L445">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.xor((boolean[]) null));</span>
+<span class="fc" id="L446">    }</span>
+
+    @Test
+    public void testXor_primitive_emptyInput() {
+<span class="pc" id="L450">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.xor(new boolean[] {}));</span>
+<span class="fc" id="L451">    }</span>
+
+    @Test
+    public void testXor_primitive_validInput_2items() {
+<span class="fc" id="L455">        assertEquals(</span>
+<span class="fc" id="L456">                true ^ true,</span>
+<span class="fc" id="L457">                BooleanUtils.xor(new boolean[] { true, true }),</span>
+                &quot;true ^ true&quot;);
+
+<span class="fc" id="L460">        assertEquals(</span>
+<span class="fc" id="L461">                false ^ false,</span>
+<span class="fc" id="L462">                BooleanUtils.xor(new boolean[] { false, false }),</span>
+                &quot;false ^ false&quot;);
+
+<span class="fc" id="L465">        assertEquals(</span>
+<span class="fc" id="L466">                true ^ false,</span>
+<span class="fc" id="L467">                BooleanUtils.xor(new boolean[] { true, false }),</span>
+                &quot;true ^ false&quot;);
+
+<span class="fc" id="L470">        assertEquals(</span>
+<span class="fc" id="L471">                false ^ true,</span>
+<span class="fc" id="L472">                BooleanUtils.xor(new boolean[] { false, true }),</span>
+                &quot;false ^ true&quot;);
+<span class="fc" id="L474">    }</span>
+
+    @Test
+    public void testXor_primitive_validInput_3items() {
+<span class="fc" id="L478">        assertEquals(</span>
+<span class="fc" id="L479">                false ^ false ^ false,</span>
+<span class="fc" id="L480">                BooleanUtils.xor(new boolean[] { false, false, false }),</span>
+                &quot;false ^ false ^ false&quot;);
+
+<span class="fc" id="L483">        assertEquals(</span>
+<span class="fc" id="L484">                false ^ false ^ true,</span>
+<span class="fc" id="L485">                BooleanUtils.xor(new boolean[] { false, false, true }),</span>
+                &quot;false ^ false ^ true&quot;);
+
+<span class="fc" id="L488">        assertEquals(</span>
+<span class="fc" id="L489">                false ^ true ^ false,</span>
+<span class="fc" id="L490">                BooleanUtils.xor(new boolean[] { false, true, false }),</span>
+                &quot;false ^ true ^ false&quot;);
+
+<span class="fc" id="L493">        assertEquals(</span>
+<span class="fc" id="L494">                false ^ true ^ true,</span>
+<span class="fc" id="L495">                BooleanUtils.xor(new boolean[] { false, true, true }),</span>
+                &quot;false ^ true ^ true&quot;);
+
+<span class="fc" id="L498">        assertEquals(</span>
+<span class="fc" id="L499">                true ^ false ^ false,</span>
+<span class="fc" id="L500">                BooleanUtils.xor(new boolean[] { true, false, false }),</span>
+                &quot;true ^ false ^ false&quot;);
+
+<span class="fc" id="L503">        assertEquals(</span>
+<span class="fc" id="L504">                true ^ false ^ true,</span>
+<span class="fc" id="L505">                BooleanUtils.xor(new boolean[] { true, false, true }),</span>
+                &quot;true ^ false ^ true&quot;);
+
+<span class="fc" id="L508">        assertEquals(</span>
+<span class="fc" id="L509">                true ^ true ^ false,</span>
+<span class="fc" id="L510">                BooleanUtils.xor(new boolean[] { true, true, false }),</span>
+                &quot;true ^ true ^ false&quot;);
+
+<span class="fc" id="L513">        assertEquals(</span>
+<span class="fc" id="L514">                true ^ true ^ true,</span>
+<span class="fc" id="L515">                BooleanUtils.xor(new boolean[] { true, true, true }),</span>
+                &quot;true ^ true ^ true&quot;);
+<span class="fc" id="L517">    }</span>
+
+    @Test
+    public void testXor_object_nullInput() {
+<span class="pc" id="L521">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.xor((Boolean[]) null));</span>
+<span class="fc" id="L522">    }</span>
+
+    @Test
+    public void testXor_object_emptyInput() {
+<span class="pc" id="L526">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.xor(new Boolean[] {}));</span>
+<span class="fc" id="L527">    }</span>
+
+    @Test
+    public void testXor_object_nullElementInput() {
+<span class="pc" id="L531">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.xor(new Boolean[] {null}));</span>
+<span class="fc" id="L532">    }</span>
+
+    @Test
+    public void testXor_object_validInput_2items() {
+<span class="fc" id="L536">        assertEquals(</span>
+<span class="fc" id="L537">                false ^ false,</span>
+<span class="fc" id="L538">                BooleanUtils.xor(new Boolean[] { Boolean.FALSE, Boolean.FALSE }).booleanValue(),</span>
+                &quot;false ^ false&quot;);
+
+<span class="fc" id="L541">        assertEquals(</span>
+<span class="fc" id="L542">                false ^ true,</span>
+<span class="fc" id="L543">                BooleanUtils.xor(new Boolean[] { Boolean.FALSE, Boolean.TRUE }).booleanValue(),</span>
+                &quot;false ^ true&quot;);
+
+<span class="fc" id="L546">        assertEquals(</span>
+<span class="fc" id="L547">                true ^ false,</span>
+<span class="fc" id="L548">                BooleanUtils.xor(new Boolean[] { Boolean.TRUE, Boolean.FALSE }).booleanValue(),</span>
+                &quot;true ^ false&quot;);
+
+<span class="fc" id="L551">        assertEquals(</span>
+<span class="fc" id="L552">                true ^ true,</span>
+<span class="fc" id="L553">                BooleanUtils.xor(new Boolean[] { Boolean.TRUE, Boolean.TRUE }).booleanValue(),</span>
+                &quot;true ^ true&quot;);
+<span class="fc" id="L555">    }</span>
+
+    @Test
+    public void testXor_object_validInput_3items() {
+<span class="fc" id="L559">        assertEquals(</span>
+<span class="fc" id="L560">                false ^ false ^ false,</span>
+<span class="fc" id="L561">                BooleanUtils.xor(</span>
+                                new Boolean[] {
+                                        Boolean.FALSE,
+                                        Boolean.FALSE,
+                                        Boolean.FALSE })
+<span class="fc" id="L566">                                .booleanValue(),</span>
+                &quot;false ^ false ^ false&quot;);
+
+<span class="fc" id="L569">        assertEquals(</span>
+<span class="fc" id="L570">                false ^ false ^ true,</span>
+<span class="fc" id="L571">                BooleanUtils</span>
+<span class="fc" id="L572">                        .xor(</span>
+                            new Boolean[] {
+                                Boolean.FALSE,
+                                Boolean.FALSE,
+                                Boolean.TRUE })
+<span class="fc" id="L577">                        .booleanValue(),</span>
+                &quot;false ^ false ^ true&quot;);
+
+<span class="fc" id="L580">        assertEquals(</span>
+<span class="fc" id="L581">                false ^ true ^ false,</span>
+<span class="fc" id="L582">                BooleanUtils</span>
+<span class="fc" id="L583">                        .xor(</span>
+                            new Boolean[] {
+                                Boolean.FALSE,
+                                Boolean.TRUE,
+                                Boolean.FALSE })
+<span class="fc" id="L588">                        .booleanValue(),</span>
+                &quot;false ^ true ^ false&quot;);
+
+<span class="fc" id="L591">        assertEquals(</span>
+<span class="fc" id="L592">                true ^ false ^ false,</span>
+<span class="fc" id="L593">                BooleanUtils</span>
+<span class="fc" id="L594">                        .xor(</span>
+                            new Boolean[] {
+                                Boolean.TRUE,
+                                Boolean.FALSE,
+                                Boolean.FALSE })
+<span class="fc" id="L599">                        .booleanValue(),</span>
+                &quot;true ^ false ^ false&quot;);
+
+<span class="fc" id="L602">        assertEquals(</span>
+<span class="fc" id="L603">                true ^ false ^ true,</span>
+<span class="fc" id="L604">                BooleanUtils.xor(</span>
+                                new Boolean[] {
+                                        Boolean.TRUE,
+                                        Boolean.FALSE,
+                                        Boolean.TRUE })
+<span class="fc" id="L609">                                .booleanValue(),</span>
+                &quot;true ^ false ^ true&quot;);
+
+<span class="fc" id="L612">        assertEquals(</span>
+<span class="fc" id="L613">                true ^ true ^ false,</span>
+<span class="fc" id="L614">                BooleanUtils.xor(</span>
+                            new Boolean[] {
+                                Boolean.TRUE,
+                                Boolean.TRUE,
+                                Boolean.FALSE })
+<span class="fc" id="L619">                        .booleanValue(),</span>
+                &quot;true ^ true ^ false&quot;);
+
+<span class="fc" id="L622">        assertEquals(</span>
+<span class="fc" id="L623">                false ^ true ^ true,</span>
+<span class="fc" id="L624">                BooleanUtils.xor(</span>
+                            new Boolean[] {
+                                Boolean.FALSE,
+                                Boolean.TRUE,
+                                Boolean.TRUE })
+<span class="fc" id="L629">                        .booleanValue(),</span>
+                &quot;false ^ true ^ true&quot;);
+
+<span class="fc" id="L632">        assertEquals(</span>
+<span class="fc" id="L633">                true ^ true ^ true,</span>
+<span class="fc" id="L634">                BooleanUtils.xor(</span>
+                        new Boolean[] {
+                                Boolean.TRUE,
+                                Boolean.TRUE,
+                                Boolean.TRUE })
+<span class="fc" id="L639">                        .booleanValue(),</span>
+                &quot;true ^ true ^ true&quot;);
+<span class="fc" id="L641">    }</span>
+
+    //  testAnd
+    //  -----------------------------------------------------------------------
+    @Test
+    public void testAnd_primitive_nullInput() {
+<span class="pc" id="L647">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.and((boolean[]) null));</span>
+<span class="fc" id="L648">    }</span>
+
+    @Test
+    public void testAnd_primitive_emptyInput() {
+<span class="pc" id="L652">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.and(new boolean[] {}));</span>
+<span class="fc" id="L653">    }</span>
+
+    @Test
+    public void testAnd_primitive_validInput_2items() {
+<span class="fc" id="L657">        assertTrue(</span>
+<span class="fc" id="L658">                BooleanUtils.and(new boolean[] { true, true }),</span>
+                &quot;False result for (true, true)&quot;);
+
+<span class="fc" id="L661">        assertTrue(</span>
+<span class="pc bpc" id="L662" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { false, false }),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L665">        assertTrue(</span>
+<span class="pc bpc" id="L666" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { true, false }),</span>
+                &quot;True result for (true, false)&quot;);
+
+<span class="fc" id="L669">        assertTrue(</span>
+<span class="pc bpc" id="L670" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { false, true }),</span>
+                &quot;True result for (false, true)&quot;);
+<span class="fc" id="L672">    }</span>
+
+    @Test
+    public void testAnd_primitive_validInput_3items() {
+<span class="fc" id="L676">        assertTrue(</span>
+<span class="pc bpc" id="L677" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { false, false, true }),</span>
+                &quot;True result for (false, false, true)&quot;);
+
+<span class="fc" id="L680">        assertTrue(</span>
+<span class="pc bpc" id="L681" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { false, true, false }),</span>
+                &quot;True result for (false, true, false)&quot;);
+
+<span class="fc" id="L684">        assertTrue(</span>
+<span class="pc bpc" id="L685" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { true, false, false }),</span>
+                &quot;True result for (true, false, false)&quot;);
+
+<span class="fc" id="L688">        assertTrue(</span>
+<span class="fc" id="L689">                BooleanUtils.and(new boolean[] { true, true, true }),</span>
+                &quot;False result for (true, true, true)&quot;);
+
+<span class="fc" id="L692">        assertTrue(</span>
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { false, false, false }),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L696">        assertTrue(</span>
+<span class="pc bpc" id="L697" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { true, true, false }),</span>
+                &quot;True result for (true, true, false)&quot;);
+
+<span class="fc" id="L700">        assertTrue(</span>
+<span class="pc bpc" id="L701" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { true, false, true }),</span>
+                &quot;True result for (true, false, true)&quot;);
+
+<span class="fc" id="L704">        assertTrue(</span>
+<span class="pc bpc" id="L705" title="1 of 2 branches missed.">                ! BooleanUtils.and(new boolean[] { false, true, true }),</span>
+                &quot;True result for (false, true, true)&quot;);
+<span class="fc" id="L707">    }</span>
+
+    @Test
+    public void testAnd_object_nullInput() {
+<span class="pc" id="L711">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.and((Boolean[]) null));</span>
+<span class="fc" id="L712">    }</span>
+
+    @Test
+    public void testAnd_object_emptyInput() {
+<span class="pc" id="L716">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.and(new Boolean[] {}));</span>
+<span class="fc" id="L717">    }</span>
+
+    @Test
+    public void testAnd_object_nullElementInput() {
+<span class="pc" id="L721">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.and(new Boolean[] {null}));</span>
+<span class="fc" id="L722">    }</span>
+
+    @Test
+    public void testAnd_object_validInput_2items() {
+<span class="fc" id="L726">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L728">                    .and(new Boolean[] { Boolean.TRUE, Boolean.TRUE })</span>
+<span class="fc" id="L729">                    .booleanValue(),</span>
+                &quot;False result for (true, true)&quot;);
+
+<span class="fc" id="L732">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L734">                    .and(new Boolean[] { Boolean.FALSE, Boolean.FALSE })</span>
+<span class="pc bpc" id="L735" title="1 of 2 branches missed.">                    .booleanValue(),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L738">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L740">                    .and(new Boolean[] { Boolean.TRUE, Boolean.FALSE })</span>
+<span class="pc bpc" id="L741" title="1 of 2 branches missed.">                    .booleanValue(),</span>
+                &quot;True result for (true, false)&quot;);
+
+<span class="fc" id="L744">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L746">                    .and(new Boolean[] { Boolean.FALSE, Boolean.TRUE })</span>
+<span class="pc bpc" id="L747" title="1 of 2 branches missed.">                    .booleanValue(),</span>
+                &quot;True result for (false, true)&quot;);
+<span class="fc" id="L749">    }</span>
+
+    @Test
+    public void testAnd_object_validInput_3items() {
+<span class="fc" id="L753">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L755">                    .and(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.FALSE,
+                            Boolean.TRUE })
+<span class="pc bpc" id="L760" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (false, false, true)&quot;);
+
+<span class="fc" id="L763">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L765">                    .and(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.TRUE,
+                            Boolean.FALSE })
+<span class="pc bpc" id="L770" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (false, true, false)&quot;);
+
+<span class="fc" id="L773">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L775">                    .and(</span>
+                        new Boolean[] {
+                            Boolean.TRUE,
+                            Boolean.FALSE,
+                            Boolean.FALSE })
+<span class="pc bpc" id="L780" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (true, false, false)&quot;);
+
+<span class="fc" id="L783">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L785">                    .and(new Boolean[] { Boolean.TRUE, Boolean.TRUE, Boolean.TRUE })</span>
+<span class="fc" id="L786">                    .booleanValue(),</span>
+                &quot;False result for (true, true, true)&quot;);
+
+<span class="fc" id="L789">        assertTrue(</span>
+<span class="fc" id="L790">                ! BooleanUtils.and(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.FALSE,
+                            Boolean.FALSE })
+<span class="pc bpc" id="L795" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L798">        assertTrue(</span>
+<span class="fc" id="L799">                ! BooleanUtils.and(</span>
+                        new Boolean[] {
+                            Boolean.TRUE,
+                            Boolean.TRUE,
+                            Boolean.FALSE })
+<span class="pc bpc" id="L804" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (true, true, false)&quot;);
+
+<span class="fc" id="L807">        assertTrue(</span>
+<span class="fc" id="L808">                ! BooleanUtils.and(</span>
+                        new Boolean[] {
+                            Boolean.TRUE,
+                            Boolean.FALSE,
+                            Boolean.TRUE })
+<span class="pc bpc" id="L813" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (true, false, true)&quot;);
+
+<span class="fc" id="L816">        assertTrue(</span>
+<span class="fc" id="L817">                ! BooleanUtils.and(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.TRUE,
+                            Boolean.TRUE })
+<span class="pc bpc" id="L822" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (false, true, true)&quot;);
+<span class="fc" id="L824">    }</span>
+
+    //  testOr
+    //  -----------------------------------------------------------------------
+    @Test
+    public void testOr_primitive_nullInput() {
+<span class="pc" id="L830">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.or((boolean[]) null));</span>
+<span class="fc" id="L831">    }</span>
+
+    @Test
+    public void testOr_primitive_emptyInput() {
+<span class="pc" id="L835">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.or(new boolean[] {}));</span>
+<span class="fc" id="L836">    }</span>
+
+    @Test
+    public void testOr_primitive_validInput_2items() {
+<span class="fc" id="L840">        assertTrue(</span>
+<span class="fc" id="L841">                BooleanUtils.or(new boolean[] { true, true }),</span>
+                &quot;False result for (true, true)&quot;);
+
+<span class="fc" id="L844">        assertTrue(</span>
+<span class="pc bpc" id="L845" title="1 of 2 branches missed.">                ! BooleanUtils.or(new boolean[] { false, false }),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L848">        assertTrue(</span>
+<span class="fc" id="L849">                BooleanUtils.or(new boolean[] { true, false }),</span>
+                &quot;False result for (true, false)&quot;);
+
+<span class="fc" id="L852">        assertTrue(</span>
+<span class="fc" id="L853">                BooleanUtils.or(new boolean[] { false, true }),</span>
+                &quot;False result for (false, true)&quot;);
+<span class="fc" id="L855">    }</span>
+
+    @Test
+    public void testOr_primitive_validInput_3items() {
+<span class="fc" id="L859">        assertTrue(</span>
+<span class="fc" id="L860">                BooleanUtils.or(new boolean[] { false, false, true }),</span>
+                &quot;False result for (false, false, true)&quot;);
+
+<span class="fc" id="L863">        assertTrue(</span>
+<span class="fc" id="L864">                BooleanUtils.or(new boolean[] { false, true, false }),</span>
+                &quot;False result for (false, true, false)&quot;);
+
+<span class="fc" id="L867">        assertTrue(</span>
+<span class="fc" id="L868">                BooleanUtils.or(new boolean[] { true, false, false }),</span>
+                &quot;False result for (true, false, false)&quot;);
+
+<span class="fc" id="L871">        assertTrue(</span>
+<span class="fc" id="L872">                BooleanUtils.or(new boolean[] { true, true, true }),</span>
+                &quot;False result for (true, true, true)&quot;);
+
+<span class="fc" id="L875">        assertTrue(</span>
+<span class="pc bpc" id="L876" title="1 of 2 branches missed.">                ! BooleanUtils.or(new boolean[] { false, false, false }),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L879">        assertTrue(</span>
+<span class="fc" id="L880">                BooleanUtils.or(new boolean[] { true, true, false }),</span>
+                &quot;False result for (true, true, false)&quot;);
+
+<span class="fc" id="L883">        assertTrue(</span>
+<span class="fc" id="L884">                BooleanUtils.or(new boolean[] { true, false, true }),</span>
+                &quot;False result for (true, false, true)&quot;);
+
+<span class="fc" id="L887">        assertTrue(</span>
+<span class="fc" id="L888">                BooleanUtils.or(new boolean[] { false, true, true }),</span>
+                &quot;False result for (false, true, true)&quot;);
+
+<span class="fc" id="L891">    }</span>
+    @Test
+    public void testOr_object_nullInput() {
+<span class="pc" id="L894">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.or((Boolean[]) null));</span>
+<span class="fc" id="L895">    }</span>
+
+    @Test
+    public void testOr_object_emptyInput() {
+<span class="pc" id="L899">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.or(new Boolean[] {}));</span>
+<span class="fc" id="L900">    }</span>
+
+    @Test
+    public void testOr_object_nullElementInput() {
+<span class="pc" id="L904">        assertThrows(IllegalArgumentException.class, () -&gt; BooleanUtils.or(new Boolean[] {null}));</span>
+<span class="fc" id="L905">    }</span>
+
+    @Test
+    public void testOr_object_validInput_2items() {
+<span class="fc" id="L909">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L911">                    .or(new Boolean[] { Boolean.TRUE, Boolean.TRUE })</span>
+<span class="fc" id="L912">                    .booleanValue(),</span>
+                &quot;False result for (true, true)&quot;);
+
+<span class="fc" id="L915">        assertTrue(</span>
+                ! BooleanUtils
+<span class="fc" id="L917">                    .or(new Boolean[] { Boolean.FALSE, Boolean.FALSE })</span>
+<span class="pc bpc" id="L918" title="1 of 2 branches missed.">                    .booleanValue(),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L921">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L923">                    .or(new Boolean[] { Boolean.TRUE, Boolean.FALSE })</span>
+<span class="fc" id="L924">                    .booleanValue(),</span>
+                &quot;False result for (true, false)&quot;);
+
+<span class="fc" id="L927">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L929">                    .or(new Boolean[] { Boolean.FALSE, Boolean.TRUE })</span>
+<span class="fc" id="L930">                    .booleanValue(),</span>
+                &quot;False result for (false, true)&quot;);
+<span class="fc" id="L932">    }</span>
+
+    @Test
+    public void testOr_object_validInput_3items() {
+<span class="fc" id="L936">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L938">                    .or(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.FALSE,
+                            Boolean.TRUE })
+<span class="fc" id="L943">                            .booleanValue(),</span>
+                &quot;False result for (false, false, true)&quot;);
+
+<span class="fc" id="L946">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L948">                    .or(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.TRUE,
+                            Boolean.FALSE })
+<span class="fc" id="L953">                            .booleanValue(),</span>
+                &quot;False result for (false, true, false)&quot;);
+
+<span class="fc" id="L956">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L958">                    .or(</span>
+                        new Boolean[] {
+                            Boolean.TRUE,
+                            Boolean.FALSE,
+                            Boolean.FALSE })
+<span class="fc" id="L963">                            .booleanValue(),</span>
+                &quot;False result for (true, false, false)&quot;);
+
+<span class="fc" id="L966">        assertTrue(</span>
+                BooleanUtils
+<span class="fc" id="L968">                    .or(new Boolean[] { Boolean.TRUE, Boolean.TRUE, Boolean.TRUE })</span>
+<span class="fc" id="L969">                    .booleanValue(),</span>
+                &quot;False result for (true, true, true)&quot;);
+
+<span class="fc" id="L972">        assertTrue(</span>
+<span class="fc" id="L973">                ! BooleanUtils.or(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.FALSE,
+                            Boolean.FALSE })
+<span class="pc bpc" id="L978" title="1 of 2 branches missed.">                            .booleanValue(),</span>
+                &quot;True result for (false, false)&quot;);
+
+<span class="fc" id="L981">        assertTrue(</span>
+<span class="fc" id="L982">                BooleanUtils.or(</span>
+                        new Boolean[] {
+                            Boolean.TRUE,
+                            Boolean.TRUE,
+                            Boolean.FALSE })
+<span class="fc" id="L987">                            .booleanValue(),</span>
+                &quot;False result for (true, true, false)&quot;);
+
+<span class="fc" id="L990">        assertTrue(</span>
+<span class="fc" id="L991">                BooleanUtils.or(</span>
+                        new Boolean[] {
+                            Boolean.TRUE,
+                            Boolean.FALSE,
+                            Boolean.TRUE })
+<span class="fc" id="L996">                            .booleanValue(),</span>
+                &quot;False result for (true, false, true)&quot;);
+
+<span class="fc" id="L999">        assertTrue(</span>
+<span class="fc" id="L1000">                BooleanUtils.or(</span>
+                        new Boolean[] {
+                            Boolean.FALSE,
+                            Boolean.TRUE,
+                            Boolean.TRUE })
+<span class="fc" id="L1005">                            .booleanValue(),</span>
+                &quot;False result for (false, true, true)&quot;);
+<span class="fc" id="L1007">    }</span>
+
+    @Test
+    public void testCompare() {
+<span class="pc bpc" id="L1011" title="1 of 2 branches missed.">        assertTrue(BooleanUtils.compare(true, false) &gt; 0);</span>
+<span class="fc" id="L1012">        assertEquals(0, BooleanUtils.compare(true, true));</span>
+<span class="fc" id="L1013">        assertEquals(0, BooleanUtils.compare(false, false));</span>
+<span class="pc bpc" id="L1014" title="1 of 2 branches missed.">        assertTrue(BooleanUtils.compare(false, true) &lt; 0);</span>
+<span class="fc" id="L1015">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

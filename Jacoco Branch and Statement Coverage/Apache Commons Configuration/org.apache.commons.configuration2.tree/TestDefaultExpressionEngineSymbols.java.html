@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDefaultExpressionEngineSymbols.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestDefaultExpressionEngineSymbols.java</span></div><h1>TestDefaultExpressionEngineSymbols.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+/**
+ * Test class for {@code DefaultExpressionEngineSymbols}.
+ *
+ */
+<span class="fc" id="L31">public class TestDefaultExpressionEngineSymbols</span>
+{
+    /**
+     * Tests the instance with default symbols.
+     */
+    @Test
+    public void testDefaultSymbols()
+    {
+<span class="fc" id="L39">        assertEquals(&quot;Wrong delimiter&quot;, &quot;.&quot;,</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS
+<span class="fc" id="L41">                        .getPropertyDelimiter());</span>
+<span class="fc" id="L42">        assertEquals(&quot;Wrong escaped delimiter&quot;, &quot;..&quot;,</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS
+<span class="fc" id="L44">                        .getEscapedDelimiter());</span>
+<span class="fc" id="L45">        assertEquals(&quot;Wrong index start&quot;, &quot;(&quot;,</span>
+<span class="fc" id="L46">                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS.getIndexStart());</span>
+<span class="fc" id="L47">        assertEquals(&quot;Wrong index end&quot;, &quot;)&quot;,</span>
+<span class="fc" id="L48">                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS.getIndexEnd());</span>
+<span class="fc" id="L49">        assertEquals(&quot;Wrong attribute start&quot;, &quot;[@&quot;,</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS
+<span class="fc" id="L51">                        .getAttributeStart());</span>
+<span class="fc" id="L52">        assertEquals(&quot;Wrong attribute end&quot;, &quot;]&quot;,</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS
+<span class="fc" id="L54">                        .getAttributeEnd());</span>
+<span class="fc" id="L55">    }</span>
+
+    /**
+     * Helper method for checking whether two objects are equal.
+     *
+     * @param o1 object 1
+     * @param o2 object 2
+     */
+    private static void expEqual(final Object o1, final Object o2)
+    {
+<span class="fc" id="L65">        assertTrue(&quot;Not equal&quot;, o1.equals(o2));</span>
+<span class="fc" id="L66">        assertTrue(&quot;Not symmetric&quot;, o2.equals(o1));</span>
+<span class="fc" id="L67">        assertEquals(&quot;Different hash codes&quot;, o1.hashCode(), o2.hashCode());</span>
+<span class="fc" id="L68">    }</span>
+
+    /**
+     * Helper method for testing that two objects are not equal.
+     *
+     * @param o1 object 1
+     * @param o2 object 2
+     */
+    private static void expNE(final Object o1, final Object o2)
+    {
+<span class="fc" id="L78">        assertFalse(&quot;Equal&quot;, o1.equals(o2));</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (o2 != null)</span>
+        {
+<span class="fc" id="L81">            assertFalse(&quot;Not symmetric&quot;, o2.equals(o1));</span>
+        }
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Tests equals() if the expected result is true.
+     */
+    @Test
+    public void testEqualsTrue()
+    {
+<span class="fc" id="L91">        expEqual(DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS,</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS);
+<span class="fc" id="L93">        final DefaultExpressionEngineSymbols s2 =</span>
+                new DefaultExpressionEngineSymbols.Builder(
+                        DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS)
+<span class="fc" id="L96">                        .create();</span>
+<span class="fc" id="L97">        expEqual(DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS, s2);</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Helper method for creating a builder object which is initialized with the
+     * default symbols.
+     *
+     * @return the initialized builder
+     */
+    private static DefaultExpressionEngineSymbols.Builder builder()
+    {
+<span class="fc" id="L108">        return new DefaultExpressionEngineSymbols.Builder(</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS);
+    }
+
+    /**
+     * Tests equals() if the expected result is false.
+     */
+    @Test
+    public void testEqualsFalse()
+    {
+<span class="fc" id="L118">        final DefaultExpressionEngineSymbols s1 =</span>
+                DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS;
+        DefaultExpressionEngineSymbols s2 =
+<span class="fc" id="L121">                builder().setPropertyDelimiter(&quot;/&quot;).create();</span>
+<span class="fc" id="L122">        expNE(s1, s2);</span>
+<span class="fc" id="L123">        s2 = builder().setEscapedDelimiter(&quot;\\.&quot;).create();</span>
+<span class="fc" id="L124">        expNE(s1, s2);</span>
+<span class="fc" id="L125">        s2 = builder().setIndexStart(&quot;[&quot;).create();</span>
+<span class="fc" id="L126">        expNE(s1, s2);</span>
+<span class="fc" id="L127">        s2 = builder().setIndexEnd(&quot;]&quot;).create();</span>
+<span class="fc" id="L128">        expNE(s1, s2);</span>
+<span class="fc" id="L129">        s2 = builder().setAttributeStart(&quot;#&quot;).create();</span>
+<span class="fc" id="L130">        expNE(s1, s2);</span>
+<span class="fc" id="L131">        s2 = builder().setAttributeEnd(&quot;~&quot;).create();</span>
+<span class="fc" id="L132">        expNE(s1, s2);</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Tests equals for null input.
+     */
+    @Test
+    public void testEqualsNull()
+    {
+<span class="fc" id="L141">        expNE(builder().create(), null);</span>
+<span class="fc" id="L142">    }</span>
+
+    /**
+     * Tests equals with an object of another class.
+     */
+    @Test
+    public void testEqualsOtherClass()
+    {
+<span class="fc" id="L150">        expNE(builder().create(), this);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests the string representation.
+     */
+    @Test
+    public void testToString()
+    {
+<span class="fc" id="L159">        final DefaultExpressionEngineSymbols symbols = builder().create();</span>
+<span class="fc" id="L160">        final String s = symbols.toString();</span>
+<span class="fc" id="L161">        assertThat(</span>
+                s,
+<span class="fc" id="L163">                containsString(&quot;propertyDelimiter=&quot;</span>
+<span class="fc" id="L164">                        + symbols.getPropertyDelimiter()));</span>
+<span class="fc" id="L165">        assertThat(</span>
+                s,
+<span class="fc" id="L167">                containsString(&quot;escapedDelimiter=&quot;</span>
+<span class="fc" id="L168">                        + symbols.getEscapedDelimiter()));</span>
+<span class="fc" id="L169">        assertThat(s, containsString(&quot;indexStart=&quot; + symbols.getIndexStart()));</span>
+<span class="fc" id="L170">        assertThat(s, containsString(&quot;indexEnd=&quot; + symbols.getIndexEnd()));</span>
+<span class="fc" id="L171">        assertThat(s,</span>
+<span class="fc" id="L172">                containsString(&quot;attributeStart=&quot; + symbols.getAttributeStart()));</span>
+<span class="fc" id="L173">        assertThat(s,</span>
+<span class="fc" id="L174">                containsString(&quot;attributeEnd=&quot; + symbols.getAttributeEnd()));</span>
+<span class="fc" id="L175">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

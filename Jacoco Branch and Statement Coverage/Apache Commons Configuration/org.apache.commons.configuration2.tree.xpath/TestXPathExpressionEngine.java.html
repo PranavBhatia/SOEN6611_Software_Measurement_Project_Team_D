@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestXPathExpressionEngine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree.xpath</a> &gt; <span class="el_source">TestXPathExpressionEngine.java</span></div><h1>TestXPathExpressionEngine.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree.xpath;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.InMemoryNodeModel;
+import org.apache.commons.configuration2.tree.NodeAddData;
+import org.apache.commons.configuration2.tree.NodeHandler;
+import org.apache.commons.configuration2.tree.QueryResult;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.ri.JXPathContextReferenceImpl;
+import org.apache.commons.jxpath.ri.model.NodePointerFactory;
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for XPathExpressionEngine.
+ *
+ */
+<span class="fc" id="L45">public class TestXPathExpressionEngine</span>
+{
+    /** Constant for the valid test key. */
+    private static final String TEST_KEY = &quot;TESTKEY&quot;;
+
+    /** Constant for the name of the root node. */
+    private static final String ROOT_NAME = &quot;testRoot&quot;;
+
+    /** The test root node. */
+    private static ImmutableNode root;
+
+    /** A test node handler. */
+    private static NodeHandler&lt;ImmutableNode&gt; handler;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L62">        root = new ImmutableNode.Builder().name(ROOT_NAME).create();</span>
+<span class="fc" id="L63">        handler = new InMemoryNodeModel(root).getNodeHandler();</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Creates a mock for a context and prepares it to expect a select
+     * invocation yielding the provided results.
+     *
+     * @param results the results
+     * @return the mock context
+     */
+    private JXPathContext expectSelect(final Object... results)
+    {
+<span class="fc" id="L75">        final JXPathContext ctx = EasyMock.createMock(JXPathContext.class);</span>
+<span class="fc" id="L76">        EasyMock.expect(ctx.selectNodes(TEST_KEY)).andReturn(</span>
+<span class="fc" id="L77">                Arrays.asList(results));</span>
+<span class="fc" id="L78">        EasyMock.replay(ctx);</span>
+<span class="fc" id="L79">        return ctx;</span>
+    }
+
+    /**
+     * Creates a test engine instance configured with a context factory which
+     * returns the given test context.
+     *
+     * @param ctx the context mock
+     * @return the test engine instance
+     */
+    private XPathExpressionEngine setUpEngine(final JXPathContext ctx)
+    {
+<span class="fc" id="L91">        final XPathContextFactory factory =</span>
+<span class="fc" id="L92">                EasyMock.createMock(XPathContextFactory.class);</span>
+<span class="fc" id="L93">        EasyMock.expect(factory.createContext(root, handler)).andReturn(ctx);</span>
+<span class="fc" id="L94">        EasyMock.replay(factory);</span>
+<span class="fc" id="L95">        return new XPathExpressionEngine(factory);</span>
+    }
+
+    /**
+     * Tests whether a correct default context factory is created.
+     */
+    @Test
+    public void testDefaultContextFactory()
+    {
+<span class="fc" id="L104">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L105">        assertNotNull(&quot;No context factory&quot;, engine.getContextFactory());</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Tests the query() method with an expression yielding a node.
+     */
+    @Test
+    public void testQueryNodeExpression()
+    {
+<span class="fc" id="L114">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L115">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L116">        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; result =</span>
+<span class="fc" id="L117">                engine.query(root, TEST_KEY, handler);</span>
+<span class="fc" id="L118">        assertEquals(&quot;Incorrect number of results&quot;, 1, result.size());</span>
+<span class="fc" id="L119">        assertSame(&quot;Wrong result node&quot;, root, result.get(0).getNode());</span>
+<span class="fc" id="L120">        assertFalse(&quot;No node result&quot;, result.get(0).isAttributeResult());</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Tests a query which yields an attribute result.
+     */
+    @Test
+    public void testQueryAttributeExpression()
+    {
+<span class="fc" id="L129">        final QueryResult&lt;ImmutableNode&gt; attrResult =</span>
+<span class="fc" id="L130">                QueryResult.createAttributeResult(root, &quot;attr&quot;);</span>
+<span class="fc" id="L131">        final JXPathContext ctx = expectSelect(attrResult);</span>
+<span class="fc" id="L132">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L133">        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; result =</span>
+<span class="fc" id="L134">                engine.query(root, TEST_KEY, handler);</span>
+<span class="fc" id="L135">        assertEquals(&quot;Incorrect number of results&quot;, 1, result.size());</span>
+<span class="fc" id="L136">        assertSame(&quot;Wrong result&quot;, attrResult, result.get(0));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Tests a query that has no results. This should return an empty list.
+     */
+    @Test
+    public void testQueryWithoutResult()
+    {
+<span class="fc" id="L145">        final JXPathContext ctx = expectSelect();</span>
+<span class="fc" id="L146">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L147">        assertTrue(&quot;Got results&quot;, engine.query(root, TEST_KEY, handler)</span>
+<span class="fc" id="L148">                .isEmpty());</span>
+<span class="fc" id="L149">    }</span>
+
+    /**
+     * Tests a query with an empty key. This should directly return the root
+     * node without invoking the JXPathContext.
+     */
+    @Test
+    public void testQueryWithEmptyKey()
+    {
+<span class="fc" id="L158">        checkEmptyKey(&quot;&quot;);</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Tests a query with a null key. Same as an empty key.
+     */
+    @Test
+    public void testQueryWithNullKey()
+    {
+<span class="fc" id="L167">        checkEmptyKey(null);</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * Helper method for testing queries with undefined keys.
+     *
+     * @param key the key
+     */
+    private void checkEmptyKey(final String key)
+    {
+<span class="fc" id="L177">        final XPathContextFactory factory =</span>
+<span class="fc" id="L178">                EasyMock.createMock(XPathContextFactory.class);</span>
+<span class="fc" id="L179">        EasyMock.replay(factory);</span>
+<span class="fc" id="L180">        final XPathExpressionEngine engine = new XPathExpressionEngine(factory);</span>
+<span class="fc" id="L181">        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; results =</span>
+<span class="fc" id="L182">                engine.query(root, key, handler);</span>
+<span class="fc" id="L183">        assertEquals(&quot;Incorrect number of results&quot;, 1, results.size());</span>
+<span class="fc" id="L184">        assertSame(&quot;Wrong result node&quot;, root, results.get(0).getNode());</span>
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * Tests if the JXPathContext is correctly initialized with the node pointer
+     * factory.
+     */
+    @Test
+    public void testNodePointerFactory()
+    {
+<span class="fc" id="L194">        JXPathContext.newContext(this);</span>
+        final NodePointerFactory[] factories =
+<span class="fc" id="L196">                JXPathContextReferenceImpl.getNodePointerFactories();</span>
+<span class="fc" id="L197">        boolean found = false;</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        for (final NodePointerFactory factory : factories)</span>
+        {
+<span class="fc bfc" id="L200" title="All 2 branches covered.">            if (factory instanceof ConfigurationNodePointerFactory)</span>
+            {
+<span class="fc" id="L202">                found = true;</span>
+            }
+        }
+<span class="fc" id="L205">        assertTrue(&quot;No configuration pointer factory found&quot;, found);</span>
+<span class="fc" id="L206">    }</span>
+
+    /**
+     * Tests a normal call of nodeKey().
+     */
+    @Test
+    public void testNodeKeyNormal()
+    {
+<span class="fc" id="L214">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L215">        assertEquals(&quot;Wrong node key&quot;, &quot;parent/&quot; + ROOT_NAME,</span>
+<span class="fc" id="L216">                engine.nodeKey(root, &quot;parent&quot;, handler));</span>
+<span class="fc" id="L217">    }</span>
+
+    /**
+     * Tests nodeKey() for the root node.
+     */
+    @Test
+    public void testNodeKeyForRootNode()
+    {
+<span class="fc" id="L225">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L226">        assertEquals(&quot;Wrong key for root node&quot;, &quot;&quot;,</span>
+<span class="fc" id="L227">                engine.nodeKey(root, null, handler));</span>
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Tests a node key if the node does not have a name.
+     */
+    @Test
+    public void testNodeKeyNoNodeName()
+    {
+<span class="fc" id="L236">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L237">        assertEquals(&quot;Null name not detected&quot;, &quot;test&quot;, engine.nodeKey(</span>
+<span class="fc" id="L238">                new ImmutableNode.Builder().create(), &quot;test&quot;, handler));</span>
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * Tests node key() for direct children of the root node.
+     */
+    @Test
+    public void testNodeKeyForRootChild()
+    {
+<span class="fc" id="L247">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L248">        assertEquals(&quot;Wrong key for root child node&quot;, ROOT_NAME,</span>
+<span class="fc" id="L249">                engine.nodeKey(root, &quot;&quot;, handler));</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Tests whether the key of an attribute can be generated..
+     */
+    @Test
+    public void testNodeKeyAttribute()
+    {
+<span class="fc" id="L258">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L259">        assertEquals(&quot;Wrong attribute key&quot;, &quot;node/@attr&quot;,</span>
+<span class="fc" id="L260">                engine.attributeKey(&quot;node&quot;, &quot;attr&quot;));</span>
+<span class="fc" id="L261">    }</span>
+
+    /**
+     * Tests the key of an attribute which belongs to the root node.
+     */
+    @Test
+    public void testAttributeKeyOfRootNode()
+    {
+<span class="fc" id="L269">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L270">        assertEquals(&quot;Wrong key for root attribute&quot;, &quot;@child&quot;,</span>
+<span class="fc" id="L271">                engine.attributeKey(null, &quot;child&quot;));</span>
+<span class="fc" id="L272">    }</span>
+
+    /**
+     * Tests adding a single child node.
+     */
+    @Test
+    public void testPrepareAddNode()
+    {
+<span class="fc" id="L280">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L281">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L282">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+<span class="fc" id="L283">                engine.prepareAdd(root, TEST_KEY + &quot;  newNode&quot;, handler);</span>
+<span class="fc" id="L284">        checkAddPath(data, false, &quot;newNode&quot;);</span>
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Tests adding a new attribute node.
+     */
+    @Test
+    public void testPrepareAddAttribute()
+    {
+<span class="fc" id="L293">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L294">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L295">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+<span class="fc" id="L296">                engine.prepareAdd(root, TEST_KEY + &quot;\t@newAttr&quot;, handler);</span>
+<span class="fc" id="L297">        checkAddPath(data, true, &quot;newAttr&quot;);</span>
+<span class="fc" id="L298">    }</span>
+
+    /**
+     * Tests adding a complete path.
+     */
+    @Test
+    public void testPrepareAddPath()
+    {
+<span class="fc" id="L306">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L307">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L308">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+<span class="fc" id="L309">                engine.prepareAdd(root, TEST_KEY + &quot; \t a/full/path/node&quot;,</span>
+                        handler);
+<span class="fc" id="L311">        checkAddPath(data, false, &quot;a&quot;, &quot;full&quot;, &quot;path&quot;, &quot;node&quot;);</span>
+<span class="fc" id="L312">    }</span>
+
+    /**
+     * Tests adding a complete path whose final node is an attribute.
+     */
+    @Test
+    public void testPrepareAddAttributePath()
+    {
+<span class="fc" id="L320">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L321">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L322">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+<span class="fc" id="L323">                engine.prepareAdd(root, TEST_KEY + &quot; a/full/path@attr&quot;, handler);</span>
+<span class="fc" id="L324">        checkAddPath(data, true, &quot;a&quot;, &quot;full&quot;, &quot;path&quot;, &quot;attr&quot;);</span>
+<span class="fc" id="L325">    }</span>
+
+    /**
+     * Tests adding a new node to the root.
+     */
+    @Test
+    public void testPrepareAddRootChild()
+    {
+<span class="fc" id="L333">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L334">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L335">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+<span class="fc" id="L336">                engine.prepareAdd(root, &quot; newNode&quot;, handler);</span>
+<span class="fc" id="L337">        checkAddPath(data, false, &quot;newNode&quot;);</span>
+<span class="fc" id="L338">    }</span>
+
+    /**
+     * Tests adding a new attribute to the root.
+     */
+    @Test
+    public void testPrepareAddRootAttribute()
+    {
+<span class="fc" id="L346">        final JXPathContext ctx = expectSelect(root);</span>
+<span class="fc" id="L347">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="fc" id="L348">        final NodeAddData&lt;ImmutableNode&gt; data =</span>
+<span class="fc" id="L349">                engine.prepareAdd(root, &quot; @attr&quot;, handler);</span>
+<span class="fc" id="L350">        checkAddPath(data, true, &quot;attr&quot;);</span>
+<span class="fc" id="L351">    }</span>
+
+    /**
+     * Tests an add operation with a query that does not return a single node.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddInvalidParent()
+    {
+<span class="fc" id="L359">        final JXPathContext ctx = expectSelect();</span>
+<span class="fc" id="L360">        final XPathExpressionEngine engine = setUpEngine(ctx);</span>
+<span class="nc" id="L361">        engine.prepareAdd(root, TEST_KEY + &quot; test&quot;, handler);</span>
+<span class="nc" id="L362">    }</span>
+
+    /**
+     * Tests an add operation with an empty path for the new node.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddEmptyPath()
+    {
+<span class="fc" id="L370">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="nc" id="L371">        engine.prepareAdd(root, TEST_KEY + &quot; &quot;, handler);</span>
+<span class="nc" id="L372">    }</span>
+
+    /**
+     * Tests an add operation where the key is null.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddNullKey()
+    {
+<span class="fc" id="L380">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="nc" id="L381">        engine.prepareAdd(root, null, handler);</span>
+<span class="nc" id="L382">    }</span>
+
+    /**
+     * Tests an add operation where the key is empty.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddEmptyKey()
+    {
+<span class="fc" id="L390">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="nc" id="L391">        engine.prepareAdd(root, &quot;&quot;, handler);</span>
+<span class="nc" id="L392">    }</span>
+
+    /**
+     * Helper method for checking whether an exception is thrown for an invalid
+     * path passed to prepareAdd().
+     *
+     * @param path the path to be tested
+     * @throws IllegalArgumentException if the test is successful
+     */
+    private void checkInvalidAddPath(final String path)
+    {
+<span class="fc" id="L403">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L404">        final QueryResult&lt;ImmutableNode&gt; res = QueryResult.createNodeResult(root);</span>
+<span class="nc" id="L405">        engine.createNodeAddData(path, res);</span>
+<span class="nc" id="L406">    }</span>
+
+    /**
+     * Tests an add operation with an invalid path.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddInvalidPath()
+    {
+<span class="nc" id="L414">        checkInvalidAddPath(&quot;an/invalid//path&quot;);</span>
+<span class="nc" id="L415">    }</span>
+
+    /**
+     * Tests an add operation with an invalid path: the path contains an
+     * attribute in the middle part.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddInvalidAttributePath()
+    {
+<span class="nc" id="L424">        checkInvalidAddPath(&quot;a/path/with@an/attribute&quot;);</span>
+<span class="nc" id="L425">    }</span>
+
+    /**
+     * Tests an add operation with an invalid path: the path contains an
+     * attribute after a slash.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddInvalidAttributePath2()
+    {
+<span class="nc" id="L434">        checkInvalidAddPath(&quot;a/path/with/@attribute&quot;);</span>
+<span class="nc" id="L435">    }</span>
+
+    /**
+     * Tests an add operation with an invalid path that starts with a slash.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddInvalidPathWithSlash()
+    {
+<span class="nc" id="L443">        checkInvalidAddPath(&quot;/a/path/node&quot;);</span>
+<span class="nc" id="L444">    }</span>
+
+    /**
+     * Tests an add operation with an invalid path that contains multiple
+     * attribute components.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddInvalidPathMultipleAttributes()
+    {
+<span class="nc" id="L453">        checkInvalidAddPath(&quot;an@attribute@path&quot;);</span>
+<span class="nc" id="L454">    }</span>
+
+    /**
+     * Tests that it is not possible to add nodes to an attribute.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrepareAddToAttributeResult()
+    {
+<span class="fc" id="L462">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L463">        final QueryResult&lt;ImmutableNode&gt; result =</span>
+<span class="fc" id="L464">                QueryResult.createAttributeResult(root, TEST_KEY);</span>
+<span class="nc" id="L465">        engine.createNodeAddData(&quot;path&quot;, result);</span>
+<span class="nc" id="L466">    }</span>
+
+    /**
+     * Helper method for testing the path nodes in the given add data object.
+     *
+     * @param data the data object to check
+     * @param attr a flag if the new node is an attribute
+     * @param expected an array with the expected path elements
+     */
+    private static void checkAddPath(final NodeAddData&lt;ImmutableNode&gt; data,
+            final boolean attr, final String... expected)
+    {
+<span class="fc" id="L478">        assertSame(&quot;Wrong parent node&quot;, root, data.getParent());</span>
+<span class="fc" id="L479">        final List&lt;String&gt; path = data.getPathNodes();</span>
+<span class="fc" id="L480">        assertEquals(&quot;Incorrect number of path nodes&quot;, expected.length - 1,</span>
+<span class="fc" id="L481">                path.size());</span>
+<span class="fc" id="L482">        final Iterator&lt;String&gt; it = path.iterator();</span>
+<span class="fc bfc" id="L483" title="All 2 branches covered.">        for (int idx = 0; idx &lt; expected.length - 1; idx++)</span>
+        {
+<span class="fc" id="L485">            assertEquals(&quot;Wrong node at position &quot; + idx, expected[idx],</span>
+<span class="fc" id="L486">                    it.next());</span>
+        }
+<span class="fc" id="L488">        assertEquals(&quot;Wrong name of new node&quot;, expected[expected.length - 1],</span>
+<span class="fc" id="L489">                data.getNewNodeName());</span>
+<span class="fc" id="L490">        assertEquals(&quot;Incorrect attribute flag&quot;, attr, data.isAttribute());</span>
+<span class="fc" id="L491">    }</span>
+
+    /**
+     * Tests whether a canonical key can be queried if all child nodes have
+     * different names.
+     */
+    @Test
+    public void testCanonicalKeyNoDuplicates()
+    {
+<span class="fc" id="L500">        final ImmutableNode.Builder parentBuilder = new ImmutableNode.Builder(2);</span>
+<span class="fc" id="L501">        final ImmutableNode c1 = new ImmutableNode.Builder().name(&quot;child&quot;).create();</span>
+<span class="fc" id="L502">        final ImmutableNode c2 =</span>
+<span class="fc" id="L503">                new ImmutableNode.Builder().name(&quot;child_other&quot;).create();</span>
+<span class="fc" id="L504">        parentBuilder.addChildren(Arrays.asList(c2, c1));</span>
+<span class="fc" id="L505">        final ImmutableNode parent = parentBuilder.create();</span>
+<span class="fc" id="L506">        final NodeHandler&lt;ImmutableNode&gt; testHandler =</span>
+<span class="fc" id="L507">                new InMemoryNodeModel(parent).getNodeHandler();</span>
+<span class="fc" id="L508">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L509">        assertEquals(&quot;Wrong canonical key&quot;, &quot;parent/child[1]&quot;,</span>
+<span class="fc" id="L510">                engine.canonicalKey(c1, &quot;parent&quot;, testHandler));</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tests whether duplicates are correctly resolved when querying for
+     * canonical keys.
+     */
+    @Test
+    public void testCanonicalKeyWithDuplicates()
+    {
+<span class="fc" id="L520">        final ImmutableNode.Builder parentBuilder = new ImmutableNode.Builder(3);</span>
+<span class="fc" id="L521">        final ImmutableNode c1 = new ImmutableNode.Builder().name(&quot;child&quot;).create();</span>
+<span class="fc" id="L522">        final ImmutableNode c2 = new ImmutableNode.Builder().name(&quot;child&quot;).create();</span>
+<span class="fc" id="L523">        final ImmutableNode c3 =</span>
+<span class="fc" id="L524">                new ImmutableNode.Builder().name(&quot;child_other&quot;).create();</span>
+<span class="fc" id="L525">        parentBuilder.addChildren(Arrays.asList(c1, c2, c3));</span>
+<span class="fc" id="L526">        final ImmutableNode parent = parentBuilder.create();</span>
+<span class="fc" id="L527">        final NodeHandler&lt;ImmutableNode&gt; testHandler =</span>
+<span class="fc" id="L528">                new InMemoryNodeModel(parent).getNodeHandler();</span>
+<span class="fc" id="L529">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L530">        assertEquals(&quot;Wrong key 1&quot;, &quot;parent/child[1]&quot;,</span>
+<span class="fc" id="L531">                engine.canonicalKey(c1, &quot;parent&quot;, testHandler));</span>
+<span class="fc" id="L532">        assertEquals(&quot;Wrong key 2&quot;, &quot;parent/child[2]&quot;,</span>
+<span class="fc" id="L533">                engine.canonicalKey(c2, &quot;parent&quot;, testHandler));</span>
+<span class="fc" id="L534">    }</span>
+
+    /**
+     * Tests whether the parent key can be undefined when querying a canonical
+     * key.
+     */
+    @Test
+    public void testCanonicalKeyNoParentKey()
+    {
+<span class="fc" id="L543">        final ImmutableNode.Builder parentBuilder = new ImmutableNode.Builder(1);</span>
+<span class="fc" id="L544">        final ImmutableNode c1 = new ImmutableNode.Builder().name(&quot;child&quot;).create();</span>
+<span class="fc" id="L545">        final ImmutableNode parent = parentBuilder.addChild(c1).create();</span>
+<span class="fc" id="L546">        final NodeHandler&lt;ImmutableNode&gt; testHandler =</span>
+<span class="fc" id="L547">                new InMemoryNodeModel(parent).getNodeHandler();</span>
+<span class="fc" id="L548">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L549">        assertEquals(&quot;Wrong key&quot;, &quot;child[1]&quot;,</span>
+<span class="fc" id="L550">                engine.canonicalKey(c1, null, testHandler));</span>
+<span class="fc" id="L551">    }</span>
+
+    /**
+     * Tests whether a canonical key for the parent node can be queried if no
+     * parent key was passed in.
+     */
+    @Test
+    public void testCanonicalKeyRootNoParentKey()
+    {
+<span class="fc" id="L560">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L561">        assertEquals(&quot;Wrong key&quot;, &quot;&quot;, engine.canonicalKey(root, null, handler));</span>
+<span class="fc" id="L562">    }</span>
+
+    /**
+     * Tests whether a parent key is evaluated when determining the canonical
+     * key of the root node.
+     */
+    @Test
+    public void testCanonicalKeyRootWithParentKey()
+    {
+<span class="fc" id="L571">        final XPathExpressionEngine engine = new XPathExpressionEngine();</span>
+<span class="fc" id="L572">        assertEquals(&quot;Wrong key&quot;, &quot;parent&quot;,</span>
+<span class="fc" id="L573">                engine.canonicalKey(root, &quot;parent&quot;, handler));</span>
+<span class="fc" id="L574">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

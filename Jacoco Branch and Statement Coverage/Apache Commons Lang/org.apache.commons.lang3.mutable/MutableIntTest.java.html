@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutableIntTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.mutable</a> &gt; <span class="el_source">MutableIntTest.java</span></div><h1>MutableIntTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.mutable;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+/**
+ * JUnit tests.
+ *
+ * @see MutableInt
+ */
+<span class="fc" id="L30">public class MutableIntTest {</span>
+
+    // ----------------------------------------------------------------
+    @Test
+    public void testConstructors() {
+<span class="fc" id="L35">        assertEquals(0, new MutableInt().intValue());</span>
+
+<span class="fc" id="L37">        assertEquals(1, new MutableInt(1).intValue());</span>
+
+<span class="fc" id="L39">        assertEquals(2, new MutableInt(Integer.valueOf(2)).intValue());</span>
+<span class="fc" id="L40">        assertEquals(3, new MutableInt(new MutableLong(3)).intValue());</span>
+
+<span class="fc" id="L42">        assertEquals(2, new MutableInt(&quot;2&quot;).intValue());</span>
+
+<span class="fc" id="L44">    }</span>
+
+    @Test
+    public void testConstructorNull() {
+<span class="pc" id="L48">        assertThrows(NullPointerException.class, () -&gt; new MutableInt((Number) null));</span>
+<span class="fc" id="L49">    }</span>
+
+    @Test
+    public void testGetSet() {
+<span class="fc" id="L53">        final MutableInt mutNum = new MutableInt(0);</span>
+<span class="fc" id="L54">        assertEquals(0, new MutableInt().intValue());</span>
+<span class="fc" id="L55">        assertEquals(Integer.valueOf(0), new MutableInt().getValue());</span>
+
+<span class="fc" id="L57">        mutNum.setValue(1);</span>
+<span class="fc" id="L58">        assertEquals(1, mutNum.intValue());</span>
+<span class="fc" id="L59">        assertEquals(Integer.valueOf(1), mutNum.getValue());</span>
+
+<span class="fc" id="L61">        mutNum.setValue(Integer.valueOf(2));</span>
+<span class="fc" id="L62">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L63">        assertEquals(Integer.valueOf(2), mutNum.getValue());</span>
+
+<span class="fc" id="L65">        mutNum.setValue(new MutableLong(3));</span>
+<span class="fc" id="L66">        assertEquals(3, mutNum.intValue());</span>
+<span class="fc" id="L67">        assertEquals(Integer.valueOf(3), mutNum.getValue());</span>
+<span class="fc" id="L68">    }</span>
+
+    @Test
+    public void testSetNull() {
+<span class="fc" id="L72">        final MutableInt mutNum = new MutableInt(0);</span>
+<span class="pc" id="L73">        assertThrows(NullPointerException.class, () -&gt; mutNum.setValue(null));</span>
+<span class="fc" id="L74">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L78">        this.testEquals(new MutableInt(0), new MutableInt(0), new MutableInt(1));</span>
+        // Should Numbers be supported? GaryG July-21-2005.
+        //this.testEquals(mutNumA, Integer.valueOf(0), mutNumC);
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * @param numA must not be a 0 Integer; must not equal numC.
+     * @param numB must equal numA; must not equal numC.
+     * @param numC must not equal numA; must not equal numC.
+     */
+    void testEquals(final Number numA, final Number numB, final Number numC) {
+<span class="fc" id="L89">        assertEquals(numA, numA);</span>
+<span class="fc" id="L90">        assertEquals(numA, numB);</span>
+<span class="fc" id="L91">        assertEquals(numB, numA);</span>
+<span class="fc" id="L92">        assertEquals(numB, numB);</span>
+<span class="fc" id="L93">        assertNotEquals(numA, numC);</span>
+<span class="fc" id="L94">        assertNotEquals(numB, numC);</span>
+<span class="fc" id="L95">        assertEquals(numC, numC);</span>
+<span class="fc" id="L96">        assertNotEquals(null, numA);</span>
+<span class="fc" id="L97">        assertNotEquals(numA, Integer.valueOf(0));</span>
+<span class="fc" id="L98">        assertNotEquals(&quot;0&quot;, numA);</span>
+<span class="fc" id="L99">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L103">        final MutableInt mutNumA = new MutableInt(0);</span>
+<span class="fc" id="L104">        final MutableInt mutNumB = new MutableInt(0);</span>
+<span class="fc" id="L105">        final MutableInt mutNumC = new MutableInt(1);</span>
+
+<span class="fc" id="L107">        assertEquals(mutNumA.hashCode(), mutNumA.hashCode());</span>
+<span class="fc" id="L108">        assertEquals(mutNumA.hashCode(), mutNumB.hashCode());</span>
+<span class="fc" id="L109">        assertNotEquals(mutNumA.hashCode(), mutNumC.hashCode());</span>
+<span class="fc" id="L110">        assertEquals(mutNumA.hashCode(), Integer.valueOf(0).hashCode());</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    public void testCompareTo() {
+<span class="fc" id="L115">        final MutableInt mutNum = new MutableInt(0);</span>
+
+<span class="fc" id="L117">        assertEquals(0, mutNum.compareTo(new MutableInt(0)));</span>
+<span class="fc" id="L118">        assertEquals(+1, mutNum.compareTo(new MutableInt(-1)));</span>
+<span class="fc" id="L119">        assertEquals(-1, mutNum.compareTo(new MutableInt(1)));</span>
+<span class="fc" id="L120">    }</span>
+
+    @Test
+    public void testCompareToNull() {
+<span class="fc" id="L124">        final MutableInt mutNum = new MutableInt(0);</span>
+<span class="pc" id="L125">        assertThrows(NullPointerException.class, () -&gt; mutNum.compareTo(null));</span>
+<span class="fc" id="L126">    }</span>
+
+    @Test
+    public void testPrimitiveValues() {
+<span class="fc" id="L130">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L131">        assertEquals( (byte) 1, mutNum.byteValue() );</span>
+<span class="fc" id="L132">        assertEquals( (short) 1, mutNum.shortValue() );</span>
+<span class="fc" id="L133">        assertEquals(1.0F, mutNum.floatValue());</span>
+<span class="fc" id="L134">        assertEquals(1.0, mutNum.doubleValue());</span>
+<span class="fc" id="L135">        assertEquals( 1L, mutNum.longValue() );</span>
+<span class="fc" id="L136">    }</span>
+
+    @Test
+    public void testToInteger() {
+<span class="fc" id="L140">        assertEquals(Integer.valueOf(0), new MutableInt(0).toInteger());</span>
+<span class="fc" id="L141">        assertEquals(Integer.valueOf(123), new MutableInt(123).toInteger());</span>
+<span class="fc" id="L142">    }</span>
+
+    @Test
+    public void testIncrement() {
+<span class="fc" id="L146">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L147">        mutNum.increment();</span>
+
+<span class="fc" id="L149">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L150">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L151">    }</span>
+
+    @Test
+    public void testIncrementAndGet() {
+<span class="fc" id="L155">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L156">        final int result = mutNum.incrementAndGet();</span>
+
+<span class="fc" id="L158">        assertEquals(2, result);</span>
+<span class="fc" id="L159">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L160">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L161">    }</span>
+
+    @Test
+    public void testGetAndIncrement() {
+<span class="fc" id="L165">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L166">        final int result = mutNum.getAndIncrement();</span>
+
+<span class="fc" id="L168">        assertEquals(1, result);</span>
+<span class="fc" id="L169">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L170">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L171">    }</span>
+
+    @Test
+    public void testDecrement() {
+<span class="fc" id="L175">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L176">        mutNum.decrement();</span>
+
+<span class="fc" id="L178">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L179">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L180">    }</span>
+
+    @Test
+    public void testDecrementAndGet() {
+<span class="fc" id="L184">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L185">        final int result = mutNum.decrementAndGet();</span>
+
+<span class="fc" id="L187">        assertEquals(0, result);</span>
+<span class="fc" id="L188">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L189">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L190">    }</span>
+
+    @Test
+    public void testGetAndDecrement() {
+<span class="fc" id="L194">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L195">        final int result = mutNum.getAndDecrement();</span>
+
+<span class="fc" id="L197">        assertEquals(1, result);</span>
+<span class="fc" id="L198">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L199">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L200">    }</span>
+
+    @Test
+    public void testAddValuePrimitive() {
+<span class="fc" id="L204">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L205">        mutNum.add(1);</span>
+
+<span class="fc" id="L207">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L208">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L209">    }</span>
+
+    @Test
+    public void testAddValueObject() {
+<span class="fc" id="L213">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L214">        mutNum.add(Integer.valueOf(1));</span>
+
+<span class="fc" id="L216">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L217">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L218">    }</span>
+
+    @Test
+    public void testGetAndAddValuePrimitive() {
+<span class="fc" id="L222">        final MutableInt mutableInteger = new MutableInt(0);</span>
+<span class="fc" id="L223">        final int result = mutableInteger.getAndAdd(1);</span>
+
+<span class="fc" id="L225">        assertEquals(0, result);</span>
+<span class="fc" id="L226">        assertEquals(1, mutableInteger.intValue());</span>
+<span class="fc" id="L227">    }</span>
+
+    @Test
+    public void testGetAndAddValueObject() {
+<span class="fc" id="L231">        final MutableInt mutableInteger = new MutableInt(0);</span>
+<span class="fc" id="L232">        final int result = mutableInteger.getAndAdd(Integer.valueOf(1));</span>
+
+<span class="fc" id="L234">        assertEquals(0, result);</span>
+<span class="fc" id="L235">        assertEquals(1, mutableInteger.intValue());</span>
+<span class="fc" id="L236">    }</span>
+
+    @Test
+    public void testAddAndGetValuePrimitive() {
+<span class="fc" id="L240">        final MutableInt mutableInteger = new MutableInt(0);</span>
+<span class="fc" id="L241">        final int result = mutableInteger.addAndGet(1);</span>
+
+<span class="fc" id="L243">        assertEquals(1, result);</span>
+<span class="fc" id="L244">        assertEquals(1, mutableInteger.intValue());</span>
+<span class="fc" id="L245">    }</span>
+
+    @Test
+    public void testAddAndGetValueObject() {
+<span class="fc" id="L249">        final MutableInt mutableInteger = new MutableInt(0);</span>
+<span class="fc" id="L250">        final int result = mutableInteger.addAndGet(Integer.valueOf(1));</span>
+
+<span class="fc" id="L252">        assertEquals(1, result);</span>
+<span class="fc" id="L253">        assertEquals(1, mutableInteger.intValue());</span>
+<span class="fc" id="L254">    }</span>
+
+    @Test
+    public void testSubtractValuePrimitive() {
+<span class="fc" id="L258">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L259">        mutNum.subtract(1);</span>
+
+<span class="fc" id="L261">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L262">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L263">    }</span>
+
+    @Test
+    public void testSubtractValueObject() {
+<span class="fc" id="L267">        final MutableInt mutNum = new MutableInt(1);</span>
+<span class="fc" id="L268">        mutNum.subtract(Integer.valueOf(1));</span>
+
+<span class="fc" id="L270">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L271">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L272">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L276">        assertEquals(&quot;0&quot;, new MutableInt(0).toString());</span>
+<span class="fc" id="L277">        assertEquals(&quot;10&quot;, new MutableInt(10).toString());</span>
+<span class="fc" id="L278">        assertEquals(&quot;-123&quot;, new MutableInt(-123).toString());</span>
+<span class="fc" id="L279">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

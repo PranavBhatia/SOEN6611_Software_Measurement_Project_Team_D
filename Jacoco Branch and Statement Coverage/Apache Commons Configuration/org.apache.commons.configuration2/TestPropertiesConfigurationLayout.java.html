@@ -1,0 +1,853 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestPropertiesConfigurationLayout.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestPropertiesConfigurationLayout.java</span></div><h1>TestPropertiesConfigurationLayout.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Iterator;
+
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.LegacyListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for PropertiesConfigurationLayout.
+ *
+ * @author &lt;a
+ * href=&quot;http://commons.apache.org/configuration/team-list.html&quot;&gt;Commons
+ * Configuration team&lt;/a&gt;
+ */
+<span class="fc" id="L46">public class TestPropertiesConfigurationLayout</span>
+{
+    /** Constant for the line break character. */
+<span class="fc" id="L49">    private static final String CR = System.getProperty(&quot;line.separator&quot;);</span>
+
+    /** Constant for the normalized line break character. */
+    private static final String CRNORM = &quot;\n&quot;;
+
+    /** Constant for a test property key. */
+    private static final String TEST_KEY = &quot;myProperty&quot;;
+
+    /** Constant for a test comment. */
+    private static final String TEST_COMMENT = &quot;A comment for my test property&quot;;
+
+    /** Constant for a test property value. */
+    private static final String TEST_VALUE = &quot;myPropertyValue&quot;;
+
+    /** The layout object under test. */
+    private PropertiesConfigurationLayout layout;
+
+    /** The associated configuration object. */
+    private LayoutTestConfiguration config;
+
+    /** A properties builder that can be used for testing. */
+    private PropertiesBuilder builder;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L75">        config = new LayoutTestConfiguration();</span>
+<span class="fc" id="L76">        config.setListDelimiterHandler(new LegacyListDelimiterHandler(','));</span>
+<span class="fc" id="L77">        layout = new PropertiesConfigurationLayout();</span>
+<span class="fc" id="L78">        config.setLayout(layout);</span>
+<span class="fc" id="L79">        builder = new PropertiesBuilder();</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Tests a newly created instance.
+     */
+    @Test
+    public void testInit()
+    {
+<span class="fc" id="L88">        assertTrue(&quot;Object contains keys&quot;, layout.getKeys().isEmpty());</span>
+<span class="fc" id="L89">        assertNull(&quot;Header comment not null&quot;, layout.getHeaderComment());</span>
+<span class="fc" id="L90">        final Iterator&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; it =</span>
+<span class="fc" id="L91">                config.getEventListeners(ConfigurationEvent.ANY).iterator();</span>
+<span class="fc" id="L92">        assertTrue(&quot;No event listener registered&quot;, it.hasNext());</span>
+<span class="fc" id="L93">        assertSame(&quot;Layout not registered as event listener&quot;, layout, it.next());</span>
+<span class="fc" id="L94">        assertFalse(&quot;Multiple event listeners registered&quot;, it.hasNext());</span>
+<span class="fc" id="L95">        assertFalse(&quot;Force single line flag set&quot;, layout.isForceSingleLine());</span>
+<span class="fc" id="L96">        assertNull(&quot;Got a global separator&quot;, layout.getGlobalSeparator());</span>
+<span class="fc" id="L97">    }</span>
+
+    /**
+     * Tests the copy constructor if no other layout object is passed.
+     */
+    @Test
+    public void testInitNull()
+    {
+<span class="fc" id="L105">        layout = new PropertiesConfigurationLayout(null);</span>
+<span class="fc" id="L106">        assertTrue(&quot;Object contains keys&quot;, layout.getKeys().isEmpty());</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Tests reading a simple properties file.
+     */
+    @Test
+    public void testReadSimple() throws ConfigurationException
+    {
+<span class="fc" id="L115">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L116">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L117">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L118">        assertNull(&quot;A header comment was found&quot;, layout.getHeaderComment());</span>
+<span class="fc" id="L119">        assertEquals(&quot;Wrong number of properties&quot;, 1, layout.getKeys().size());</span>
+<span class="fc" id="L120">        assertTrue(&quot;Property not found&quot;, layout.getKeys().contains(TEST_KEY));</span>
+<span class="fc" id="L121">        assertEquals(&quot;Comment not found&quot;, TEST_COMMENT, layout</span>
+<span class="fc" id="L122">                .getCanonicalComment(TEST_KEY, false));</span>
+<span class="fc" id="L123">        assertEquals(&quot;Wrong number of blanc lines&quot;, 0, layout</span>
+<span class="fc" id="L124">                .getBlancLinesBefore(TEST_KEY));</span>
+<span class="fc" id="L125">        assertTrue(&quot;Wrong single line flag&quot;, layout.isSingleLine(TEST_KEY));</span>
+<span class="fc" id="L126">        assertEquals(&quot;Property not stored in config&quot;, TEST_VALUE, config</span>
+<span class="fc" id="L127">                .getString(TEST_KEY));</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Tests whether blanc lines before a property are correctly detected.
+     */
+    @Test
+    public void testBlancLines() throws ConfigurationException
+    {
+<span class="fc" id="L136">        builder.addProperty(&quot;prop&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L137">        builder.addComment(null);</span>
+<span class="fc" id="L138">        builder.addComment(null);</span>
+<span class="fc" id="L139">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L140">        builder.addComment(null);</span>
+<span class="fc" id="L141">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L142">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L143">        assertEquals(&quot;Wrong number of blanc lines&quot;, 2, layout</span>
+<span class="fc" id="L144">                .getBlancLinesBefore(TEST_KEY));</span>
+<span class="fc" id="L145">        assertEquals(&quot;Wrong comment&quot;, TEST_COMMENT + CRNORM, layout</span>
+<span class="fc" id="L146">                .getCanonicalComment(TEST_KEY, false));</span>
+<span class="fc" id="L147">        assertEquals(&quot;Wrong property value&quot;, TEST_VALUE, config</span>
+<span class="fc" id="L148">                .getString(TEST_KEY));</span>
+<span class="fc" id="L149">    }</span>
+
+    /**
+     * Tests the single line flag for a simple property definition.
+     */
+    @Test
+    public void testIsSingleLine() throws ConfigurationException
+    {
+<span class="fc" id="L157">        builder.addProperty(TEST_KEY, TEST_VALUE + &quot;,&quot; + TEST_VALUE + &quot;2&quot;);</span>
+<span class="fc" id="L158">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L159">        assertTrue(&quot;Wrong single line flag&quot;, layout.isSingleLine(TEST_KEY));</span>
+<span class="fc" id="L160">        assertEquals(&quot;Wrong number of values&quot;, 2, config.getList(TEST_KEY)</span>
+<span class="fc" id="L161">                .size());</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Tests the single line flag if there are multiple property definitions.
+     */
+    @Test
+    public void testIsSingleLineMulti() throws ConfigurationException
+    {
+<span class="fc" id="L170">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L171">        builder.addProperty(&quot;anotherProp&quot;, &quot;a value&quot;);</span>
+<span class="fc" id="L172">        builder.addProperty(TEST_KEY, TEST_VALUE + &quot;2&quot;);</span>
+<span class="fc" id="L173">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L174">        assertFalse(&quot;Wrong single line flag&quot;, layout.isSingleLine(TEST_KEY));</span>
+<span class="fc" id="L175">        assertEquals(&quot;Wrong number of values&quot;, 2, config.getList(TEST_KEY)</span>
+<span class="fc" id="L176">                .size());</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Tests whether comments are combined for multiple occurrences.
+     */
+    @Test
+    public void testCombineComments() throws ConfigurationException
+    {
+<span class="fc" id="L185">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L186">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L187">        builder.addComment(null);</span>
+<span class="fc" id="L188">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L189">        builder.addProperty(TEST_KEY, TEST_VALUE + &quot;2&quot;);</span>
+<span class="fc" id="L190">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L191">        assertEquals(&quot;Wrong combined comment&quot;,</span>
+<span class="fc" id="L192">                TEST_COMMENT + CRNORM + TEST_COMMENT, layout.getCanonicalComment(</span>
+                        TEST_KEY, false));
+<span class="fc" id="L194">        assertEquals(&quot;Wrong combined blanc numbers&quot;, 0, layout</span>
+<span class="fc" id="L195">                .getBlancLinesBefore(TEST_KEY));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests if a header comment is detected.
+     */
+    @Test
+    public void testHeaderComment() throws ConfigurationException
+    {
+<span class="fc" id="L204">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L205">        builder.addComment(null);</span>
+<span class="fc" id="L206">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L207">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L208">        assertEquals(&quot;Wrong header comment&quot;, TEST_COMMENT, layout</span>
+<span class="fc" id="L209">                .getCanonicalHeaderComment(false));</span>
+<span class="fc" id="L210">        assertNull(&quot;Wrong comment for property&quot;, layout.getCanonicalComment(</span>
+                TEST_KEY, false));
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Tests if a header comment containing blanc lines is correctly detected.
+     */
+    @Test
+    public void testHeaderCommentWithBlancs() throws ConfigurationException
+    {
+<span class="fc" id="L220">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L221">        builder.addComment(null);</span>
+<span class="fc" id="L222">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L223">        builder.addComment(null);</span>
+<span class="fc" id="L224">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L225">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L226">        assertEquals(&quot;Wrong header comment&quot;, TEST_COMMENT + CRNORM + CRNORM</span>
+<span class="fc" id="L227">                + TEST_COMMENT, layout.getCanonicalHeaderComment(false));</span>
+<span class="fc" id="L228">        assertNull(&quot;Wrong comment for property&quot;, layout.getComment(TEST_KEY));</span>
+<span class="fc" id="L229">    }</span>
+
+    /**
+     * Tests if a header comment containing blanc lines is correctly detected and doesn't overflow into the property
+     * comment in the case that the header comment is already set
+     */
+    @Test
+    public void testHeaderCommentWithBlancsAndPresetHeaderComment() throws ConfigurationException
+    {
+<span class="fc" id="L238">        final String presetHeaderComment = &quot;preset&quot; + TEST_COMMENT + CRNORM + CRNORM + TEST_COMMENT;</span>
+<span class="fc" id="L239">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L240">        builder.addComment(null);</span>
+<span class="fc" id="L241">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L242">        builder.addComment(null);</span>
+<span class="fc" id="L243">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L244">        layout.setHeaderComment(presetHeaderComment);</span>
+<span class="fc" id="L245">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L246">        assertEquals(&quot;Wrong header comment&quot;, presetHeaderComment,</span>
+<span class="fc" id="L247">                     layout.getCanonicalHeaderComment(false));</span>
+<span class="fc" id="L248">        assertNull(&quot;Wrong comment for property&quot;, layout.getComment(TEST_KEY));</span>
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * Tests if a header comment is correctly detected when it contains blanc
+     * lines and the first property has a comment, too.
+     */
+    @Test
+    public void testHeaderCommentWithBlancsAndPropComment()
+            throws ConfigurationException
+    {
+<span class="fc" id="L259">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L260">        builder.addComment(null);</span>
+<span class="fc" id="L261">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L262">        builder.addComment(null);</span>
+<span class="fc" id="L263">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L264">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L265">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L266">        assertEquals(&quot;Wrong header comment&quot;, TEST_COMMENT + CRNORM + CRNORM</span>
+<span class="fc" id="L267">                + TEST_COMMENT, layout.getCanonicalHeaderComment(false));</span>
+<span class="fc" id="L268">        assertEquals(&quot;Wrong comment for property&quot;, TEST_COMMENT, layout</span>
+<span class="fc" id="L269">                .getCanonicalComment(TEST_KEY, false));</span>
+<span class="fc" id="L270">    }</span>
+
+    /**
+     * Tests fetching a canonical header comment when no comment is set.
+     */
+    @Test
+    public void testHeaderCommentNull()
+    {
+<span class="fc" id="L278">        assertNull(&quot;No null comment with comment chars&quot;, layout</span>
+<span class="fc" id="L279">                .getCanonicalHeaderComment(true));</span>
+<span class="fc" id="L280">        assertNull(&quot;No null comment without comment chars&quot;, layout</span>
+<span class="fc" id="L281">                .getCanonicalHeaderComment(false));</span>
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Tests if a property add event is correctly processed.
+     */
+    @Test
+    public void testEventAdd()
+    {
+<span class="fc" id="L290">        final ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.ADD_PROPERTY, TEST_KEY, TEST_VALUE,
+                false);
+<span class="fc" id="L293">        layout.onEvent(event);</span>
+<span class="fc" id="L294">        assertTrue(&quot;Property not stored&quot;, layout.getKeys().contains(TEST_KEY));</span>
+<span class="fc" id="L295">        assertEquals(&quot;Blanc lines before new property&quot;, 0, layout</span>
+<span class="fc" id="L296">                .getBlancLinesBefore(TEST_KEY));</span>
+<span class="fc" id="L297">        assertTrue(&quot;No single line property&quot;, layout.isSingleLine(TEST_KEY));</span>
+<span class="fc" id="L298">        assertEquals(&quot;Wrong separator&quot;, &quot; = &quot;, layout.getSeparator(TEST_KEY));</span>
+<span class="fc" id="L299">    }</span>
+
+    /**
+     * Tests adding a property multiple time through an event. The property
+     * should then be a multi-line property.
+     */
+    @Test
+    public void testEventAddMultiple()
+    {
+<span class="fc" id="L308">        final ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.ADD_PROPERTY, TEST_KEY, TEST_VALUE,
+                false);
+<span class="fc" id="L311">        layout.onEvent(event);</span>
+<span class="fc" id="L312">        layout.onEvent(event);</span>
+<span class="fc" id="L313">        assertFalse(&quot;No multi-line property&quot;, layout.isSingleLine(TEST_KEY));</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Tests if an add event is correctly processed if the affected property is
+     * already stored in the layout object.
+     */
+    @Test
+    public void testEventAddExisting() throws ConfigurationException
+    {
+<span class="fc" id="L323">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L324">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L325">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L326">        final ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.ADD_PROPERTY, TEST_KEY, TEST_VALUE,
+                false);
+<span class="fc" id="L329">        layout.onEvent(event);</span>
+<span class="fc" id="L330">        assertFalse(&quot;No multi-line property&quot;, layout.isSingleLine(TEST_KEY));</span>
+<span class="fc" id="L331">        assertEquals(&quot;Comment was modified&quot;, TEST_COMMENT, layout</span>
+<span class="fc" id="L332">                .getCanonicalComment(TEST_KEY, false));</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * Tests if a set property event for a non existing property is correctly
+     * handled.
+     */
+    @Test
+    public void testEventSetNonExisting()
+    {
+<span class="fc" id="L342">        final ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.SET_PROPERTY, TEST_KEY, TEST_VALUE,
+                false);
+<span class="fc" id="L345">        layout.onEvent(event);</span>
+<span class="fc" id="L346">        assertTrue(&quot;New property was not found&quot;, layout.getKeys().contains(</span>
+                TEST_KEY));
+<span class="fc" id="L348">    }</span>
+
+    /**
+     * Tests if a property delete event is correctly processed.
+     */
+    @Test
+    public void testEventDelete()
+    {
+<span class="fc" id="L356">        ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.ADD_PROPERTY, TEST_KEY, TEST_VALUE,
+                false);
+<span class="fc" id="L359">        layout.onEvent(event);</span>
+<span class="fc" id="L360">        event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.CLEAR_PROPERTY, TEST_KEY, null,
+                false);
+<span class="fc" id="L363">        layout.onEvent(event);</span>
+<span class="fc" id="L364">        assertFalse(&quot;Property still existing&quot;, layout.getKeys().contains(</span>
+                TEST_KEY));
+<span class="fc" id="L366">    }</span>
+
+    /**
+     * Tests if a clear event is correctly processed.
+     */
+    @Test
+    public void testEventClearConfig() throws Exception
+    {
+<span class="fc" id="L374">        fillLayout();</span>
+<span class="fc" id="L375">        final ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.CLEAR, null, null, false);
+<span class="fc" id="L377">        layout.onEvent(event);</span>
+<span class="fc" id="L378">        assertTrue(&quot;Keys not empty&quot;, layout.getKeys().isEmpty());</span>
+<span class="fc" id="L379">        assertNull(&quot;Header comment was not reset&quot;, layout.getHeaderComment());</span>
+<span class="fc" id="L380">    }</span>
+
+    /**
+     * Tests if a before update event is correctly ignored.
+     */
+    @Test
+    public void testEventAddBefore()
+    {
+<span class="fc" id="L388">        final ConfigurationEvent event = new ConfigurationEvent(this,</span>
+                ConfigurationEvent.ADD_PROPERTY, TEST_KEY, TEST_VALUE,
+                true);
+<span class="fc" id="L391">        layout.onEvent(event);</span>
+<span class="fc" id="L392">        assertFalse(&quot;Property already stored&quot;, layout.getKeys().contains(</span>
+                TEST_KEY));
+<span class="fc" id="L394">    }</span>
+
+    /**
+     * Tests a recursive load call.
+     */
+    @Test
+    public void testRecursiveLoadCall() throws ConfigurationException
+    {
+<span class="fc" id="L402">        final PropertiesBuilder b = new PropertiesBuilder();</span>
+<span class="fc" id="L403">        b.addComment(&quot;A nested header comment.&quot;);</span>
+<span class="fc" id="L404">        b.addComment(&quot;With multiple lines&quot;);</span>
+<span class="fc" id="L405">        b.addComment(null);</span>
+<span class="fc" id="L406">        b.addComment(&quot;Second comment&quot;);</span>
+<span class="fc" id="L407">        b.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L408">        b.addProperty(TEST_KEY + &quot;2&quot;, TEST_VALUE + &quot;2&quot;);</span>
+<span class="fc" id="L409">        config.builder = b;</span>
+
+<span class="fc" id="L411">        builder.addComment(&quot;Header comment&quot;);</span>
+<span class="fc" id="L412">        builder.addComment(null);</span>
+<span class="fc" id="L413">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L414">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L415">        builder.addComment(&quot;Include file&quot;);</span>
+<span class="fc" id="L416">        builder.addProperty(PropertiesConfiguration.getInclude(), &quot;test&quot;);</span>
+
+<span class="fc" id="L418">        layout.load(config, builder.getReader());</span>
+
+<span class="fc" id="L420">        assertEquals(&quot;Wrong header comment&quot;, &quot;Header comment&quot;, layout</span>
+<span class="fc" id="L421">                .getCanonicalHeaderComment(false));</span>
+<span class="fc" id="L422">        assertFalse(&quot;Include property was stored&quot;, layout.getKeys().contains(</span>
+<span class="fc" id="L423">                PropertiesConfiguration.getInclude()));</span>
+<span class="fc" id="L424">        assertEquals(&quot;Wrong comment for property&quot;, TEST_COMMENT + CRNORM</span>
+                + &quot;A nested header comment.&quot; + CRNORM + &quot;With multiple lines&quot; + CRNORM
+<span class="fc" id="L426">                + CRNORM + &quot;Second comment&quot;, layout.getCanonicalComment(TEST_KEY,</span>
+                false));
+<span class="fc" id="L428">    }</span>
+
+    /**
+     * Tests whether the output of the layout object is identical to the source
+     * file (at least for simple properties files).
+     */
+    @Test
+    public void testReadAndWrite() throws ConfigurationException
+    {
+<span class="fc" id="L437">        builder.addComment(&quot;This is my test properties file,&quot;);</span>
+<span class="fc" id="L438">        builder.addComment(&quot;which contains a header comment.&quot;);</span>
+<span class="fc" id="L439">        builder.addComment(null);</span>
+<span class="fc" id="L440">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L441">        builder.addProperty(TEST_KEY, TEST_COMMENT);</span>
+<span class="fc" id="L442">        builder.addComment(null);</span>
+<span class="fc" id="L443">        builder.addComment(null);</span>
+<span class="fc" id="L444">        builder.addComment(&quot;Another comment&quot;);</span>
+<span class="fc" id="L445">        builder.addProperty(&quot;property&quot;, &quot;and a value&quot;);</span>
+<span class="fc" id="L446">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L447">        checkLayoutString(builder.toString());</span>
+<span class="fc" id="L448">    }</span>
+
+    /**
+     * Tests if the content of the layout object is correctly written.
+     */
+    @Test
+    public void testSave() throws ConfigurationException
+    {
+<span class="fc" id="L456">        config.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L457">        layout.setComment(TEST_KEY, TEST_COMMENT);</span>
+<span class="fc" id="L458">        config.addProperty(TEST_KEY, TEST_VALUE + &quot;2&quot;);</span>
+<span class="fc" id="L459">        config.addProperty(&quot;AnotherProperty&quot;, &quot;AnotherValue&quot;);</span>
+<span class="fc" id="L460">        config.addProperty(&quot;AnotherProperty&quot;, &quot;3rdValue&quot;);</span>
+<span class="fc" id="L461">        layout.setComment(&quot;AnotherProperty&quot;, &quot;AnotherComment&quot;);</span>
+<span class="fc" id="L462">        layout.setBlancLinesBefore(&quot;AnotherProperty&quot;, 2);</span>
+<span class="fc" id="L463">        layout.setSingleLine(&quot;AnotherProperty&quot;, true);</span>
+<span class="fc" id="L464">        layout.setHeaderComment(&quot;A header comment&quot; + CRNORM + &quot;for my properties&quot;);</span>
+<span class="fc" id="L465">        checkLayoutString(&quot;# A header comment&quot; + CR + &quot;# for my properties&quot;</span>
+                + CR + CR + &quot;# &quot; + TEST_COMMENT + CR + TEST_KEY + &quot; = &quot;
+                + TEST_VALUE + CR + TEST_KEY + &quot; = &quot; + TEST_VALUE + &quot;2&quot; + CR
+                + CR + CR + &quot;# AnotherComment&quot; + CR
+                + &quot;AnotherProperty = AnotherValue,3rdValue&quot; + CR);
+<span class="fc" id="L470">    }</span>
+
+    /**
+     * Tests the force single line flag.
+     */
+    @Test
+    public void testSaveForceSingleLine() throws ConfigurationException
+    {
+<span class="fc" id="L478">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(';'));</span>
+<span class="fc" id="L479">        config.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L480">        config.addProperty(TEST_KEY, TEST_VALUE + &quot;2&quot;);</span>
+<span class="fc" id="L481">        config.addProperty(&quot;AnotherProperty&quot;, &quot;value1;value2;value3&quot;);</span>
+<span class="fc" id="L482">        layout.setComment(TEST_KEY, TEST_COMMENT);</span>
+<span class="fc" id="L483">        layout.setForceSingleLine(true);</span>
+<span class="fc" id="L484">        checkLayoutString(&quot;# &quot; + TEST_COMMENT + CR + TEST_KEY + &quot; = &quot;</span>
+                + TEST_VALUE + ';' + TEST_VALUE + &quot;2&quot; + CR
+                + &quot;AnotherProperty = value1;value2;value3&quot; + CR);
+<span class="fc" id="L487">    }</span>
+
+    /**
+     * Tests the trimComment method.
+     */
+    @Test
+    public void testTrimComment()
+    {
+<span class="fc" id="L495">        assertEquals(&quot;Wrong trimmed comment&quot;, &quot;This is a comment&quot; + CR</span>
+                + &quot;that spans multiple&quot; + CR + &quot;lines in a&quot; + CR
+<span class="fc" id="L497">                + &quot; complex way.&quot;, PropertiesConfigurationLayout.trimComment(</span>
+                &quot;   # This is a comment&quot; + CR + &quot;that spans multiple&quot; + CR
+                        + &quot;!lines in a&quot; + CR + &quot; complex way.&quot;, false));
+<span class="fc" id="L500">    }</span>
+
+    /**
+     * Tests trimming a comment with trailing CRs.
+     */
+    @Test
+    public void testTrimCommentTrainlingCR()
+    {
+<span class="fc" id="L508">        assertEquals(&quot;Wrong trimmed comment&quot;, &quot;Comment with&quot; + CR</span>
+                + &quot;trailing CR&quot; + CR, PropertiesConfigurationLayout
+<span class="fc" id="L510">                .trimComment(&quot;Comment with&quot; + CR + &quot;! trailing CR&quot; + CR, false));</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tests enforcing comment characters in a comment.
+     */
+    @Test
+    public void testTrimCommentFalse()
+    {
+<span class="fc" id="L519">        assertEquals(&quot;Wrong trimmed comment&quot;, &quot;# Comment with&quot; + CR</span>
+                + &quot; ! some mixed &quot; + CR + &quot;#comment&quot; + CR + &quot;# lines&quot;,
+<span class="fc" id="L521">                PropertiesConfigurationLayout.trimComment(&quot;Comment with&quot; + CR</span>
+                        + &quot; ! some mixed &quot; + CR + &quot;#comment&quot; + CR + &quot;lines&quot;,
+                        true));
+<span class="fc" id="L524">    }</span>
+
+    /**
+     * Tests accessing data for a property, which is not stored.
+     */
+    @Test
+    public void testGetNonExistingLayouData()
+    {
+<span class="fc" id="L532">        assertNull(&quot;A comment was found&quot;, layout.getComment(&quot;unknown&quot;));</span>
+<span class="fc" id="L533">        assertTrue(&quot;A multi-line property&quot;, layout.isSingleLine(&quot;unknown&quot;));</span>
+<span class="fc" id="L534">        assertEquals(&quot;Leading blanc lines&quot;, 0, layout</span>
+<span class="fc" id="L535">                .getBlancLinesBefore(&quot;unknown&quot;));</span>
+<span class="fc" id="L536">    }</span>
+
+    /**
+     * Tests accessing a property with a null key. This should throw an
+     * exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetNullLayouttData()
+    {
+<span class="nc" id="L545">        layout.setComment(null, TEST_COMMENT);</span>
+<span class="nc" id="L546">    }</span>
+
+    /**
+     * Tests resetting a comment.
+     */
+    @Test
+    public void testSetNullComment()
+    {
+<span class="fc" id="L554">        fillLayout();</span>
+<span class="fc" id="L555">        layout.setComment(TEST_KEY, null);</span>
+<span class="fc" id="L556">        assertNull(&quot;Comment was not reset&quot;, layout.getComment(TEST_KEY));</span>
+<span class="fc" id="L557">    }</span>
+
+    /**
+     * Tests saving when a comment for a non existing property is contained in
+     * the layout object. This comment should be ignored.
+     */
+    @Test
+    public void testSaveCommentForUnexistingProperty()
+            throws ConfigurationException
+    {
+<span class="fc" id="L567">        fillLayout();</span>
+<span class="fc" id="L568">        layout.setComment(&quot;NonExistingKey&quot;, &quot;NonExistingComment&quot;);</span>
+<span class="fc" id="L569">        final String output = getLayoutString();</span>
+<span class="pc bpc" id="L570" title="1 of 2 branches missed.">        assertTrue(&quot;Non existing key was found&quot;, !output.contains(&quot;NonExistingKey&quot;));</span>
+<span class="pc bpc" id="L571" title="1 of 2 branches missed.">        assertTrue(&quot;Non existing comment was found&quot;, !output.contains(&quot;NonExistingComment&quot;));</span>
+<span class="fc" id="L572">    }</span>
+
+    /**
+     * Tests saving an empty layout object.
+     */
+    @Test
+    public void testSaveEmptyLayout() throws ConfigurationException
+    {
+<span class="fc" id="L580">        checkLayoutString(&quot;&quot;);</span>
+<span class="fc" id="L581">    }</span>
+
+    /**
+     * Tests the copy constructor.
+     */
+    @Test
+    public void testInitCopy()
+    {
+<span class="fc" id="L589">        fillLayout();</span>
+<span class="fc" id="L590">        final PropertiesConfigurationLayout l2 = new PropertiesConfigurationLayout(layout);</span>
+<span class="fc" id="L591">        assertEquals(&quot;Wrong number of keys&quot;, layout.getKeys().size(), l2</span>
+<span class="fc" id="L592">                .getKeys().size());</span>
+<span class="fc bfc" id="L593" title="All 2 branches covered.">        for (final String key : layout.getKeys())</span>
+        {
+<span class="fc" id="L595">            assertTrue(&quot;Key was not found: &quot; + key, l2.getKeys().contains(key));</span>
+<span class="fc" id="L596">        }</span>
+<span class="fc" id="L597">        assertEquals(&quot;Wrong header comment&quot;, layout.getHeaderComment(),</span>
+<span class="fc" id="L598">                l2.getHeaderComment());</span>
+<span class="fc" id="L599">        assertEquals(&quot;Wrong footer comment&quot;, layout.getFooterComment(),</span>
+<span class="fc" id="L600">                l2.getFooterComment());</span>
+<span class="fc" id="L601">    }</span>
+
+    /**
+     * Tests if the copy and the original are independent from each other.
+     */
+    @Test
+    public void testInitCopyModify()
+    {
+<span class="fc" id="L609">        fillLayout();</span>
+<span class="fc" id="L610">        final PropertiesConfigurationLayout l2 = new PropertiesConfigurationLayout(layout);</span>
+<span class="fc" id="L611">        assertEquals(&quot;Comments are not equal&quot;, layout.getComment(TEST_KEY), l2</span>
+<span class="fc" id="L612">                .getComment(TEST_KEY));</span>
+<span class="fc" id="L613">        layout.setComment(TEST_KEY, &quot;A new comment&quot;);</span>
+<span class="fc" id="L614">        assertEquals(&quot;Comment was changed&quot;, TEST_COMMENT, l2</span>
+<span class="fc" id="L615">                .getCanonicalComment(TEST_KEY, false));</span>
+<span class="fc" id="L616">        l2.setBlancLinesBefore(TEST_KEY, l2.getBlancLinesBefore(TEST_KEY) + 1);</span>
+<span class="fc" id="L617">        assertFalse(&quot;Blanc lines do not differ&quot;, layout</span>
+<span class="fc" id="L618">                .getBlancLinesBefore(TEST_KEY) == l2</span>
+<span class="pc bpc" id="L619" title="1 of 2 branches missed.">                .getBlancLinesBefore(TEST_KEY));</span>
+<span class="fc" id="L620">    }</span>
+
+    /**
+     * Tests changing the separator for a property.
+     */
+    @Test
+    public void testSetSeparator() throws ConfigurationException
+    {
+<span class="fc" id="L628">        config.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L629">        layout.setSeparator(TEST_KEY, &quot;:&quot;);</span>
+<span class="fc" id="L630">        checkLayoutString(TEST_KEY + &quot;:&quot; + TEST_VALUE + CR);</span>
+<span class="fc" id="L631">    }</span>
+
+    /**
+     * Tests setting the global separator. This separator should override the
+     * separators for all properties.
+     */
+    @Test
+    public void testSetGlobalSeparator() throws ConfigurationException
+    {
+<span class="fc" id="L640">        final String sep = &quot;=&quot;;</span>
+<span class="fc" id="L641">        config.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L642">        config.addProperty(&quot;key2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L643">        layout.setSeparator(TEST_KEY, &quot; : &quot;);</span>
+<span class="fc" id="L644">        layout.setGlobalSeparator(sep);</span>
+<span class="fc" id="L645">        checkLayoutString(TEST_KEY + sep + TEST_VALUE + CR + &quot;key2&quot; + sep</span>
+                + &quot;value2&quot; + CR);
+<span class="fc" id="L647">    }</span>
+
+    /**
+     * Tests setting the line separator.
+     */
+    @Test
+    public void testSetLineSeparator() throws ConfigurationException
+    {
+<span class="fc" id="L655">        final String lf = CR + CR;</span>
+<span class="fc" id="L656">        config.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L657">        layout.setBlancLinesBefore(TEST_KEY, 2);</span>
+<span class="fc" id="L658">        layout.setComment(TEST_KEY, TEST_COMMENT);</span>
+<span class="fc" id="L659">        layout.setHeaderComment(&quot;Header comment&quot;);</span>
+<span class="fc" id="L660">        layout.setLineSeparator(lf);</span>
+<span class="fc" id="L661">        checkLayoutString(&quot;# Header comment&quot; + lf + lf + lf + lf + &quot;# &quot;</span>
+                + TEST_COMMENT + lf + TEST_KEY + &quot; = &quot; + TEST_VALUE + lf);
+<span class="fc" id="L663">    }</span>
+
+    /**
+     * Tests whether the line separator is also taken into account within
+     * comments.
+     */
+    @Test
+    public void testSetLineSeparatorInComments() throws ConfigurationException
+    {
+<span class="fc" id="L672">        final String lf = &quot;&lt;-\n&quot;;</span>
+<span class="fc" id="L673">        config.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L674">        layout.setComment(TEST_KEY, TEST_COMMENT + &quot;\nMore comment&quot;);</span>
+<span class="fc" id="L675">        layout.setHeaderComment(&quot;Header\ncomment&quot;);</span>
+<span class="fc" id="L676">        layout.setLineSeparator(lf);</span>
+<span class="fc" id="L677">        checkLayoutString(&quot;# Header&quot; + lf + &quot;# comment&quot; + lf + lf + &quot;# &quot;</span>
+                + TEST_COMMENT + lf + &quot;# More comment&quot; + lf + TEST_KEY + &quot; = &quot;
+                + TEST_VALUE + lf);
+<span class="fc" id="L680">    }</span>
+
+    /**
+     * Tests whether a line with whitespace is handled correctly. This is
+     * related to CONFIGURATION-582.
+     */
+    @Test
+    public void testLineWithBlank() throws ConfigurationException
+    {
+<span class="fc" id="L689">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L690">        builder.addLine(&quot; &quot;);</span>
+<span class="fc" id="L691">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L692">        layout.load(config, builder.getReader());</span>
+<span class="fc" id="L693">        assertEquals(&quot;Wrong comment&quot;, TEST_COMMENT + CRNORM + &quot; &quot;,</span>
+<span class="fc" id="L694">                layout.getCanonicalComment(TEST_KEY, false));</span>
+<span class="fc" id="L695">    }</span>
+
+    /**
+     * Helper method for filling the layout object with some properties.
+     */
+    private void fillLayout()
+    {
+<span class="fc" id="L702">        builder.addComment(&quot;A header comment&quot;);</span>
+<span class="fc" id="L703">        builder.addComment(null);</span>
+<span class="fc" id="L704">        builder.addProperty(&quot;prop&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L705">        builder.addComment(TEST_COMMENT);</span>
+<span class="fc" id="L706">        builder.addProperty(TEST_KEY, TEST_VALUE);</span>
+<span class="fc" id="L707">        builder.addProperty(&quot;anotherProp&quot;, &quot;anotherValue&quot;);</span>
+<span class="fc" id="L708">        builder.addComment(&quot;A footer comment&quot;);</span>
+        try
+        {
+<span class="fc" id="L711">            layout.load(config, builder.getReader());</span>
+        }
+<span class="nc" id="L713">        catch (final ConfigurationException cex)</span>
+        {
+            // should not happen
+<span class="nc" id="L716">            fail(&quot;Exception was thrown: &quot; + cex);</span>
+<span class="fc" id="L717">        }</span>
+<span class="fc" id="L718">    }</span>
+
+    /**
+     * Writes the layout's data into a string.
+     *
+     * @return the layout file's content as string
+     * @throws ConfigurationException if an error occurs
+     */
+    private String getLayoutString() throws ConfigurationException
+    {
+<span class="fc" id="L728">        final StringWriter out = new StringWriter();</span>
+<span class="fc" id="L729">        layout.save(config, out);</span>
+<span class="fc" id="L730">        return out.toString();</span>
+    }
+
+    /**
+     * Checks if the layout's output is correct.
+     *
+     * @param expected the expected result
+     * @throws ConfigurationException if an error occurs
+     */
+    private void checkLayoutString(final String expected)
+            throws ConfigurationException
+    {
+<span class="fc" id="L742">        assertEquals(&quot;Wrong layout file content&quot;, expected, getLayoutString());</span>
+<span class="fc" id="L743">    }</span>
+
+    /**
+     * A helper class used for constructing test properties files.
+     */
+<span class="fc" id="L748">    static class PropertiesBuilder</span>
+    {
+        /** A buffer for storing the data. */
+<span class="fc" id="L751">        private final StringBuilder buf = new StringBuilder();</span>
+
+        /** A counter for varying the comment character. */
+        private int commentCounter;
+
+        /**
+         * Adds a line verbatim to the simulated file.
+         *
+         * @param s the content of the line
+         */
+        public void addLine(final String s)
+        {
+<span class="fc" id="L763">            buf.append(s).append(CR);</span>
+<span class="fc" id="L764">        }</span>
+
+        /**
+         * Adds a property to the simulated file.
+         *
+         * @param key the property key
+         * @param value the value
+         */
+        public void addProperty(final String key, final String value)
+        {
+<span class="fc" id="L774">            buf.append(key).append(&quot; = &quot;).append(value).append(CR);</span>
+<span class="fc" id="L775">        }</span>
+
+        /**
+         * Adds a comment line.
+         *
+         * @param s the comment (can be &lt;b&gt;null&lt;/b&gt;, then a blanc line is
+         * added)
+         */
+        public void addComment(final String s)
+        {
+<span class="fc bfc" id="L785" title="All 2 branches covered.">            if (s != null)</span>
+            {
+<span class="fc bfc" id="L787" title="All 2 branches covered.">                if (commentCounter % 2 == 0)</span>
+                {
+<span class="fc" id="L789">                    buf.append(&quot;# &quot;);</span>
+                }
+                else
+                {
+<span class="fc" id="L793">                    buf.append(&quot;! &quot;);</span>
+                }
+<span class="fc" id="L795">                buf.append(s);</span>
+<span class="fc" id="L796">                commentCounter++;</span>
+            }
+<span class="fc" id="L798">            buf.append(CR);</span>
+<span class="fc" id="L799">        }</span>
+
+        /**
+         * Returns a reader for the simulated properties.
+         *
+         * @return a reader
+         */
+        public Reader getReader()
+        {
+<span class="fc" id="L808">            return new StringReader(buf.toString());</span>
+        }
+
+        /**
+         * Returns a string representation of the buffer's content.
+         *
+         * @return the buffer as string
+         */
+        @Override
+        public String toString()
+        {
+<span class="fc" id="L819">            return buf.toString();</span>
+        }
+    }
+
+    /**
+     * A mock properties configuration implementation that is used to check
+     * whether some expected methods are called.
+     */
+<span class="fc" id="L827">    static class LayoutTestConfiguration extends PropertiesConfiguration</span>
+    {
+        /** Stores a builder object. */
+        public PropertiesBuilder builder;
+
+        /**
+         * Simulates the propertyLoaded() callback. If a builder was set, a
+         * load() call on the layout is invoked.
+         */
+        @Override
+        boolean propertyLoaded(final String key, final String value)
+                throws ConfigurationException
+        {
+<span class="fc bfc" id="L840" title="All 2 branches covered.">            if (builder == null)</span>
+            {
+<span class="fc" id="L842">                return super.propertyLoaded(key, value);</span>
+            }
+<span class="fc bfc" id="L844" title="All 2 branches covered.">            if (PropertiesConfiguration.getInclude().equals(key))</span>
+            {
+<span class="fc" id="L846">                getLayout().load(this, builder.getReader());</span>
+<span class="fc" id="L847">                return false;</span>
+            }
+<span class="fc" id="L849">            return true;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

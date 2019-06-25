@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractEventListenerTestImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.event</a> &gt; <span class="el_source">AbstractEventListenerTestImpl.java</span></div><h1>AbstractEventListenerTestImpl.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.event;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * A base class for different types of event listeners which can be used in unit
+ * tests. This class provides functionality for testing the received events.
+ *
+ * @param &lt;T&gt; the type of events supported by this listener
+ */
+public abstract class AbstractEventListenerTestImpl&lt;T extends Event&gt; implements
+        EventListener&lt;T&gt;
+{
+    /** The expected event source. */
+    private final Object expectedSource;
+
+    /** Stores the received events. */
+    private final List&lt;T&gt; events;
+
+    /**
+     * Creates a new instance of {@code AbstractEventListenerTestImpl} and sets
+     * the expected event source.
+     *
+     * @param source the event source (&lt;b&gt;null&lt;/b&gt; if the source need not to be
+     *        checked)
+     */
+    protected AbstractEventListenerTestImpl(final Object source)
+<span class="fc" id="L49">    {</span>
+<span class="fc" id="L50">        expectedSource = source;</span>
+<span class="fc" id="L51">        events = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L52">    }</span>
+
+    @Override
+    public void onEvent(final T event)
+    {
+<span class="fc" id="L57">        events.add(event);</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Checks if at least {@code minEvents} events have been received.
+     *
+     * @param minEvents the minimum number of expected events
+     */
+    public void checkEventCount(final int minEvents)
+    {
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">        assertTrue(&quot;Too view events received&quot;, events.size() &gt;= minEvents);</span>
+<span class="fc" id="L68">    }</span>
+
+    /**
+     * Returns the next received event and checks for the expected type.
+     *
+     * @param expectedType the expected type of the event
+     * @return the event object
+     */
+    public T nextEvent(final EventType&lt;?&gt; expectedType)
+    {
+<span class="fc" id="L78">        assertFalse(&quot;Too few events received&quot;, events.isEmpty());</span>
+<span class="fc" id="L79">        final T e = events.remove(0);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (expectedSource != null)</span>
+        {
+<span class="fc" id="L82">            assertEquals(&quot;Wrong event source&quot;, expectedSource, e.getSource());</span>
+        }
+<span class="fc" id="L84">        assertEquals(&quot;Wrong event type&quot;, expectedType, e.getEventType());</span>
+<span class="fc" id="L85">        return e;</span>
+    }
+
+    /**
+     * Skips to the last received event and checks that no events of the given
+     * type have been received. This method is used by checks for detail events
+     * to ignore the detail events.
+     *
+     * @param type the event type
+     */
+    public void skipToLast(final EventType&lt;?&gt; type)
+    {
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        while (events.size() &gt; 1)</span>
+        {
+<span class="fc" id="L99">            final T e = events.remove(0);</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">            assertTrue(&quot;Found end event in details&quot;, type != e.getEventType());</span>
+<span class="fc" id="L101">        }</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Checks if all events has been processed.
+     */
+    public void done()
+    {
+<span class="fc" id="L109">        assertTrue(&quot;Too many events received&quot;, events.isEmpty());</span>
+<span class="fc" id="L110">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

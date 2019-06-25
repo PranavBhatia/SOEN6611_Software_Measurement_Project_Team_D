@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RandomUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">RandomUtilsTest.java</span></div><h1>RandomUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+/**
+ * Tests for {@link RandomUtils}
+ */
+<span class="fc" id="L34">public class RandomUtilsTest {</span>
+
+    /**
+     * For comparing doubles and floats
+     */
+    private static final double DELTA = 1e-5;
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L43">        assertNotNull(new RandomUtils());</span>
+<span class="fc" id="L44">        final Constructor&lt;?&gt;[] cons = RandomUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L45">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L46">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L47">        assertTrue(Modifier.isPublic(RandomUtils.class.getModifiers()));</span>
+<span class="fc" id="L48">        assertFalse(Modifier.isFinal(RandomUtils.class.getModifiers()));</span>
+<span class="fc" id="L49">    }</span>
+
+    @Test
+    public void testNextBytesNegative() {
+<span class="pc" id="L53">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextBytes(-1));</span>
+<span class="fc" id="L54">    }</span>
+
+    @Test
+    public void testNextIntNegative() {
+<span class="pc" id="L58">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextInt(-1, 1));</span>
+<span class="fc" id="L59">    }</span>
+
+    @Test
+    public void testNextLongNegative() {
+<span class="pc" id="L63">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextLong(-1, 1));</span>
+<span class="fc" id="L64">    }</span>
+
+    @Test
+    public void testNextDoubleNegative() {
+<span class="pc" id="L68">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextDouble(-1, 1));</span>
+<span class="fc" id="L69">    }</span>
+
+    @Test
+    public void testNextFloatNegative() {
+<span class="pc" id="L73">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextFloat(-1, 1));</span>
+<span class="fc" id="L74">    }</span>
+
+    @Test
+    public void testNextIntLowerGreaterUpper() {
+<span class="pc" id="L78">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextInt(2, 1));</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void testNextLongLowerGreaterUpper() {
+<span class="pc" id="L83">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextLong(2, 1));</span>
+<span class="fc" id="L84">    }</span>
+
+    @Test
+    public void testNextDoubleLowerGreaterUpper() {
+<span class="pc" id="L88">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextDouble(2, 1));</span>
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testNextFloatLowerGreaterUpper() {
+<span class="pc" id="L93">        assertThrows(IllegalArgumentException.class, () -&gt; RandomUtils.nextFloat(2, 1));</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Tests next boolean
+     */
+    @Test
+    public void testBoolean() {
+<span class="fc" id="L101">        final boolean result = RandomUtils.nextBoolean();</span>
+<span class="pc bpc" id="L102" title="2 of 4 branches missed.">        assertTrue(result == true || result == false);</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Tests a zero byte array length.
+     */
+    @Test
+    public void testZeroLengthNextBytes() {
+<span class="fc" id="L110">        assertArrayEquals(new byte[0], RandomUtils.nextBytes(0));</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Tests random byte array.
+     */
+    @Test
+    public void testNextBytes() {
+<span class="fc" id="L118">        final byte[] result = RandomUtils.nextBytes(20);</span>
+<span class="fc" id="L119">        assertEquals(20, result.length);</span>
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Test next int range with minimal range.
+     */
+    @Test
+    public void testNextIntMinimalRange() {
+<span class="fc" id="L127">        assertEquals(42, RandomUtils.nextInt(42, 42));</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Tests next int range.
+     */
+    @Test
+    public void testNextInt() {
+<span class="fc" id="L135">        final int result = RandomUtils.nextInt(33, 42);</span>
+<span class="pc bpc" id="L136" title="2 of 4 branches missed.">        assertTrue(result &gt;= 33 &amp;&amp; result &lt; 42);</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Tests next double range, random result.
+     */
+    @Test
+    public void testNextIntRandomResult() {
+<span class="fc" id="L144">        final int randomResult = RandomUtils.nextInt();</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        assertTrue(randomResult &gt; 0);</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        assertTrue(randomResult &lt; Integer.MAX_VALUE);</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Test next double range with minimal range.
+     */
+    @Test
+    public void testNextDoubleMinimalRange() {
+<span class="fc" id="L154">        assertEquals(42.1, RandomUtils.nextDouble(42.1, 42.1), DELTA);</span>
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Test next float range with minimal range.
+     */
+    @Test
+    public void testNextFloatMinimalRange() {
+<span class="fc" id="L162">        assertEquals(42.1f, RandomUtils.nextFloat(42.1f, 42.1f), DELTA);</span>
+<span class="fc" id="L163">    }</span>
+
+    /**
+     * Tests next double range.
+     */
+    @Test
+    public void testNextDouble() {
+<span class="fc" id="L170">        final double result = RandomUtils.nextDouble(33d, 42d);</span>
+<span class="pc bpc" id="L171" title="2 of 4 branches missed.">        assertTrue(result &gt;= 33d &amp;&amp; result &lt;= 42d);</span>
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Tests next double range, random result.
+     */
+    @Test
+    public void testNextDoubleRandomResult() {
+<span class="fc" id="L179">        final double randomResult = RandomUtils.nextDouble();</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">        assertTrue(randomResult &gt; 0);</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        assertTrue(randomResult &lt; Double.MAX_VALUE);</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Tests next float range.
+     */
+    @Test
+    public void testNextFloat() {
+<span class="fc" id="L189">        final double result = RandomUtils.nextFloat(33f, 42f);</span>
+<span class="pc bpc" id="L190" title="2 of 4 branches missed.">        assertTrue(result &gt;= 33f &amp;&amp; result &lt;= 42f);</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Tests next float range, random result.
+     */
+    @Test
+    public void testNextFloatRandomResult() {
+<span class="fc" id="L198">        final float randomResult = RandomUtils.nextFloat();</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        assertTrue(randomResult &gt; 0);</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">        assertTrue(randomResult &lt; Float.MAX_VALUE);</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * Test next long range with minimal range.
+     */
+    @Test
+    public void testNextLongMinimalRange() {
+<span class="fc" id="L208">        assertEquals(42L, RandomUtils.nextLong(42L, 42L));</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Tests next long range.
+     */
+    @Test
+    public void testNextLong() {
+<span class="fc" id="L216">        final long result = RandomUtils.nextLong(33L, 42L);</span>
+<span class="pc bpc" id="L217" title="2 of 4 branches missed.">        assertTrue(result &gt;= 33L &amp;&amp; result &lt; 42L);</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Tests next long range, random result.
+     */
+    @Test
+    public void testNextLongRandomResult() {
+<span class="fc" id="L225">        final long randomResult = RandomUtils.nextLong();</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        assertTrue(randomResult &gt; 0);</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        assertTrue(randomResult &lt; Long.MAX_VALUE);</span>
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Tests extreme range.
+     */
+    @Test
+    public void testExtremeRangeInt() {
+<span class="fc" id="L235">        final int result = RandomUtils.nextInt(0, Integer.MAX_VALUE);</span>
+<span class="pc bpc" id="L236" title="2 of 4 branches missed.">        assertTrue(result &gt;= 0 &amp;&amp; result &lt; Integer.MAX_VALUE);</span>
+<span class="fc" id="L237">    }</span>
+
+    /**
+     * Tests extreme range.
+     */
+    @Test
+    public void testExtremeRangeLong() {
+<span class="fc" id="L244">        final long result = RandomUtils.nextLong(0, Long.MAX_VALUE);</span>
+<span class="pc bpc" id="L245" title="2 of 4 branches missed.">        assertTrue(result &gt;= 0 &amp;&amp; result &lt; Long.MAX_VALUE);</span>
+<span class="fc" id="L246">    }</span>
+
+    /**
+     * Tests extreme range.
+     */
+    @Test
+    public void testExtremeRangeFloat() {
+<span class="fc" id="L253">        final float result = RandomUtils.nextFloat(0, Float.MAX_VALUE);</span>
+<span class="pc bpc" id="L254" title="2 of 4 branches missed.">        assertTrue(result &gt;= 0f &amp;&amp; result &lt;= Float.MAX_VALUE);</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Tests extreme range.
+     */
+    @Test
+    public void testExtremeRangeDouble() {
+<span class="fc" id="L262">        final double result = RandomUtils.nextDouble(0, Double.MAX_VALUE);</span>
+<span class="pc bpc" id="L263" title="2 of 4 branches missed.">        assertTrue(result &gt;= 0 &amp;&amp; result &lt;= Double.MAX_VALUE);</span>
+<span class="fc" id="L264">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

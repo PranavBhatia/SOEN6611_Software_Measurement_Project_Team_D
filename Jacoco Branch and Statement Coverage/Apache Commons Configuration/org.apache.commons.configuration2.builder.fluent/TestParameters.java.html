@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.fluent</a> &gt; <span class="el_source">TestParameters.java</span></div><h1>TestParameters.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.fluent;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BasicBuilderParameters;
+import org.apache.commons.configuration2.builder.BasicBuilderProperties;
+import org.apache.commons.configuration2.builder.BuilderParameters;
+import org.apache.commons.configuration2.builder.DefaultParametersHandler;
+import org.apache.commons.configuration2.builder.DefaultParametersManager;
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.combined.CombinedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.combined.MultiFileBuilderParametersImpl;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.tree.ExpressionEngine;
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code Parameters}.
+ *
+ */
+<span class="fc" id="L48">public class TestParameters</span>
+{
+    /** A default encoding. */
+    private static final String DEF_ENCODING = &quot;UTF-8&quot;;
+
+    /** A test list delimiter handler. */
+    private static ListDelimiterHandler listHandler;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L59">        listHandler = EasyMock.createMock(ListDelimiterHandler.class);</span>
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * Tests whether an uninitialized default parameters manager is created at
+     * construction time.
+     */
+    @Test
+    public void testDefaultParametersManager()
+    {
+<span class="fc" id="L69">        final Parameters parameters = new Parameters();</span>
+<span class="fc" id="L70">        assertNotNull(&quot;No default manager&quot;,</span>
+<span class="fc" id="L71">                parameters.getDefaultParametersManager());</span>
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Tests whether a basic parameters object can be created.
+     */
+    @Test
+    public void testBasic()
+    {
+<span class="fc" id="L80">        final BasicBuilderParameters basic = new Parameters().basic();</span>
+<span class="fc" id="L81">        assertNotNull(&quot;No result object&quot;, basic);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Checks whether the given parameters map contains the standard values for
+     * basic properties.
+     *
+     * @param map the map to be tested
+     */
+    private static void checkBasicProperties(final Map&lt;String, Object&gt; map)
+    {
+<span class="fc" id="L92">        assertEquals(&quot;Wrong delimiter handler&quot;, listHandler,</span>
+<span class="fc" id="L93">                map.get(&quot;listDelimiterHandler&quot;));</span>
+<span class="fc" id="L94">        assertEquals(&quot;Wrong exception flag value&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L95">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Tests whether a file-based parameters object can be created.
+     */
+    @Test
+    public void testFileBased()
+    {
+<span class="fc" id="L104">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L105">                new Parameters().fileBased().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L106">                        .setEncoding(DEF_ENCODING).setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L107">                        .setFileName(&quot;test.xml&quot;).getParameters();</span>
+<span class="fc" id="L108">        final FileBasedBuilderParametersImpl fbparams =</span>
+<span class="fc" id="L109">                FileBasedBuilderParametersImpl.fromParameters(map);</span>
+<span class="fc" id="L110">        assertEquals(&quot;Wrong file name&quot;, &quot;test.xml&quot;, fbparams.getFileHandler()</span>
+<span class="fc" id="L111">                .getFileName());</span>
+<span class="fc" id="L112">        assertEquals(&quot;Wrong encoding&quot;, DEF_ENCODING, fbparams.getFileHandler()</span>
+<span class="fc" id="L113">                .getEncoding());</span>
+<span class="fc" id="L114">        checkBasicProperties(map);</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Helper method for testing whether the given object is an instance of the
+     * provided class.
+     *
+     * @param obj the object to be checked
+     * @param cls the class
+     */
+    private static void checkInstanceOf(final Object obj, final Class&lt;?&gt; cls)
+    {
+<span class="fc" id="L126">        assertTrue(obj + &quot; is not an instance of &quot; + cls, cls.isInstance(obj));</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Checks whether a given parameters object implements all the specified
+     * interfaces.
+     *
+     * @param params the parameters object to check
+     * @param ifcClasses the interface classes to be implemented
+     */
+    private static void checkInheritance(final Object params, final Class&lt;?&gt;... ifcClasses)
+    {
+<span class="fc" id="L138">        checkInstanceOf(params, BasicBuilderProperties.class);</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        for (final Class&lt;?&gt; c : ifcClasses)</span>
+        {
+<span class="fc" id="L141">            checkInstanceOf(params, c);</span>
+        }
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Tests the inheritance structure of a fileBased parameters object.
+     */
+    @Test
+    public void testFileBasedInheritance()
+    {
+<span class="fc" id="L151">        checkInheritance(new Parameters().fileBased());</span>
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Tests whether the proxy parameters object can deal with methods inherited
+     * from Object.
+     */
+    @Test
+    public void testProxyObjectMethods()
+    {
+<span class="fc" id="L161">        final FileBasedBuilderParameters params = new Parameters().fileBased();</span>
+<span class="fc" id="L162">        final String s = params.toString();</span>
+<span class="fc" id="L163">        assertTrue(</span>
+                &quot;Wrong string: &quot; + s,
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">                s.indexOf(FileBasedBuilderParametersImpl.class.getSimpleName()) &gt;= 0);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        assertTrue(&quot;No hash code&quot;, params.hashCode() != 0);</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Tests whether a combined parameters object can be created.
+     */
+    @Test
+    public void testCombined()
+    {
+<span class="fc" id="L175">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L176">                new Parameters().combined().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L177">                        .setBasePath(&quot;test&quot;).setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L178">                        .getParameters();</span>
+<span class="fc" id="L179">        final CombinedBuilderParametersImpl cparams =</span>
+<span class="fc" id="L180">                CombinedBuilderParametersImpl.fromParameters(map);</span>
+<span class="fc" id="L181">        assertEquals(&quot;Wrong base path&quot;, &quot;test&quot;, cparams.getBasePath());</span>
+<span class="fc" id="L182">        checkBasicProperties(map);</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Tests whether a JNDI parameters object can be created.
+     */
+    @Test
+    public void testJndi()
+    {
+<span class="fc" id="L191">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L192">                new Parameters().jndi().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L193">                        .setPrefix(&quot;test&quot;).setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L194">                        .getParameters();</span>
+<span class="fc" id="L195">        assertEquals(&quot;Wrong prefix&quot;, &quot;test&quot;, map.get(&quot;prefix&quot;));</span>
+<span class="fc" id="L196">        checkBasicProperties(map);</span>
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Tests whether a parameters object for a hierarchical configuration can be
+     * created.
+     */
+    @Test
+    public void testHierarchical()
+    {
+<span class="fc" id="L206">        final ExpressionEngine engine = EasyMock.createMock(ExpressionEngine.class);</span>
+<span class="fc" id="L207">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L208">                new Parameters().hierarchical().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L209">                        .setExpressionEngine(engine).setFileName(&quot;test.xml&quot;)</span>
+<span class="fc" id="L210">                        .setListDelimiterHandler(listHandler).getParameters();</span>
+<span class="fc" id="L211">        checkBasicProperties(map);</span>
+<span class="fc" id="L212">        final FileBasedBuilderParametersImpl fbp =</span>
+<span class="fc" id="L213">                FileBasedBuilderParametersImpl.fromParameters(map);</span>
+<span class="fc" id="L214">        assertEquals(&quot;Wrong file name&quot;, &quot;test.xml&quot;, fbp.getFileHandler()</span>
+<span class="fc" id="L215">                .getFileName());</span>
+<span class="fc" id="L216">        assertEquals(&quot;Wrong expression engine&quot;, engine,</span>
+<span class="fc" id="L217">                map.get(&quot;expressionEngine&quot;));</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Tests the inheritance structure of a hierarchical parameters object.
+     */
+    @Test
+    public void testHierarchicalInheritance()
+    {
+<span class="fc" id="L226">        checkInheritance(new Parameters().hierarchical(),</span>
+                FileBasedBuilderParameters.class);
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Tests whether a parameters object for an XML configuration can be
+     * created.
+     */
+    @Test
+    public void testXml()
+    {
+<span class="fc" id="L237">        final ExpressionEngine engine = EasyMock.createMock(ExpressionEngine.class);</span>
+<span class="fc" id="L238">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L239">                new Parameters().xml().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L240">                        .setFileName(&quot;test.xml&quot;).setValidating(true)</span>
+<span class="fc" id="L241">                        .setExpressionEngine(engine).setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L242">                        .setSchemaValidation(true).getParameters();</span>
+<span class="fc" id="L243">        checkBasicProperties(map);</span>
+<span class="fc" id="L244">        final FileBasedBuilderParametersImpl fbp =</span>
+<span class="fc" id="L245">                FileBasedBuilderParametersImpl.fromParameters(map);</span>
+<span class="fc" id="L246">        assertEquals(&quot;Wrong file name&quot;, &quot;test.xml&quot;, fbp.getFileHandler()</span>
+<span class="fc" id="L247">                .getFileName());</span>
+<span class="fc" id="L248">        assertEquals(&quot;Wrong validation flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L249">                map.get(&quot;validating&quot;));</span>
+<span class="fc" id="L250">        assertEquals(&quot;Wrong schema flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L251">                map.get(&quot;schemaValidation&quot;));</span>
+<span class="fc" id="L252">        assertEquals(&quot;Wrong expression engine&quot;, engine,</span>
+<span class="fc" id="L253">                map.get(&quot;expressionEngine&quot;));</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Tests the inheritance structure of an XML parameters object.
+     */
+    @Test
+    public void testXmlInheritance()
+    {
+<span class="fc" id="L262">        checkInheritance(new Parameters().xml(), HierarchicalBuilderParameters.class,</span>
+                FileBasedBuilderParameters.class);
+<span class="fc" id="L264">    }</span>
+
+    /**
+     * Tests whether a parameters object for a properties configuration can be
+     * created.
+     */
+    @Test
+    public void testProperties()
+    {
+<span class="fc" id="L273">        final PropertiesConfiguration.IOFactory factory =</span>
+<span class="fc" id="L274">                EasyMock.createMock(PropertiesConfiguration.IOFactory.class);</span>
+<span class="fc" id="L275">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L276">                new Parameters().properties().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L277">                        .setFileName(&quot;test.properties&quot;).setIOFactory(factory)</span>
+<span class="fc" id="L278">                        .setListDelimiterHandler(listHandler).setIncludesAllowed(false)</span>
+<span class="fc" id="L279">                        .getParameters();</span>
+<span class="fc" id="L280">        checkBasicProperties(map);</span>
+<span class="fc" id="L281">        final FileBasedBuilderParametersImpl fbp =</span>
+<span class="fc" id="L282">                FileBasedBuilderParametersImpl.fromParameters(map);</span>
+<span class="fc" id="L283">        assertEquals(&quot;Wrong file name&quot;, &quot;test.properties&quot;, fbp.getFileHandler()</span>
+<span class="fc" id="L284">                .getFileName());</span>
+<span class="fc" id="L285">        assertEquals(&quot;Wrong includes flag&quot;, Boolean.FALSE,</span>
+<span class="fc" id="L286">                map.get(&quot;includesAllowed&quot;));</span>
+<span class="fc" id="L287">        assertSame(&quot;Wrong factory&quot;, factory, map.get(&quot;IOFactory&quot;));</span>
+<span class="fc" id="L288">    }</span>
+
+    /**
+     * Tests the inheritance structure of a properties parameters object.
+     */
+    @Test
+    public void testPropertiesInheritance()
+    {
+<span class="fc" id="L296">        checkInheritance(new Parameters().properties(),</span>
+                FileBasedBuilderParameters.class);
+<span class="fc" id="L298">    }</span>
+
+    /**
+     * Tests whether a {@code MultiFileBuilderParameters} object can be created.
+     */
+    @Test
+    public void testMultiFile()
+    {
+<span class="fc" id="L306">        final BuilderParameters bp = EasyMock.createMock(BuilderParameters.class);</span>
+<span class="fc" id="L307">        final String pattern = &quot;a pattern&quot;;</span>
+<span class="fc" id="L308">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L309">                new Parameters().multiFile().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L310">                        .setFilePattern(pattern).setListDelimiterHandler(listHandler)</span>
+<span class="fc" id="L311">                        .setManagedBuilderParameters(bp).getParameters();</span>
+<span class="fc" id="L312">        checkBasicProperties(map);</span>
+<span class="fc" id="L313">        final MultiFileBuilderParametersImpl params =</span>
+<span class="fc" id="L314">                MultiFileBuilderParametersImpl.fromParameters(map);</span>
+<span class="fc" id="L315">        assertSame(&quot;Wrong builder parameters&quot;, bp,</span>
+<span class="fc" id="L316">                params.getManagedBuilderParameters());</span>
+<span class="fc" id="L317">        assertEquals(&quot;Wrong pattern&quot;, pattern, params.getFilePattern());</span>
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Tests whether a parameters object for a database configuration can be
+     * created.
+     */
+    @Test
+    public void testDatabase()
+    {
+<span class="fc" id="L327">        final Map&lt;String, Object&gt; map =</span>
+<span class="fc" id="L328">                new Parameters().database().setThrowExceptionOnMissing(true)</span>
+<span class="fc" id="L329">                        .setAutoCommit(true).setTable(&quot;table&quot;)</span>
+<span class="fc" id="L330">                        .setListDelimiterHandler(listHandler).setKeyColumn(&quot;keyColumn&quot;)</span>
+<span class="fc" id="L331">                        .getParameters();</span>
+<span class="fc" id="L332">        checkBasicProperties(map);</span>
+<span class="fc" id="L333">        assertEquals(&quot;Wrong table name&quot;, &quot;table&quot;, map.get(&quot;table&quot;));</span>
+<span class="fc" id="L334">        assertEquals(&quot;Wrong key column name&quot;, &quot;keyColumn&quot;, map.get(&quot;keyColumn&quot;));</span>
+<span class="fc" id="L335">        assertEquals(&quot;Wrong auto commit flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L336">                map.get(&quot;autoCommit&quot;));</span>
+<span class="fc" id="L337">    }</span>
+
+    /**
+     * Tests whether the parameters objects created by the Parameters instance
+     * have a logic inheritance hierarchy. This means that they also implement
+     * all base interfaces that make sense.
+     */
+    @Test
+    public void testInheritance()
+    {
+<span class="fc" id="L347">        final Object params = new Parameters().xml();</span>
+<span class="fc" id="L348">        assertTrue(&quot;No instance of base interface&quot;,</span>
+                params instanceof FileBasedBuilderParameters);
+<span class="fc" id="L350">        assertTrue(&quot;No instance of base interface (dynamic)&quot;,</span>
+<span class="fc" id="L351">                FileBasedBuilderParameters.class.isInstance(params));</span>
+<span class="fc" id="L352">        final FileBasedBuilderParameters fbParams =</span>
+                (FileBasedBuilderParameters) params;
+<span class="fc" id="L354">        fbParams.setListDelimiterHandler(listHandler).setFileName(&quot;test.xml&quot;)</span>
+<span class="fc" id="L355">                .setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L356">        final ExpressionEngine engine = EasyMock.createMock(ExpressionEngine.class);</span>
+<span class="fc" id="L357">        ((HierarchicalBuilderParameters) params).setExpressionEngine(engine);</span>
+<span class="fc" id="L358">        final Map&lt;String, Object&gt; map = fbParams.getParameters();</span>
+<span class="fc" id="L359">        checkBasicProperties(map);</span>
+<span class="fc" id="L360">        assertSame(&quot;Wrong expression engine&quot;, engine, map.get(&quot;expressionEngine&quot;));</span>
+<span class="fc" id="L361">    }</span>
+
+    /**
+     * Tests whether default values are set for newly created parameters
+     * objects.
+     */
+    @Test
+    public void testApplyDefaults()
+    {
+<span class="fc" id="L370">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L371">                EasyMock.createMock(DefaultParametersManager.class);</span>
+<span class="fc" id="L372">        final List&lt;Object&gt; initializedParams = new ArrayList&lt;&gt;(1);</span>
+<span class="fc" id="L373">        manager.initializeParameters(EasyMock</span>
+<span class="fc" id="L374">                .anyObject(BuilderParameters.class));</span>
+<span class="fc" id="L375">        EasyMock.expectLastCall().andAnswer(new IAnswer&lt;Object&gt;()</span>
+<span class="fc" id="L376">        {</span>
+            @Override
+            public Object answer() throws Throwable
+            {
+<span class="fc" id="L380">                initializedParams.add(EasyMock.getCurrentArguments()[0]);</span>
+<span class="fc" id="L381">                return null;</span>
+            }
+        });
+<span class="fc" id="L384">        EasyMock.replay(manager);</span>
+
+<span class="fc" id="L386">        final Parameters params = new Parameters(manager);</span>
+<span class="fc" id="L387">        final XMLBuilderParameters xmlParams = params.xml();</span>
+<span class="fc" id="L388">        assertEquals(&quot;Wrong number of initializations&quot;, 1,</span>
+<span class="fc" id="L389">                initializedParams.size());</span>
+<span class="fc" id="L390">        assertSame(&quot;Wrong initialized object&quot;, xmlParams,</span>
+<span class="fc" id="L391">                initializedParams.get(0));</span>
+<span class="fc" id="L392">    }</span>
+
+    /**
+     * Creates a mock for a defaults parameter handler.
+     *
+     * @return the mock object
+     */
+    private static DefaultParametersHandler&lt;XMLBuilderParameters&gt; createHandlerMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L403">        DefaultParametersHandler&lt;XMLBuilderParameters&gt; handler =</span>
+<span class="fc" id="L404">                EasyMock.createMock(DefaultParametersHandler.class);</span>
+<span class="fc" id="L405">        return handler;</span>
+    }
+
+    /**
+     * Tests whether a default handler with a start class can be registered.
+     */
+    @Test
+    public void testRegisterDefaultsHandlerWithStartClass()
+    {
+<span class="fc" id="L414">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L415">                EasyMock.createMock(DefaultParametersManager.class);</span>
+        final DefaultParametersHandler&lt;XMLBuilderParameters&gt; handler =
+<span class="fc" id="L417">                createHandlerMock();</span>
+<span class="fc" id="L418">        manager.registerDefaultsHandler(XMLBuilderParameters.class, handler,</span>
+                FileBasedBuilderParameters.class);
+<span class="fc" id="L420">        EasyMock.replay(manager, handler);</span>
+
+<span class="fc" id="L422">        final Parameters params = new Parameters(manager);</span>
+<span class="fc" id="L423">        params.registerDefaultsHandler(XMLBuilderParameters.class, handler,</span>
+                FileBasedBuilderParameters.class);
+<span class="fc" id="L425">        EasyMock.verify(manager);</span>
+<span class="fc" id="L426">    }</span>
+
+    /**
+     * Tests the registration of a defaults handler if no start class is
+     * provided.
+     */
+    @Test
+    public void testRegisterDefaultsHandlerNoStartClass()
+    {
+<span class="fc" id="L435">        final DefaultParametersManager manager =</span>
+<span class="fc" id="L436">                EasyMock.createMock(DefaultParametersManager.class);</span>
+        final DefaultParametersHandler&lt;XMLBuilderParameters&gt; handler =
+<span class="fc" id="L438">                createHandlerMock();</span>
+<span class="fc" id="L439">        manager.registerDefaultsHandler(XMLBuilderParameters.class, handler);</span>
+<span class="fc" id="L440">        EasyMock.replay(manager, handler);</span>
+
+<span class="fc" id="L442">        final Parameters params = new Parameters(manager);</span>
+<span class="fc" id="L443">        params.registerDefaultsHandler(XMLBuilderParameters.class, handler);</span>
+<span class="fc" id="L444">        EasyMock.verify(manager);</span>
+<span class="fc" id="L445">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

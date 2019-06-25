@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestPropertyListConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.plist</a> &gt; <span class="el_source">TestPropertyListConfiguration.java</span></div><h1>TestPropertyListConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2.plist;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.StringReader;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TimeZone;
+
+import junitx.framework.ArrayAssert;
+import junitx.framework.ListAssert;
+import junitx.framework.ObjectAssert;
+
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.ConfigurationComparator;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.StrictConfigurationComparator;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.NodeHandler;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/**
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L55">public class TestPropertyListConfiguration</span>
+{
+    /** A helper object for dealing with temporary files. */
+<span class="fc" id="L58">    @Rule</span>
+    public TemporaryFolder folder = new TemporaryFolder();
+
+    private PropertyListConfiguration config;
+
+<span class="fc" id="L63">    private final File testProperties = ConfigurationAssert.getTestFile(&quot;test.plist&quot;);</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L68">        config = new PropertyListConfiguration();</span>
+<span class="fc" id="L69">        load(config, testProperties);</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Loads a configuration from the specified test file.
+     *
+     * @param c the configuration to be loaded
+     * @param f the file to be loaded
+     * @throws ConfigurationException if an error occurs
+     */
+    private static void load(final PropertyListConfiguration c, final File f)
+            throws ConfigurationException
+    {
+<span class="fc" id="L82">        new FileHandler(c).load(f);</span>
+<span class="fc" id="L83">    }</span>
+
+    @Test
+    public void testLoad()
+    {
+<span class="fc" id="L88">        assertFalse(&quot;the configuration is empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L89">    }</span>
+
+    @Test
+    public void testLoadWithError()
+    {
+<span class="fc" id="L94">        config = new PropertyListConfiguration();</span>
+        try {
+<span class="nc" id="L96">            new FileHandler(config).load(new StringReader(&quot;&quot;));</span>
+<span class="nc" id="L97">            fail(&quot;No exception thrown on loading an empty file&quot;);</span>
+<span class="fc" id="L98">        } catch (final ConfigurationException e) {</span>
+            // expected
+<span class="fc" id="L100">            assertNotNull(e.getMessage());</span>
+<span class="nc" id="L101">        }</span>
+<span class="fc" id="L102">    }</span>
+
+    @Test
+    public void testString()
+    {
+<span class="fc" id="L107">        assertEquals(&quot;simple-string&quot;, &quot;string1&quot;, config.getProperty(&quot;simple-string&quot;));</span>
+<span class="fc" id="L108">    }</span>
+
+    @Test
+    public void testQuotedString()
+    {
+<span class="fc" id="L113">        assertEquals(&quot;quoted-string&quot;, &quot;string2&quot;, config.getProperty(&quot;quoted-string&quot;));</span>
+<span class="fc" id="L114">        assertEquals(&quot;quoted-string2&quot;, &quot;this is a string&quot;, config.getProperty(&quot;quoted-string2&quot;));</span>
+<span class="fc" id="L115">        assertEquals(&quot;complex-string&quot;, &quot;this is a \&quot;complex\&quot; string {(=,;)}&quot;, config.getProperty(&quot;complex-string&quot;));</span>
+<span class="fc" id="L116">    }</span>
+
+    @Test
+    public void testEmptyArray()
+    {
+<span class="fc" id="L121">        final String key = &quot;empty-array&quot;;</span>
+<span class="fc" id="L122">        assertNotNull(&quot;array null&quot;, config.getProperty(key));</span>
+
+<span class="fc" id="L124">        final List&lt;?&gt; list = (List&lt;?&gt;) config.getProperty(key);</span>
+<span class="fc" id="L125">        assertTrue(&quot;array is not empty&quot;, list.isEmpty());</span>
+<span class="fc" id="L126">    }</span>
+
+    @Test
+    public void testArray()
+    {
+<span class="fc" id="L131">        final String key = &quot;array&quot;;</span>
+<span class="fc" id="L132">        assertNotNull(&quot;array null&quot;, config.getProperty(key));</span>
+
+<span class="fc" id="L134">        final List&lt;?&gt; list = (List&lt;?&gt;) config.getProperty(key);</span>
+<span class="fc" id="L135">        assertFalse(&quot;array is empty&quot;, list.isEmpty());</span>
+
+<span class="fc" id="L137">        assertEquals(&quot;1st value&quot;, &quot;value1&quot;, list.get(0));</span>
+<span class="fc" id="L138">        assertEquals(&quot;2nd value&quot;, &quot;value2&quot;, list.get(1));</span>
+<span class="fc" id="L139">        assertEquals(&quot;3rd value&quot;, &quot;value3&quot;, list.get(2));</span>
+<span class="fc" id="L140">    }</span>
+
+    @Test
+    public void testNestedArrays()
+    {
+<span class="fc" id="L145">        final String key = &quot;nested-arrays&quot;;</span>
+
+<span class="fc" id="L147">        final Object array = config.getProperty(key);</span>
+
+        // root array
+<span class="fc" id="L150">        assertNotNull(&quot;array not found&quot;, array);</span>
+<span class="fc" id="L151">        ObjectAssert.assertInstanceOf(&quot;the array element is not parsed as a List&quot;, List.class, array);</span>
+<span class="fc" id="L152">        final List&lt;?&gt; list = config.getList(key);</span>
+
+<span class="fc" id="L154">        assertFalse(&quot;empty array&quot;, list.isEmpty());</span>
+<span class="fc" id="L155">        assertEquals(&quot;size&quot;, 2, list.size());</span>
+
+        // 1st array
+<span class="fc" id="L158">        ObjectAssert.assertInstanceOf(&quot;the array element is not parsed as a List&quot;, List.class, list.get(0));</span>
+<span class="fc" id="L159">        final List&lt;?&gt; list1 = (List&lt;?&gt;) list.get(0);</span>
+<span class="fc" id="L160">        assertFalse(&quot;nested array 1 is empty&quot;, list1.isEmpty());</span>
+<span class="fc" id="L161">        assertEquals(&quot;size&quot;, 2, list1.size());</span>
+<span class="fc" id="L162">        assertEquals(&quot;1st element&quot;, &quot;a&quot;, list1.get(0));</span>
+<span class="fc" id="L163">        assertEquals(&quot;2nd element&quot;, &quot;b&quot;, list1.get(1));</span>
+
+        // 2nd array
+<span class="fc" id="L166">        ObjectAssert.assertInstanceOf(&quot;the array element is not parsed as a List&quot;, List.class, list.get(1));</span>
+<span class="fc" id="L167">        final List&lt;?&gt; list2 = (List&lt;?&gt;) list.get(1);</span>
+<span class="fc" id="L168">        assertFalse(&quot;nested array 2 is empty&quot;, list2.isEmpty());</span>
+<span class="fc" id="L169">        assertEquals(&quot;size&quot;, 2, list2.size());</span>
+<span class="fc" id="L170">        assertEquals(&quot;1st element&quot;, &quot;c&quot;, list2.get(0));</span>
+<span class="fc" id="L171">        assertEquals(&quot;2nd element&quot;, &quot;d&quot;, list2.get(1));</span>
+<span class="fc" id="L172">    }</span>
+
+    @Test
+    public void testDictionary()
+    {
+<span class="fc" id="L177">        assertEquals(&quot;1st element in dictionary&quot;, &quot;bar1&quot;, config.getProperty(&quot;dictionary.foo1&quot;));</span>
+<span class="fc" id="L178">        assertEquals(&quot;2nd element in dictionary&quot;, &quot;bar2&quot;, config.getProperty(&quot;dictionary.foo2&quot;));</span>
+<span class="fc" id="L179">    }</span>
+
+    @Test
+    public void testDictionaryArray()
+    {
+<span class="fc" id="L184">        final String key = &quot;dictionary-array&quot;;</span>
+
+<span class="fc" id="L186">        final Object array = config.getProperty(key);</span>
+
+        // root array
+<span class="fc" id="L189">        assertNotNull(&quot;array not found&quot;, array);</span>
+<span class="fc" id="L190">        ObjectAssert.assertInstanceOf(&quot;the array element is not parsed as a List&quot;, List.class, array);</span>
+<span class="fc" id="L191">        final List&lt;?&gt; list = config.getList(key);</span>
+
+<span class="fc" id="L193">        assertFalse(&quot;empty array&quot;, list.isEmpty());</span>
+<span class="fc" id="L194">        assertEquals(&quot;size&quot;, 2, list.size());</span>
+
+        // 1st dictionary
+<span class="fc" id="L197">        ObjectAssert.assertInstanceOf(&quot;the dict element is not parsed as a Configuration&quot;, Configuration.class, list.get(0));</span>
+<span class="fc" id="L198">        final Configuration conf1 = (Configuration) list.get(0);</span>
+<span class="fc" id="L199">        assertFalse(&quot;configuration 1 is empty&quot;, conf1.isEmpty());</span>
+<span class="fc" id="L200">        assertEquals(&quot;configuration element&quot;, &quot;bar&quot;, conf1.getProperty(&quot;foo&quot;));</span>
+
+        // 2nd dictionary
+<span class="fc" id="L203">        ObjectAssert.assertInstanceOf(&quot;the dict element is not parsed as a Configuration&quot;, Configuration.class, list.get(1));</span>
+<span class="fc" id="L204">        final Configuration conf2 = (Configuration) list.get(1);</span>
+<span class="fc" id="L205">        assertFalse(&quot;configuration 2 is empty&quot;, conf2.isEmpty());</span>
+<span class="fc" id="L206">        assertEquals(&quot;configuration element&quot;, &quot;value&quot;, conf2.getProperty(&quot;key&quot;));</span>
+<span class="fc" id="L207">    }</span>
+
+    @Test
+    public void testNestedDictionaries()
+    {
+<span class="fc" id="L212">        assertEquals(&quot;nested property&quot;, &quot;value&quot;, config.getString(&quot;nested-dictionaries.foo.bar.key&quot;));</span>
+<span class="fc" id="L213">    }</span>
+
+    @Test
+    public void testData()
+    {
+<span class="fc" id="L218">        ObjectAssert.assertInstanceOf(&quot;data&quot;, (new byte[0]).getClass(), config.getProperty(&quot;data&quot;));</span>
+<span class="fc" id="L219">        ArrayAssert.assertEquals(&quot;data&quot;, &quot;foo bar&quot;.getBytes(), (byte[]) config.getProperty(&quot;data&quot;));</span>
+<span class="fc" id="L220">    }</span>
+
+    @Test
+    public void testDate() throws Exception
+    {
+<span class="fc" id="L225">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L226">        cal.clear();</span>
+<span class="fc" id="L227">        cal.set(2002, Calendar.MARCH, 22, 11, 30, 0);</span>
+<span class="fc" id="L228">        cal.setTimeZone(TimeZone.getTimeZone(&quot;GMT+0100&quot;));</span>
+<span class="fc" id="L229">        final Date date = cal.getTime();</span>
+
+<span class="fc" id="L231">        assertEquals(&quot;date&quot;, date, config.getProperty(&quot;date&quot;));</span>
+<span class="fc" id="L232">    }</span>
+
+    /**
+     * Saves the test configuration to the specified file.
+     *
+     * @param file the target file
+     * @throws ConfigurationException if an error occurs
+     */
+    private void saveConfig(final File file) throws ConfigurationException
+    {
+<span class="fc" id="L242">        new FileHandler(config).save(file);</span>
+<span class="fc" id="L243">    }</span>
+
+    @Test
+    public void testSave() throws Exception
+    {
+<span class="fc" id="L248">        final File savedFile = folder.newFile(&quot;testsave.plist&quot;);</span>
+
+        // save the configuration
+<span class="fc" id="L251">        saveConfig(savedFile);</span>
+<span class="fc" id="L252">        assertTrue(&quot;The saved file doesn't exist&quot;, savedFile.exists());</span>
+
+        // read the configuration and compare the properties
+<span class="fc" id="L255">        final PropertyListConfiguration checkConfig = new PropertyListConfiguration();</span>
+<span class="fc" id="L256">        load(checkConfig, savedFile);</span>
+
+<span class="fc" id="L258">        final Iterator&lt;String&gt; it = config.getKeys();</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        while (it.hasNext())</span>
+        {
+<span class="fc" id="L261">            final String key = it.next();</span>
+<span class="fc" id="L262">            assertTrue(&quot;The saved configuration doesn't contain the key '&quot; + key + &quot;'&quot;, checkConfig.containsKey(key));</span>
+
+<span class="fc" id="L264">            final Object value = checkConfig.getProperty(key);</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">            if (value instanceof byte[])</span>
+            {
+<span class="fc" id="L267">                final byte[] array = (byte[]) value;</span>
+<span class="fc" id="L268">                ArrayAssert.assertEquals(&quot;Value of the '&quot; + key + &quot;' property&quot;, (byte[]) config.getProperty(key), array);</span>
+<span class="fc" id="L269">            }</span>
+<span class="fc bfc" id="L270" title="All 2 branches covered.">            else if (value instanceof List)</span>
+            {
+<span class="fc" id="L272">                final List&lt;?&gt; list1 = (List&lt;?&gt;) config.getProperty(key);</span>
+<span class="fc" id="L273">                final List&lt;?&gt; list2 = (List&lt;?&gt;) value;</span>
+
+<span class="fc" id="L275">                assertEquals(&quot;The size of the list for the key '&quot; + key + &quot;' doesn't match&quot;, list1.size(), list2.size());</span>
+
+<span class="fc bfc" id="L277" title="All 2 branches covered.">                for (int i = 0; i &lt; list2.size(); i++)</span>
+                {
+<span class="fc" id="L279">                    final Object value1 = list1.get(i);</span>
+<span class="fc" id="L280">                    final Object value2 = list2.get(i);</span>
+
+<span class="fc bfc" id="L282" title="All 2 branches covered.">                    if (value1 instanceof Configuration)</span>
+                    {
+<span class="fc" id="L284">                        final ConfigurationComparator comparator = new StrictConfigurationComparator();</span>
+<span class="fc" id="L285">                        assertTrue(&quot;The dictionnary at index &quot; + i + &quot; for the key '&quot; + key + &quot;' doesn't match&quot;, comparator.compare((Configuration) value1, (Configuration) value2));</span>
+<span class="fc" id="L286">                    }</span>
+                    else
+                    {
+<span class="fc" id="L289">                        assertEquals(&quot;Element at index &quot; + i + &quot; for the key '&quot; + key + &quot;'&quot;, value1, value2);</span>
+                    }
+                }
+
+<span class="fc" id="L293">                ListAssert.assertEquals(&quot;Value of the '&quot; + key + &quot;' property&quot;, (List&lt;?&gt;) config.getProperty(key), list1);</span>
+<span class="fc" id="L294">            }</span>
+            else
+            {
+<span class="fc" id="L297">                assertEquals(&quot;Value of the '&quot; + key + &quot;' property&quot;, config.getProperty(key), checkConfig.getProperty(key));</span>
+            }
+
+<span class="fc" id="L300">        }</span>
+<span class="fc" id="L301">    }</span>
+
+    @Test
+    public void testSaveEmptyDictionary() throws Exception
+    {
+<span class="fc" id="L306">        final File savedFile = folder.newFile(&quot;testsave.plist&quot;);</span>
+
+        // save the configuration
+<span class="fc" id="L309">        saveConfig(savedFile);</span>
+<span class="fc" id="L310">        assertTrue(&quot;The saved file doesn't exist&quot;, savedFile.exists());</span>
+
+        // read the configuration and compare the properties
+<span class="fc" id="L313">        final PropertyListConfiguration checkConfig = new PropertyListConfiguration();</span>
+<span class="fc" id="L314">        load(checkConfig, savedFile);</span>
+
+<span class="fc" id="L316">        assertFalse(getNamedChildren(config, &quot;empty-dictionary&quot;).isEmpty());</span>
+<span class="fc" id="L317">        assertFalse(getNamedChildren(checkConfig, &quot;empty-dictionary&quot;).isEmpty());</span>
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Returns a list with the children of the given configuration's root note
+     * with the specified name.
+     *
+     * @param config the configuration
+     * @param name the name of the desired children
+     * @return the list with the corresponding child nodes
+     */
+    private static List&lt;ImmutableNode&gt; getNamedChildren(
+            final HierarchicalConfiguration&lt;ImmutableNode&gt; config, final String name)
+    {
+<span class="fc" id="L331">        final NodeHandler&lt;ImmutableNode&gt; handler =</span>
+<span class="fc" id="L332">                config.getNodeModel().getNodeHandler();</span>
+<span class="fc" id="L333">        return handler.getChildren(handler.getRootNode(), name);</span>
+    }
+
+    @Test
+    public void testQuoteString()
+    {
+<span class="fc" id="L339">        assertEquals(&quot;null string&quot;, null, config.quoteString(null));</span>
+<span class="fc" id="L340">        assertEquals(&quot;simple string&quot;, &quot;abcd&quot;, config.quoteString(&quot;abcd&quot;));</span>
+<span class="fc" id="L341">        assertEquals(&quot;string with a space&quot;, &quot;\&quot;ab cd\&quot;&quot;, config.quoteString(&quot;ab cd&quot;));</span>
+<span class="fc" id="L342">        assertEquals(&quot;string with a quote&quot;, &quot;\&quot;foo\\\&quot;bar\&quot;&quot;, config.quoteString(&quot;foo\&quot;bar&quot;));</span>
+<span class="fc" id="L343">        assertEquals(&quot;string with a special char&quot;, &quot;\&quot;foo;bar\&quot;&quot;, config.quoteString(&quot;foo;bar&quot;));</span>
+<span class="fc" id="L344">    }</span>
+
+    /**
+     * Ensure that setProperty doesn't alter an array of byte
+     * since it's a first class type in plist file
+     */
+    @Test
+    public void testSetDataProperty() throws Exception
+    {
+<span class="fc" id="L353">        final File saveFile = folder.newFile();</span>
+<span class="fc" id="L354">        final byte[] expected = new byte[]{1, 2, 3, 4};</span>
+<span class="fc" id="L355">        config = new PropertyListConfiguration();</span>
+<span class="fc" id="L356">        config.setProperty(&quot;foo&quot;, expected);</span>
+<span class="fc" id="L357">        saveConfig(saveFile);</span>
+
+<span class="fc" id="L359">        final PropertyListConfiguration config2 = new PropertyListConfiguration();</span>
+<span class="fc" id="L360">        load(config2, saveFile);</span>
+<span class="fc" id="L361">        final Object array = config2.getProperty(&quot;foo&quot;);</span>
+
+<span class="fc" id="L363">        assertNotNull(&quot;data not found&quot;, array);</span>
+<span class="fc" id="L364">        assertEquals(&quot;property type&quot;, byte[].class, array.getClass());</span>
+<span class="fc" id="L365">        ArrayAssert.assertEquals(expected, (byte[]) array);</span>
+<span class="fc" id="L366">    }</span>
+
+    /**
+     * Ensure that addProperty doesn't alter an array of byte
+     */
+    @Test
+    public void testAddDataProperty() throws Exception
+    {
+<span class="fc" id="L374">        final File saveFile = folder.newFile();</span>
+<span class="fc" id="L375">        final byte[] expected = new byte[]{1, 2, 3, 4};</span>
+<span class="fc" id="L376">        config = new PropertyListConfiguration();</span>
+<span class="fc" id="L377">        config.addProperty(&quot;foo&quot;, expected);</span>
+<span class="fc" id="L378">        saveConfig(saveFile);</span>
+
+<span class="fc" id="L380">        final PropertyListConfiguration config2 = new PropertyListConfiguration();</span>
+<span class="fc" id="L381">        load(config2, saveFile);</span>
+<span class="fc" id="L382">        final Object array = config2.getProperty(&quot;foo&quot;);</span>
+
+<span class="fc" id="L384">        assertNotNull(&quot;data not found&quot;, array);</span>
+<span class="fc" id="L385">        assertEquals(&quot;property type&quot;, byte[].class, array.getClass());</span>
+<span class="fc" id="L386">        ArrayAssert.assertEquals(expected, (byte[]) array);</span>
+<span class="fc" id="L387">    }</span>
+
+    @Test
+    public void testInitCopy()
+    {
+<span class="fc" id="L392">        final PropertyListConfiguration copy = new PropertyListConfiguration(config);</span>
+<span class="fc" id="L393">        assertFalse(&quot;Nothing was copied&quot;, copy.isEmpty());</span>
+<span class="fc" id="L394">    }</span>
+
+    /**
+     * Tests parsing a date with an invalid numeric value.
+     */
+    @Test(expected = ParseException.class)
+    public void testParseDateNoNumber() throws ParseException
+    {
+<span class="fc" id="L402">        PropertyListConfiguration</span>
+<span class="nc" id="L403">                .parseDate(&quot;&lt;*D2002-03-22 1c:30:00 +0100&gt;&quot;);</span>
+<span class="nc" id="L404">    }</span>
+
+    /**
+     * Tests parsing a date that is not long enough.
+     */
+    @Test(expected = ParseException.class)
+    public void testParseDateTooShort() throws ParseException
+    {
+<span class="nc" id="L412">        PropertyListConfiguration.parseDate(&quot;&lt;*D2002-03-22 11:3&gt;&quot;);</span>
+<span class="nc" id="L413">    }</span>
+
+    /**
+     * Tests parsing a date that contains an invalid separator character.
+     */
+    @Test(expected = ParseException.class)
+    public void testParseDateInvalidChar() throws ParseException
+    {
+<span class="fc" id="L421">        PropertyListConfiguration</span>
+<span class="nc" id="L422">                .parseDate(&quot;&lt;*D2002+03-22 11:30:00 +0100&gt;&quot;);</span>
+<span class="nc" id="L423">    }</span>
+
+    /**
+     * Tries parsing a null date. This should cause an exception.n
+     */
+    @Test(expected = ParseException.class)
+    public void testParseDateNull() throws ParseException
+    {
+<span class="nc" id="L431">        PropertyListConfiguration.parseDate(null);</span>
+<span class="nc" id="L432">    }</span>
+
+    /**
+     * Tests formatting a date.
+     */
+    @Test
+    public void testFormatDate()
+    {
+<span class="fc" id="L440">        final Calendar cal = Calendar.getInstance();</span>
+<span class="fc" id="L441">        cal.clear();</span>
+<span class="fc" id="L442">        cal.set(2007, Calendar.OCTOBER, 29, 23, 4, 30);</span>
+<span class="fc" id="L443">        cal.setTimeZone(TimeZone.getTimeZone(&quot;GMT-0230&quot;));</span>
+<span class="fc" id="L444">        assertEquals(&quot;Wrong date literal (1)&quot;, &quot;&lt;*D2007-10-29 23:04:30 -0230&gt;&quot;,</span>
+<span class="fc" id="L445">                PropertyListConfiguration.formatDate(cal));</span>
+<span class="fc" id="L446">        cal.clear();</span>
+<span class="fc" id="L447">        cal.set(2007, Calendar.OCTOBER, 30, 22, 2, 15);</span>
+<span class="fc" id="L448">        cal.setTimeZone(TimeZone.getTimeZone(&quot;GMT+1111&quot;));</span>
+<span class="fc" id="L449">        assertEquals(&quot;Wrong date literal (2)&quot;, &quot;&lt;*D2007-10-30 22:02:15 +1111&gt;&quot;,</span>
+<span class="fc" id="L450">                PropertyListConfiguration.formatDate(cal));</span>
+<span class="fc" id="L451">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

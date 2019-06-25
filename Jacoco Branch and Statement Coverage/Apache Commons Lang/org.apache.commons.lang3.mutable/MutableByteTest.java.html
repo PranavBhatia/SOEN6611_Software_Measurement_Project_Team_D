@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutableByteTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.mutable</a> &gt; <span class="el_source">MutableByteTest.java</span></div><h1>MutableByteTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.mutable;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+/**
+ * JUnit tests.
+ *
+ * @see MutableByte
+ */
+<span class="fc" id="L30">public class MutableByteTest {</span>
+
+    // ----------------------------------------------------------------
+    @Test
+    public void testConstructors() {
+<span class="fc" id="L35">        assertEquals((byte) 0, new MutableByte().byteValue());</span>
+
+<span class="fc" id="L37">        assertEquals((byte) 1, new MutableByte((byte) 1).byteValue());</span>
+
+<span class="fc" id="L39">        assertEquals((byte) 2, new MutableByte(Byte.valueOf((byte) 2)).byteValue());</span>
+<span class="fc" id="L40">        assertEquals((byte) 3, new MutableByte(new MutableByte((byte) 3)).byteValue());</span>
+
+<span class="fc" id="L42">        assertEquals((byte) 2, new MutableByte(&quot;2&quot;).byteValue());</span>
+
+<span class="fc" id="L44">    }</span>
+
+    @Test
+    public void testConstructorNull() {
+<span class="pc" id="L48">        assertThrows(NullPointerException.class, () -&gt; new MutableByte((Number) null));</span>
+<span class="fc" id="L49">    }</span>
+
+    @Test
+    public void testGetSet() {
+<span class="fc" id="L53">        final MutableByte mutNum = new MutableByte((byte) 0);</span>
+<span class="fc" id="L54">        assertEquals((byte) 0, new MutableByte().byteValue());</span>
+<span class="fc" id="L55">        assertEquals(Byte.valueOf((byte) 0), new MutableByte().getValue());</span>
+
+<span class="fc" id="L57">        mutNum.setValue((byte) 1);</span>
+<span class="fc" id="L58">        assertEquals((byte) 1, mutNum.byteValue());</span>
+<span class="fc" id="L59">        assertEquals(Byte.valueOf((byte) 1), mutNum.getValue());</span>
+
+<span class="fc" id="L61">        mutNum.setValue(Byte.valueOf((byte) 2));</span>
+<span class="fc" id="L62">        assertEquals((byte) 2, mutNum.byteValue());</span>
+<span class="fc" id="L63">        assertEquals(Byte.valueOf((byte) 2), mutNum.getValue());</span>
+
+<span class="fc" id="L65">        mutNum.setValue(new MutableByte((byte) 3));</span>
+<span class="fc" id="L66">        assertEquals((byte) 3, mutNum.byteValue());</span>
+<span class="fc" id="L67">        assertEquals(Byte.valueOf((byte) 3), mutNum.getValue());</span>
+<span class="fc" id="L68">    }</span>
+
+    @Test
+    public void testSetNull() {
+<span class="fc" id="L72">        final MutableByte mutNum = new MutableByte((byte) 0);</span>
+<span class="pc" id="L73">        assertThrows(NullPointerException.class, () -&gt; mutNum.setValue(null));</span>
+<span class="fc" id="L74">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L78">        final MutableByte mutNumA = new MutableByte((byte) 0);</span>
+<span class="fc" id="L79">        final MutableByte mutNumB = new MutableByte((byte) 0);</span>
+<span class="fc" id="L80">        final MutableByte mutNumC = new MutableByte((byte) 1);</span>
+
+<span class="fc" id="L82">        assertEquals(mutNumA, mutNumA);</span>
+<span class="fc" id="L83">        assertEquals(mutNumA, mutNumB);</span>
+<span class="fc" id="L84">        assertEquals(mutNumB, mutNumA);</span>
+<span class="fc" id="L85">        assertEquals(mutNumB, mutNumB);</span>
+<span class="fc" id="L86">        assertNotEquals(mutNumA, mutNumC);</span>
+<span class="fc" id="L87">        assertNotEquals(mutNumB, mutNumC);</span>
+<span class="fc" id="L88">        assertEquals(mutNumC, mutNumC);</span>
+<span class="fc" id="L89">        assertNotEquals(null, mutNumA);</span>
+<span class="fc" id="L90">        assertNotEquals(mutNumA, Byte.valueOf((byte) 0));</span>
+<span class="fc" id="L91">        assertNotEquals(&quot;0&quot;, mutNumA);</span>
+<span class="fc" id="L92">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L96">        final MutableByte mutNumA = new MutableByte((byte) 0);</span>
+<span class="fc" id="L97">        final MutableByte mutNumB = new MutableByte((byte) 0);</span>
+<span class="fc" id="L98">        final MutableByte mutNumC = new MutableByte((byte) 1);</span>
+
+<span class="fc" id="L100">        assertEquals(mutNumA.hashCode(), mutNumA.hashCode());</span>
+<span class="fc" id="L101">        assertEquals(mutNumA.hashCode(), mutNumB.hashCode());</span>
+<span class="fc" id="L102">        assertNotEquals(mutNumA.hashCode(), mutNumC.hashCode());</span>
+<span class="fc" id="L103">        assertEquals(mutNumA.hashCode(), Byte.valueOf((byte) 0).hashCode());</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testCompareTo() {
+<span class="fc" id="L108">        final MutableByte mutNum = new MutableByte((byte) 0);</span>
+
+<span class="fc" id="L110">        assertEquals((byte) 0, mutNum.compareTo(new MutableByte((byte) 0)));</span>
+<span class="fc" id="L111">        assertEquals((byte) +1, mutNum.compareTo(new MutableByte((byte) -1)));</span>
+<span class="fc" id="L112">        assertEquals((byte) -1, mutNum.compareTo(new MutableByte((byte) 1)));</span>
+<span class="fc" id="L113">    }</span>
+
+    @Test
+    public void testCompareToNull() {
+<span class="fc" id="L117">        final MutableByte mutNum = new MutableByte((byte) 0);</span>
+<span class="pc" id="L118">        assertThrows(NullPointerException.class, () -&gt; mutNum.compareTo(null));</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    public void testPrimitiveValues() {
+<span class="fc" id="L123">        final MutableByte mutNum = new MutableByte( (byte) 1 );</span>
+<span class="fc" id="L124">        assertEquals(1.0F, mutNum.floatValue());</span>
+<span class="fc" id="L125">        assertEquals(1.0, mutNum.doubleValue());</span>
+<span class="fc" id="L126">        assertEquals( (byte) 1, mutNum.byteValue() );</span>
+<span class="fc" id="L127">        assertEquals( (short) 1, mutNum.shortValue() );</span>
+<span class="fc" id="L128">        assertEquals( 1, mutNum.intValue() );</span>
+<span class="fc" id="L129">        assertEquals( 1L, mutNum.longValue() );</span>
+<span class="fc" id="L130">    }</span>
+
+    @Test
+    public void testToByte() {
+<span class="fc" id="L134">        assertEquals(Byte.valueOf((byte) 0), new MutableByte((byte) 0).toByte());</span>
+<span class="fc" id="L135">        assertEquals(Byte.valueOf((byte) 123), new MutableByte((byte) 123).toByte());</span>
+<span class="fc" id="L136">    }</span>
+
+    @Test
+    public void testIncrement() {
+<span class="fc" id="L140">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L141">        mutNum.increment();</span>
+
+<span class="fc" id="L143">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L144">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L145">    }</span>
+
+    @Test
+    public void testIncrementAndGet() {
+<span class="fc" id="L149">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L150">        final byte result = mutNum.incrementAndGet();</span>
+
+<span class="fc" id="L152">        assertEquals(2, result);</span>
+<span class="fc" id="L153">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L154">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L155">    }</span>
+
+    @Test
+    public void testGetAndIncrement() {
+<span class="fc" id="L159">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L160">        final byte result = mutNum.getAndIncrement();</span>
+
+<span class="fc" id="L162">        assertEquals(1, result);</span>
+<span class="fc" id="L163">        assertEquals(2, mutNum.intValue());</span>
+<span class="fc" id="L164">        assertEquals(2L, mutNum.longValue());</span>
+<span class="fc" id="L165">    }</span>
+
+    @Test
+    public void testDecrement() {
+<span class="fc" id="L169">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L170">        mutNum.decrement();</span>
+
+<span class="fc" id="L172">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L173">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L174">    }</span>
+
+    @Test
+    public void testDecrementAndGet() {
+<span class="fc" id="L178">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L179">        final byte result = mutNum.decrementAndGet();</span>
+
+<span class="fc" id="L181">        assertEquals(0, result);</span>
+<span class="fc" id="L182">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L183">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L184">    }</span>
+
+    @Test
+    public void testGetAndDecrement() {
+<span class="fc" id="L188">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L189">        final byte result = mutNum.getAndDecrement();</span>
+
+<span class="fc" id="L191">        assertEquals(1, result);</span>
+<span class="fc" id="L192">        assertEquals(0, mutNum.intValue());</span>
+<span class="fc" id="L193">        assertEquals(0L, mutNum.longValue());</span>
+<span class="fc" id="L194">    }</span>
+
+    @Test
+    public void testAddValuePrimitive() {
+<span class="fc" id="L198">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L199">        mutNum.add((byte) 1);</span>
+
+<span class="fc" id="L201">        assertEquals((byte) 2, mutNum.byteValue());</span>
+<span class="fc" id="L202">    }</span>
+
+    @Test
+    public void testAddValueObject() {
+<span class="fc" id="L206">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L207">        mutNum.add(Integer.valueOf(1));</span>
+
+<span class="fc" id="L209">        assertEquals((byte) 2, mutNum.byteValue());</span>
+<span class="fc" id="L210">    }</span>
+
+    @Test
+    public void testGetAndAddValuePrimitive() {
+<span class="fc" id="L214">        final MutableByte mutableByte = new MutableByte((byte) 0);</span>
+<span class="fc" id="L215">        final byte result = mutableByte.getAndAdd((byte) 1);</span>
+
+<span class="fc" id="L217">        assertEquals((byte) 0, result);</span>
+<span class="fc" id="L218">        assertEquals((byte) 1, mutableByte.byteValue());</span>
+<span class="fc" id="L219">    }</span>
+
+    @Test
+    public void testGetAndAddValueObject() {
+<span class="fc" id="L223">        final MutableByte mutableByte = new MutableByte((byte) 0);</span>
+<span class="fc" id="L224">        final byte result = mutableByte.getAndAdd(Byte.valueOf((byte) 1));</span>
+
+<span class="fc" id="L226">        assertEquals((byte) 0, result);</span>
+<span class="fc" id="L227">        assertEquals((byte) 1, mutableByte.byteValue());</span>
+<span class="fc" id="L228">    }</span>
+
+    @Test
+    public void testAddAndGetValuePrimitive() {
+<span class="fc" id="L232">        final MutableByte mutableByte = new MutableByte((byte) 0);</span>
+<span class="fc" id="L233">        final byte result = mutableByte.addAndGet((byte) 1);</span>
+
+<span class="fc" id="L235">        assertEquals((byte) 1, result);</span>
+<span class="fc" id="L236">        assertEquals((byte) 1, mutableByte.byteValue());</span>
+<span class="fc" id="L237">    }</span>
+
+    @Test
+    public void testAddAndGetValueObject() {
+<span class="fc" id="L241">        final MutableByte mutableByte = new MutableByte((byte) 0);</span>
+<span class="fc" id="L242">        final byte result = mutableByte.addAndGet(Byte.valueOf((byte) 1));</span>
+
+<span class="fc" id="L244">        assertEquals((byte) 1, result);</span>
+<span class="fc" id="L245">        assertEquals((byte) 1, mutableByte.byteValue());</span>
+<span class="fc" id="L246">    }</span>
+
+    @Test
+    public void testSubtractValuePrimitive() {
+<span class="fc" id="L250">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L251">        mutNum.subtract((byte) 1);</span>
+
+<span class="fc" id="L253">        assertEquals((byte) 0, mutNum.byteValue());</span>
+<span class="fc" id="L254">    }</span>
+
+    @Test
+    public void testSubtractValueObject() {
+<span class="fc" id="L258">        final MutableByte mutNum = new MutableByte((byte) 1);</span>
+<span class="fc" id="L259">        mutNum.subtract(Integer.valueOf(1));</span>
+
+<span class="fc" id="L261">        assertEquals((byte) 0, mutNum.byteValue());</span>
+<span class="fc" id="L262">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L266">        assertEquals(&quot;0&quot;, new MutableByte((byte) 0).toString());</span>
+<span class="fc" id="L267">        assertEquals(&quot;10&quot;, new MutableByte((byte) 10).toString());</span>
+<span class="fc" id="L268">        assertEquals(&quot;-123&quot;, new MutableByte((byte) -123).toString());</span>
+<span class="fc" id="L269">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

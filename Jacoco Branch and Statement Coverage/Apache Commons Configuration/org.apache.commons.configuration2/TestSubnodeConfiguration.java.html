@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestSubnodeConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestSubnodeConfiguration.java</span></div><h1>TestSubnodeConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.Lookup;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.InMemoryNodeModel;
+import org.apache.commons.configuration2.tree.NodeSelector;
+import org.apache.commons.configuration2.tree.NodeStructureHelper;
+import org.apache.commons.configuration2.tree.TrackedNodeModel;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test case for SubnodeConfiguration.
+ *
+ */
+<span class="fc" id="L49">public class TestSubnodeConfiguration</span>
+{
+    /** The key used for the SubnodeConfiguration. */
+    private static final String SUB_KEY = &quot;tables.table(0)&quot;;
+
+    /** The selector used by the test configuration. */
+<span class="fc" id="L55">    private static final NodeSelector SELECTOR = new NodeSelector(SUB_KEY);</span>
+
+    /** The parent configuration. */
+    private BaseHierarchicalConfiguration parent;
+
+    /** The subnode configuration to be tested. */
+    private SubnodeConfiguration config;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L66">        parent = setUpParentConfig();</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Initializes the parent configuration. This method creates the typical
+     * structure of tables and fields nodes.
+     *
+     * @return the parent configuration
+     */
+    private static BaseHierarchicalConfiguration setUpParentConfig()
+    {
+<span class="fc" id="L77">        final BaseHierarchicalConfiguration conf =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L79">        appendTree(conf, NodeStructureHelper.ROOT_TABLES_TREE);</span>
+<span class="fc" id="L80">        return conf;</span>
+    }
+
+    /**
+     * Adds a tree structure to the root node of the given configuration.
+     *
+     * @param configuration the configuration
+     * @param root the root of the tree structure to be added
+     */
+    private static void appendTree(final BaseHierarchicalConfiguration configuration,
+            final ImmutableNode root)
+    {
+<span class="fc" id="L92">        configuration.addNodes(null, Collections.singleton(root));</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Performs a standard initialization of the subnode config to test.
+     */
+    private void setUpSubnodeConfig()
+    {
+<span class="fc" id="L100">        setUpSubnodeConfig(SUB_KEY);</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Initializes the test configuration using the specified key.
+     *
+     * @param key the key
+     */
+    private void setUpSubnodeConfig(final String key)
+    {
+<span class="fc" id="L110">        config = (SubnodeConfiguration) parent.configurationAt(key, true);</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Sets up the tracked model for the sub configuration.
+     *
+     * @param selector the selector
+     * @return the tracked model
+     */
+    private TrackedNodeModel setUpTrackedModel(final NodeSelector selector)
+    {
+<span class="fc" id="L121">        final InMemoryNodeModel parentModel = (InMemoryNodeModel) parent.getModel();</span>
+<span class="fc" id="L122">        parentModel.trackNode(selector, parent);</span>
+<span class="fc" id="L123">        return new TrackedNodeModel(parent, selector, true);</span>
+    }
+
+    /**
+     * Tests creation of a subnode config.
+     */
+    @Test
+    public void testInitSubNodeConfig()
+    {
+<span class="fc" id="L132">        setUpSubnodeConfig();</span>
+<span class="fc" id="L133">        assertSame(</span>
+                &quot;Wrong root node in subnode&quot;,
+<span class="fc" id="L135">                NodeStructureHelper.nodeForKey(parent.getModel()</span>
+<span class="fc" id="L136">                        .getNodeHandler().getRootNode(), &quot;tables/table(0)&quot;),</span>
+<span class="fc" id="L137">                config.getModel().getNodeHandler().getRootNode());</span>
+<span class="fc" id="L138">        assertSame(&quot;Wrong parent config&quot;, parent, config.getParent());</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Tests constructing a subnode configuration with a null parent. This
+     * should cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitSubNodeConfigWithNullParent()
+    {
+<span class="fc" id="L148">        config =</span>
+<span class="nc" id="L149">                new SubnodeConfiguration(null, setUpTrackedModel(SELECTOR)</span>
+                );
+<span class="nc" id="L151">    }</span>
+
+    /**
+     * Tests constructing a subnode configuration with a null node model. This
+     * should cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitSubNodeConfigWithNullNode()
+    {
+<span class="nc" id="L160">        config = new SubnodeConfiguration(parent, null);</span>
+<span class="nc" id="L161">    }</span>
+
+    /**
+     * Tests if properties of the sub node can be accessed.
+     */
+    @Test
+    public void testGetProperties()
+    {
+<span class="fc" id="L169">        setUpSubnodeConfig();</span>
+<span class="fc" id="L170">        checkSubConfigContent();</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Checks whether the sub configuration has the expected content.
+     */
+    private void checkSubConfigContent()
+    {
+<span class="fc" id="L178">        assertEquals(&quot;Wrong table name&quot;, NodeStructureHelper.table(0),</span>
+<span class="fc" id="L179">                config.getString(&quot;name&quot;));</span>
+<span class="fc" id="L180">        final List&lt;Object&gt; fields = config.getList(&quot;fields.field.name&quot;);</span>
+<span class="fc" id="L181">        assertEquals(&quot;Wrong number of fields&quot;,</span>
+<span class="fc" id="L182">                NodeStructureHelper.fieldsLength(0), fields.size());</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.fieldsLength(0); i++)</span>
+        {
+<span class="fc" id="L185">            assertEquals(&quot;Wrong field at position &quot; + i,</span>
+<span class="fc" id="L186">                    NodeStructureHelper.field(0, i), fields.get(i));</span>
+        }
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests setting of properties in both the parent and the subnode
+     * configuration and whether the changes are visible to each other.
+     */
+    @Test
+    public void testSetProperty()
+    {
+<span class="fc" id="L197">        setUpSubnodeConfig();</span>
+<span class="fc" id="L198">        config.setProperty(null, &quot;testTable&quot;);</span>
+<span class="fc" id="L199">        config.setProperty(&quot;name&quot;, NodeStructureHelper.table(0) + &quot;_tested&quot;);</span>
+<span class="fc" id="L200">        assertEquals(&quot;Root value was not set&quot;, &quot;testTable&quot;,</span>
+<span class="fc" id="L201">                parent.getString(&quot;tables.table(0)&quot;));</span>
+<span class="fc" id="L202">        assertEquals(&quot;Table name was not changed&quot;, NodeStructureHelper.table(0)</span>
+<span class="fc" id="L203">                + &quot;_tested&quot;, parent.getString(&quot;tables.table(0).name&quot;));</span>
+
+<span class="fc" id="L205">        parent.setProperty(&quot;tables.table(0).fields.field(1).name&quot;, &quot;testField&quot;);</span>
+<span class="fc" id="L206">        assertEquals(&quot;Field name was not changed&quot;, &quot;testField&quot;,</span>
+<span class="fc" id="L207">                config.getString(&quot;fields.field(1).name&quot;));</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Tests adding of properties.
+     */
+    @Test
+    public void testAddProperty()
+    {
+<span class="fc" id="L216">        setUpSubnodeConfig();</span>
+<span class="fc" id="L217">        config.addProperty(&quot;[@table-type]&quot;, &quot;test&quot;);</span>
+<span class="fc" id="L218">        assertEquals(&quot;Attribute not set&quot;, &quot;test&quot;,</span>
+<span class="fc" id="L219">                parent.getString(&quot;tables.table(0)[@table-type]&quot;));</span>
+
+<span class="fc" id="L221">        parent.addProperty(&quot;tables.table(0).fields.field(-1).name&quot;, &quot;newField&quot;);</span>
+<span class="fc" id="L222">        final List&lt;Object&gt; fields = config.getList(&quot;fields.field.name&quot;);</span>
+<span class="fc" id="L223">        assertEquals(&quot;New field was not added&quot;,</span>
+<span class="fc" id="L224">                NodeStructureHelper.fieldsLength(0) + 1, fields.size());</span>
+<span class="fc" id="L225">        assertEquals(&quot;Wrong last field&quot;, &quot;newField&quot;,</span>
+<span class="fc" id="L226">                fields.get(fields.size() - 1));</span>
+<span class="fc" id="L227">    }</span>
+
+    /**
+     * Tests listing the defined keys.
+     */
+    @Test
+    public void testGetKeys()
+    {
+<span class="fc" id="L235">        setUpSubnodeConfig();</span>
+<span class="fc" id="L236">        final Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L237">        keys.addAll(ConfigurationAssert.keysToList(config));</span>
+<span class="fc" id="L238">        assertEquals(&quot;Incorrect number of keys&quot;, 2, keys.size());</span>
+<span class="fc" id="L239">        assertTrue(&quot;Key 1 not contained&quot;, keys.contains(&quot;name&quot;));</span>
+<span class="fc" id="L240">        assertTrue(&quot;Key 2 not contained&quot;, keys.contains(&quot;fields.field.name&quot;));</span>
+<span class="fc" id="L241">    }</span>
+
+    /**
+     * Tests setting the exception on missing flag. The subnode config obtains
+     * this flag from its parent.
+     */
+    @Test(expected = NoSuchElementException.class)
+    public void testSetThrowExceptionOnMissing()
+    {
+<span class="fc" id="L250">        parent.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L251">        setUpSubnodeConfig();</span>
+<span class="fc" id="L252">        assertTrue(&quot;Exception flag not fetchted from parent&quot;,</span>
+<span class="fc" id="L253">                config.isThrowExceptionOnMissing());</span>
+<span class="nc" id="L254">        config.getString(&quot;non existing key&quot;);</span>
+<span class="nc" id="L255">    }</span>
+
+    /**
+     * Tests whether the exception flag can be set independently from the
+     * parent.
+     */
+    @Test
+    public void testSetThrowExceptionOnMissingAffectsParent()
+    {
+<span class="fc" id="L264">        parent.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L265">        setUpSubnodeConfig();</span>
+<span class="fc" id="L266">        config.setThrowExceptionOnMissing(false);</span>
+<span class="fc" id="L267">        assertTrue(&quot;Exception flag reset on parent&quot;,</span>
+<span class="fc" id="L268">                parent.isThrowExceptionOnMissing());</span>
+<span class="fc" id="L269">    }</span>
+
+    /**
+     * Tests manipulating the list delimiter handler. This object is derived
+     * from the parent.
+     */
+    @Test
+    public void testSetListDelimiterHandler()
+    {
+<span class="fc" id="L278">        final ListDelimiterHandler handler1 = new DefaultListDelimiterHandler('/');</span>
+<span class="fc" id="L279">        final ListDelimiterHandler handler2 = new DefaultListDelimiterHandler(';');</span>
+<span class="fc" id="L280">        parent.setListDelimiterHandler(handler1);</span>
+<span class="fc" id="L281">        setUpSubnodeConfig();</span>
+<span class="fc" id="L282">        parent.setListDelimiterHandler(handler2);</span>
+<span class="fc" id="L283">        assertEquals(&quot;List delimiter handler not obtained from parent&quot;,</span>
+<span class="fc" id="L284">                handler1, config.getListDelimiterHandler());</span>
+<span class="fc" id="L285">        config.addProperty(&quot;newProp&quot;, &quot;test1,test2/test3&quot;);</span>
+<span class="fc" id="L286">        assertEquals(&quot;List was incorrectly splitted&quot;, &quot;test1,test2&quot;,</span>
+<span class="fc" id="L287">                parent.getString(&quot;tables.table(0).newProp&quot;));</span>
+<span class="fc" id="L288">        config.setListDelimiterHandler(DisabledListDelimiterHandler.INSTANCE);</span>
+<span class="fc" id="L289">        assertEquals(&quot;List delimiter changed on parent&quot;, handler2,</span>
+<span class="fc" id="L290">                parent.getListDelimiterHandler());</span>
+<span class="fc" id="L291">    }</span>
+
+    /**
+     * Tests changing the expression engine.
+     */
+    @Test
+    public void testSetExpressionEngine()
+    {
+<span class="fc" id="L299">        parent.setExpressionEngine(new XPathExpressionEngine());</span>
+<span class="fc" id="L300">        setUpSubnodeConfig(&quot;tables/table[1]&quot;);</span>
+<span class="fc" id="L301">        assertEquals(&quot;Wrong field name&quot;, NodeStructureHelper.field(0, 1),</span>
+<span class="fc" id="L302">                config.getString(&quot;fields/field[2]/name&quot;));</span>
+<span class="fc" id="L303">        final Set&lt;String&gt; keys = ConfigurationAssert.keysToSet(config);</span>
+<span class="fc" id="L304">        assertEquals(&quot;Wrong number of keys&quot;, 2, keys.size());</span>
+<span class="fc" id="L305">        assertTrue(&quot;Key 1 not contained&quot;, keys.contains(&quot;name&quot;));</span>
+<span class="fc" id="L306">        assertTrue(&quot;Key 2 not contained&quot;, keys.contains(&quot;fields/field/name&quot;));</span>
+<span class="fc" id="L307">        config.setExpressionEngine(null);</span>
+<span class="fc" id="L308">        assertTrue(&quot;Expression engine reset on parent&quot;,</span>
+<span class="fc" id="L309">                parent.getExpressionEngine() instanceof XPathExpressionEngine);</span>
+<span class="fc" id="L310">    }</span>
+
+    /**
+     * Tests the configurationAt() method if updates are not supported.
+     */
+    @Test
+    public void testConfiguarationAtNoUpdates()
+    {
+<span class="fc" id="L318">        setUpSubnodeConfig();</span>
+<span class="fc" id="L319">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub2 =</span>
+<span class="fc" id="L320">                config.configurationAt(&quot;fields.field(1)&quot;);</span>
+<span class="fc" id="L321">        assertEquals(&quot;Wrong value of property&quot;,</span>
+<span class="fc" id="L322">                NodeStructureHelper.field(0, 1), sub2.getString(&quot;name&quot;));</span>
+<span class="fc" id="L323">        parent.setProperty(&quot;tables.table(0).fields.field(1).name&quot;, &quot;otherName&quot;);</span>
+<span class="fc" id="L324">        assertEquals(&quot;Change of parent is visible&quot;,</span>
+<span class="fc" id="L325">                NodeStructureHelper.field(0, 1), sub2.getString(&quot;name&quot;));</span>
+<span class="fc" id="L326">    }</span>
+
+    /**
+     * Tests configurationAt() if updates are supported.
+     */
+    @Test
+    public void testConfigurationAtWithUpdateSupport()
+    {
+<span class="fc" id="L334">        setUpSubnodeConfig();</span>
+<span class="fc" id="L335">        final SubnodeConfiguration sub2 =</span>
+<span class="fc" id="L336">                (SubnodeConfiguration) config.configurationAt(&quot;fields.field(1)&quot;, true);</span>
+<span class="fc" id="L337">        assertEquals(&quot;Wrong value of property&quot;,</span>
+<span class="fc" id="L338">                NodeStructureHelper.field(0, 1), sub2.getString(&quot;name&quot;));</span>
+<span class="fc" id="L339">        assertEquals(&quot;Wrong parent&quot;, config, sub2.getParent());</span>
+<span class="fc" id="L340">    }</span>
+
+    /**
+     * Tests interpolation features. The subnode config should use its parent
+     * for interpolation.
+     */
+    @Test
+    public void testInterpolation()
+    {
+<span class="fc" id="L349">        parent.addProperty(&quot;tablespaces.tablespace.name&quot;, &quot;default&quot;);</span>
+<span class="fc" id="L350">        parent.addProperty(&quot;tablespaces.tablespace(-1).name&quot;, &quot;test&quot;);</span>
+<span class="fc" id="L351">        parent.addProperty(&quot;tables.table(0).tablespace&quot;,</span>
+                &quot;${tablespaces.tablespace(0).name}&quot;);
+<span class="fc" id="L353">        assertEquals(&quot;Wrong interpolated tablespace&quot;, &quot;default&quot;,</span>
+<span class="fc" id="L354">                parent.getString(&quot;tables.table(0).tablespace&quot;));</span>
+
+<span class="fc" id="L356">        setUpSubnodeConfig();</span>
+<span class="fc" id="L357">        assertEquals(&quot;Wrong interpolated tablespace in subnode&quot;, &quot;default&quot;,</span>
+<span class="fc" id="L358">                config.getString(&quot;tablespace&quot;));</span>
+<span class="fc" id="L359">    }</span>
+
+    /**
+     * Helper method for testing interpolation facilities between a sub and its
+     * parent configuration.
+     *
+     * @param withUpdates the supports updates flag
+     */
+    private void checkInterpolationFromConfigurationAt(final boolean withUpdates)
+    {
+<span class="fc" id="L369">        parent.addProperty(&quot;base.dir&quot;, &quot;/home/foo&quot;);</span>
+<span class="fc" id="L370">        parent.addProperty(&quot;test.absolute.dir.dir1&quot;, &quot;${base.dir}/path1&quot;);</span>
+<span class="fc" id="L371">        parent.addProperty(&quot;test.absolute.dir.dir2&quot;, &quot;${base.dir}/path2&quot;);</span>
+<span class="fc" id="L372">        parent.addProperty(&quot;test.absolute.dir.dir3&quot;, &quot;${base.dir}/path3&quot;);</span>
+
+<span class="fc" id="L374">        final Configuration sub =</span>
+<span class="fc" id="L375">                parent.configurationAt(&quot;test.absolute.dir&quot;, withUpdates);</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">        for (int i = 1; i &lt; 4; i++)</span>
+        {
+<span class="fc" id="L378">            assertEquals(&quot;Wrong interpolation in parent&quot;, &quot;/home/foo/path&quot; + i,</span>
+<span class="fc" id="L379">                    parent.getString(&quot;test.absolute.dir.dir&quot; + i));</span>
+<span class="fc" id="L380">            assertEquals(&quot;Wrong interpolation in sub&quot;, &quot;/home/foo/path&quot; + i,</span>
+<span class="fc" id="L381">                    sub.getString(&quot;dir&quot; + i));</span>
+        }
+<span class="fc" id="L383">    }</span>
+
+    /**
+     * Tests whether interpolation works for a sub configuration obtained via
+     * configurationAt() if updates are not supported.
+     */
+    @Test
+    public void testInterpolationFromConfigurationAtNoUpdateSupport()
+    {
+<span class="fc" id="L392">        checkInterpolationFromConfigurationAt(false);</span>
+<span class="fc" id="L393">    }</span>
+
+    /**
+     * Tests whether interpolation works for a sub configuration obtained via
+     * configurationAt() if updates are supported.
+     */
+    @Test
+    public void testInterpolationFromConfigurationAtWithUpdateSupport()
+    {
+<span class="fc" id="L402">        checkInterpolationFromConfigurationAt(true);</span>
+<span class="fc" id="L403">    }</span>
+
+    /**
+     * An additional test for interpolation when the configurationAt() method is
+     * involved for a local interpolation.
+     */
+    @Test
+    public void testLocalInterpolationFromConfigurationAt()
+    {
+<span class="fc" id="L412">        parent.addProperty(&quot;base.dir&quot;, &quot;/home/foo&quot;);</span>
+<span class="fc" id="L413">        parent.addProperty(&quot;test.absolute.dir.dir1&quot;, &quot;${base.dir}/path1&quot;);</span>
+<span class="fc" id="L414">        parent.addProperty(&quot;test.absolute.dir.dir2&quot;, &quot;${dir1}&quot;);</span>
+
+<span class="fc" id="L416">        final Configuration sub = parent.configurationAt(&quot;test.absolute.dir&quot;);</span>
+<span class="fc" id="L417">        assertEquals(&quot;Wrong interpolation in subnode&quot;, &quot;/home/foo/path1&quot;,</span>
+<span class="fc" id="L418">                sub.getString(&quot;dir1&quot;));</span>
+<span class="fc" id="L419">        assertEquals(&quot;Wrong local interpolation in subnode&quot;, &quot;/home/foo/path1&quot;,</span>
+<span class="fc" id="L420">                sub.getString(&quot;dir2&quot;));</span>
+<span class="fc" id="L421">    }</span>
+
+    /**
+     * Tests manipulating the interpolator.
+     */
+    @Test
+    public void testInterpolator()
+    {
+<span class="fc" id="L429">        parent.addProperty(&quot;tablespaces.tablespace.name&quot;, &quot;default&quot;);</span>
+<span class="fc" id="L430">        parent.addProperty(&quot;tablespaces.tablespace(-1).name&quot;, &quot;test&quot;);</span>
+
+<span class="fc" id="L432">        setUpSubnodeConfig();</span>
+<span class="fc" id="L433">        InterpolationTestHelper.testGetInterpolator(config);</span>
+<span class="fc" id="L434">    }</span>
+
+    @Test
+    public void testLocalLookupsInInterpolatorAreInherited()
+    {
+<span class="fc" id="L439">        parent.addProperty(&quot;tablespaces.tablespace.name&quot;, &quot;default&quot;);</span>
+<span class="fc" id="L440">        parent.addProperty(&quot;tablespaces.tablespace(-1).name&quot;, &quot;test&quot;);</span>
+<span class="fc" id="L441">        parent.addProperty(&quot;tables.table(0).var&quot;, &quot;${brackets:x}&quot;);</span>
+
+<span class="fc" id="L443">        final ConfigurationInterpolator interpolator = parent.getInterpolator();</span>
+<span class="fc" id="L444">        interpolator.registerLookup(&quot;brackets&quot;, new Lookup() {</span>
+
+            @Override
+            public String lookup(final String key) {
+<span class="fc" id="L448">                return &quot;(&quot; + key + &quot;)&quot;;</span>
+            }
+
+        });
+<span class="fc" id="L452">        setUpSubnodeConfig();</span>
+<span class="fc" id="L453">        assertEquals(&quot;Local lookup was not inherited&quot;, &quot;(x)&quot;,</span>
+<span class="fc" id="L454">                config.getString(&quot;var&quot;, &quot;&quot;));</span>
+<span class="fc" id="L455">    }</span>
+
+    /**
+     * Tests a manipulation of the parent configuration that causes the subnode
+     * configuration to become invalid. In this case the sub config should be
+     * detached and keep its old values.
+     */
+    @Test
+    public void testParentChangeDetach()
+    {
+<span class="fc" id="L465">        setUpSubnodeConfig();</span>
+<span class="fc" id="L466">        parent.clear();</span>
+<span class="fc" id="L467">        checkSubConfigContent();</span>
+<span class="fc" id="L468">    }</span>
+
+    /**
+     * Tests detaching a subnode configuration if an exception is thrown during
+     * reconstruction. This can happen e.g. if the expression engine is changed
+     * for the parent.
+     */
+    @Test
+    public void testParentChangeDetatchException()
+    {
+<span class="fc" id="L478">        setUpSubnodeConfig();</span>
+<span class="fc" id="L479">        parent.setExpressionEngine(new XPathExpressionEngine());</span>
+<span class="fc" id="L480">        parent.addProperty(&quot;newProp&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L481">        checkSubConfigContent();</span>
+<span class="fc" id="L482">    }</span>
+
+    /**
+     * Tests whether a clone of a sub configuration can be created.
+     */
+    @Test
+    public void testClone()
+    {
+<span class="fc" id="L490">        setUpSubnodeConfig();</span>
+<span class="fc" id="L491">        final SubnodeConfiguration copy = (SubnodeConfiguration) config.clone();</span>
+<span class="fc" id="L492">        assertNotSame(&quot;Same model&quot;, config.getModel(), copy.getModel());</span>
+<span class="fc" id="L493">        final TrackedNodeModel subModel = (TrackedNodeModel) copy.getModel();</span>
+<span class="fc" id="L494">        assertEquals(&quot;Wrong selector&quot;, SELECTOR, subModel.getSelector());</span>
+<span class="fc" id="L495">        final InMemoryNodeModel parentModel = (InMemoryNodeModel) parent.getModel();</span>
+<span class="fc" id="L496">        assertEquals(&quot;Wrong parent model&quot;, parentModel,</span>
+<span class="fc" id="L497">                subModel.getParentModel());</span>
+
+        // Check whether the track count was increased
+<span class="fc" id="L500">        parentModel.untrackNode(SELECTOR);</span>
+<span class="fc" id="L501">        parentModel.untrackNode(SELECTOR);</span>
+<span class="fc" id="L502">        assertTrue(&quot;Wrong finalize flag&quot;,</span>
+<span class="fc" id="L503">                subModel.isReleaseTrackedNodeOnFinalize());</span>
+<span class="fc" id="L504">    }</span>
+
+    /**
+     * Tests whether the configuration can be closed.
+     */
+    @Test
+    public void testClose()
+    {
+<span class="fc" id="L512">        final TrackedNodeModel model = EasyMock.createMock(TrackedNodeModel.class);</span>
+<span class="fc" id="L513">        EasyMock.expect(model.getSelector()).andReturn(SELECTOR).anyTimes();</span>
+<span class="fc" id="L514">        model.close();</span>
+<span class="fc" id="L515">        EasyMock.replay(model);</span>
+
+<span class="fc" id="L517">        final SubnodeConfiguration config = new SubnodeConfiguration(parent, model);</span>
+<span class="fc" id="L518">        config.close();</span>
+<span class="fc" id="L519">        EasyMock.verify(model);</span>
+<span class="fc" id="L520">    }</span>
+
+    /**
+     * Tests whether a correct node model is returned for the sub
+     * configuration. This test is related to CONFIGURATION-670.
+     */
+    @Test
+    public void testGetNodeModel()
+    {
+<span class="fc" id="L529">        setUpSubnodeConfig();</span>
+<span class="fc" id="L530">        final InMemoryNodeModel nodeModel = config.getNodeModel();</span>
+
+<span class="fc" id="L532">        assertEquals(&quot;Wrong root node&quot;, &quot;table&quot;,</span>
+<span class="fc" id="L533">                nodeModel.getNodeHandler().getRootNode().getNodeName());</span>
+<span class="fc" id="L534">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

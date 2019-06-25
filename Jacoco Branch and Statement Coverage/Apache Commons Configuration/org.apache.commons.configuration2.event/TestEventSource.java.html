@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestEventSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.event</a> &gt; <span class="el_source">TestEventSource.java</span></div><h1>TestEventSource.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.event;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for BaseEventSource.
+ *
+ */
+<span class="fc" id="L34">public class TestEventSource</span>
+{
+    /** Constant for the event property name. */
+<span class="fc" id="L37">    private final String TEST_PROPNAME = &quot;test.property.name&quot;;</span>
+
+    /** Constant for the event property value. */
+<span class="fc" id="L40">    private static final Object TEST_PROPVALUE = &quot;a test property value&quot;;</span>
+
+    /** The object under test. */
+    private CountingEventSource source;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L48">        source = new CountingEventSource();</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * Tests a newly created source object.
+     */
+    @Test
+    public void testInit()
+    {
+<span class="fc" id="L57">        assertTrue(&quot;Listeners list is not empty&quot;, source</span>
+<span class="fc" id="L58">                .getEventListenerRegistrations().isEmpty());</span>
+<span class="fc" id="L59">        assertFalse(&quot;Removing listener&quot;, source.removeEventListener(</span>
+                ConfigurationEvent.ANY, new EventListenerTestImpl(null)));
+<span class="fc" id="L61">        assertFalse(&quot;Detail events are enabled&quot;, source.isDetailEvents());</span>
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Tests registering a new listener.
+     */
+    @Test
+    public void testAddEventListener()
+    {
+<span class="fc" id="L70">        final EventListenerTestImpl l = new EventListenerTestImpl(this);</span>
+<span class="fc" id="L71">        source.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L72">        final Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; listeners =</span>
+<span class="fc" id="L73">                source.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L74">        assertEquals(&quot;Wrong number of listeners&quot;, 1, listeners.size());</span>
+<span class="fc" id="L75">        assertTrue(&quot;Listener not in list&quot;, listeners.contains(l));</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Tests adding an undefined configuration listener. This should cause an
+     * exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddNullEventListener()
+    {
+<span class="nc" id="L85">        source.addEventListener(ConfigurationEvent.ANY, null);</span>
+<span class="nc" id="L86">    }</span>
+
+    /**
+     * Tests removing a listener.
+     */
+    @Test
+    public void testRemoveEventListener()
+    {
+<span class="fc" id="L94">        final EventListenerTestImpl l = new EventListenerTestImpl(this);</span>
+<span class="fc" id="L95">        assertFalse(&quot;Listener can be removed?&quot;, source</span>
+<span class="fc" id="L96">                .removeEventListener(ConfigurationEvent.ANY, l));</span>
+<span class="fc" id="L97">        source.addEventListener(ConfigurationEvent.ADD_NODES, new EventListenerTestImpl(this));</span>
+<span class="fc" id="L98">        source.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L99">        assertFalse(&quot;Unknown listener can be removed&quot;, source</span>
+<span class="fc" id="L100">                .removeEventListener(ConfigurationEvent.ANY, new EventListenerTestImpl(null)));</span>
+<span class="fc" id="L101">        assertTrue(&quot;Could not remove listener&quot;, source</span>
+<span class="fc" id="L102">                .removeEventListener(ConfigurationEvent.ANY, l));</span>
+<span class="fc" id="L103">        assertFalse(&quot;Listener still in list&quot;, source</span>
+<span class="fc" id="L104">                .getEventListeners(ConfigurationEvent.ANY).contains(l));</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Tests if a null listener can be removed. This should be a no-op.
+     */
+    @Test
+    public void testRemoveNullEventListener()
+    {
+<span class="fc" id="L113">        source.addEventListener(ConfigurationEvent.ANY, new EventListenerTestImpl(null));</span>
+<span class="fc" id="L114">        assertFalse(&quot;Null listener can be removed&quot;, source</span>
+<span class="fc" id="L115">                .removeEventListener(ConfigurationEvent.ANY, null));</span>
+<span class="fc" id="L116">        assertEquals(&quot;Listener list was modified&quot;, 1, source</span>
+<span class="fc" id="L117">                .getEventListeners(ConfigurationEvent.ANY).size());</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Tests whether the listeners list is read only.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetEventListenersUpdate()
+    {
+<span class="fc" id="L126">        source.addEventListener(ConfigurationEvent.ANY,</span>
+                new EventListenerTestImpl(null));
+<span class="fc" id="L128">        final Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; list =</span>
+<span class="fc" id="L129">                source.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="nc" id="L130">        list.clear();</span>
+<span class="nc" id="L131">    }</span>
+
+    /**
+     * Tests that the collection returned by getEventListeners() is
+     * really a snapshot. A later added listener must not be visible.
+     */
+    @Test
+    public void testGetEventListenersAddNew()
+    {
+<span class="fc" id="L140">        final Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; list =</span>
+<span class="fc" id="L141">                source.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L142">        source.addEventListener(ConfigurationEvent.ANY,</span>
+                new EventListenerTestImpl(null));
+<span class="fc" id="L144">        assertTrue(&quot;Listener snapshot not empty&quot;, list.isEmpty());</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * Tests enabling and disabling the detail events flag.
+     */
+    @Test
+    public void testSetDetailEvents()
+    {
+<span class="fc" id="L153">        source.setDetailEvents(true);</span>
+<span class="fc" id="L154">        assertTrue(&quot;Detail events are disabled&quot;, source.isDetailEvents());</span>
+<span class="fc" id="L155">        source.setDetailEvents(true);</span>
+<span class="fc" id="L156">        source.setDetailEvents(false);</span>
+<span class="fc" id="L157">        assertTrue(&quot;Detail events are disabled again&quot;, source.isDetailEvents());</span>
+<span class="fc" id="L158">        source.setDetailEvents(false);</span>
+<span class="fc" id="L159">        assertFalse(&quot;Detail events are still enabled&quot;, source.isDetailEvents());</span>
+<span class="fc" id="L160">    }</span>
+
+    /**
+     * Tests delivering an event to a listener.
+     */
+    @Test
+    public void testFireEvent()
+    {
+<span class="fc" id="L168">        final EventListenerTestImpl l = new EventListenerTestImpl(source);</span>
+<span class="fc" id="L169">        source.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L170">        source.fireEvent(ConfigurationEvent.ADD_PROPERTY, TEST_PROPNAME,</span>
+                TEST_PROPVALUE, true);
+<span class="fc" id="L172">        l.checkEvent(ConfigurationEvent.ADD_PROPERTY, TEST_PROPNAME,</span>
+                TEST_PROPVALUE, true);
+<span class="fc" id="L174">        l.done();</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Tests firing an event if there are no listeners.
+     */
+    @Test
+    public void testFireEventNoListeners()
+    {
+<span class="fc" id="L183">        source.fireEvent(ConfigurationEvent.ADD_NODES, TEST_PROPNAME,</span>
+                TEST_PROPVALUE, false);
+<span class="fc" id="L185">        assertEquals(&quot;An event object was created&quot;, 0, source.eventCount);</span>
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Tests generating a detail event if detail events are not allowed.
+     */
+    @Test
+    public void testFireEventNoDetails()
+    {
+<span class="fc" id="L194">        final EventListenerTestImpl l = new EventListenerTestImpl(source);</span>
+<span class="fc" id="L195">        source.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L196">        source.setDetailEvents(false);</span>
+<span class="fc" id="L197">        source.fireEvent(ConfigurationEvent.SET_PROPERTY, TEST_PROPNAME, TEST_PROPVALUE, false);</span>
+<span class="fc" id="L198">        assertEquals(&quot;Event object was created&quot;, 0, source.eventCount);</span>
+<span class="fc" id="L199">        l.done();</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Tests whether an event listener can deregister itself in reaction of a
+     * delivered event.
+     */
+    @Test
+    public void testRemoveListenerInFireEvent()
+    {
+<span class="fc" id="L209">        final EventListener&lt;ConfigurationEvent&gt; lstRemove = new EventListener&lt;ConfigurationEvent&gt;()</span>
+<span class="fc" id="L210">        {</span>
+            @Override
+            public void onEvent(final ConfigurationEvent event)
+            {
+<span class="fc" id="L214">                source.removeEventListener(ConfigurationEvent.ANY, this);</span>
+<span class="fc" id="L215">            }</span>
+        };
+
+<span class="fc" id="L218">        source.addEventListener(ConfigurationEvent.ANY, lstRemove);</span>
+<span class="fc" id="L219">        final EventListenerTestImpl l = new EventListenerTestImpl(source);</span>
+<span class="fc" id="L220">        source.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L221">        source.fireEvent(ConfigurationEvent.ADD_PROPERTY, TEST_PROPNAME,</span>
+                TEST_PROPVALUE, false);
+<span class="fc" id="L223">        l.checkEvent(ConfigurationEvent.ADD_PROPERTY, TEST_PROPNAME,</span>
+                TEST_PROPVALUE, false);
+<span class="fc" id="L225">        assertEquals(&quot;Listener was not removed&quot;, 1,</span>
+<span class="fc" id="L226">                source.getEventListeners(ConfigurationEvent.ANY).size());</span>
+<span class="fc" id="L227">    }</span>
+
+    /**
+     * Tests delivering an error event to a listener.
+     */
+    @Test
+    public void testFireError()
+    {
+<span class="fc" id="L235">        final ErrorListenerTestImpl lstRead = new ErrorListenerTestImpl(source);</span>
+<span class="fc" id="L236">        final ErrorListenerTestImpl lstWrite = new ErrorListenerTestImpl(source);</span>
+<span class="fc" id="L237">        final ErrorListenerTestImpl lstAll = new ErrorListenerTestImpl(source);</span>
+<span class="fc" id="L238">        source.addEventListener(ConfigurationErrorEvent.READ, lstRead);</span>
+<span class="fc" id="L239">        source.addEventListener(ConfigurationErrorEvent.WRITE, lstWrite);</span>
+<span class="fc" id="L240">        source.addEventListener(ConfigurationErrorEvent.ANY, lstAll);</span>
+<span class="fc" id="L241">        final Exception testException = new Exception(&quot;A test&quot;);</span>
+
+<span class="fc" id="L243">        source.fireError(ConfigurationErrorEvent.WRITE,</span>
+                ConfigurationEvent.ADD_PROPERTY, TEST_PROPNAME, TEST_PROPVALUE,
+                testException);
+<span class="fc" id="L246">        lstRead.done();</span>
+<span class="fc" id="L247">        assertEquals(&quot;Wrong exception (1)&quot;, testException, lstWrite.checkEvent(</span>
+                ConfigurationErrorEvent.WRITE, ConfigurationEvent.ADD_PROPERTY,
+                TEST_PROPNAME, TEST_PROPVALUE));
+<span class="fc" id="L250">        lstWrite.done();</span>
+<span class="fc" id="L251">        assertEquals(&quot;Wrong exception (2)&quot;, testException, lstAll.checkEvent(</span>
+                ConfigurationErrorEvent.WRITE, ConfigurationEvent.ADD_PROPERTY,
+                TEST_PROPNAME, TEST_PROPVALUE));
+<span class="fc" id="L254">        lstAll.done();</span>
+<span class="fc" id="L255">        assertEquals(&quot;Wrong number of error events created&quot;, 1,</span>
+                source.errorCount);
+<span class="fc" id="L257">    }</span>
+
+    /**
+     * Tests firing an error event if there are no error listeners.
+     */
+    @Test
+    public void testFireErrorNoListeners()
+    {
+<span class="fc" id="L265">        source.fireError(ConfigurationErrorEvent.ANY, ConfigurationEvent.ANY,</span>
+                TEST_PROPNAME, TEST_PROPVALUE, new Exception());
+<span class="fc" id="L267">        assertEquals(&quot;An error event object was created&quot;, 0, source.errorCount);</span>
+<span class="fc" id="L268">    }</span>
+
+    /**
+     * Tests cloning an event source object. The registered listeners should not
+     * be registered at the clone.
+     */
+    @Test
+    public void testClone() throws CloneNotSupportedException
+    {
+<span class="fc" id="L277">        source.addEventListener(ConfigurationEvent.ANY, new EventListenerTestImpl(source));</span>
+<span class="fc" id="L278">        final BaseEventSource copy = (BaseEventSource) source.clone();</span>
+<span class="fc" id="L279">        assertTrue(&quot;Configuration listeners registered for clone&quot;, copy</span>
+<span class="fc" id="L280">                .getEventListenerRegistrations().isEmpty());</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Tests whether all event listeners can be removed.
+     */
+    @Test
+    public void testClearEventListeners()
+    {
+<span class="fc" id="L289">        source.addEventListener(ConfigurationEvent.ANY,</span>
+                new EventListenerTestImpl(source));
+<span class="fc" id="L291">        source.addEventListener(ConfigurationEvent.ANY_HIERARCHICAL,</span>
+                new EventListenerTestImpl(source));
+
+<span class="fc" id="L294">        source.clearEventListeners();</span>
+<span class="fc" id="L295">        assertTrue(&quot;Got ANY listeners&quot;,</span>
+<span class="fc" id="L296">                source.getEventListeners(ConfigurationEvent.ANY).isEmpty());</span>
+<span class="fc" id="L297">        assertTrue(&quot;Got HIERARCHICAL listeners&quot;,</span>
+<span class="fc" id="L298">                source.getEventListeners(ConfigurationEvent.ANY_HIERARCHICAL)</span>
+<span class="fc" id="L299">                        .isEmpty());</span>
+<span class="fc" id="L300">    }</span>
+
+    /**
+     * Tests whether event listeners can be copied to another source.
+     */
+    @Test
+    public void testCopyEventListeners()
+    {
+<span class="fc" id="L308">        final EventListenerTestImpl l1 = new EventListenerTestImpl(source);</span>
+<span class="fc" id="L309">        final EventListenerTestImpl l2 = new EventListenerTestImpl(source);</span>
+<span class="fc" id="L310">        source.addEventListener(ConfigurationEvent.ANY, l1);</span>
+<span class="fc" id="L311">        source.addEventListener(ConfigurationEvent.ANY_HIERARCHICAL, l2);</span>
+
+<span class="fc" id="L313">        final BaseEventSource source2 = new BaseEventSource();</span>
+<span class="fc" id="L314">        source.copyEventListeners(source2);</span>
+<span class="fc" id="L315">        Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; listeners =</span>
+<span class="fc" id="L316">                source2.getEventListeners(ConfigurationEvent.ANY_HIERARCHICAL);</span>
+<span class="fc" id="L317">        assertEquals(&quot;Wrong number of listeners (1)&quot;, 2, listeners.size());</span>
+<span class="fc" id="L318">        assertTrue(&quot;l1 not found&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L319">        assertTrue(&quot;l2 not found&quot;, listeners.contains(l2));</span>
+<span class="fc" id="L320">        listeners = source2.getEventListeners(ConfigurationEvent.ANY);</span>
+<span class="fc" id="L321">        assertEquals(&quot;Wrong number of listeners (2)&quot;, 1, listeners.size());</span>
+<span class="fc" id="L322">        assertTrue(&quot;Wrong listener&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L323">    }</span>
+
+    /**
+     * Tries to copy event listeners to a null source.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCopyEventListenersNullSource()
+    {
+<span class="nc" id="L331">        source.copyEventListeners(null);</span>
+<span class="nc" id="L332">    }</span>
+
+    /**
+     * Tests whether all error listeners can be cleared.
+     */
+    @Test
+    public void testClearErrorListeners()
+    {
+<span class="fc" id="L340">        final EventListener&lt;ConfigurationEvent&gt; cl = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L341">        final ErrorListenerTestImpl el1 = new ErrorListenerTestImpl(null);</span>
+<span class="fc" id="L342">        final ErrorListenerTestImpl el2 = new ErrorListenerTestImpl(null);</span>
+<span class="fc" id="L343">        final ErrorListenerTestImpl el3 = new ErrorListenerTestImpl(null);</span>
+<span class="fc" id="L344">        source.addEventListener(ConfigurationErrorEvent.READ, el1);</span>
+<span class="fc" id="L345">        source.addEventListener(ConfigurationErrorEvent.ANY, el2);</span>
+<span class="fc" id="L346">        source.addEventListener(ConfigurationEvent.ANY, cl);</span>
+<span class="fc" id="L347">        source.addEventListener(ConfigurationErrorEvent.WRITE, el3);</span>
+
+<span class="fc" id="L349">        source.clearErrorListeners();</span>
+<span class="fc" id="L350">        final List&lt;EventListenerRegistrationData&lt;?&gt;&gt; regs =</span>
+<span class="fc" id="L351">                source.getEventListenerRegistrations();</span>
+<span class="fc" id="L352">        assertEquals(&quot;Wrong number of event listener registrations&quot;, 1,</span>
+<span class="fc" id="L353">                regs.size());</span>
+<span class="fc" id="L354">        assertSame(&quot;Wrong remaining listener&quot;, cl, regs.get(0).getListener());</span>
+<span class="fc" id="L355">    }</span>
+
+    /**
+     * A specialized event source implementation that counts the number of
+     * created event objects. It is used to test whether the
+     * {@code fireEvent()} methods only creates event objects if
+     * necessary. It also allows testing the clone() operation.
+     */
+    private static class CountingEventSource extends BaseEventSource implements Cloneable
+    {
+        int eventCount;
+
+        int errorCount;
+
+        @Override
+        protected &lt;T extends ConfigurationEvent&gt; ConfigurationEvent createEvent(
+                final EventType&lt;T&gt; eventType, final String propName, final Object propValue,
+                final boolean before)
+        {
+<span class="fc" id="L374">            eventCount++;</span>
+<span class="fc" id="L375">            return super.createEvent(eventType, propName, propValue, before);</span>
+        }
+
+        @Override
+        protected ConfigurationErrorEvent createErrorEvent(
+                final EventType&lt;? extends ConfigurationErrorEvent&gt; type,
+                final EventType&lt;?&gt; opType, final String propName, final Object propValue,
+                final Throwable ex)
+        {
+<span class="fc" id="L384">            errorCount++;</span>
+<span class="fc" id="L385">            return super</span>
+<span class="fc" id="L386">                    .createErrorEvent(type, opType, propName, propValue, ex);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

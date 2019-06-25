@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationInterpolator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.interpol</a> &gt; <span class="el_source">TestConfigurationInterpolator.java</span></div><h1>TestConfigurationInterpolator.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.interpol;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for ConfigurationInterpolator.
+ *
+ */
+<span class="fc" id="L41">public class TestConfigurationInterpolator</span>
+{
+    /** Constant for a test variable prefix. */
+    private static final String TEST_PREFIX = &quot;prefix&quot;;
+
+    /** Constant for a test variable name. */
+    private static final String TEST_NAME = &quot;varname&quot;;
+
+    /** Constant for the value of the test variable. */
+    private static final String TEST_VALUE = &quot;TestVariableValue&quot;;
+
+    /** Stores the object to be tested. */
+    private ConfigurationInterpolator interpolator;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L58">        interpolator = new ConfigurationInterpolator();</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * Creates a lookup object that can resolve the test variable (and nothing else).
+     *
+     * @return the test lookup object
+     */
+    private static Lookup setUpTestLookup()
+    {
+<span class="fc" id="L68">        return setUpTestLookup(TEST_NAME, TEST_VALUE);</span>
+    }
+
+    /**
+     * Creates a lookup object that can resolve the specified variable (and
+     * nothing else).
+     *
+     * @param var the variable name
+     * @param value the value of this variable
+     * @return the test lookup object
+     */
+    private static Lookup setUpTestLookup(final String var, final Object value)
+    {
+<span class="fc" id="L81">        final Lookup lookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L82">        EasyMock.expect(lookup.lookup(EasyMock.anyObject(String.class)))</span>
+<span class="fc" id="L83">                .andAnswer(new IAnswer&lt;Object&gt;()</span>
+<span class="fc" id="L84">                {</span>
+                    @Override
+                    public Object answer() throws Throwable
+                    {
+<span class="fc bfc" id="L88" title="All 2 branches covered.">                        if (var.equals(EasyMock.getCurrentArguments()[0]))</span>
+                        {
+<span class="fc" id="L90">                            return value;</span>
+                        }
+<span class="fc" id="L92">                        return null;</span>
+                    }
+<span class="fc" id="L94">                }).anyTimes();</span>
+<span class="fc" id="L95">        EasyMock.replay(lookup);</span>
+<span class="fc" id="L96">        return lookup;</span>
+    }
+
+    /**
+     * Tests creating an instance. Does it contain some predefined lookups?
+     */
+    @Test
+    public void testInit()
+    {
+<span class="fc" id="L105">        assertTrue(&quot;A default lookup is set&quot;, interpolator.getDefaultLookups().isEmpty());</span>
+<span class="fc" id="L106">        assertTrue(&quot;Got predefined lookups&quot;, interpolator.getLookups().isEmpty());</span>
+<span class="fc" id="L107">        assertNull(&quot;Got a parent interpolator&quot;, interpolator.getParentInterpolator());</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Tests registering a lookup object at an instance.
+     */
+    @Test
+    public void testRegisterLookup()
+    {
+<span class="fc" id="L116">        final Lookup lookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L117">        EasyMock.replay(lookup);</span>
+<span class="fc" id="L118">        interpolator.registerLookup(TEST_PREFIX, lookup);</span>
+<span class="fc" id="L119">        assertSame(&quot;New lookup not registered&quot;, lookup, interpolator</span>
+<span class="fc" id="L120">                .getLookups().get(TEST_PREFIX));</span>
+<span class="fc" id="L121">        assertTrue(&quot;Not in prefix set&quot;,</span>
+<span class="fc" id="L122">                interpolator.prefixSet().contains(TEST_PREFIX));</span>
+<span class="fc" id="L123">        assertTrue(&quot;Default lookups were changed&quot;, interpolator</span>
+<span class="fc" id="L124">                .getDefaultLookups().isEmpty());</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Tests registering a null lookup object. This should cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterLookupNull()
+    {
+<span class="nc" id="L133">        interpolator.registerLookup(TEST_PREFIX, null);</span>
+<span class="nc" id="L134">    }</span>
+
+    /**
+     * Tests registering a lookup object for an undefined prefix. This should
+     * cause an exception.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterLookupNullPrefix()
+    {
+<span class="nc" id="L143">        interpolator.registerLookup(null, EasyMock.createMock(Lookup.class));</span>
+<span class="nc" id="L144">    }</span>
+
+    /**
+     * Tests deregistering a lookup object.
+     */
+    @Test
+    public void testDeregisterLookup()
+    {
+<span class="fc" id="L152">        final Lookup lookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L153">        EasyMock.replay(lookup);</span>
+<span class="fc" id="L154">        interpolator.registerLookup(TEST_PREFIX, lookup);</span>
+<span class="fc" id="L155">        assertTrue(&quot;Derigstration not successfull&quot;, interpolator</span>
+<span class="fc" id="L156">                .deregisterLookup(TEST_PREFIX));</span>
+<span class="fc" id="L157">        assertFalse(&quot;Deregistered prefix still contained&quot;, interpolator</span>
+<span class="fc" id="L158">                .prefixSet().contains(TEST_PREFIX));</span>
+<span class="fc" id="L159">        assertTrue(&quot;Lookups not empty&quot;, interpolator.getLookups().isEmpty());</span>
+<span class="fc" id="L160">    }</span>
+
+    /**
+     * Tests deregistering an unknown lookup object.
+     */
+    @Test
+    public void testDeregisterLookupNonExisting()
+    {
+<span class="fc" id="L168">        assertFalse(&quot;Could deregister unknown lookup&quot;, interpolator</span>
+<span class="fc" id="L169">                .deregisterLookup(TEST_PREFIX));</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Tests whether a variable can be resolved using the associated lookup
+     * object. The lookup is identified by the variable's prefix.
+     */
+    @Test
+    public void testResolveWithPrefix()
+    {
+<span class="fc" id="L179">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L180">        assertEquals(&quot;Wrong variable value&quot;, TEST_VALUE, interpolator</span>
+<span class="fc" id="L181">                .resolve(TEST_PREFIX + ':' + TEST_NAME));</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Tests the behavior of the lookup method for variables with an unknown
+     * prefix. These variables should not be resolved.
+     */
+    @Test
+    public void testResolveWithUnknownPrefix()
+    {
+<span class="fc" id="L191">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L192">        assertNull(&quot;Variable could be resolved&quot;, interpolator</span>
+<span class="fc" id="L193">                .resolve(&quot;UnknownPrefix:&quot; + TEST_NAME));</span>
+<span class="fc" id="L194">        assertNull(&quot;Variable with empty prefix could be resolved&quot;, interpolator</span>
+<span class="fc" id="L195">                .resolve(&quot;:&quot; + TEST_NAME));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests looking up a variable without a prefix. This should trigger the
+     * default lookup object.
+     */
+    @Test
+    public void testResolveDefault()
+    {
+<span class="fc" id="L205">        final Lookup l1 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L206">        final Lookup l2 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L207">        final Lookup l3 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L208">        EasyMock.expect(l1.lookup(TEST_NAME)).andReturn(null);</span>
+<span class="fc" id="L209">        EasyMock.expect(l2.lookup(TEST_NAME)).andReturn(TEST_VALUE);</span>
+<span class="fc" id="L210">        EasyMock.replay(l1, l2, l3);</span>
+<span class="fc" id="L211">        interpolator.addDefaultLookups(Arrays.asList(l1, l2, l3));</span>
+<span class="fc" id="L212">        assertEquals(&quot;Wrong variable value&quot;, TEST_VALUE, interpolator</span>
+<span class="fc" id="L213">                .resolve(TEST_NAME));</span>
+<span class="fc" id="L214">        EasyMock.verify(l1, l2, l3);</span>
+<span class="fc" id="L215">    }</span>
+
+    /**
+     * Tests looking up a variable without a prefix when no default lookup is
+     * specified. Result should be null in this case.
+     */
+    @Test
+    public void testResolveNoDefault()
+    {
+<span class="fc" id="L224">        assertNull(&quot;Variable could be resolved&quot;, interpolator.resolve(TEST_NAME));</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tests the empty variable prefix. This is a special case, but legal.
+     */
+    @Test
+    public void testResolveEmptyPrefix()
+    {
+<span class="fc" id="L233">        interpolator.registerLookup(&quot;&quot;, setUpTestLookup());</span>
+<span class="fc" id="L234">        assertEquals(&quot;Wrong variable value&quot;, TEST_VALUE, interpolator</span>
+<span class="fc" id="L235">                .resolve(&quot;:&quot; + TEST_NAME));</span>
+<span class="fc" id="L236">    }</span>
+
+    /**
+     * Tests an empty variable name.
+     */
+    @Test
+    public void testResolveEmptyVarName()
+    {
+<span class="fc" id="L244">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup(&quot;&quot;, TEST_VALUE));</span>
+<span class="fc" id="L245">        assertEquals(&quot;Wrong variable value&quot;, TEST_VALUE, interpolator</span>
+<span class="fc" id="L246">                .resolve(TEST_PREFIX + &quot;:&quot;));</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Tests an empty variable name without a prefix.
+     */
+    @Test
+    public void testResolveDefaultEmptyVarName()
+    {
+<span class="fc" id="L255">        interpolator.addDefaultLookup(setUpTestLookup(&quot;&quot;, TEST_VALUE));</span>
+<span class="fc" id="L256">        assertEquals(&quot;Wrong variable value&quot;, TEST_VALUE, interpolator</span>
+<span class="fc" id="L257">                .resolve(&quot;&quot;));</span>
+<span class="fc" id="L258">    }</span>
+
+    /**
+     * Tests looking up a null variable. Result should be null, too.
+     */
+    @Test
+    public void testResolveNull()
+    {
+<span class="fc" id="L266">        assertNull(&quot;Could resolve null variable&quot;, interpolator.resolve(null));</span>
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * Tests whether the default lookup is called for variables with a prefix
+     * when the lookup that was registered for this prefix is not able to
+     * resolve the variable.
+     */
+    @Test
+    public void testResolveDefaultAfterPrefixFails()
+    {
+<span class="fc" id="L277">        final String varName = TEST_PREFIX + ':' + TEST_NAME + &quot;2&quot;;</span>
+<span class="fc" id="L278">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L279">        interpolator.addDefaultLookup(setUpTestLookup(varName, TEST_VALUE));</span>
+<span class="fc" id="L280">        assertEquals(&quot;Variable is not resolved by default lookup&quot;, TEST_VALUE,</span>
+<span class="fc" id="L281">                interpolator.resolve(varName));</span>
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Tests whether a map with lookup objects can be registered.
+     */
+    @Test
+    public void testRegisterLookups()
+    {
+<span class="fc" id="L290">        final Lookup l1 = setUpTestLookup();</span>
+<span class="fc" id="L291">        final Lookup l2 = setUpTestLookup(&quot;someVar&quot;, &quot;someValue&quot;);</span>
+<span class="fc" id="L292">        final Map&lt;String, Lookup&gt; lookups = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L293">        lookups.put(TEST_PREFIX, l1);</span>
+<span class="fc" id="L294">        final String prefix2 = TEST_PREFIX + &quot;_other&quot;;</span>
+<span class="fc" id="L295">        lookups.put(prefix2, l2);</span>
+<span class="fc" id="L296">        interpolator.registerLookups(lookups);</span>
+<span class="fc" id="L297">        final Map&lt;String, Lookup&gt; lookups2 = interpolator.getLookups();</span>
+<span class="fc" id="L298">        assertEquals(&quot;Wrong number of lookups&quot;, 2, lookups2.size());</span>
+<span class="fc" id="L299">        assertEquals(&quot;Wrong l1&quot;, l1, lookups2.get(TEST_PREFIX));</span>
+<span class="fc" id="L300">        assertEquals(&quot;Wrong l2&quot;, l2, lookups2.get(prefix2));</span>
+<span class="fc" id="L301">    }</span>
+
+    /**
+     * Tests whether a null map with lookup objects is handled correctly.
+     */
+    @Test
+    public void testRegisterLookupsNull()
+    {
+<span class="fc" id="L309">        interpolator.registerLookups(null);</span>
+<span class="fc" id="L310">        assertTrue(&quot;Got lookups&quot;, interpolator.getLookups().isEmpty());</span>
+<span class="fc" id="L311">    }</span>
+
+    /**
+     * Tests that modification of the map with lookups does not affect the object.
+     */
+    @Test
+    public void testGetLookupsModify()
+    {
+<span class="fc" id="L319">        final Map&lt;String, Lookup&gt; lookups = interpolator.getLookups();</span>
+<span class="fc" id="L320">        lookups.put(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L321">        assertTrue(&quot;Map was modified&quot;, interpolator.getLookups().isEmpty());</span>
+<span class="fc" id="L322">    }</span>
+
+    /**
+     * Tests whether multiple default lookups can be added.
+     */
+    @Test
+    public void testAddDefaultLookups()
+    {
+<span class="fc" id="L330">        final List&lt;Lookup&gt; lookups = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L331">        lookups.add(setUpTestLookup());</span>
+<span class="fc" id="L332">        lookups.add(setUpTestLookup(&quot;test&quot;, &quot;value&quot;));</span>
+<span class="fc" id="L333">        interpolator.addDefaultLookups(lookups);</span>
+<span class="fc" id="L334">        final List&lt;Lookup&gt; lookups2 = interpolator.getDefaultLookups();</span>
+<span class="fc" id="L335">        assertEquals(&quot;Wrong number of default lookups&quot;, 2, lookups2.size());</span>
+<span class="fc" id="L336">        assertTrue(&quot;Wrong content&quot;, lookups2.containsAll(lookups));</span>
+<span class="fc" id="L337">    }</span>
+
+    /**
+     * Tests whether a null collection of default lookups is handled correctly.
+     */
+    @Test
+    public void testAddDefaultLookupsNull()
+    {
+<span class="fc" id="L345">        interpolator.addDefaultLookups(null);</span>
+<span class="fc" id="L346">        assertTrue(&quot;Got default lookups&quot;, interpolator.getDefaultLookups()</span>
+<span class="fc" id="L347">                .isEmpty());</span>
+<span class="fc" id="L348">    }</span>
+
+    /**
+     * Tests whether modification of the list of default lookups does not affect
+     * the object.
+     */
+    @Test
+    public void testGetDefaultLookupsModify()
+    {
+<span class="fc" id="L357">        final List&lt;Lookup&gt; lookups = interpolator.getDefaultLookups();</span>
+<span class="fc" id="L358">        lookups.add(setUpTestLookup());</span>
+<span class="fc" id="L359">        assertTrue(&quot;List was modified&quot;, interpolator.getDefaultLookups()</span>
+<span class="fc" id="L360">                .isEmpty());</span>
+<span class="fc" id="L361">    }</span>
+
+    /**
+     * Tests whether a default lookup object can be removed.
+     */
+    @Test
+    public void testRemoveDefaultLookup()
+    {
+<span class="fc" id="L369">        final List&lt;Lookup&gt; lookups = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L370">        lookups.add(setUpTestLookup());</span>
+<span class="fc" id="L371">        lookups.add(setUpTestLookup(&quot;test&quot;, &quot;value&quot;));</span>
+<span class="fc" id="L372">        interpolator.addDefaultLookups(lookups);</span>
+<span class="fc" id="L373">        assertTrue(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L374">                interpolator.removeDefaultLookup(lookups.get(0)));</span>
+<span class="fc" id="L375">        assertFalse(&quot;Lookup still available&quot;, interpolator.getDefaultLookups()</span>
+<span class="fc" id="L376">                .contains(lookups.get(0)));</span>
+<span class="fc" id="L377">        assertEquals(&quot;Wrong number of default lookups&quot;, 1, interpolator</span>
+<span class="fc" id="L378">                .getDefaultLookups().size());</span>
+<span class="fc" id="L379">    }</span>
+
+    /**
+     * Tests whether a non existing default lookup object can be removed.
+     */
+    @Test
+    public void testRemoveDefaultLookupNonExisting()
+    {
+<span class="fc" id="L387">        assertFalse(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L388">                interpolator.removeDefaultLookup(setUpTestLookup()));</span>
+<span class="fc" id="L389">    }</span>
+
+    /**
+     * Tests that the prefix set cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPrefixSetModify()
+    {
+<span class="fc" id="L397">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L398">        final Iterator&lt;String&gt; it = interpolator.prefixSet().iterator();</span>
+<span class="fc" id="L399">        it.next();</span>
+<span class="nc" id="L400">        it.remove();</span>
+<span class="nc" id="L401">    }</span>
+
+    /**
+     * Tests handling of a parent {@code ConfigurationInterpolator} if the
+     * variable can already be resolved by the current instance.
+     */
+    @Test
+    public void testResolveParentVariableFound()
+    {
+<span class="fc" id="L410">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L411">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L412">        EasyMock.replay(parent);</span>
+<span class="fc" id="L413">        interpolator.setParentInterpolator(parent);</span>
+<span class="fc" id="L414">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L415">        assertEquals(&quot;Wrong value&quot;, TEST_VALUE,</span>
+<span class="fc" id="L416">                interpolator.resolve(TEST_PREFIX + ':' + TEST_NAME));</span>
+<span class="fc" id="L417">    }</span>
+
+    /**
+     * Tests whether the parent {@code ConfigurationInterpolator} is invoked if
+     * the test instance cannot resolve a variable.
+     */
+    @Test
+    public void testResolveParentVariableNotFound()
+    {
+<span class="fc" id="L426">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L427">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L428">        EasyMock.expect(parent.resolve(TEST_NAME)).andReturn(TEST_VALUE);</span>
+<span class="fc" id="L429">        EasyMock.replay(parent);</span>
+<span class="fc" id="L430">        interpolator.setParentInterpolator(parent);</span>
+<span class="fc" id="L431">        assertEquals(&quot;Wrong value&quot;, TEST_VALUE, interpolator.resolve(TEST_NAME));</span>
+<span class="fc" id="L432">        EasyMock.verify(parent);</span>
+<span class="fc" id="L433">    }</span>
+
+    /**
+     * Tests interpolation of a non string argument.
+     */
+    @Test
+    public void testInterpolateObject()
+    {
+<span class="fc" id="L441">        final Object value = 42;</span>
+<span class="fc" id="L442">        assertSame(&quot;Value was changed&quot;, value, interpolator.interpolate(value));</span>
+<span class="fc" id="L443">    }</span>
+
+    /**
+     * Tests a successful interpolation of a string value.
+     */
+    @Test
+    public void testInterpolateString()
+    {
+<span class="fc" id="L451">        final String value = &quot;${&quot; + TEST_PREFIX + ':' + TEST_NAME + &quot;}&quot;;</span>
+<span class="fc" id="L452">        interpolator.registerLookup(TEST_PREFIX, setUpTestLookup());</span>
+<span class="fc" id="L453">        assertEquals(&quot;Wrong result&quot;, TEST_VALUE,</span>
+<span class="fc" id="L454">                interpolator.interpolate(value));</span>
+<span class="fc" id="L455">    }</span>
+
+    /**
+     * Tests interpolation with a variable which cannot be resolved.
+     */
+    @Test
+    public void testInterpolateStringUnknownVariable()
+    {
+<span class="fc" id="L463">        final String value = &quot;${unknownVariable}&quot;;</span>
+<span class="fc" id="L464">        assertEquals(&quot;Wrong result&quot;, value, interpolator.interpolate(value));</span>
+<span class="fc" id="L465">    }</span>
+
+    /**
+     * Tests whether the flag for substitution in variable names can be
+     * modified.
+     */
+    @Test
+    public void testEnableSubstitutionInVariables()
+    {
+<span class="fc" id="L474">        assertFalse(&quot;Variable substitution enabled&quot;,</span>
+<span class="fc" id="L475">                interpolator.isEnableSubstitutionInVariables());</span>
+<span class="fc" id="L476">        interpolator.addDefaultLookup(setUpTestLookup(&quot;java.version&quot;, &quot;1.4&quot;));</span>
+<span class="fc" id="L477">        interpolator.addDefaultLookup(setUpTestLookup(&quot;jre-1.4&quot;,</span>
+                &quot;C:\\java\\1.4&quot;));
+<span class="fc" id="L479">        final String var = &quot;${jre-${java.version}}&quot;;</span>
+<span class="fc" id="L480">        assertEquals(&quot;Wrong result (1)&quot;, var, interpolator.interpolate(var));</span>
+<span class="fc" id="L481">        interpolator.setEnableSubstitutionInVariables(true);</span>
+<span class="fc" id="L482">        assertTrue(&quot;Variable substitution not enabled&quot;,</span>
+<span class="fc" id="L483">                interpolator.isEnableSubstitutionInVariables());</span>
+<span class="fc" id="L484">        assertEquals(&quot;Wrong result (2)&quot;, &quot;C:\\java\\1.4&quot;,</span>
+<span class="fc" id="L485">                interpolator.interpolate(var));</span>
+<span class="fc" id="L486">    }</span>
+
+    /**
+     * Tests a property value consisting of multiple variables.
+     */
+    @Test
+    public void testInterpolationMultipleVariables()
+    {
+<span class="fc" id="L494">        final String value = &quot;The ${subject} jumps over ${object}.&quot;;</span>
+<span class="fc" id="L495">        interpolator.addDefaultLookup(setUpTestLookup(&quot;subject&quot;, &quot;quick brown fox&quot;));</span>
+<span class="fc" id="L496">        interpolator.addDefaultLookup(setUpTestLookup(&quot;object&quot;, &quot;the lazy dog&quot;));</span>
+<span class="fc" id="L497">        assertEquals(&quot;Wrong result&quot;, &quot;The quick brown fox jumps over the lazy dog.&quot;,</span>
+<span class="fc" id="L498">                interpolator.interpolate(value));</span>
+<span class="fc" id="L499">    }</span>
+
+    /**
+     * Tests an interpolation that consists of a single variable only. The
+     * variable's value should be returned verbatim.
+     */
+    @Test
+    public void testInterpolationSingleVariable()
+    {
+<span class="fc" id="L508">        final Object value = 42;</span>
+<span class="fc" id="L509">        interpolator.addDefaultLookup(setUpTestLookup(TEST_NAME, value));</span>
+<span class="fc" id="L510">        assertEquals(&quot;Wrong result&quot;, value,</span>
+<span class="fc" id="L511">                interpolator.interpolate(&quot;${&quot; + TEST_NAME + &quot;}&quot;));</span>
+<span class="fc" id="L512">    }</span>
+
+    /**
+     * Tests a variable declaration which lacks the trailing closing bracket.
+     */
+    @Test
+    public void testInterpolationVariableIncomplete()
+    {
+<span class="fc" id="L520">        final String value = &quot;${&quot; + TEST_NAME;</span>
+<span class="fc" id="L521">        interpolator.addDefaultLookup(setUpTestLookup(TEST_NAME, &quot;someValue&quot;));</span>
+<span class="fc" id="L522">        assertEquals(&quot;Wrong result&quot;, value, interpolator.interpolate(value));</span>
+<span class="fc" id="L523">    }</span>
+
+    /**
+     * Tests that an empty variable definition does not cause problems.
+     */
+    @Test
+    public void testInterpolateEmptyVariable()
+    {
+<span class="fc" id="L531">        final String value = &quot;${}&quot;;</span>
+<span class="fc" id="L532">        assertEquals(&quot;Wrong result&quot;, value, interpolator.interpolate(value));</span>
+<span class="fc" id="L533">    }</span>
+
+    /**
+     * Tries to obtain an instance from a null specification.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromSpecificationNull()
+    {
+<span class="nc" id="L541">        ConfigurationInterpolator.fromSpecification(null);</span>
+<span class="nc" id="L542">    }</span>
+
+    /**
+     * Tests fromSpecification() if the specification contains an instance.
+     */
+    @Test
+    public void testFromSpecificationInterpolator()
+    {
+<span class="fc" id="L550">        final ConfigurationInterpolator ci =</span>
+<span class="fc" id="L551">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L552">        EasyMock.replay(ci);</span>
+<span class="fc" id="L553">        final InterpolatorSpecification spec =</span>
+                new InterpolatorSpecification.Builder()
+<span class="fc" id="L555">                        .withDefaultLookup(EasyMock.createMock(Lookup.class))</span>
+<span class="fc" id="L556">                        .withParentInterpolator(interpolator)</span>
+<span class="fc" id="L557">                        .withInterpolator(ci).create();</span>
+<span class="fc" id="L558">        assertSame(&quot;Wrong result&quot;, ci,</span>
+<span class="fc" id="L559">                ConfigurationInterpolator.fromSpecification(spec));</span>
+<span class="fc" id="L560">    }</span>
+
+    /**
+     * Tests fromSpecification() if a new instance has to be created.
+     */
+    @Test
+    public void testFromSpecificationNewInstance()
+    {
+<span class="fc" id="L568">        final Lookup defLookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L569">        final Lookup preLookup = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L570">        EasyMock.replay(defLookup, preLookup);</span>
+<span class="fc" id="L571">        final InterpolatorSpecification spec =</span>
+                new InterpolatorSpecification.Builder()
+<span class="fc" id="L573">                        .withDefaultLookup(defLookup)</span>
+<span class="fc" id="L574">                        .withPrefixLookup(&quot;p&quot;, preLookup)</span>
+<span class="fc" id="L575">                        .withParentInterpolator(interpolator).create();</span>
+<span class="fc" id="L576">        final ConfigurationInterpolator ci =</span>
+<span class="fc" id="L577">                ConfigurationInterpolator.fromSpecification(spec);</span>
+<span class="fc" id="L578">        assertEquals(&quot;Wrong number of default lookups&quot;, 1, ci</span>
+<span class="fc" id="L579">                .getDefaultLookups().size());</span>
+<span class="fc" id="L580">        assertTrue(&quot;Wrong default lookup&quot;,</span>
+<span class="fc" id="L581">                ci.getDefaultLookups().contains(defLookup));</span>
+<span class="fc" id="L582">        assertEquals(&quot;Wrong number of prefix lookups&quot;, 1, ci.getLookups()</span>
+<span class="fc" id="L583">                .size());</span>
+<span class="fc" id="L584">        assertSame(&quot;Wrong prefix lookup&quot;, preLookup, ci.getLookups().get(&quot;p&quot;));</span>
+<span class="fc" id="L585">        assertSame(&quot;Wrong parent&quot;, interpolator, ci.getParentInterpolator());</span>
+<span class="fc" id="L586">    }</span>
+
+    /**
+     * Tests whether default prefix lookups can be queried as a map.
+     */
+    @Test
+    public void testGetDefaultPrefixLookups()
+    {
+        final Map&lt;String, Lookup&gt; lookups =
+<span class="fc" id="L595">                ConfigurationInterpolator.getDefaultPrefixLookups();</span>
+<span class="fc" id="L596">        assertEquals(&quot;Wrong number of lookups&quot;, DefaultLookups.values().length,</span>
+<span class="fc" id="L597">                lookups.size());</span>
+<span class="fc bfc" id="L598" title="All 2 branches covered.">        for (final DefaultLookups l : DefaultLookups.values())</span>
+        {
+<span class="fc" id="L600">            assertSame(&quot;Wrong entry for &quot; + l, l.getLookup(),</span>
+<span class="fc" id="L601">                    lookups.get(l.getPrefix()));</span>
+        }
+<span class="fc" id="L603">    }</span>
+
+    /**
+     * Tests that the map with default lookups cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetDefaultPrefixLookupsModify()
+    {
+<span class="pc" id="L611">        ConfigurationInterpolator.getDefaultPrefixLookups().put(&quot;test&quot;,</span>
+<span class="fc" id="L612">                EasyMock.createMock(Lookup.class));</span>
+<span class="nc" id="L613">    }</span>
+
+    /**
+     * Tests nullSafeLookup() if a lookup object was provided.
+     */
+    @Test
+    public void testNullSafeLookupExisting()
+    {
+<span class="fc" id="L621">        final Lookup look = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L622">        EasyMock.replay(look);</span>
+<span class="fc" id="L623">        assertSame(&quot;Wrong result&quot;, look,</span>
+<span class="fc" id="L624">                ConfigurationInterpolator.nullSafeLookup(look));</span>
+<span class="fc" id="L625">    }</span>
+
+    /**
+     * Tests whether nullSafeLookup() can handle null input.
+     */
+    @Test
+    public void testNullSafeLookupNull()
+    {
+<span class="fc" id="L633">        final Lookup lookup = ConfigurationInterpolator.nullSafeLookup(null);</span>
+<span class="fc" id="L634">        assertNull(&quot;Got a lookup result&quot;, lookup.lookup(&quot;someVar&quot;));</span>
+<span class="fc" id="L635">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestAbstractHierarchicalConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestAbstractHierarchicalConfiguration.java</span></div><h1>TestAbstractHierarchicalConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.apache.commons.configuration2.tree.DefaultConfigurationKey;
+import org.apache.commons.configuration2.tree.DefaultExpressionEngine;
+import org.apache.commons.configuration2.tree.DefaultExpressionEngineSymbols;
+import org.apache.commons.configuration2.tree.ExpressionEngine;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.InMemoryNodeModel;
+import org.apache.commons.configuration2.tree.NodeHandler;
+import org.apache.commons.configuration2.tree.NodeModel;
+import org.apache.commons.configuration2.tree.NodeStructureHelper;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code AbstractHierarchicalConfiguration}.
+ *
+ */
+<span class="fc" id="L57">public class TestAbstractHierarchicalConfiguration</span>
+{
+    /** The test configuration. */
+    private AbstractHierarchicalConfiguration&lt;ImmutableNode&gt; config;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L65">        final ImmutableNode root =</span>
+<span class="fc" id="L66">                new ImmutableNode.Builder(1).addChild(</span>
+<span class="fc" id="L67">                        NodeStructureHelper.ROOT_TABLES_TREE).create();</span>
+<span class="fc" id="L68">        config =</span>
+                new AbstractHierarchicalConfigurationTestImpl(
+                        new InMemoryNodeModel(root));
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Convenience method for obtaining the root node of the test configuration.
+     *
+     * @return the root node of the test configuration
+     */
+    private ImmutableNode getRootNode()
+    {
+<span class="fc" id="L80">        return config.getModel().getNodeHandler().getRootNode();</span>
+    }
+
+    @Test
+    public void testIsEmptyFalse()
+    {
+<span class="fc" id="L86">        assertFalse(config.isEmpty());</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Tests isEmpty() if only the root node exists.
+     */
+    @Test
+    public void testIsEmptyRootOnly()
+    {
+<span class="fc" id="L95">        config =</span>
+                new AbstractHierarchicalConfigurationTestImpl(
+                        new InMemoryNodeModel());
+<span class="fc" id="L98">        assertTrue(&quot;Not empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Tests isEmpty() if the structure contains some nodes without values.
+     */
+    @Test
+    public void testIsEmptyNodesWithNoValues()
+    {
+<span class="fc" id="L107">        final ImmutableNode.Builder rootBuilder = new ImmutableNode.Builder(1);</span>
+<span class="fc" id="L108">        final ImmutableNode.Builder nodeBuilder = new ImmutableNode.Builder(1);</span>
+<span class="fc" id="L109">        nodeBuilder.addChild(NodeStructureHelper.createNode(&quot;child&quot;, null));</span>
+<span class="fc" id="L110">        rootBuilder.addChild(nodeBuilder.create());</span>
+<span class="fc" id="L111">        config =</span>
+                new AbstractHierarchicalConfigurationTestImpl(
+<span class="fc" id="L113">                        new InMemoryNodeModel(rootBuilder.create()));</span>
+<span class="fc" id="L114">        assertTrue(&quot;Not empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L115">    }</span>
+
+    private static void checkGetProperty(final AbstractHierarchicalConfiguration&lt;?&gt; testConfig)
+    {
+<span class="fc" id="L119">        assertNull(testConfig.getProperty(&quot;tables.table.resultset&quot;));</span>
+<span class="fc" id="L120">        assertNull(testConfig.getProperty(&quot;tables.table.fields.field&quot;));</span>
+
+<span class="fc" id="L122">        Object prop = testConfig.getProperty(&quot;tables.table(0).fields.field.name&quot;);</span>
+<span class="fc" id="L123">        assertNotNull(prop);</span>
+<span class="fc" id="L124">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L125">        assertEquals(NodeStructureHelper.fieldsLength(0), ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L127">        prop = testConfig.getProperty(&quot;tables.table.fields.field.name&quot;);</span>
+<span class="fc" id="L128">        assertNotNull(prop);</span>
+<span class="fc" id="L129">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L130">        assertEquals(totalFieldCount(), ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L132">        prop = testConfig.getProperty(&quot;tables.table.fields.field(3).name&quot;);</span>
+<span class="fc" id="L133">        assertNotNull(prop);</span>
+<span class="fc" id="L134">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L135">        assertEquals(2, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L137">        prop = testConfig.getProperty(&quot;tables.table(1).fields.field(2).name&quot;);</span>
+<span class="fc" id="L138">        assertNotNull(prop);</span>
+<span class="fc" id="L139">        assertEquals(&quot;creationDate&quot;, prop.toString());</span>
+<span class="fc" id="L140">    }</span>
+
+    @Test
+    public void testGetProperty()
+    {
+<span class="fc" id="L145">        checkGetProperty(config);</span>
+<span class="fc" id="L146">    }</span>
+
+    @Test
+    public void testSetProperty()
+    {
+<span class="fc" id="L151">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L152">        config.setProperty(&quot;tables.table(0).name&quot;, &quot;resources&quot;);</span>
+<span class="fc" id="L153">        assertEquals(&quot;resources&quot;, config.getString(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L154">        config.setProperty(&quot;tables.table.name&quot;, &quot;tab1,tab2&quot;);</span>
+<span class="fc" id="L155">        assertEquals(&quot;tab1&quot;, config.getString(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L156">        assertEquals(&quot;tab2&quot;, config.getString(&quot;tables.table(1).name&quot;));</span>
+
+<span class="fc" id="L158">        config.setProperty(&quot;test.items.item&quot;, new int[] { 2, 4, 8, 16 });</span>
+<span class="fc" id="L159">        assertEquals(3, config.getMaxIndex(&quot;test.items.item&quot;));</span>
+<span class="fc" id="L160">        assertEquals(8, config.getInt(&quot;test.items.item(2)&quot;));</span>
+<span class="fc" id="L161">        config.setProperty(&quot;test.items.item(2)&quot;, new Integer(6));</span>
+<span class="fc" id="L162">        assertEquals(6, config.getInt(&quot;test.items.item(2)&quot;));</span>
+<span class="fc" id="L163">        config.setProperty(&quot;test.items.item(2)&quot;, new int[] { 7, 9, 11 });</span>
+<span class="fc" id="L164">        assertEquals(5, config.getMaxIndex(&quot;test.items.item&quot;));</span>
+
+<span class="fc" id="L166">        config.setProperty(&quot;test&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L167">        config.setProperty(&quot;test.items&quot;, &quot;01/01/05&quot;);</span>
+<span class="fc" id="L168">        assertEquals(5, config.getMaxIndex(&quot;test.items.item&quot;));</span>
+<span class="fc" id="L169">        assertTrue(config.getBoolean(&quot;test&quot;));</span>
+<span class="fc" id="L170">        assertEquals(&quot;01/01/05&quot;, config.getProperty(&quot;test.items&quot;));</span>
+
+<span class="fc" id="L172">        config.setProperty(&quot;test.items.item&quot;, new Integer(42));</span>
+<span class="fc" id="L173">        assertEquals(0, config.getMaxIndex(&quot;test.items.item&quot;));</span>
+<span class="fc" id="L174">        assertEquals(42, config.getInt(&quot;test.items.item&quot;));</span>
+<span class="fc" id="L175">    }</span>
+
+    @Test
+    public void testClear()
+    {
+<span class="fc" id="L180">        config.setProperty(null, &quot;value&quot;);</span>
+<span class="fc" id="L181">        config.addProperty(&quot;[@attr]&quot;, &quot;defined&quot;);</span>
+<span class="fc" id="L182">        config.clear();</span>
+<span class="fc" id="L183">        assertTrue(&quot;Configuration not empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L184">    }</span>
+
+    @Test
+    public void testClearProperty()
+    {
+<span class="fc" id="L189">        config.clearProperty(&quot;tables.table(0).fields.field(0).name&quot;);</span>
+<span class="fc" id="L190">        assertEquals(&quot;uname&quot;, config.getProperty(&quot;tables.table(0).fields.field(0).name&quot;));</span>
+<span class="fc" id="L191">        config.clearProperty(&quot;tables.table(0).name&quot;);</span>
+<span class="fc" id="L192">        assertFalse(config.containsKey(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L193">        assertEquals(&quot;firstName&quot;, config.getProperty(&quot;tables.table(0).fields.field(1).name&quot;));</span>
+<span class="fc" id="L194">        assertEquals(&quot;documents&quot;, config.getProperty(&quot;tables.table.name&quot;));</span>
+<span class="fc" id="L195">        config.clearProperty(&quot;tables.table&quot;);</span>
+<span class="fc" id="L196">        assertEquals(&quot;documents&quot;, config.getProperty(&quot;tables.table.name&quot;));</span>
+
+<span class="fc" id="L198">        config.addProperty(&quot;test&quot;, &quot;first&quot;);</span>
+<span class="fc" id="L199">        config.addProperty(&quot;test.level&quot;, &quot;second&quot;);</span>
+<span class="fc" id="L200">        config.clearProperty(&quot;test&quot;);</span>
+<span class="fc" id="L201">        assertEquals(&quot;second&quot;, config.getString(&quot;test.level&quot;));</span>
+<span class="fc" id="L202">        assertFalse(config.containsKey(&quot;test&quot;));</span>
+<span class="fc" id="L203">    }</span>
+
+    @Test
+    public void testClearTree()
+    {
+<span class="fc" id="L208">        Object prop = config.getProperty(&quot;tables.table(0).fields.field.name&quot;);</span>
+<span class="fc" id="L209">        assertNotNull(prop);</span>
+<span class="fc" id="L210">        config.clearTree(&quot;tables.table(0).fields.field(3)&quot;);</span>
+<span class="fc" id="L211">        prop = config.getProperty(&quot;tables.table(0).fields.field.name&quot;);</span>
+<span class="fc" id="L212">        assertNotNull(prop);</span>
+<span class="fc" id="L213">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L214">        assertEquals(4, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L216">        config.clearTree(&quot;tables.table(0).fields&quot;);</span>
+<span class="fc" id="L217">        assertNull(config.getProperty(&quot;tables.table(0).fields.field.name&quot;));</span>
+<span class="fc" id="L218">        prop = config.getProperty(&quot;tables.table.fields.field.name&quot;);</span>
+<span class="fc" id="L219">        assertNotNull(prop);</span>
+<span class="fc" id="L220">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L221">        assertEquals(NodeStructureHelper.fieldsLength(1), ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L223">        config.clearTree(&quot;tables.table(1)&quot;);</span>
+<span class="fc" id="L224">        assertNull(config.getProperty(&quot;tables.table.fields.field.name&quot;));</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tests removing more complex node structures.
+     */
+    @Test
+    public void testClearTreeComplex()
+    {
+<span class="fc" id="L233">        final int count = 5;</span>
+        // create the structure
+<span class="fc bfc" id="L235" title="All 2 branches covered.">        for (int idx = 0; idx &lt; count; idx++)</span>
+        {
+<span class="fc" id="L237">            config.addProperty(&quot;indexList.index(-1)[@default]&quot;, Boolean.FALSE);</span>
+<span class="fc" id="L238">            config.addProperty(&quot;indexList.index[@name]&quot;, &quot;test&quot; + idx);</span>
+<span class="fc" id="L239">            config.addProperty(&quot;indexList.index.dir&quot;, &quot;testDir&quot; + idx);</span>
+        }
+<span class="fc" id="L241">        assertEquals(&quot;Wrong number of nodes&quot;, count - 1, config</span>
+<span class="fc" id="L242">                .getMaxIndex(&quot;indexList.index[@name]&quot;));</span>
+
+        // Remove a sub tree
+<span class="fc" id="L245">        boolean found = false;</span>
+<span class="fc" id="L246">        for (int idx = 0; true; idx++)</span>
+        {
+<span class="fc" id="L248">            final String name = config.getString(&quot;indexList.index(&quot; + idx</span>
+                    + &quot;)[@name]&quot;);
+<span class="fc bfc" id="L250" title="All 2 branches covered.">            if (name == null)</span>
+            {
+<span class="fc" id="L252">                break;</span>
+            }
+<span class="fc bfc" id="L254" title="All 2 branches covered.">            if (&quot;test3&quot;.equals(name))</span>
+            {
+<span class="fc" id="L256">                assertEquals(&quot;Wrong dir&quot;, &quot;testDir3&quot;, config</span>
+<span class="fc" id="L257">                        .getString(&quot;indexList.index(&quot; + idx + &quot;).dir&quot;));</span>
+<span class="fc" id="L258">                config.clearTree(&quot;indexList.index(&quot; + idx + &quot;)&quot;);</span>
+<span class="fc" id="L259">                found = true;</span>
+            }
+        }
+<span class="fc" id="L262">        assertTrue(&quot;Key to remove not found&quot;, found);</span>
+<span class="fc" id="L263">        assertEquals(&quot;Wrong number of nodes after remove&quot;, count - 2, config</span>
+<span class="fc" id="L264">                .getMaxIndex(&quot;indexList.index[@name]&quot;));</span>
+<span class="fc" id="L265">        assertEquals(&quot;Wrong number of dir nodes after remove&quot;, count - 2,</span>
+<span class="fc" id="L266">                config.getMaxIndex(&quot;indexList.index.dir&quot;));</span>
+
+        // Verify
+<span class="fc" id="L269">        for (int idx = 0; true; idx++)</span>
+        {
+<span class="fc" id="L271">            final String name = config.getString(&quot;indexList.index(&quot; + idx</span>
+                    + &quot;)[@name]&quot;);
+<span class="fc bfc" id="L273" title="All 2 branches covered.">            if (name == null)</span>
+            {
+<span class="fc" id="L275">                break;</span>
+            }
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">            if (&quot;test3&quot;.equals(name))</span>
+            {
+<span class="nc" id="L279">                fail(&quot;Key was not removed!&quot;);</span>
+            }
+        }
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Tests the clearTree() method on a hierarchical structure of nodes. This
+     * is a test case for CONFIGURATION-293.
+     */
+    @Test
+    public void testClearTreeHierarchy()
+    {
+<span class="fc" id="L291">        config.addProperty(&quot;a.b.c&quot;, &quot;c&quot;);</span>
+<span class="fc" id="L292">        config.addProperty(&quot;a.b.c.d&quot;, &quot;d&quot;);</span>
+<span class="fc" id="L293">        config.addProperty(&quot;a.b.c.d.e&quot;, &quot;e&quot;);</span>
+<span class="fc" id="L294">        config.clearTree(&quot;a.b.c&quot;);</span>
+<span class="fc" id="L295">        assertFalse(&quot;Property not removed&quot;, config.containsKey(&quot;a.b.c&quot;));</span>
+<span class="fc" id="L296">        assertFalse(&quot;Sub property not removed&quot;, config.containsKey(&quot;a.b.c.d&quot;));</span>
+<span class="fc" id="L297">    }</span>
+
+    @Test
+    public void testContainsKey()
+    {
+<span class="fc" id="L302">        assertTrue(config.containsKey(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L303">        assertTrue(config.containsKey(&quot;tables.table(1).name&quot;));</span>
+<span class="fc" id="L304">        assertFalse(config.containsKey(&quot;tables.table(2).name&quot;));</span>
+
+<span class="fc" id="L306">        assertTrue(config.containsKey(&quot;tables.table(0).fields.field.name&quot;));</span>
+<span class="fc" id="L307">        assertFalse(config.containsKey(&quot;tables.table(0).fields.field&quot;));</span>
+<span class="fc" id="L308">        config.clearTree(&quot;tables.table(0).fields&quot;);</span>
+<span class="fc" id="L309">        assertFalse(config.containsKey(&quot;tables.table(0).fields.field.name&quot;));</span>
+
+<span class="fc" id="L311">        assertTrue(config.containsKey(&quot;tables.table.fields.field.name&quot;));</span>
+<span class="fc" id="L312">    }</span>
+
+    @Test
+    public void testGetKeys()
+    {
+<span class="fc" id="L317">        final List&lt;String&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L318" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = config.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L320">            keys.add(it.next());</span>
+        }
+
+<span class="fc" id="L323">        assertEquals(2, keys.size());</span>
+<span class="fc" id="L324">        assertTrue(keys.contains(&quot;tables.table.name&quot;));</span>
+<span class="fc" id="L325">        assertTrue(keys.contains(&quot;tables.table.fields.field.name&quot;));</span>
+<span class="fc" id="L326">    }</span>
+
+    /**
+     * Tests whether keys are returned in a defined order.
+     */
+    @Test
+    public void testGetKeysOrder()
+    {
+<span class="fc" id="L334">        config.addProperty(&quot;order.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L335">        config.addProperty(&quot;order.key2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L336">        config.addProperty(&quot;order.key3&quot;, &quot;value3&quot;);</span>
+
+<span class="fc" id="L338">        final Iterator&lt;String&gt; it = config.getKeys(&quot;order&quot;);</span>
+<span class="fc" id="L339">        assertEquals(&quot;1st key&quot;, &quot;order.key1&quot;, it.next());</span>
+<span class="fc" id="L340">        assertEquals(&quot;2nd key&quot;, &quot;order.key2&quot;, it.next());</span>
+<span class="fc" id="L341">        assertEquals(&quot;3rd key&quot;, &quot;order.key3&quot;, it.next());</span>
+<span class="fc" id="L342">    }</span>
+
+    /**
+     * Tests whether attribute keys are contained in the iteration of keys.
+     */
+    @Test
+    public void testGetKeysAttribute()
+    {
+<span class="fc" id="L350">        config.addProperty(&quot;tables.table(0)[@type]&quot;, &quot;system&quot;);</span>
+<span class="fc" id="L351">        final Set&lt;String&gt; keys = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = config.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L354">            keys.add(it.next());</span>
+        }
+<span class="fc" id="L356">        assertTrue(&quot;Attribute key not found: &quot; + keys, keys.contains(&quot;tables.table[@type]&quot;));</span>
+<span class="fc" id="L357">    }</span>
+
+    /**
+     * Tests whether a prefix that points to an attribute is correctly handled.
+     */
+    @Test
+    public void testGetKeysAttributePrefix()
+    {
+<span class="fc" id="L365">        config.addProperty(&quot;tables.table(0)[@type]&quot;, &quot;system&quot;);</span>
+<span class="fc" id="L366">        final Iterator&lt;String&gt; itKeys = config.getKeys(&quot;tables.table[@type]&quot;);</span>
+<span class="fc" id="L367">        assertEquals(&quot;Wrong key&quot;, &quot;tables.table[@type]&quot;, itKeys.next());</span>
+<span class="fc" id="L368">        assertFalse(&quot;Too many keys&quot;, itKeys.hasNext());</span>
+<span class="fc" id="L369">    }</span>
+
+    @Test
+    public void testGetKeysString()
+    {
+        // add some more properties to make it more interesting
+<span class="fc" id="L375">        config.addProperty(&quot;tables.table(0).fields.field(1).type&quot;, &quot;VARCHAR&quot;);</span>
+<span class="fc" id="L376">        config.addProperty(&quot;tables.table(0)[@type]&quot;, &quot;system&quot;);</span>
+<span class="fc" id="L377">        config.addProperty(&quot;tables.table(0).size&quot;, &quot;42&quot;);</span>
+<span class="fc" id="L378">        config.addProperty(&quot;tables.table(0).fields.field(0).size&quot;, &quot;128&quot;);</span>
+<span class="fc" id="L379">        config.addProperty(&quot;connections.connection.param.url&quot;, &quot;url1&quot;);</span>
+<span class="fc" id="L380">        config.addProperty(&quot;connections.connection.param.user&quot;, &quot;me&quot;);</span>
+<span class="fc" id="L381">        config.addProperty(&quot;connections.connection.param.pwd&quot;, &quot;secret&quot;);</span>
+<span class="fc" id="L382">        config.addProperty(&quot;connections.connection(-1).param.url&quot;, &quot;url2&quot;);</span>
+<span class="fc" id="L383">        config.addProperty(&quot;connections.connection(1).param.user&quot;, &quot;guest&quot;);</span>
+
+<span class="fc" id="L385">        checkKeys(&quot;tables.table(1)&quot;, new String[] { &quot;name&quot;, &quot;fields.field.name&quot; });</span>
+<span class="fc" id="L386">        checkKeys(&quot;tables.table(0)&quot;,</span>
+                new String[]{&quot;name&quot;, &quot;fields.field.name&quot;, &quot;tables.table(0)[@type]&quot;, &quot;size&quot;, &quot;fields.field.type&quot;, &quot;fields.field.size&quot;});
+<span class="fc" id="L388">        checkKeys(&quot;connections.connection(0).param&quot;,</span>
+                new String[]{&quot;url&quot;, &quot;user&quot;, &quot;pwd&quot;});
+<span class="fc" id="L390">        checkKeys(&quot;connections.connection(1).param&quot;,</span>
+                new String[]{&quot;url&quot;, &quot;user&quot;});
+<span class="fc" id="L392">    }</span>
+
+    /**
+     * Tests getKeys() with a prefix when the prefix matches exactly a key.
+     */
+    @Test
+    public void testGetKeysWithKeyAsPrefix()
+    {
+<span class="fc" id="L400">        config.addProperty(&quot;order.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L401">        config.addProperty(&quot;order.key2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L402">        final Iterator&lt;String&gt; it = config.getKeys(&quot;order.key1&quot;);</span>
+<span class="fc" id="L403">        assertTrue(&quot;no key found&quot;, it.hasNext());</span>
+<span class="fc" id="L404">        assertEquals(&quot;1st key&quot;, &quot;order.key1&quot;, it.next());</span>
+<span class="fc" id="L405">        assertFalse(&quot;more keys than expected&quot;, it.hasNext());</span>
+<span class="fc" id="L406">    }</span>
+
+    /**
+     * Tests getKeys() with a prefix when the prefix matches exactly a key, and
+     * there are multiple keys starting with this prefix.
+     */
+    @Test
+    public void testGetKeysWithKeyAsPrefixMultiple()
+    {
+<span class="fc" id="L415">        config.addProperty(&quot;order.key1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L416">        config.addProperty(&quot;order.key1.test&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L417">        config.addProperty(&quot;order.key1.test.complex&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L418">        final Iterator&lt;String&gt; it = config.getKeys(&quot;order.key1&quot;);</span>
+<span class="fc" id="L419">        assertEquals(&quot;Wrong key 1&quot;, &quot;order.key1&quot;, it.next());</span>
+<span class="fc" id="L420">        assertEquals(&quot;Wrong key 2&quot;, &quot;order.key1.test&quot;, it.next());</span>
+<span class="fc" id="L421">        assertEquals(&quot;Wrong key 3&quot;, &quot;order.key1.test.complex&quot;, it.next());</span>
+<span class="fc" id="L422">        assertFalse(&quot;More keys than expected&quot;, it.hasNext());</span>
+<span class="fc" id="L423">    }</span>
+
+    /**
+     * Tests whether the correct size is calculated.
+     */
+    @Test
+    public void testSize()
+    {
+<span class="fc" id="L431">        assertEquals(&quot;Wrong size&quot;, 2, config.size());</span>
+<span class="fc" id="L432">    }</span>
+
+    @Test
+    public void testAddProperty()
+    {
+<span class="fc" id="L437">        config.addProperty(&quot;tables.table(0).fields.field(-1).name&quot;, &quot;phone&quot;);</span>
+<span class="fc" id="L438">        Object prop = config.getProperty(&quot;tables.table(0).fields.field.name&quot;);</span>
+<span class="fc" id="L439">        assertNotNull(prop);</span>
+<span class="fc" id="L440">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L441">        assertEquals(6, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L443">        config.addProperty(&quot;tables.table(0).fields.field.name&quot;, &quot;fax&quot;);</span>
+<span class="fc" id="L444">        prop = config.getProperty(&quot;tables.table.fields.field(5).name&quot;);</span>
+<span class="fc" id="L445">        assertNotNull(prop);</span>
+<span class="fc" id="L446">        assertTrue(prop instanceof List);</span>
+<span class="fc" id="L447">        final List&lt;?&gt; list = (List&lt;?&gt;) prop;</span>
+<span class="fc" id="L448">        assertEquals(&quot;phone&quot;, list.get(0));</span>
+<span class="fc" id="L449">        assertEquals(&quot;fax&quot;, list.get(1));</span>
+
+<span class="fc" id="L451">        config.addProperty(&quot;tables.table(-1).name&quot;, &quot;config&quot;);</span>
+<span class="fc" id="L452">        prop = config.getProperty(&quot;tables.table.name&quot;);</span>
+<span class="fc" id="L453">        assertNotNull(prop);</span>
+<span class="fc" id="L454">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L455">        assertEquals(3, ((Collection&lt;?&gt;) prop).size());</span>
+<span class="fc" id="L456">        config.addProperty(&quot;tables.table(2).fields.field(0).name&quot;, &quot;cid&quot;);</span>
+<span class="fc" id="L457">        config.addProperty(&quot;tables.table(2).fields.field(-1).name&quot;,</span>
+        &quot;confName&quot;);
+<span class="fc" id="L459">        prop = config.getProperty(&quot;tables.table(2).fields.field.name&quot;);</span>
+<span class="fc" id="L460">        assertNotNull(prop);</span>
+<span class="fc" id="L461">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L462">        assertEquals(2, ((Collection&lt;?&gt;) prop).size());</span>
+<span class="fc" id="L463">        assertEquals(&quot;confName&quot;,</span>
+<span class="fc" id="L464">        config.getProperty(&quot;tables.table(2).fields.field(1).name&quot;));</span>
+
+<span class="fc" id="L466">        config.addProperty(&quot;connection.user&quot;, &quot;scott&quot;);</span>
+<span class="fc" id="L467">        config.addProperty(&quot;connection.passwd&quot;, &quot;tiger&quot;);</span>
+<span class="fc" id="L468">        assertEquals(&quot;tiger&quot;, config.getProperty(&quot;connection.passwd&quot;));</span>
+
+<span class="fc" id="L470">        final DefaultConfigurationKey key = createConfigurationKey();</span>
+<span class="fc" id="L471">        key.append(&quot;tables&quot;).append(&quot;table&quot;).appendIndex(0);</span>
+<span class="fc" id="L472">        key.appendAttribute(&quot;tableType&quot;);</span>
+<span class="fc" id="L473">        config.addProperty(key.toString(), &quot;system&quot;);</span>
+<span class="fc" id="L474">        assertEquals(&quot;system&quot;, config.getProperty(key.toString()));</span>
+<span class="fc" id="L475">    }</span>
+
+    /**
+     * Creates a {@code DefaultConfigurationKey} object.
+     *
+     * @return the new key object
+     */
+    private static DefaultConfigurationKey createConfigurationKey()
+    {
+<span class="fc" id="L484">        return new DefaultConfigurationKey(DefaultExpressionEngine.INSTANCE);</span>
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddPropertyInvalidKey()
+    {
+<span class="nc" id="L490">        config.addProperty(&quot;.&quot;, &quot;InvalidKey&quot;);</span>
+<span class="nc" id="L491">    }</span>
+
+    @Test
+    public void testGetMaxIndex()
+    {
+<span class="fc" id="L496">        assertEquals(NodeStructureHelper.fieldsLength(0) - 1,</span>
+<span class="fc" id="L497">                config.getMaxIndex(&quot;tables.table(0).fields.field&quot;));</span>
+<span class="fc" id="L498">        assertEquals(NodeStructureHelper.fieldsLength(1) - 1,</span>
+<span class="fc" id="L499">                config.getMaxIndex(&quot;tables.table(1).fields.field&quot;));</span>
+<span class="fc" id="L500">        assertEquals(1, config.getMaxIndex(&quot;tables.table&quot;));</span>
+<span class="fc" id="L501">        assertEquals(1, config.getMaxIndex(&quot;tables.table.name&quot;));</span>
+<span class="fc" id="L502">        assertEquals(0, config.getMaxIndex(&quot;tables.table(0).name&quot;));</span>
+<span class="fc" id="L503">        assertEquals(0, config.getMaxIndex(&quot;tables.table(1).fields.field(1)&quot;));</span>
+<span class="fc" id="L504">        assertEquals(-1, config.getMaxIndex(&quot;tables.table(2).fields&quot;));</span>
+
+<span class="fc" id="L506">        final int maxIdx = config.getMaxIndex(&quot;tables.table(0).fields.field.name&quot;);</span>
+<span class="fc bfc" id="L507" title="All 2 branches covered.">        for(int i = 0; i &lt;= maxIdx; i++)</span>
+        {
+<span class="fc" id="L509">            final DefaultConfigurationKey key =</span>
+                    new DefaultConfigurationKey(DefaultExpressionEngine.INSTANCE,
+                            &quot;tables.table(0).fields&quot;);
+<span class="fc" id="L512">            key.append(&quot;field&quot;).appendIndex(i).append(&quot;name&quot;);</span>
+<span class="fc" id="L513">            assertNotNull(config.getProperty(key.toString()));</span>
+        }
+<span class="fc" id="L515">    }</span>
+
+    @Test
+    public void testClone()
+    {
+<span class="fc" id="L520">        final Configuration copy = (Configuration) config.clone();</span>
+<span class="fc" id="L521">        assertTrue(&quot;Wrong clone result&quot;, copy instanceof AbstractHierarchicalConfiguration);</span>
+<span class="fc" id="L522">        checkContent(copy);</span>
+<span class="fc" id="L523">    }</span>
+
+    /**
+     * Tests whether registered event handlers are handled correctly when a
+     * configuration is cloned. They should not be registered at the clone.
+     */
+    @Test
+    public void testCloneWithEventListeners()
+    {
+<span class="fc" id="L532">        final EventListener&lt;ConfigurationEvent&gt; l = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L533">        config.addEventListener(ConfigurationEvent.ANY, l);</span>
+<span class="fc" id="L534">        final AbstractHierarchicalConfiguration&lt;?&gt; copy =</span>
+<span class="fc" id="L535">                (AbstractHierarchicalConfiguration&lt;?&gt;) config.clone();</span>
+<span class="fc" id="L536">        assertFalse(&quot;Event listener registered at clone&quot;, copy</span>
+<span class="fc" id="L537">                .getEventListeners(ConfigurationEvent.ANY).contains(l));</span>
+<span class="fc" id="L538">    }</span>
+
+    /**
+     * Tests whether interpolation works as expected after cloning.
+     */
+    @Test
+    public void testCloneInterpolation()
+    {
+<span class="fc" id="L546">        final String keyAnswer = &quot;answer&quot;;</span>
+<span class="fc" id="L547">        final String keyValue = &quot;value&quot;;</span>
+<span class="fc" id="L548">        config.addProperty(keyAnswer, &quot;The answer is ${&quot; + keyValue + &quot;}.&quot;);</span>
+<span class="fc" id="L549">        config.addProperty(keyValue, 42);</span>
+<span class="fc" id="L550">        final Configuration clone = (Configuration) config.clone();</span>
+<span class="fc" id="L551">        clone.setProperty(keyValue, 43);</span>
+<span class="fc" id="L552">        assertEquals(&quot;Wrong interpolation in original&quot;, &quot;The answer is 42.&quot;,</span>
+<span class="fc" id="L553">                config.getString(keyAnswer));</span>
+<span class="fc" id="L554">        assertEquals(&quot;Wrong interpolation in clone&quot;, &quot;The answer is 43.&quot;,</span>
+<span class="fc" id="L555">                clone.getString(keyAnswer));</span>
+<span class="fc" id="L556">    }</span>
+
+    @Test
+    public void testAddNodes()
+    {
+<span class="fc" id="L561">        final Collection&lt;ImmutableNode&gt; nodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L562">        nodes.add(NodeStructureHelper.createFieldNode(&quot;birthDate&quot;));</span>
+<span class="fc" id="L563">        nodes.add(NodeStructureHelper.createFieldNode(&quot;lastLogin&quot;));</span>
+<span class="fc" id="L564">        nodes.add(NodeStructureHelper.createFieldNode(&quot;language&quot;));</span>
+<span class="fc" id="L565">        config.addNodes(&quot;tables.table(0).fields&quot;, nodes);</span>
+<span class="fc" id="L566">        assertEquals(7, config.getMaxIndex(&quot;tables.table(0).fields.field&quot;));</span>
+<span class="fc" id="L567">        assertEquals(&quot;birthDate&quot;, config.getString(&quot;tables.table(0).fields.field(5).name&quot;));</span>
+<span class="fc" id="L568">        assertEquals(&quot;lastLogin&quot;, config.getString(&quot;tables.table(0).fields.field(6).name&quot;));</span>
+<span class="fc" id="L569">        assertEquals(&quot;language&quot;, config.getString(&quot;tables.table(0).fields.field(7).name&quot;));</span>
+<span class="fc" id="L570">    }</span>
+
+    /**
+     * Tests the addNodes() method if the provided key does not exist. In
+     * this case, a new node (or even a completely new branch) is created.
+     */
+    @Test
+    public void testAddNodesForNonExistingKey()
+    {
+<span class="fc" id="L579">        final Collection&lt;ImmutableNode&gt; nodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L580">        final ImmutableNode newNode =</span>
+<span class="fc" id="L581">                new ImmutableNode.Builder().name(&quot;usr&quot;).value(&quot;scott&quot;)</span>
+<span class="fc" id="L582">                        .addAttribute(&quot;pwd&quot;, &quot;tiger&quot;).create();</span>
+<span class="fc" id="L583">        nodes.add(newNode);</span>
+<span class="fc" id="L584">        config.addNodes(&quot;database.connection.settings&quot;, nodes);</span>
+
+<span class="fc" id="L586">        assertEquals(&quot;Usr node not found&quot;, &quot;scott&quot;,</span>
+<span class="fc" id="L587">                config.getString(&quot;database.connection.settings.usr&quot;));</span>
+<span class="fc" id="L588">        assertEquals(&quot;Pwd node not found&quot;, &quot;tiger&quot;,</span>
+<span class="fc" id="L589">                config.getString(&quot;database.connection.settings.usr[@pwd]&quot;));</span>
+<span class="fc" id="L590">    }</span>
+
+    /**
+     * Tests the addNodes() method when the new nodes should be added to an
+     * attribute node. This is not allowed.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddNodesWithAttributeKey()
+    {
+<span class="fc" id="L599">        final Collection&lt;ImmutableNode&gt; nodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L600">        nodes.add(NodeStructureHelper.createNode(&quot;testNode&quot;, &quot;yes&quot;));</span>
+<span class="nc" id="L601">        config.addNodes(&quot;database.connection[@settings]&quot;, nodes);</span>
+<span class="nc" id="L602">    }</span>
+
+    /**
+     * Tests copying nodes from one configuration to another one.
+     */
+    @Test
+    public void testAddNodesCopy()
+    {
+<span class="fc" id="L610">        final AbstractHierarchicalConfigurationTestImpl configDest =</span>
+                new AbstractHierarchicalConfigurationTestImpl(
+                        new InMemoryNodeModel());
+<span class="fc" id="L613">        configDest.addProperty(&quot;test&quot;, &quot;TEST&quot;);</span>
+<span class="fc" id="L614">        final Collection&lt;ImmutableNode&gt; nodes = getRootNode().getChildren();</span>
+<span class="fc" id="L615">        assertEquals(&quot;Wrong number of children&quot;, 1, nodes.size());</span>
+<span class="fc" id="L616">        configDest.addNodes(&quot;newNodes&quot;, nodes);</span>
+<span class="fc bfc" id="L617" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.tablesLength(); i++)</span>
+        {
+<span class="fc" id="L619">            final String keyTab = &quot;newNodes.tables.table(&quot; + i + &quot;).&quot;;</span>
+<span class="fc" id="L620">            assertEquals(&quot;Table &quot; + i + &quot; not found&quot;,</span>
+<span class="fc" id="L621">                    NodeStructureHelper.table(i),</span>
+<span class="fc" id="L622">                    configDest.getString(keyTab + &quot;name&quot;));</span>
+<span class="fc bfc" id="L623" title="All 2 branches covered.">            for (int j = 0; j &lt; NodeStructureHelper.fieldsLength(i); j++)</span>
+            {
+<span class="fc" id="L625">                assertEquals(</span>
+                        &quot;Invalid field &quot; + j + &quot; in table &quot; + i,
+<span class="fc" id="L627">                        NodeStructureHelper.field(i, j),</span>
+<span class="fc" id="L628">                        configDest.getString(keyTab + &quot;fields.field(&quot; + j</span>
+                                + &quot;).name&quot;));
+            }
+        }
+<span class="fc" id="L632">    }</span>
+
+    /**
+     * Tests setting a custom expression engine, which uses a slightly different
+     * syntax.
+     */
+    @Test
+    public void testSetExpressionEngine()
+    {
+<span class="fc" id="L641">        config.setExpressionEngine(null);</span>
+<span class="fc" id="L642">        assertNotNull(&quot;Expression engine is null&quot;, config.getExpressionEngine());</span>
+<span class="fc" id="L643">        assertSame(&quot;Default engine is not used&quot;,</span>
+<span class="fc" id="L644">                DefaultExpressionEngine.INSTANCE, config.getExpressionEngine());</span>
+
+<span class="fc" id="L646">        config.setExpressionEngine(createAlternativeExpressionEngine());</span>
+<span class="fc" id="L647">        checkAlternativeSyntax();</span>
+<span class="fc" id="L648">    }</span>
+
+    /**
+     * Tests interpolation facilities.
+     */
+    @Test
+    public void testInterpolation()
+    {
+<span class="fc" id="L656">        config.addProperty(&quot;base.dir&quot;, &quot;/home/foo&quot;);</span>
+<span class="fc" id="L657">        config.addProperty(&quot;test.absolute.dir.dir1&quot;, &quot;${base.dir}/path1&quot;);</span>
+<span class="fc" id="L658">        config.addProperty(&quot;test.absolute.dir.dir2&quot;, &quot;${base.dir}/path2&quot;);</span>
+<span class="fc" id="L659">        config.addProperty(&quot;test.absolute.dir.dir3&quot;, &quot;${base.dir}/path3&quot;);</span>
+<span class="fc" id="L660">        final Configuration sub = config.subset(&quot;test.absolute.dir&quot;);</span>
+<span class="fc bfc" id="L661" title="All 2 branches covered.">        for (int i = 1; i &lt; 4; i++)</span>
+        {
+<span class="fc" id="L663">            assertEquals(&quot;Wrong interpolation in parent&quot;, &quot;/home/foo/path&quot; + i,</span>
+<span class="fc" id="L664">                    config.getString(&quot;test.absolute.dir.dir&quot; + i));</span>
+<span class="fc" id="L665">            assertEquals(&quot;Wrong interpolation in subnode&quot;,</span>
+<span class="fc" id="L666">                    &quot;/home/foo/path&quot; + i, sub.getString(&quot;dir&quot; + i));</span>
+        }
+<span class="fc" id="L668">    }</span>
+
+    /**
+     * Basic interpolation tests.
+     */
+    @Test
+    public void testInterpolationBasic()
+    {
+<span class="fc" id="L676">        InterpolationTestHelper.testInterpolation(config);</span>
+<span class="fc" id="L677">    }</span>
+
+    /**
+     * Tests multiple levels of interpolation.
+     */
+    @Test
+    public void testInterpolationMultipleLevels()
+    {
+<span class="fc" id="L685">        InterpolationTestHelper.testMultipleInterpolation(config);</span>
+<span class="fc" id="L686">    }</span>
+
+    /**
+     * Tests an invalid interpolation that causes an endless loop.
+     */
+    @Test
+    public void testInterpolationLoop()
+    {
+<span class="fc" id="L694">        InterpolationTestHelper.testInterpolationLoop(config);</span>
+<span class="fc" id="L695">    }</span>
+
+    /**
+     * Tests interpolation with a subset.
+     */
+    @Test
+    public void testInterpolationSubset()
+    {
+<span class="fc" id="L703">        InterpolationTestHelper.testInterpolationSubset(config);</span>
+<span class="fc" id="L704">    }</span>
+
+    /**
+     * Tests whether interpolation with a subset configuration works over
+     * multiple layers.
+     */
+    @Test
+    public void testInterpolationSubsetMultipleLayers()
+    {
+<span class="fc" id="L713">        config.clear();</span>
+<span class="fc" id="L714">        config.addProperty(&quot;var&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L715">        config.addProperty(&quot;prop2.prop[@attr]&quot;, &quot;${var}&quot;);</span>
+<span class="fc" id="L716">        final Configuration sub1 = config.subset(&quot;prop2&quot;);</span>
+<span class="fc" id="L717">        final Configuration sub2 = sub1.subset(&quot;prop&quot;);</span>
+<span class="fc" id="L718">        assertEquals(&quot;Wrong value&quot;, &quot;value&quot;, sub2.getString(&quot;[@attr]&quot;));</span>
+<span class="fc" id="L719">    }</span>
+
+    /**
+     * Tests interpolation of a variable, which cannot be resolved.
+     */
+    @Test
+    public void testInterpolationUnknownProperty()
+    {
+<span class="fc" id="L727">        InterpolationTestHelper.testInterpolationUnknownProperty(config);</span>
+<span class="fc" id="L728">    }</span>
+
+    /**
+     * Tests interpolation with system properties.
+     */
+    @Test
+    public void testInterpolationSystemProperties()
+    {
+<span class="fc" id="L736">        InterpolationTestHelper.testInterpolationSystemProperties(config);</span>
+<span class="fc" id="L737">    }</span>
+
+    /**
+     * Tests interpolation with constant values.
+     */
+    @Test
+    public void testInterpolationConstants()
+    {
+<span class="fc" id="L745">        InterpolationTestHelper.testInterpolationConstants(config);</span>
+<span class="fc" id="L746">    }</span>
+
+    /**
+     * Tests escaping variables.
+     */
+    @Test
+    public void testInterpolationEscaped()
+    {
+<span class="fc" id="L754">        InterpolationTestHelper.testInterpolationEscaped(config);</span>
+<span class="fc" id="L755">    }</span>
+
+    /**
+     * Tests interpolation with localhost values.
+     */
+    @Test
+    public void testInterpolationLocalhost()
+    {
+<span class="fc" id="L763">        InterpolationTestHelper.testInterpolationLocalhost(config);</span>
+<span class="fc" id="L764">    }</span>
+
+    /**
+     * Tests manipulating the interpolator.
+     */
+    @Test
+    public void testInterpolator()
+    {
+<span class="fc" id="L772">        InterpolationTestHelper.testGetInterpolator(config);</span>
+<span class="fc" id="L773">    }</span>
+
+    /**
+     * Tests obtaining a configuration with all variables substituted.
+     */
+    @Test
+    public void testInterpolatedConfiguration()
+    {
+<span class="fc" id="L781">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L782">        final AbstractHierarchicalConfiguration&lt;?&gt; c = (AbstractHierarchicalConfiguration&lt;?&gt;) InterpolationTestHelper</span>
+<span class="fc" id="L783">                .testInterpolatedConfiguration(config);</span>
+
+        // tests whether the hierarchical structure has been maintained
+<span class="fc" id="L786">        checkGetProperty(c);</span>
+<span class="fc" id="L787">    }</span>
+
+    /**
+     * Tests the copy constructor when a null reference is passed.
+     */
+    @Test
+    public void testInitCopyNull()
+    {
+<span class="fc" id="L795">        final BaseHierarchicalConfiguration copy =</span>
+                new BaseHierarchicalConfiguration(
+                        (BaseHierarchicalConfiguration) null);
+<span class="fc" id="L798">        assertTrue(&quot;Configuration not empty&quot;, copy.isEmpty());</span>
+<span class="fc" id="L799">    }</span>
+
+    /**
+     * Tests whether keys that contains brackets can be used.
+     */
+    @Test
+    public void testGetPropertyKeyWithBrackets()
+    {
+<span class="fc" id="L807">        final String key = &quot;test.directory.platform(x86)&quot;;</span>
+<span class="fc" id="L808">        config.addProperty(key, &quot;C:\\Temp&quot;);</span>
+<span class="fc" id="L809">        assertEquals(&quot;Wrong property value&quot;, &quot;C:\\Temp&quot;, config.getString(key));</span>
+<span class="fc" id="L810">    }</span>
+
+    /**
+     * Tests whether list handling works correctly when adding properties.
+     */
+    @Test
+    public void testAddPropertyWithListHandling()
+    {
+<span class="fc" id="L818">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L819">        final String key = &quot;list.delimiter.value&quot;;</span>
+<span class="fc" id="L820">        config.addProperty(key + &quot;.escaped&quot;, &quot;3\\,1415&quot;);</span>
+<span class="fc" id="L821">        config.addProperty(key + &quot;.elements&quot;, &quot;3,1415&quot;);</span>
+<span class="fc" id="L822">        assertEquals(&quot;Wrong escaped property&quot;, &quot;3,1415&quot;, config.getString(key + &quot;.escaped&quot;));</span>
+<span class="fc" id="L823">        assertEquals(&quot;Wrong list property&quot;, &quot;3&quot;, config.getString(key + &quot;.elements&quot;));</span>
+<span class="fc" id="L824">    }</span>
+
+    /**
+     * Tests whether node keys can be resolved.
+     */
+    @Test
+    public void testResolveNodeKey()
+    {
+<span class="fc" id="L832">        final List&lt;ImmutableNode&gt; nodes =</span>
+<span class="fc" id="L833">                config.resolveNodeKey(getRootNode(),</span>
+<span class="fc" id="L834">                        &quot;tables.table.name&quot;, config.getModel().getNodeHandler());</span>
+<span class="fc" id="L835">        assertEquals(&quot;Wrong number of nodes&quot;,</span>
+<span class="fc" id="L836">                NodeStructureHelper.tablesLength(), nodes.size());</span>
+<span class="fc bfc" id="L837" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.tablesLength(); i++)</span>
+        {
+<span class="fc" id="L839">            assertEquals(&quot;Wrong node value at &quot; + i,</span>
+<span class="fc" id="L840">                    NodeStructureHelper.table(i), nodes.get(i).getValue());</span>
+        }
+<span class="fc" id="L842">    }</span>
+
+    /**
+     * Tests whether attribute keys are filtered out when resolving node keys.
+     */
+    @Test
+    public void testResolveNodeKeyAttribute()
+    {
+<span class="fc" id="L850">        final String attrKey = &quot;tables.table(0)[@type]&quot;;</span>
+<span class="fc" id="L851">        config.addProperty(attrKey, &quot;system&quot;);</span>
+<span class="fc" id="L852">        assertTrue(</span>
+                &quot;Got attribute results&quot;,
+<span class="fc" id="L854">                config.resolveNodeKey(getRootNode(), attrKey,</span>
+<span class="fc" id="L855">                        config.getModel().getNodeHandler()).isEmpty());</span>
+<span class="fc" id="L856">    }</span>
+
+    /**
+     * Tests whether a correct node key is generated if no data is contained in
+     * the cache.
+     */
+    @Test
+    public void testNodeKeyEmptyCache()
+    {
+<span class="fc" id="L865">        final Map&lt;ImmutableNode, String&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L866">        final ImmutableNode nodeTabName =</span>
+<span class="fc" id="L867">                NodeStructureHelper.nodeForKey(getRootNode(),</span>
+                        &quot;tables/table(0)/name&quot;);
+<span class="fc" id="L869">        final ImmutableNode nodeFldName =</span>
+<span class="fc" id="L870">                NodeStructureHelper.nodeForKey(getRootNode(),</span>
+                        &quot;tables/table(0)/fields/field(1)/name&quot;);
+<span class="fc" id="L872">        assertEquals(&quot;Wrong key (1)&quot;, &quot;tables(0).table(0).name(0)&quot;,</span>
+<span class="fc" id="L873">                config.nodeKey(nodeTabName, cache, config.getModel()</span>
+<span class="fc" id="L874">                        .getNodeHandler()));</span>
+<span class="fc" id="L875">        assertEquals(&quot;Wrong key (2)&quot;,</span>
+                &quot;tables(0).table(0).fields(0).field(1).name(0)&quot;,
+<span class="fc" id="L877">                config.nodeKey(nodeFldName, cache, config.getModel()</span>
+<span class="fc" id="L878">                        .getNodeHandler()));</span>
+<span class="fc" id="L879">    }</span>
+
+    /**
+     * Tests whether the cache map is filled while generating node keys.
+     */
+    @Test
+    public void testNodeKeyCachePopulated()
+    {
+<span class="fc" id="L887">        final Map&lt;ImmutableNode, String&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L888">        final ImmutableNode nodeTabName =</span>
+<span class="fc" id="L889">                NodeStructureHelper.nodeForKey(getRootNode(),</span>
+                        &quot;tables/table(0)/name&quot;);
+<span class="fc" id="L891">        final NodeHandler&lt;ImmutableNode&gt; handler = config.getModel().getNodeHandler();</span>
+<span class="fc" id="L892">        config.nodeKey(nodeTabName, cache, handler);</span>
+<span class="fc" id="L893">        assertEquals(&quot;Wrong number of elements&quot;, 4, cache.size());</span>
+<span class="fc" id="L894">        assertEquals(&quot;Wrong entry (1)&quot;, &quot;tables(0).table(0).name(0)&quot;,</span>
+<span class="fc" id="L895">                cache.get(nodeTabName));</span>
+<span class="fc" id="L896">        assertEquals(&quot;Wrong entry (2)&quot;, &quot;tables(0).table(0)&quot;,</span>
+<span class="fc" id="L897">                cache.get(handler.getParent(nodeTabName)));</span>
+<span class="fc" id="L898">        assertEquals(&quot;Wrong entry (3)&quot;, &quot;tables(0)&quot;,</span>
+<span class="fc" id="L899">                cache.get(handler.getParent(handler.getParent(nodeTabName))));</span>
+<span class="fc" id="L900">        assertEquals(&quot;Wrong root entry&quot;, &quot;&quot;, cache.get(getRootNode()));</span>
+<span class="fc" id="L901">    }</span>
+
+    /**
+     * Tests whether the cache is used by nodeKey().
+     */
+    @Test
+    public void testNodeKeyCacheUsage()
+    {
+<span class="fc" id="L909">        final Map&lt;ImmutableNode, String&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L910">        final ImmutableNode nodeTabName =</span>
+<span class="fc" id="L911">                NodeStructureHelper.nodeForKey(getRootNode(),</span>
+                        &quot;tables/table(0)/name&quot;);
+<span class="fc" id="L913">        final NodeHandler&lt;ImmutableNode&gt; handler = config.getModel().getNodeHandler();</span>
+<span class="fc" id="L914">        cache.put(handler.getParent(nodeTabName), &quot;somePrefix&quot;);</span>
+<span class="fc" id="L915">        assertEquals(&quot;Wrong key&quot;, &quot;somePrefix.name(0)&quot;,</span>
+<span class="fc" id="L916">                config.nodeKey(nodeTabName, cache, handler));</span>
+<span class="fc" id="L917">    }</span>
+
+    /**
+     * Tests whether a node key for the root node can be generated.
+     */
+    @Test
+    public void testNodeKeyRootNode()
+    {
+<span class="fc" id="L925">        final Map&lt;ImmutableNode, String&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L926">        assertEquals(&quot;Wrong root node key&quot;, &quot;&quot;,</span>
+<span class="fc" id="L927">                config.nodeKey(getRootNode(), cache, config.getModel()</span>
+<span class="fc" id="L928">                        .getNodeHandler()));</span>
+<span class="fc" id="L929">    }</span>
+
+    /**
+     * Tests nodeKey() if the key is directly found in the cache.
+     */
+    @Test
+    public void testNodeKeyCacheHit()
+    {
+<span class="fc" id="L937">        final Map&lt;ImmutableNode, String&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L938">        final String key = &quot;someResultKey&quot;;</span>
+<span class="fc" id="L939">        cache.put(getRootNode(), key);</span>
+<span class="fc" id="L940">        assertEquals(&quot;Wrong result&quot;, key, config.nodeKey(getRootNode(),</span>
+<span class="fc" id="L941">                cache, config.getModel().getNodeHandler()));</span>
+<span class="fc" id="L942">    }</span>
+
+    /**
+     * Tests whether the configuration's node model can be correctly accessed.
+     */
+    @Test
+    public void testGetNodeModel()
+    {
+<span class="fc" id="L950">        final SynchronizerTestImpl sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L951">        config.setSynchronizer(sync);</span>
+<span class="fc" id="L952">        final NodeModel&lt;ImmutableNode&gt; model = config.getNodeModel();</span>
+
+<span class="fc" id="L954">        assertTrue(&quot;Wrong node model: &quot; + model,</span>
+                model instanceof InMemoryNodeModel);
+<span class="fc" id="L956">        final ImmutableNode rootNode = model.getNodeHandler().getRootNode();</span>
+<span class="fc" id="L957">        assertEquals(&quot;Wrong number of children of root node&quot;, 1, rootNode</span>
+<span class="fc" id="L958">                .getChildren().size());</span>
+<span class="fc" id="L959">        assertTrue(&quot;Wrong children of root node&quot;, rootNode.getChildren()</span>
+<span class="fc" id="L960">                .contains(NodeStructureHelper.ROOT_TABLES_TREE));</span>
+<span class="fc" id="L961">        sync.verify(SynchronizerTestImpl.Methods.BEGIN_READ,</span>
+                SynchronizerTestImpl.Methods.END_READ);
+<span class="fc" id="L963">    }</span>
+
+    /**
+     * Helper method for testing the getKeys(String) method.
+     *
+     * @param prefix the key to pass into getKeys()
+     * @param expected the expected result
+     */
+    private void checkKeys(final String prefix, final String[] expected)
+    {
+<span class="fc" id="L973">        final Set&lt;String&gt; values = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L974" title="All 2 branches covered.">        for (final String anExpected : expected) {</span>
+<span class="fc bfc" id="L975" title="All 2 branches covered.">            values.add((anExpected.startsWith(prefix)) ? anExpected : prefix + &quot;.&quot; + anExpected);</span>
+        }
+
+<span class="fc" id="L978">        final Iterator&lt;String&gt; itKeys = config.getKeys(prefix);</span>
+<span class="fc bfc" id="L979" title="All 2 branches covered.">        while(itKeys.hasNext())</span>
+        {
+<span class="fc" id="L981">            final String key = itKeys.next();</span>
+<span class="pc bpc" id="L982" title="1 of 2 branches missed.">            if(!values.contains(key))</span>
+            {
+<span class="nc" id="L984">                fail(&quot;Found unexpected key: &quot; + key);</span>
+            }
+            else
+            {
+<span class="fc" id="L988">                values.remove(key);</span>
+            }
+<span class="fc" id="L990">        }</span>
+
+<span class="fc" id="L992">        assertTrue(&quot;Remaining keys &quot; + values, values.isEmpty());</span>
+<span class="fc" id="L993">    }</span>
+
+    /**
+     * Helper method for checking keys using an alternative syntax.
+     */
+    private void checkAlternativeSyntax()
+    {
+<span class="fc" id="L1000">        assertNull(config.getProperty(&quot;tables/table/resultset&quot;));</span>
+<span class="fc" id="L1001">        assertNull(config.getProperty(&quot;tables/table/fields/field&quot;));</span>
+
+<span class="fc" id="L1003">        Object prop = config.getProperty(&quot;tables/table[0]/fields/field/name&quot;);</span>
+<span class="fc" id="L1004">        assertNotNull(prop);</span>
+<span class="fc" id="L1005">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L1006">        assertEquals(NodeStructureHelper.fieldsLength(0), ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L1008">        prop = config.getProperty(&quot;tables/table/fields/field/name&quot;);</span>
+<span class="fc" id="L1009">        assertNotNull(prop);</span>
+<span class="fc" id="L1010">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L1011">        assertEquals(totalFieldCount(), ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L1013">        prop = config.getProperty(&quot;tables/table/fields/field[3]/name&quot;);</span>
+<span class="fc" id="L1014">        assertNotNull(prop);</span>
+<span class="fc" id="L1015">        assertTrue(prop instanceof Collection);</span>
+<span class="fc" id="L1016">        assertEquals(2, ((Collection&lt;?&gt;) prop).size());</span>
+
+<span class="fc" id="L1018">        prop = config.getProperty(&quot;tables/table[1]/fields/field[2]/name&quot;);</span>
+<span class="fc" id="L1019">        assertNotNull(prop);</span>
+<span class="fc" id="L1020">        assertEquals(&quot;creationDate&quot;, prop.toString());</span>
+
+<span class="fc" id="L1022">        final Set&lt;String&gt; keys = ConfigurationAssert.keysToSet(config);</span>
+<span class="fc" id="L1023">        assertEquals(&quot;Wrong number of defined keys&quot;, 2, keys.size());</span>
+<span class="fc" id="L1024">        assertTrue(&quot;Key not found&quot;, keys.contains(&quot;tables/table/name&quot;));</span>
+<span class="fc" id="L1025">        assertTrue(&quot;Key not found&quot;, keys</span>
+<span class="fc" id="L1026">                .contains(&quot;tables/table/fields/field/name&quot;));</span>
+<span class="fc" id="L1027">    }</span>
+
+    /**
+     * Returns the total number of fields in the test data structure.
+     *
+     * @return the total number of fields
+     */
+    private static int totalFieldCount()
+    {
+<span class="fc" id="L1036">        int fieldCount = 0;</span>
+<span class="fc bfc" id="L1037" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.tablesLength(); i++)</span>
+        {
+<span class="fc" id="L1039">            fieldCount += NodeStructureHelper.fieldsLength(i);</span>
+        }
+<span class="fc" id="L1041">        return fieldCount;</span>
+    }
+
+    /**
+     * Checks the content of the passed in configuration object. Used by some
+     * tests that copy a configuration.
+     *
+     * @param c the configuration to check
+     */
+    private static void checkContent(final Configuration c)
+    {
+<span class="fc bfc" id="L1052" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.tablesLength(); i++)</span>
+        {
+<span class="fc" id="L1054">            assertEquals(NodeStructureHelper.table(i),</span>
+<span class="fc" id="L1055">                    c.getString(&quot;tables.table(&quot; + i + &quot;).name&quot;));</span>
+<span class="fc bfc" id="L1056" title="All 2 branches covered.">            for (int j = 0; j &lt; NodeStructureHelper.fieldsLength(i); j++)</span>
+            {
+<span class="fc" id="L1058">                assertEquals(</span>
+<span class="fc" id="L1059">                        NodeStructureHelper.field(i, j),</span>
+<span class="fc" id="L1060">                        c.getString(&quot;tables.table(&quot; + i + &quot;).fields.field(&quot; + j</span>
+                                + &quot;).name&quot;));
+            }
+        }
+<span class="fc" id="L1064">    }</span>
+
+    private ExpressionEngine createAlternativeExpressionEngine()
+    {
+<span class="fc" id="L1068">        return new DefaultExpressionEngine(</span>
+                new DefaultExpressionEngineSymbols.Builder(
+                        DefaultExpressionEngineSymbols.DEFAULT_SYMBOLS)
+<span class="fc" id="L1071">                        .setPropertyDelimiter(&quot;/&quot;).setIndexStart(&quot;[&quot;)</span>
+<span class="fc" id="L1072">                        .setIndexEnd(&quot;]&quot;).create());</span>
+    }
+
+    /**
+     * A concrete test implementation of
+     * {@code AbstractHierarchicalConfiguration}.
+     */
+    private static class AbstractHierarchicalConfigurationTestImpl extends
+            AbstractHierarchicalConfiguration&lt;ImmutableNode&gt;
+    {
+        public AbstractHierarchicalConfigurationTestImpl(final InMemoryNodeModel model)
+        {
+<span class="fc" id="L1084">            super(model);</span>
+<span class="fc" id="L1085">        }</span>
+
+        @Override
+        protected NodeModel&lt;ImmutableNode&gt; cloneNodeModel()
+        {
+<span class="fc" id="L1090">            return new InMemoryNodeModel(getModel().getNodeHandler().getRootNode());</span>
+        }
+
+        @Override
+        public SubnodeConfiguration configurationAt(final String key,
+                final boolean supportUpdates)
+        {
+<span class="nc" id="L1097">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public SubnodeConfiguration configurationAt(final String key)
+        {
+<span class="nc" id="L1103">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public List&lt;HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; configurationsAt(final String key)
+        {
+<span class="nc" id="L1109">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public List&lt;HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; configurationsAt(final String key, final boolean supportUpdates) {
+<span class="nc" id="L1114">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public List&lt;HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; childConfigurationsAt(final String key)
+        {
+<span class="nc" id="L1120">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public List&lt;HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; childConfigurationsAt(final String key, final boolean supportUpdates) {
+<span class="nc" id="L1125">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public ImmutableHierarchicalConfiguration immutableConfigurationAt(
+                final String key, final boolean supportUpdates)
+        {
+<span class="nc" id="L1132">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public ImmutableHierarchicalConfiguration immutableConfigurationAt(
+                final String key)
+        {
+<span class="nc" id="L1139">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public List&lt;ImmutableHierarchicalConfiguration&gt; immutableConfigurationsAt(
+                final String key)
+        {
+<span class="nc" id="L1146">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+
+        @Override
+        public List&lt;ImmutableHierarchicalConfiguration&gt; immutableChildConfigurationsAt(
+                final String key)
+        {
+<span class="nc" id="L1153">            throw new UnsupportedOperationException(&quot;Unexpected method call!&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

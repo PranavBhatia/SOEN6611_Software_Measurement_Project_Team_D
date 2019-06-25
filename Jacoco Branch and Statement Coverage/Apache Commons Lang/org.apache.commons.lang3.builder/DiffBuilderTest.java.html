@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DiffBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">DiffBuilderTest.java</span></div><h1>DiffBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Test;
+
+
+/**
+ * Unit tests {@link DiffBuilder}.
+ */
+<span class="fc" id="L36">public class DiffBuilderTest {</span>
+
+<span class="fc" id="L38">    private static final ToStringStyle SHORT_STYLE = ToStringStyle.SHORT_PREFIX_STYLE;</span>
+
+<span class="fc" id="L40">    private static class TypeTestClass implements Diffable&lt;TypeTestClass&gt; {</span>
+<span class="fc" id="L41">        private ToStringStyle style = SHORT_STYLE;</span>
+<span class="fc" id="L42">        private boolean booleanField = true;</span>
+<span class="fc" id="L43">        private boolean[] booleanArrayField = {true};</span>
+<span class="fc" id="L44">        private byte byteField = (byte) 0xFF;</span>
+<span class="fc" id="L45">        private byte[] byteArrayField = {(byte) 0xFF};</span>
+<span class="fc" id="L46">        private char charField = 'a';</span>
+<span class="fc" id="L47">        private char[] charArrayField = {'a'};</span>
+<span class="fc" id="L48">        private double doubleField = 1.0;</span>
+<span class="fc" id="L49">        private double[] doubleArrayField = {1.0};</span>
+<span class="fc" id="L50">        private float floatField = 1.0f;</span>
+<span class="fc" id="L51">        private float[] floatArrayField = {1.0f};</span>
+<span class="fc" id="L52">        private int intField = 1;</span>
+<span class="fc" id="L53">        private int[] intArrayField = {1};</span>
+<span class="fc" id="L54">        private long longField = 1L;</span>
+<span class="fc" id="L55">        private long[] longArrayField = {1L};</span>
+<span class="fc" id="L56">        private short shortField = 1;</span>
+<span class="fc" id="L57">        private short[] shortArrayField = {1};</span>
+<span class="fc" id="L58">        private Object objectField = null;</span>
+<span class="fc" id="L59">        private Object[] objectArrayField = {null};</span>
+
+        @Override
+        public DiffResult diff(final TypeTestClass obj) {
+<span class="fc" id="L63">            return new DiffBuilder(this, obj, style)</span>
+<span class="fc" id="L64">                .append(&quot;boolean&quot;, booleanField, obj.booleanField)</span>
+<span class="fc" id="L65">                .append(&quot;booleanArray&quot;, booleanArrayField, obj.booleanArrayField)</span>
+<span class="fc" id="L66">                .append(&quot;byte&quot;, byteField, obj.byteField)</span>
+<span class="fc" id="L67">                .append(&quot;byteArray&quot;, byteArrayField, obj.byteArrayField)</span>
+<span class="fc" id="L68">                .append(&quot;char&quot;, charField, obj.charField)</span>
+<span class="fc" id="L69">                .append(&quot;charArray&quot;, charArrayField, obj.charArrayField)</span>
+<span class="fc" id="L70">                .append(&quot;double&quot;, doubleField, obj.doubleField)</span>
+<span class="fc" id="L71">                .append(&quot;doubleArray&quot;, doubleArrayField, obj.doubleArrayField)</span>
+<span class="fc" id="L72">                .append(&quot;float&quot;, floatField, obj.floatField)</span>
+<span class="fc" id="L73">                .append(&quot;floatArray&quot;, floatArrayField, obj.floatArrayField)</span>
+<span class="fc" id="L74">                .append(&quot;int&quot;, intField, obj.intField)</span>
+<span class="fc" id="L75">                .append(&quot;intArray&quot;, intArrayField, obj.intArrayField)</span>
+<span class="fc" id="L76">                .append(&quot;long&quot;, longField, obj.longField)</span>
+<span class="fc" id="L77">                .append(&quot;longArray&quot;, longArrayField, obj.longArrayField)</span>
+<span class="fc" id="L78">                .append(&quot;short&quot;, shortField, obj.shortField)</span>
+<span class="fc" id="L79">                .append(&quot;shortArray&quot;, shortArrayField, obj.shortArrayField)</span>
+<span class="fc" id="L80">                .append(&quot;objectField&quot;, objectField, obj.objectField)</span>
+<span class="fc" id="L81">                .append(&quot;objectArrayField&quot;, objectArrayField, obj.objectArrayField)</span>
+<span class="fc" id="L82">                .build();</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L87">            return HashCodeBuilder.reflectionHashCode(this, false);</span>
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+<span class="fc" id="L92">            return EqualsBuilder.reflectionEquals(this, obj, false);</span>
+        }
+    }
+
+
+    @Test
+    public void testBoolean() {
+<span class="fc" id="L99">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L100">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L101">        class2.booleanField = false;</span>
+<span class="fc" id="L102">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L103">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L104">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L105">        assertEquals(Boolean.class, diff.getType());</span>
+<span class="fc" id="L106">        assertEquals(Boolean.TRUE, diff.getLeft());</span>
+<span class="fc" id="L107">        assertEquals(Boolean.FALSE, diff.getRight());</span>
+<span class="fc" id="L108">    }</span>
+
+    @Test
+    public void testBooleanArray() {
+<span class="fc" id="L112">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L113">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L114">        class2.booleanArrayField = new boolean[] {false, false};</span>
+<span class="fc" id="L115">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L116">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L117">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L118">        assertArrayEquals(ArrayUtils.toObject(class1.booleanArrayField),</span>
+<span class="fc" id="L119">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L120">        assertArrayEquals(ArrayUtils.toObject(class2.booleanArrayField),</span>
+<span class="fc" id="L121">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L122">    }</span>
+
+
+    @Test
+    public void testByte() {
+<span class="fc" id="L127">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L128">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L129">        class2.byteField = 0x01;</span>
+<span class="fc" id="L130">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L131">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L132">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L133">        assertEquals(Byte.valueOf(class1.byteField), diff.getLeft());</span>
+<span class="fc" id="L134">        assertEquals(Byte.valueOf(class2.byteField), diff.getRight());</span>
+<span class="fc" id="L135">    }</span>
+
+    @Test
+    public void testByteArray() {
+<span class="fc" id="L139">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L140">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L141">        class2.byteArrayField= new byte[] {0x01, 0x02};</span>
+<span class="fc" id="L142">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L143">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L144">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L145">        assertArrayEquals(ArrayUtils.toObject(class1.byteArrayField),</span>
+<span class="fc" id="L146">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L147">        assertArrayEquals(ArrayUtils.toObject(class2.byteArrayField),</span>
+<span class="fc" id="L148">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    public void testChar() {
+<span class="fc" id="L153">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L154">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L155">        class2.charField = 'z';</span>
+<span class="fc" id="L156">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L157">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L158">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L159">        assertEquals(Character.valueOf(class1.charField), diff.getLeft());</span>
+<span class="fc" id="L160">        assertEquals(Character.valueOf(class2.charField), diff.getRight());</span>
+<span class="fc" id="L161">    }</span>
+
+
+    @Test
+    public void testCharArray() {
+<span class="fc" id="L166">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L167">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L168">        class2.charArrayField = new char[] {'f', 'o', 'o'};</span>
+<span class="fc" id="L169">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L170">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L171">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L172">        assertArrayEquals(ArrayUtils.toObject(class1.charArrayField),</span>
+<span class="fc" id="L173">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L174">        assertArrayEquals(ArrayUtils.toObject(class2.charArrayField),</span>
+<span class="fc" id="L175">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L176">    }</span>
+
+
+    @Test
+    public void testDouble() {
+<span class="fc" id="L181">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L182">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L183">        class2.doubleField = 99.99;</span>
+<span class="fc" id="L184">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L185">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L186">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L187">        assertEquals(Double.valueOf(class1.doubleField), diff.getLeft());</span>
+<span class="fc" id="L188">        assertEquals(Double.valueOf(class2.doubleField), diff.getRight());</span>
+<span class="fc" id="L189">    }</span>
+
+
+    @Test
+    public void testDoubleArray() {
+<span class="fc" id="L194">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L195">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L196">        class2.doubleArrayField = new double[] {3.0, 2.9, 2.8};</span>
+<span class="fc" id="L197">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L198">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L199">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L200">        assertArrayEquals(ArrayUtils.toObject(class1.doubleArrayField),</span>
+<span class="fc" id="L201">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L202">        assertArrayEquals(ArrayUtils.toObject(class2.doubleArrayField),</span>
+<span class="fc" id="L203">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L204">    }</span>
+
+    @Test
+    public void testFloat() {
+<span class="fc" id="L208">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L209">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L210">        class2.floatField = 99.99F;</span>
+<span class="fc" id="L211">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L212">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L213">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L214">        assertEquals(Float.valueOf(class1.floatField), diff.getLeft());</span>
+<span class="fc" id="L215">        assertEquals(Float.valueOf(class2.floatField), diff.getRight());</span>
+<span class="fc" id="L216">    }</span>
+
+
+    @Test
+    public void testFloatArray() {
+<span class="fc" id="L221">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L222">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L223">        class2.floatArrayField = new float[] {3.0F, 2.9F, 2.8F};</span>
+<span class="fc" id="L224">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L225">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L226">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L227">        assertArrayEquals(ArrayUtils.toObject(class1.floatArrayField),</span>
+<span class="fc" id="L228">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L229">        assertArrayEquals(ArrayUtils.toObject(class2.floatArrayField),</span>
+<span class="fc" id="L230">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L231">    }</span>
+
+
+    @Test
+    public void testInt() {
+<span class="fc" id="L236">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L237">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L238">        class2.intField = 42;</span>
+<span class="fc" id="L239">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L240">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L241">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L242">        assertEquals(Integer.valueOf(class1.intField), diff.getLeft());</span>
+<span class="fc" id="L243">        assertEquals(Integer.valueOf(class2.intField), diff.getRight());</span>
+<span class="fc" id="L244">    }</span>
+
+
+    @Test
+    public void testIntArray() {
+<span class="fc" id="L249">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L250">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L251">        class2.intArrayField = new int[] {3, 2, 1};</span>
+<span class="fc" id="L252">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L253">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L254">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L255">        assertArrayEquals(ArrayUtils.toObject(class1.intArrayField),</span>
+<span class="fc" id="L256">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L257">        assertArrayEquals(ArrayUtils.toObject(class2.intArrayField),</span>
+<span class="fc" id="L258">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L259">    }</span>
+
+    @Test
+    public void testLong() {
+<span class="fc" id="L263">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L264">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L265">        class2.longField = 42L;</span>
+<span class="fc" id="L266">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L267">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L268">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L269">        assertEquals(Long.valueOf(class1.longField), diff.getLeft());</span>
+<span class="fc" id="L270">        assertEquals(Long.valueOf(class2.longField), diff.getRight());</span>
+<span class="fc" id="L271">    }</span>
+
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L276">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L277">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L278">        class2.longArrayField = new long[] {3L, 2L, 1L};</span>
+<span class="fc" id="L279">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L280">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L281">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L282">        assertArrayEquals(ArrayUtils.toObject(class1.longArrayField),</span>
+<span class="fc" id="L283">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L284">        assertArrayEquals(ArrayUtils.toObject(class2.longArrayField),</span>
+<span class="fc" id="L285">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L286">    }</span>
+
+    @Test
+    public void testShort() {
+<span class="fc" id="L290">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L291">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L292">        class2.shortField = 42;</span>
+<span class="fc" id="L293">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L294">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L295">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L296">        assertEquals(Short.valueOf(class1.shortField), diff.getLeft());</span>
+<span class="fc" id="L297">        assertEquals(Short.valueOf(class2.shortField), diff.getRight());</span>
+<span class="fc" id="L298">    }</span>
+
+
+    @Test
+    public void testShortArray() {
+<span class="fc" id="L303">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L304">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L305">        class2.shortArrayField = new short[] {3, 2, 1};</span>
+<span class="fc" id="L306">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L307">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L308">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L309">        assertArrayEquals(ArrayUtils.toObject(class1.shortArrayField),</span>
+<span class="fc" id="L310">                (Object[]) diff.getLeft());</span>
+<span class="fc" id="L311">        assertArrayEquals(ArrayUtils.toObject(class2.shortArrayField),</span>
+<span class="fc" id="L312">                (Object[]) diff.getRight());</span>
+<span class="fc" id="L313">    }</span>
+
+    @Test
+    public void testObject() {
+<span class="fc" id="L317">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L318">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L319">        class2.objectField = &quot;Some string&quot;;</span>
+<span class="fc" id="L320">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L321">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L322">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L323">        assertEquals(class1.objectField, diff.getLeft());</span>
+<span class="fc" id="L324">        assertEquals(class2.objectField, diff.getRight());</span>
+<span class="fc" id="L325">    }</span>
+
+    /**
+     * Test that &quot;left&quot; and &quot;right&quot; are the same instance and are equal.
+     */
+    @Test
+    public void testObjectsSameAndEqual() {
+<span class="fc" id="L332">        final Integer sameObject = 1;</span>
+<span class="fc" id="L333">        final TypeTestClass left = new TypeTestClass();</span>
+<span class="fc" id="L334">        left.objectField = sameObject;</span>
+<span class="fc" id="L335">        final TypeTestClass right = new TypeTestClass();</span>
+<span class="fc" id="L336">        right.objectField = sameObject;</span>
+<span class="fc" id="L337">        assertSame(left.objectField, right.objectField);</span>
+<span class="fc" id="L338">        assertEquals(left.objectField, right.objectField);</span>
+
+<span class="fc" id="L340">        final DiffResult list = left.diff(right);</span>
+<span class="fc" id="L341">        assertEquals(0, list.getNumberOfDiffs());</span>
+<span class="fc" id="L342">    }</span>
+
+    /**
+     * Test that &quot;left&quot; and &quot;right&quot; are the same instance but are equal.
+     */
+    @Test
+    public void testObjectsNotSameButEqual() {
+<span class="fc" id="L349">        final TypeTestClass left = new TypeTestClass();</span>
+<span class="fc" id="L350">        left.objectField = new Integer(1);</span>
+<span class="fc" id="L351">        final TypeTestClass right = new TypeTestClass();</span>
+<span class="fc" id="L352">        right.objectField = new Integer(1);</span>
+<span class="fc" id="L353">        assertNotSame(left.objectField, right.objectField);</span>
+<span class="fc" id="L354">        assertEquals(left.objectField, right.objectField);</span>
+
+<span class="fc" id="L356">        final DiffResult list = left.diff(right);</span>
+<span class="fc" id="L357">        assertEquals(0, list.getNumberOfDiffs());</span>
+<span class="fc" id="L358">    }</span>
+
+    /**
+     * Test that &quot;left&quot; and &quot;right&quot; are not the same instance and are not equal.
+     */
+    @Test
+    public void testObjectsNotSameNorEqual() {
+<span class="fc" id="L365">        final TypeTestClass left = new TypeTestClass();</span>
+<span class="fc" id="L366">        left.objectField = 4;</span>
+<span class="fc" id="L367">        final TypeTestClass right = new TypeTestClass();</span>
+<span class="fc" id="L368">        right.objectField = 100;</span>
+<span class="fc" id="L369">        assertNotSame(left.objectField, right.objectField);</span>
+<span class="fc" id="L370">        assertNotEquals(left.objectField, right.objectField);</span>
+
+<span class="fc" id="L372">        final DiffResult list = left.diff(right);</span>
+<span class="fc" id="L373">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L374">    }</span>
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L378">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L379">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L380">        class2.objectArrayField = new Object[] {&quot;string&quot;, 1, 2};</span>
+<span class="fc" id="L381">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L382">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L383">        final Diff&lt;?&gt; diff = list.getDiffs().get(0);</span>
+<span class="fc" id="L384">        assertArrayEquals(class1.objectArrayField, (Object[]) diff.getLeft());</span>
+<span class="fc" id="L385">        assertArrayEquals(class2.objectArrayField, (Object[]) diff.getRight());</span>
+<span class="fc" id="L386">    }</span>
+
+    @Test
+    public void testObjectArrayEqual() {
+<span class="fc" id="L390">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L391">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L392">        class1.objectArrayField = new Object[] {&quot;string&quot;, 1, 2};</span>
+<span class="fc" id="L393">        class2.objectArrayField = new Object[] {&quot;string&quot;, 1, 2};</span>
+<span class="fc" id="L394">        final DiffResult list = class1.diff(class2);</span>
+<span class="fc" id="L395">        assertEquals(0, list.getNumberOfDiffs());</span>
+<span class="fc" id="L396">    }</span>
+
+
+    @Test
+    public void testByteArrayEqualAsObject() {
+<span class="fc" id="L401">        final DiffResult list = new DiffBuilder(&quot;String1&quot;, &quot;String2&quot;, SHORT_STYLE)</span>
+<span class="fc" id="L402">            .append(&quot;foo&quot;, new boolean[] {false}, new boolean[] {false})</span>
+<span class="fc" id="L403">            .append(&quot;foo&quot;, new byte[] {0x01}, new byte[] {0x01})</span>
+<span class="fc" id="L404">            .append(&quot;foo&quot;, new char[] {'a'}, new char[] {'a'})</span>
+<span class="fc" id="L405">            .append(&quot;foo&quot;, new double[] {1.0}, new double[] {1.0})</span>
+<span class="fc" id="L406">            .append(&quot;foo&quot;, new float[] {1.0F}, new float[] {1.0F})</span>
+<span class="fc" id="L407">            .append(&quot;foo&quot;, new int[] {1}, new int[] {1})</span>
+<span class="fc" id="L408">            .append(&quot;foo&quot;, new long[] {1L}, new long[] {1L})</span>
+<span class="fc" id="L409">            .append(&quot;foo&quot;, new short[] {1}, new short[] {1})</span>
+<span class="fc" id="L410">            .append(&quot;foo&quot;, new Object[] {1, &quot;two&quot;}, new Object[] {1, &quot;two&quot;})</span>
+<span class="fc" id="L411">            .build();</span>
+
+<span class="fc" id="L413">        assertEquals(0, list.getNumberOfDiffs());</span>
+<span class="fc" id="L414">    }</span>
+
+    @Test
+    public void testDiffResult() {
+<span class="fc" id="L418">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L419">        final TypeTestClass class2 = new TypeTestClass();</span>
+<span class="fc" id="L420">        class2.intField = 2;</span>
+
+<span class="fc" id="L422">        final DiffResult list = new DiffBuilder(class1, class2, SHORT_STYLE)</span>
+<span class="fc" id="L423">            .append(&quot;prop1&quot;, class1.diff(class2))</span>
+<span class="fc" id="L424">            .build();</span>
+<span class="fc" id="L425">        assertEquals(1, list.getNumberOfDiffs());</span>
+<span class="fc" id="L426">        assertEquals(&quot;prop1.int&quot;, list.getDiffs().get(0).getFieldName());</span>
+<span class="fc" id="L427">    }</span>
+
+    @Test
+    public void testNullLhs() {
+<span class="pc" id="L431">        assertThrows(IllegalArgumentException.class, () -&gt; new DiffBuilder(null, this, ToStringStyle.DEFAULT_STYLE));</span>
+<span class="fc" id="L432">    }</span>
+
+
+    @Test
+    public void testNullRhs() {
+<span class="pc" id="L437">        assertThrows(IllegalArgumentException.class, () -&gt; new DiffBuilder(this, null, ToStringStyle.DEFAULT_STYLE));</span>
+<span class="fc" id="L438">    }</span>
+
+    @Test
+    public void testSameObjectIgnoresAppends() {
+<span class="fc" id="L442">        final TypeTestClass testClass = new TypeTestClass();</span>
+<span class="fc" id="L443">        final DiffResult list = new DiffBuilder(testClass, testClass, SHORT_STYLE)</span>
+<span class="fc" id="L444">            .append(&quot;ignored&quot;, false, true)</span>
+<span class="fc" id="L445">            .build();</span>
+<span class="fc" id="L446">        assertEquals(0, list.getNumberOfDiffs());</span>
+<span class="fc" id="L447">    }</span>
+
+    @Test
+    public void testSimilarObjectIgnoresAppends() {
+<span class="fc" id="L451">        final TypeTestClass testClass1 = new TypeTestClass();</span>
+<span class="fc" id="L452">        final TypeTestClass testClass2 = new TypeTestClass();</span>
+<span class="fc" id="L453">        final DiffResult list = new DiffBuilder(testClass1, testClass2, SHORT_STYLE)</span>
+<span class="fc" id="L454">            .append(&quot;ignored&quot;, false, true)</span>
+<span class="fc" id="L455">            .build();</span>
+<span class="fc" id="L456">        assertEquals(0, list.getNumberOfDiffs());</span>
+<span class="fc" id="L457">    }</span>
+
+
+    @Test
+    public void testStylePassedToDiffResult() {
+<span class="fc" id="L462">        final TypeTestClass class1 = new TypeTestClass();</span>
+<span class="fc" id="L463">        DiffResult list = class1.diff(class1);</span>
+<span class="fc" id="L464">        assertEquals(SHORT_STYLE, list.getToStringStyle());</span>
+
+<span class="fc" id="L466">        class1.style = ToStringStyle.MULTI_LINE_STYLE;</span>
+<span class="fc" id="L467">        list = class1.diff(class1);</span>
+<span class="fc" id="L468">        assertEquals(ToStringStyle.MULTI_LINE_STYLE, list.getToStringStyle());</span>
+<span class="fc" id="L469">    }</span>
+
+    @Test
+    public void testTriviallyEqualTestDisabled() {
+<span class="fc" id="L473">        final Matcher&lt;Integer&gt; equalToOne = equalTo(1);</span>
+
+        // Constructor's arguments are not trivially equal, but not testing for that.
+<span class="fc" id="L476">        final DiffBuilder explicitTestAndNotEqual1 = new DiffBuilder(1, 2, null, false);</span>
+<span class="fc" id="L477">        explicitTestAndNotEqual1.append(&quot;letter&quot;, &quot;X&quot;, &quot;Y&quot;);</span>
+<span class="fc" id="L478">        assertThat(explicitTestAndNotEqual1.build().getNumberOfDiffs(), equalToOne);</span>
+
+        // Constructor's arguments are trivially equal, but not testing for that.
+<span class="fc" id="L481">        final DiffBuilder explicitTestAndNotEqual2 = new DiffBuilder(1, 1, null, false);</span>
+        // This append(f, l, r) will not abort early.
+<span class="fc" id="L483">        explicitTestAndNotEqual2.append(&quot;letter&quot;, &quot;X&quot;, &quot;Y&quot;);</span>
+<span class="fc" id="L484">        assertThat(explicitTestAndNotEqual2.build().getNumberOfDiffs(), equalToOne);</span>
+<span class="fc" id="L485">    }</span>
+
+    @Test
+    public void testTriviallyEqualTestEnabled() {
+<span class="fc" id="L489">        final Matcher&lt;Integer&gt; equalToZero = equalTo(0);</span>
+<span class="fc" id="L490">        final Matcher&lt;Integer&gt; equalToOne = equalTo(1);</span>
+
+        // The option to test if trivially equal is enabled by default.
+<span class="fc" id="L493">        final DiffBuilder implicitTestAndEqual = new DiffBuilder(1, 1, null);</span>
+        // This append(f, l, r) will abort without creating a Diff for letter.
+<span class="fc" id="L495">        implicitTestAndEqual.append(&quot;letter&quot;, &quot;X&quot;, &quot;Y&quot;);</span>
+<span class="fc" id="L496">        assertThat(implicitTestAndEqual.build().getNumberOfDiffs(), equalToZero);</span>
+
+<span class="fc" id="L498">        final DiffBuilder implicitTestAndNotEqual = new DiffBuilder(1, 2, null);</span>
+        // This append(f, l, r) will not abort early
+        // because the constructor's arguments were not trivially equal.
+<span class="fc" id="L501">        implicitTestAndNotEqual.append(&quot;letter&quot;, &quot;X&quot;, &quot;Y&quot;);</span>
+<span class="fc" id="L502">        assertThat(implicitTestAndNotEqual.build().getNumberOfDiffs(), equalToOne);</span>
+
+        // This is explicitly enabling the trivially equal test.
+<span class="fc" id="L505">        final DiffBuilder explicitTestAndEqual = new DiffBuilder(1, 1, null, true);</span>
+<span class="fc" id="L506">        explicitTestAndEqual.append(&quot;letter&quot;, &quot;X&quot;, &quot;Y&quot;);</span>
+<span class="fc" id="L507">        assertThat(explicitTestAndEqual.build().getNumberOfDiffs(), equalToZero);</span>
+<span class="fc" id="L508">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

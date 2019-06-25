@@ -1,0 +1,1305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ToStringBuilderTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">ToStringBuilderTest.java</span></div><h1>ToStringBuilderTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests for {@link org.apache.commons.lang3.builder.ToStringBuilder}.
+ */
+<span class="fc" id="L36">public class ToStringBuilderTest {</span>
+
+    // See LANG-1337 for more.
+    private static final int ARRAYLIST_INITIAL_CAPACITY = 10;
+<span class="fc" id="L40">    private final Integer base = Integer.valueOf(5);</span>
+<span class="fc" id="L41">    private final String baseStr = base.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(base));</span>
+
+    /*
+     * All tests should leave the registry empty.
+     */
+    @AfterEach
+    public void after() {
+<span class="fc" id="L48">        validateNullToStringStyleRegistry();</span>
+<span class="fc" id="L49">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testConstructorEx1() {
+<span class="fc" id="L55">        assertEquals(&quot;&lt;null&gt;&quot;, new ToStringBuilder(null).toString());</span>
+<span class="fc" id="L56">    }</span>
+
+    @Test
+    public void testConstructorEx2() {
+<span class="fc" id="L60">        assertEquals(&quot;&lt;null&gt;&quot;, new ToStringBuilder(null, null).toString());</span>
+<span class="fc" id="L61">        new ToStringBuilder(this.base, null).toString();</span>
+<span class="fc" id="L62">    }</span>
+
+    @Test
+    public void testConstructorEx3() {
+<span class="fc" id="L66">        assertEquals(&quot;&lt;null&gt;&quot;, new ToStringBuilder(null, null, null).toString());</span>
+<span class="fc" id="L67">        new ToStringBuilder(this.base, null, null).toString();</span>
+<span class="fc" id="L68">        new ToStringBuilder(this.base, ToStringStyle.DEFAULT_STYLE, null).toString();</span>
+<span class="fc" id="L69">    }</span>
+
+    @Test
+    public void testGetSetDefault() {
+        try {
+<span class="fc" id="L74">            ToStringBuilder.setDefaultStyle(ToStringStyle.NO_FIELD_NAMES_STYLE);</span>
+<span class="fc" id="L75">            assertSame(ToStringStyle.NO_FIELD_NAMES_STYLE, ToStringBuilder.getDefaultStyle());</span>
+        } finally {
+            // reset for other tests
+<span class="fc" id="L78">            ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);</span>
+        }
+<span class="fc" id="L80">    }</span>
+
+    @Test
+    public void testSetDefaultEx() {
+<span class="pc" id="L84">        assertThrows(IllegalArgumentException.class, () -&gt; ToStringBuilder.setDefaultStyle(null));</span>
+<span class="fc" id="L85">    }</span>
+
+    @Test
+    public void testBlank() {
+<span class="fc" id="L89">        assertEquals(baseStr + &quot;[]&quot;, new ToStringBuilder(base).toString());</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Test wrapper for int primitive.
+     */
+    @Test
+    public void testReflectionInteger() {
+<span class="fc" id="L97">        assertEquals(baseStr + &quot;[value=5]&quot;, ToStringBuilder.reflectionToString(base));</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Test wrapper for char primitive.
+     */
+    @Test
+    public void testReflectionCharacter() {
+<span class="fc" id="L105">        final Character c = 'A';</span>
+<span class="fc" id="L106">        assertEquals(this.toBaseString(c) + &quot;[value=A]&quot;, ToStringBuilder.reflectionToString(c));</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Test wrapper for char boolean.
+     */
+    @Test
+    public void testReflectionBoolean() {
+        Boolean b;
+<span class="fc" id="L115">        b = Boolean.TRUE;</span>
+<span class="fc" id="L116">        assertEquals(this.toBaseString(b) + &quot;[value=true]&quot;, ToStringBuilder.reflectionToString(b));</span>
+<span class="fc" id="L117">        b = Boolean.FALSE;</span>
+<span class="fc" id="L118">        assertEquals(this.toBaseString(b) + &quot;[value=false]&quot;, ToStringBuilder.reflectionToString(b));</span>
+<span class="fc" id="L119">    }</span>
+
+    /**
+     * Create the same toString() as Object.toString().
+     * @param o the object to create the string for.
+     * @return a String in the Object.toString format.
+     */
+    private String toBaseString(final Object o) {
+<span class="fc" id="L127">        return o.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(o));</span>
+    }
+
+    // Reflection Array tests
+
+    //
+    // Note on the following line of code repeated in the reflection array tests.
+    //
+    // assertReflectionArray(&quot;&lt;null&gt;&quot;, array);
+    //
+    // The expected value is not baseStr + &quot;[&lt;null&gt;]&quot; since array==null and is typed as Object.
+    // The null array does not carry array type information.
+    // If we added a primitive array type constructor and pile of associated methods,
+    // then type declaring type information could be carried forward. IMHO, null is null.
+    //
+    // Gary Gregory - 2003-03-12 - ggregory@seagullsw.com
+    //
+
+    public void assertReflectionArray(final String expected, final Object actual) {
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        if (actual == null) {</span>
+            // Until ToStringBuilder supports null objects.
+<span class="fc" id="L148">            return;</span>
+        }
+<span class="nc" id="L150">        assertEquals(expected, ToStringBuilder.reflectionToString(actual));</span>
+<span class="nc" id="L151">        assertEquals(expected, ToStringBuilder.reflectionToString(actual, null));</span>
+<span class="nc" id="L152">        assertEquals(expected, ToStringBuilder.reflectionToString(actual, null, true));</span>
+<span class="nc" id="L153">        assertEquals(expected, ToStringBuilder.reflectionToString(actual, null, false));</span>
+<span class="nc" id="L154">    }</span>
+
+    @Test
+    public void testReflectionObjectArray() {
+<span class="fc" id="L158">        Object[] array = new Object[] { null, base, new int[] { 3, 6 } };</span>
+<span class="fc" id="L159">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L160">        assertEquals(baseString + &quot;[{&lt;null&gt;,5,{3,6}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L161">        array = null;</span>
+<span class="fc" id="L162">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L163">    }</span>
+
+    @Test
+    public void testReflectionLongArray() {
+<span class="fc" id="L167">        long[] array = new long[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L168">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L169">        assertEquals(baseString + &quot;[{1,2,-3,4}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L170">        array = null;</span>
+<span class="fc" id="L171">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L172">    }</span>
+
+    @Test
+    public void testReflectionIntArray() {
+<span class="fc" id="L176">        int[] array = new int[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L177">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L178">        assertEquals(baseString + &quot;[{1,2,-3,4}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L179">        array = null;</span>
+<span class="fc" id="L180">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L181">    }</span>
+
+    @Test
+    public void testReflectionShortArray() {
+<span class="fc" id="L185">        short[] array = new short[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L186">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L187">        assertEquals(baseString + &quot;[{1,2,-3,4}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L188">        array = null;</span>
+<span class="fc" id="L189">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L190">    }</span>
+
+    @Test
+    public void testReflectionyteArray() {
+<span class="fc" id="L194">        byte[] array = new byte[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L195">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L196">        assertEquals(baseString + &quot;[{1,2,-3,4}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L197">        array = null;</span>
+<span class="fc" id="L198">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L199">    }</span>
+
+    @Test
+    public void testReflectionCharArray() {
+<span class="fc" id="L203">        char[] array = new char[] { 'A', '2', '_', 'D' };</span>
+<span class="fc" id="L204">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L205">        assertEquals(baseString + &quot;[{A,2,_,D}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L206">        array = null;</span>
+<span class="fc" id="L207">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L208">    }</span>
+
+    @Test
+    public void testReflectionDoubleArray() {
+<span class="fc" id="L212">        double[] array = new double[] { 1.0, 2.9876, -3.00001, 4.3 };</span>
+<span class="fc" id="L213">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L214">        assertEquals(baseString + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L215">        array = null;</span>
+<span class="fc" id="L216">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L217">    }</span>
+
+    @Test
+    public void testReflectionFloatArray() {
+<span class="fc" id="L221">        float[] array = new float[] { 1.0f, 2.9876f, -3.00001f, 4.3f };</span>
+<span class="fc" id="L222">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L223">        assertEquals(baseString + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L224">        array = null;</span>
+<span class="fc" id="L225">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L226">    }</span>
+
+    @Test
+    public void testReflectionBooleanArray() {
+<span class="fc" id="L230">        boolean[] array = new boolean[] { true, false, false };</span>
+<span class="fc" id="L231">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L232">        assertEquals(baseString + &quot;[{true,false,false}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L233">        array = null;</span>
+<span class="fc" id="L234">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L235">    }</span>
+
+    // Reflection Array Array tests
+
+    @Test
+    public void testReflectionFloatArrayArray() {
+<span class="fc" id="L241">        float[][] array = new float[][] { { 1.0f, 2.29686f }, null, { Float.NaN } };</span>
+<span class="fc" id="L242">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L243">        assertEquals(baseString + &quot;[{{1.0,2.29686},&lt;null&gt;,{NaN}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L244">        array = null;</span>
+<span class="fc" id="L245">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L246">    }</span>
+
+
+    @Test
+    public void testReflectionLongArrayArray() {
+<span class="fc" id="L251">        long[][] array = new long[][] { { 1, 2 }, null, { 5 } };</span>
+<span class="fc" id="L252">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L253">        assertEquals(baseString + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L254">        array = null;</span>
+<span class="fc" id="L255">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L256">    }</span>
+
+    @Test
+    public void testReflectionIntArrayArray() {
+<span class="fc" id="L260">        int[][] array = new int[][] { { 1, 2 }, null, { 5 } };</span>
+<span class="fc" id="L261">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L262">        assertEquals(baseString + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L263">        array = null;</span>
+<span class="fc" id="L264">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L265">    }</span>
+
+    @Test
+    public void testReflectionhortArrayArray() {
+<span class="fc" id="L269">        short[][] array = new short[][] { { 1, 2 }, null, { 5 } };</span>
+<span class="fc" id="L270">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L271">        assertEquals(baseString + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L272">        array = null;</span>
+<span class="fc" id="L273">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L274">    }</span>
+
+    @Test
+    public void testReflectionByteArrayArray() {
+<span class="fc" id="L278">        byte[][] array = new byte[][] { { 1, 2 }, null, { 5 } };</span>
+<span class="fc" id="L279">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L280">        assertEquals(baseString + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L281">        array = null;</span>
+<span class="fc" id="L282">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L283">    }</span>
+
+    @Test
+    public void testReflectionCharArrayArray() {
+<span class="fc" id="L287">        char[][] array = new char[][] { { 'A', 'B' }, null, { 'p' } };</span>
+<span class="fc" id="L288">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L289">        assertEquals(baseString + &quot;[{{A,B},&lt;null&gt;,{p}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L290">        array = null;</span>
+<span class="fc" id="L291">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L292">    }</span>
+
+    @Test
+    public void testReflectionDoubleArrayArray() {
+<span class="fc" id="L296">        double[][] array = new double[][] { { 1.0, 2.29686 }, null, { Double.NaN } };</span>
+<span class="fc" id="L297">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L298">        assertEquals(baseString + &quot;[{{1.0,2.29686},&lt;null&gt;,{NaN}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L299">        array = null;</span>
+<span class="fc" id="L300">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L301">    }</span>
+
+    @Test
+    public void testReflectionBooleanArrayArray() {
+<span class="fc" id="L305">        boolean[][] array = new boolean[][] { { true, false }, null, { false } };</span>
+<span class="fc" id="L306">        final String baseString = this.toBaseString(array);</span>
+<span class="fc" id="L307">        assertEquals(baseString + &quot;[{{true,false},&lt;null&gt;,{false}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L308">        assertEquals(baseString + &quot;[{{true,false},&lt;null&gt;,{false}}]&quot;, ToStringBuilder.reflectionToString(array));</span>
+<span class="fc" id="L309">        array = null;</span>
+<span class="fc" id="L310">        assertReflectionArray(&quot;&lt;null&gt;&quot;, array);</span>
+<span class="fc" id="L311">    }</span>
+
+    // Reflection hierarchy tests
+    @Test
+    public void testReflectionHierarchyArrayList() {
+        // LANG-1337 without this, the generated string can differ depending on the JVM version/vendor
+<span class="fc" id="L317">        final List&lt;Object&gt; list = new ArrayList&lt;&gt;(ARRAYLIST_INITIAL_CAPACITY);</span>
+<span class="fc" id="L318">        final String baseString = this.toBaseString(list);</span>
+<span class="fc" id="L319">        final String expectedWithTransients = baseString + &quot;[elementData={&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;,&lt;null&gt;},size=0,modCount=0]&quot;;</span>
+<span class="fc" id="L320">        final String toStringWithTransients = ToStringBuilder.reflectionToString(list, null, true);</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">        if (!expectedWithTransients.equals(toStringWithTransients)) {</span>
+<span class="nc" id="L322">            assertEquals(expectedWithTransients, toStringWithTransients);</span>
+        }
+<span class="fc" id="L324">        final String expectedWithoutTransients = baseString + &quot;[size=0]&quot;;</span>
+<span class="fc" id="L325">        final String toStringWithoutTransients = ToStringBuilder.reflectionToString(list, null, false);</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">        if (!expectedWithoutTransients.equals(toStringWithoutTransients)) {</span>
+<span class="nc" id="L327">            assertEquals(expectedWithoutTransients, toStringWithoutTransients);</span>
+        }
+<span class="fc" id="L329">    }</span>
+
+    @Test
+    public void testReflectionHierarchy() {
+<span class="fc" id="L333">        final ReflectionTestFixtureA baseA = new ReflectionTestFixtureA();</span>
+<span class="fc" id="L334">        String baseString = this.toBaseString(baseA);</span>
+<span class="fc" id="L335">        assertEquals(baseString + &quot;[a=a]&quot;, ToStringBuilder.reflectionToString(baseA));</span>
+<span class="fc" id="L336">        assertEquals(baseString + &quot;[a=a]&quot;, ToStringBuilder.reflectionToString(baseA, null));</span>
+<span class="fc" id="L337">        assertEquals(baseString + &quot;[a=a]&quot;, ToStringBuilder.reflectionToString(baseA, null, false));</span>
+<span class="fc" id="L338">        assertEquals(baseString + &quot;[a=a,transientA=t]&quot;, ToStringBuilder.reflectionToString(baseA, null, true));</span>
+<span class="fc" id="L339">        assertEquals(baseString + &quot;[a=a]&quot;, ToStringBuilder.reflectionToString(baseA, null, false, null));</span>
+<span class="fc" id="L340">        assertEquals(baseString + &quot;[a=a]&quot;, ToStringBuilder.reflectionToString(baseA, null, false, Object.class));</span>
+<span class="fc" id="L341">        assertEquals(baseString + &quot;[a=a]&quot;, ToStringBuilder.reflectionToString(baseA, null, false, ReflectionTestFixtureA.class));</span>
+
+<span class="fc" id="L343">        final ReflectionTestFixtureB baseB = new ReflectionTestFixtureB();</span>
+<span class="fc" id="L344">        baseString = this.toBaseString(baseB);</span>
+<span class="fc" id="L345">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB));</span>
+<span class="fc" id="L346">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB));</span>
+<span class="fc" id="L347">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB, null));</span>
+<span class="fc" id="L348">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB, null, false));</span>
+<span class="fc" id="L349">        assertEquals(baseString + &quot;[b=b,transientB=t,a=a,transientA=t]&quot;, ToStringBuilder.reflectionToString(baseB, null, true));</span>
+<span class="fc" id="L350">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB, null, false, null));</span>
+<span class="fc" id="L351">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB, null, false, Object.class));</span>
+<span class="fc" id="L352">        assertEquals(baseString + &quot;[b=b,a=a]&quot;, ToStringBuilder.reflectionToString(baseB, null, false, ReflectionTestFixtureA.class));</span>
+<span class="fc" id="L353">        assertEquals(baseString + &quot;[b=b]&quot;, ToStringBuilder.reflectionToString(baseB, null, false, ReflectionTestFixtureB.class));</span>
+<span class="fc" id="L354">    }</span>
+
+<span class="fc" id="L356">    static class ReflectionTestFixtureA {</span>
+<span class="fc" id="L357">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private final char a='a';
+<span class="fc" id="L359">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private transient char transientA='t';
+    }
+
+<span class="fc" id="L363">    static class ReflectionTestFixtureB extends ReflectionTestFixtureA {</span>
+<span class="fc" id="L364">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private final char b='b';
+<span class="fc" id="L366">        @SuppressWarnings(&quot;unused&quot;)</span>
+        private transient char transientB='t';
+    }
+
+    @Test
+    public void testInnerClassReflection() {
+<span class="fc" id="L372">        final Outer outer = new Outer();</span>
+<span class="fc" id="L373">        assertEquals(toBaseString(outer) + &quot;[inner=&quot; + toBaseString(outer.inner) + &quot;[]]&quot;, outer.toString());</span>
+<span class="fc" id="L374">    }</span>
+
+<span class="fc" id="L376">    static class Outer {</span>
+<span class="fc" id="L377">        Inner inner = new Inner();</span>
+<span class="fc" id="L378">        class Inner {</span>
+            @Override
+            public String toString() {
+<span class="fc" id="L381">                return ToStringBuilder.reflectionToString(this);</span>
+            }
+        }
+        @Override
+        public String toString() {
+<span class="fc" id="L386">            return ToStringBuilder.reflectionToString(this);</span>
+        }
+    }
+
+    // Reflection cycle tests
+
+    /**
+     * Test an array element pointing to its container.
+     */
+    @Test
+    public void testReflectionArrayCycle() {
+<span class="fc" id="L397">        final Object[] objects = new Object[1];</span>
+<span class="fc" id="L398">        objects[0] = objects;</span>
+<span class="fc" id="L399">        assertEquals(</span>
+<span class="fc" id="L400">            this.toBaseString(objects) + &quot;[{&quot; + this.toBaseString(objects) + &quot;}]&quot;,</span>
+<span class="fc" id="L401">            ToStringBuilder.reflectionToString(objects));</span>
+<span class="fc" id="L402">    }</span>
+
+    /**
+     * Test an array element pointing to its container.
+     */
+    @Test
+    public void testReflectionArrayCycleLevel2() {
+<span class="fc" id="L409">        final Object[] objects = new Object[1];</span>
+<span class="fc" id="L410">        final Object[] objectsLevel2 = new Object[1];</span>
+<span class="fc" id="L411">        objects[0] = objectsLevel2;</span>
+<span class="fc" id="L412">        objectsLevel2[0] = objects;</span>
+<span class="fc" id="L413">        assertEquals(</span>
+<span class="fc" id="L414">            this.toBaseString(objects) + &quot;[{{&quot; + this.toBaseString(objects) + &quot;}}]&quot;,</span>
+<span class="fc" id="L415">            ToStringBuilder.reflectionToString(objects));</span>
+<span class="fc" id="L416">        assertEquals(</span>
+<span class="fc" id="L417">            this.toBaseString(objectsLevel2) + &quot;[{{&quot; + this.toBaseString(objectsLevel2) + &quot;}}]&quot;,</span>
+<span class="fc" id="L418">            ToStringBuilder.reflectionToString(objectsLevel2));</span>
+<span class="fc" id="L419">    }</span>
+
+    @Test
+    public void testReflectionArrayArrayCycle() {
+<span class="fc" id="L423">        final Object[][] objects = new Object[2][2];</span>
+<span class="fc" id="L424">        objects[0][0] = objects;</span>
+<span class="fc" id="L425">        objects[0][1] = objects;</span>
+<span class="fc" id="L426">        objects[1][0] = objects;</span>
+<span class="fc" id="L427">        objects[1][1] = objects;</span>
+<span class="fc" id="L428">        final String basicToString = this.toBaseString(objects);</span>
+<span class="fc" id="L429">        assertEquals(</span>
+            basicToString
+                + &quot;[{{&quot;
+                + basicToString
+                + &quot;,&quot;
+                + basicToString
+                + &quot;},{&quot;
+                + basicToString
+                + &quot;,&quot;
+                + basicToString
+                + &quot;}}]&quot;,
+<span class="fc" id="L440">            ToStringBuilder.reflectionToString(objects));</span>
+<span class="fc" id="L441">    }</span>
+
+    /**
+     * A reflection test fixture.
+     */
+<span class="fc" id="L446">    static class ReflectionTestCycleA {</span>
+        ReflectionTestCycleB b;
+
+        @Override
+        public String toString() {
+<span class="fc" id="L451">            return ToStringBuilder.reflectionToString(this);</span>
+        }
+    }
+
+    /**
+     * A reflection test fixture.
+     */
+<span class="fc" id="L458">    static class ReflectionTestCycleB {</span>
+        ReflectionTestCycleA a;
+
+        @Override
+        public String toString() {
+<span class="fc" id="L463">            return ToStringBuilder.reflectionToString(this);</span>
+        }
+    }
+
+    /**
+     * A reflection test fixture.
+     */
+    static class SimpleReflectionTestFixture {
+        Object o;
+
+<span class="fc" id="L473">        SimpleReflectionTestFixture() {</span>
+<span class="fc" id="L474">        }</span>
+
+<span class="fc" id="L476">        SimpleReflectionTestFixture(final Object o) {</span>
+<span class="fc" id="L477">            this.o = o;</span>
+<span class="fc" id="L478">        }</span>
+
+        @Override
+        public String toString() {
+<span class="fc" id="L482">            return ToStringBuilder.reflectionToString(this);</span>
+        }
+    }
+
+    private static class SelfInstanceVarReflectionTestFixture {
+        @SuppressWarnings(&quot;unused&quot;)
+        private final SelfInstanceVarReflectionTestFixture typeIsSelf;
+
+<span class="fc" id="L490">        SelfInstanceVarReflectionTestFixture() {</span>
+<span class="fc" id="L491">            this.typeIsSelf = this;</span>
+<span class="fc" id="L492">        }</span>
+
+        @Override
+        public String toString() {
+<span class="fc" id="L496">            return ToStringBuilder.reflectionToString(this);</span>
+        }
+      }
+
+    private static class SelfInstanceTwoVarsReflectionTestFixture {
+        @SuppressWarnings(&quot;unused&quot;)
+        private final SelfInstanceTwoVarsReflectionTestFixture typeIsSelf;
+<span class="fc" id="L503">        private final String otherType = &quot;The Other Type&quot;;</span>
+
+<span class="fc" id="L505">        SelfInstanceTwoVarsReflectionTestFixture() {</span>
+<span class="fc" id="L506">            this.typeIsSelf = this;</span>
+<span class="fc" id="L507">        }</span>
+
+        public String getOtherType() {
+<span class="fc" id="L510">            return this.otherType;</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="fc" id="L515">            return ToStringBuilder.reflectionToString(this);</span>
+        }
+      }
+
+
+    /**
+     * Test an Object pointing to itself, the simplest test.
+     */
+    @Test
+    public void testSimpleReflectionObjectCycle() {
+<span class="fc" id="L525">        final SimpleReflectionTestFixture simple = new SimpleReflectionTestFixture();</span>
+<span class="fc" id="L526">        simple.o = simple;</span>
+<span class="fc" id="L527">        assertEquals(this.toBaseString(simple) + &quot;[o=&quot; + this.toBaseString(simple) + &quot;]&quot;, simple.toString());</span>
+<span class="fc" id="L528">    }</span>
+
+    /**
+     * Test a class that defines an ivar pointing to itself.
+     */
+    @Test
+    public void testSelfInstanceVarReflectionObjectCycle() {
+<span class="fc" id="L535">        final SelfInstanceVarReflectionTestFixture test = new SelfInstanceVarReflectionTestFixture();</span>
+<span class="fc" id="L536">        assertEquals(this.toBaseString(test) + &quot;[typeIsSelf=&quot; + this.toBaseString(test) + &quot;]&quot;, test.toString());</span>
+<span class="fc" id="L537">    }</span>
+
+    /**
+     * Test a class that defines an ivar pointing to itself.  This test was
+     * created to show that handling cyclical object resulted in a missing endFieldSeparator call.
+     */
+    @Test
+    public void testSelfInstanceTwoVarsReflectionObjectCycle() {
+<span class="fc" id="L545">        final SelfInstanceTwoVarsReflectionTestFixture test = new SelfInstanceTwoVarsReflectionTestFixture();</span>
+<span class="fc" id="L546">        assertEquals(this.toBaseString(test) + &quot;[typeIsSelf=&quot; + this.toBaseString(test) + &quot;,otherType=&quot; + test.getOtherType().toString() + &quot;]&quot;, test.toString());</span>
+<span class="fc" id="L547">    }</span>
+
+
+    /**
+     * Test Objects pointing to each other.
+     */
+    @Test
+    public void testReflectionObjectCycle() {
+<span class="fc" id="L555">        final ReflectionTestCycleA a = new ReflectionTestCycleA();</span>
+<span class="fc" id="L556">        final ReflectionTestCycleB b = new ReflectionTestCycleB();</span>
+<span class="fc" id="L557">        a.b = b;</span>
+<span class="fc" id="L558">        b.a = a;</span>
+<span class="fc" id="L559">        assertEquals(</span>
+<span class="fc" id="L560">            this.toBaseString(a) + &quot;[b=&quot; + this.toBaseString(b) + &quot;[a=&quot; + this.toBaseString(a) + &quot;]]&quot;,</span>
+<span class="fc" id="L561">            a.toString());</span>
+<span class="fc" id="L562">    }</span>
+
+    /**
+     * Test a nasty combination of arrays and Objects pointing to each other.
+     * objects[0] -&amp;gt; SimpleReflectionTestFixture[ o -&amp;gt; objects ]
+     */
+    @Test
+    public void testReflectionArrayAndObjectCycle() {
+<span class="fc" id="L570">        final Object[] objects = new Object[1];</span>
+<span class="fc" id="L571">        final SimpleReflectionTestFixture simple = new SimpleReflectionTestFixture(objects);</span>
+<span class="fc" id="L572">        objects[0] = simple;</span>
+<span class="fc" id="L573">        assertEquals(</span>
+<span class="fc" id="L574">            this.toBaseString(objects)</span>
+                + &quot;[{&quot;
+<span class="fc" id="L576">                + this.toBaseString(simple)</span>
+                + &quot;[o=&quot;
+<span class="fc" id="L578">                + this.toBaseString(objects)</span>
+                + &quot;]&quot;
+                + &quot;}]&quot;,
+<span class="fc" id="L581">            ToStringBuilder.reflectionToString(objects));</span>
+<span class="fc" id="L582">        assertEquals(</span>
+<span class="fc" id="L583">            this.toBaseString(simple)</span>
+                + &quot;[o={&quot;
+<span class="fc" id="L585">                + this.toBaseString(simple)</span>
+                + &quot;}]&quot;,
+<span class="fc" id="L587">            ToStringBuilder.reflectionToString(simple));</span>
+<span class="fc" id="L588">    }</span>
+
+    void validateNullToStringStyleRegistry() {
+<span class="fc" id="L591">        final Map&lt;Object, Object&gt; registry = ToStringStyle.getRegistry();</span>
+<span class="fc" id="L592">        assertNull(registry, &quot;Expected null, actual: &quot; + registry);</span>
+<span class="fc" id="L593">    }</span>
+    //  End: Reflection cycle tests
+
+    @Test
+    public void testAppendSuper() {
+<span class="fc" id="L598">        assertEquals(baseStr + &quot;[]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[]&quot;).toString());</span>
+<span class="fc" id="L599">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&lt;null&gt;]&quot;).toString());</span>
+
+<span class="fc" id="L601">        assertEquals(baseStr + &quot;[a=hello]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L602">        assertEquals(baseStr + &quot;[&lt;null&gt;,a=hello]&quot;, new ToStringBuilder(base).appendSuper(&quot;Integer@8888[&lt;null&gt;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L603">        assertEquals(baseStr + &quot;[a=hello]&quot;, new ToStringBuilder(base).appendSuper(null).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L604">    }</span>
+
+    @Test
+    public void testAppendToString() {
+<span class="fc" id="L608">        assertEquals(baseStr + &quot;[]&quot;, new ToStringBuilder(base).appendToString(&quot;Integer@8888[]&quot;).toString());</span>
+<span class="fc" id="L609">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).appendToString(&quot;Integer@8888[&lt;null&gt;]&quot;).toString());</span>
+
+<span class="fc" id="L611">        assertEquals(baseStr + &quot;[a=hello]&quot;, new ToStringBuilder(base).appendToString(&quot;Integer@8888[]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L612">        assertEquals(baseStr + &quot;[&lt;null&gt;,a=hello]&quot;, new ToStringBuilder(base).appendToString(&quot;Integer@8888[&lt;null&gt;]&quot;).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L613">        assertEquals(baseStr + &quot;[a=hello]&quot;, new ToStringBuilder(base).appendToString(null).append(&quot;a&quot;, &quot;hello&quot;).toString());</span>
+<span class="fc" id="L614">    }</span>
+
+    @Test
+    public void testAppendAsObjectToString() {
+<span class="fc" id="L618">        final String objectToAppend1 = &quot;&quot;;</span>
+<span class="fc" id="L619">        final Boolean objectToAppend2 = Boolean.TRUE;</span>
+<span class="fc" id="L620">        final Object objectToAppend3 = new Object();</span>
+
+<span class="fc" id="L622">        assertEquals(baseStr + &quot;[&quot; + toBaseString(objectToAppend1) + &quot;]&quot;,</span>
+<span class="fc" id="L623">                new ToStringBuilder(base).appendAsObjectToString(objectToAppend1).toString());</span>
+<span class="fc" id="L624">        assertEquals(baseStr + &quot;[&quot; + toBaseString(objectToAppend2) + &quot;]&quot;,</span>
+<span class="fc" id="L625">                new ToStringBuilder(base).appendAsObjectToString(objectToAppend2).toString());</span>
+<span class="fc" id="L626">        assertEquals(baseStr + &quot;[&quot; + toBaseString(objectToAppend3) + &quot;]&quot;,</span>
+<span class="fc" id="L627">                new ToStringBuilder(base).appendAsObjectToString(objectToAppend3).toString());</span>
+<span class="fc" id="L628">    }</span>
+
+    @Test
+    public void testAppendBooleanArrayWithFieldName() {
+<span class="fc" id="L632">        final boolean[] array = new boolean[] { true, false, false };</span>
+<span class="fc" id="L633">        assertEquals(baseStr + &quot;[flags={true,false,false}]&quot;,</span>
+<span class="fc" id="L634">                new ToStringBuilder(base).append(&quot;flags&quot;, array).toString());</span>
+<span class="fc" id="L635">        assertEquals(baseStr + &quot;[flags=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L636">                new ToStringBuilder(base).append(&quot;flags&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L637">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L638">        assertEquals(baseStr + &quot;[{true,false,false}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L639">    }</span>
+
+    @Test
+    public void testAppendBooleanArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L643">        final boolean[] array = new boolean[] { true, false, false };</span>
+<span class="fc" id="L644">        assertEquals(baseStr + &quot;[flags={true,false,false}]&quot;,</span>
+<span class="fc" id="L645">                new ToStringBuilder(base).append(&quot;flags&quot;, array, true).toString());</span>
+<span class="fc" id="L646">        assertEquals(baseStr + &quot;[length=&lt;size=3&gt;]&quot;,</span>
+<span class="fc" id="L647">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L648">        assertEquals(baseStr + &quot;[flags=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L649">                new ToStringBuilder(base).append(&quot;flags&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L650">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L651">        assertEquals(baseStr + &quot;[&lt;size=3&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L652">     }</span>
+
+    @Test
+    public void testAppendCharArrayWithFieldName() {
+<span class="fc" id="L656">        final char[] array = new char[] { 'A', '2', '_', 'D' };</span>
+<span class="fc" id="L657">        assertEquals(baseStr + &quot;[chars={A,2,_,D}]&quot;, new ToStringBuilder(base).append(&quot;chars&quot;, array).toString());</span>
+<span class="fc" id="L658">        assertEquals(baseStr + &quot;[letters={A,2,_,D}]&quot;, new ToStringBuilder(base).append(&quot;letters&quot;, array).toString());</span>
+<span class="fc" id="L659">        assertEquals(baseStr + &quot;[flags=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L660">                new ToStringBuilder(base).append(&quot;flags&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L661">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L662">        assertEquals(baseStr + &quot;[{A,2,_,D}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L663">    }</span>
+
+    @Test
+    public void testAppendCharArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L667">        final char[] array = new char[] { 'A', '2', '_', 'D' };</span>
+<span class="fc" id="L668">        assertEquals(baseStr + &quot;[chars={A,2,_,D}]&quot;, new ToStringBuilder(base).append(&quot;chars&quot;, array, true).toString());</span>
+<span class="fc" id="L669">        assertEquals(baseStr + &quot;[letters=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L670">                new ToStringBuilder(base).append(&quot;letters&quot;, array, false).toString());</span>
+<span class="fc" id="L671">        assertEquals(baseStr + &quot;[flags=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L672">                new ToStringBuilder(base).append(&quot;flags&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L673">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L674">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L675">    }</span>
+
+    @Test
+    public void testAppendDoubleArrayWithFieldName() {
+<span class="fc" id="L679">        final double[] array = new double[] { 1.0, 2.9876, -3.00001, 4.3 };</span>
+<span class="fc" id="L680">        assertEquals(baseStr + &quot;[values={1.0,2.9876,-3.00001,4.3}]&quot;,</span>
+<span class="fc" id="L681">                new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L682">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L683">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L684">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L685">        assertEquals(baseStr + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L686">    }</span>
+
+    @Test
+    public void testAppendDoubleArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L690">        final double[] array = new double[] { 1.0, 2.9876, -3.00001, 4.3 };</span>
+<span class="fc" id="L691">        assertEquals(baseStr + &quot;[values={1.0,2.9876,-3.00001,4.3}]&quot;,</span>
+<span class="fc" id="L692">                new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L693">        assertEquals(baseStr + &quot;[length=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L694">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L695">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L696">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L697">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L698">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L699">    }</span>
+
+    @Test
+    public void testAppendObjectArrayWithFieldName() {
+<span class="fc" id="L703">        final Object[] array = new Object[] { null, base, new int[] { 3, 6 } };</span>
+<span class="fc" id="L704">        assertEquals(baseStr + &quot;[values={&lt;null&gt;,5,{3,6}}]&quot;,</span>
+<span class="fc" id="L705">                new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L706">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L707">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L708">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L709">        assertEquals(baseStr + &quot;[{&lt;null&gt;,5,{3,6}}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L710">    }</span>
+
+    @Test
+    public void testAppendObjectArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L714">       final Object[] array = new Object[] { null, base, new int[] { 3, 6 } };</span>
+<span class="fc" id="L715">       assertEquals(baseStr + &quot;[values={&lt;null&gt;,5,{3,6}}]&quot;,</span>
+<span class="fc" id="L716">               new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L717">       assertEquals(baseStr + &quot;[length=&lt;size=3&gt;]&quot;,</span>
+<span class="fc" id="L718">               new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L719">       assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L720">               new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L721">       assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L722">       assertEquals(baseStr + &quot;[&lt;size=3&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L723">    }</span>
+
+    @Test
+    public void testAppendLongArrayWithFieldName() {
+<span class="fc" id="L727">       final long[] array = new long[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L728">       assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;, new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L729">       assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L730">               new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L731">       assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L732">       assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L733">    }</span>
+
+    @Test
+    public void testAppendLongArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L737">        final long[] array = new long[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L738">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;,</span>
+<span class="fc" id="L739">                new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L740">        assertEquals(baseStr + &quot;[length=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L741">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L742">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L743">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L744">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L745">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L746">    }</span>
+
+    @Test
+    public void testAppendIntArrayWithFieldName() {
+<span class="fc" id="L750">        final int[] array = new int[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L751">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;, new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L752">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L753">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L754">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L755">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L756">    }</span>
+
+    @Test
+    public void testAppendIntArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L760">        final int[] array = new int[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L761">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;,</span>
+<span class="fc" id="L762">                new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L763">        assertEquals(baseStr + &quot;[length=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L764">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L765">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L766">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L767">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L768">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L769">    }</span>
+
+    @Test
+    public void testAppendShortArrayWithFieldName() {
+<span class="fc" id="L773">        final short[] array = new short[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L774">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;, new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L775">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L776">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L777">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L778">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L779">    }</span>
+
+    @Test
+    public void testAppendShortArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L783">        final short[] array = new short[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L784">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;,</span>
+<span class="fc" id="L785">                new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L786">        assertEquals(baseStr + &quot;[length=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L787">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L788">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L789">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L790">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L791">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L792">    }</span>
+
+    @Test
+    public void testAppendByteArrayWithFieldName() {
+<span class="fc" id="L796">        final byte[] array = new byte[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L797">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;, new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L798">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L799">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L800">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L801">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L802">    }</span>
+
+    @Test
+    public void testAppendByteArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L806">        final byte[] array = new byte[] { 1, 2, -3, 4 };</span>
+<span class="fc" id="L807">        assertEquals(baseStr + &quot;[values={1,2,-3,4}]&quot;,</span>
+<span class="fc" id="L808">                new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L809">        assertEquals(baseStr + &quot;[length=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L810">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L811">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L812">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L813">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L814">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L815">    }</span>
+
+    @Test
+    public void testAppendFloatArrayWithFieldName() {
+<span class="fc" id="L819">        final float[] array = new float[] { 1.0f, 2.9876f, -3.00001f, 4.3f };</span>
+<span class="fc" id="L820">        assertEquals(baseStr + &quot;[values={1.0,2.9876,-3.00001,4.3}]&quot;,</span>
+<span class="fc" id="L821">                new ToStringBuilder(base).append(&quot;values&quot;, array).toString());</span>
+<span class="fc" id="L822">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L823">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null).toString());</span>
+<span class="fc" id="L824">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null).toString());</span>
+<span class="fc" id="L825">        assertEquals(baseStr + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, new ToStringBuilder(base).append(null, array).toString());</span>
+<span class="fc" id="L826">    }</span>
+
+    @Test
+    public void testAppendFloatArrayWithFieldNameAndFullDetatil() {
+<span class="fc" id="L830">        final float[] array = new float[] { 1.0f, 2.9876f, -3.00001f, 4.3f };</span>
+<span class="fc" id="L831">        assertEquals(baseStr + &quot;[values={1.0,2.9876,-3.00001,4.3}]&quot;,</span>
+<span class="fc" id="L832">                new ToStringBuilder(base).append(&quot;values&quot;, array, true).toString());</span>
+<span class="fc" id="L833">        assertEquals(baseStr + &quot;[length=&lt;size=4&gt;]&quot;,</span>
+<span class="fc" id="L834">                new ToStringBuilder(base).append(&quot;length&quot;, array, false).toString());</span>
+<span class="fc" id="L835">        assertEquals(baseStr + &quot;[values=&lt;null&gt;]&quot;,</span>
+<span class="fc" id="L836">                new ToStringBuilder(base).append(&quot;values&quot;, (boolean[]) null, true).toString());</span>
+<span class="fc" id="L837">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(null, (boolean[]) null, false).toString());</span>
+<span class="fc" id="L838">        assertEquals(baseStr + &quot;[&lt;size=4&gt;]&quot;, new ToStringBuilder(base).append(null, array, false).toString());</span>
+<span class="fc" id="L839">    }</span>
+
+    @Test
+    public void testConstructToStringBuilder() {
+<span class="fc" id="L843">        final ToStringBuilder stringBuilder1 = new ToStringBuilder(base, null, null);</span>
+<span class="fc" id="L844">        final ToStringBuilder stringBuilder2 = new ToStringBuilder(base, ToStringStyle.DEFAULT_STYLE, new StringBuffer(1024));</span>
+<span class="fc" id="L845">        assertEquals(ToStringStyle.DEFAULT_STYLE, stringBuilder1.getStyle());</span>
+<span class="fc" id="L846">        assertNotNull(stringBuilder1.getStringBuffer());</span>
+<span class="fc" id="L847">        assertNotNull(stringBuilder1.toString());</span>
+<span class="fc" id="L848">        assertEquals(ToStringStyle.DEFAULT_STYLE, stringBuilder2.getStyle());</span>
+<span class="fc" id="L849">        assertNotNull(stringBuilder2.getStringBuffer());</span>
+<span class="fc" id="L850">        assertNotNull(stringBuilder2.toString());</span>
+<span class="fc" id="L851">    }</span>
+
+
+    @Test
+    public void testObject() {
+<span class="fc" id="L856">        final Integer i3 = Integer.valueOf(3);</span>
+<span class="fc" id="L857">        final Integer i4 = Integer.valueOf(4);</span>
+<span class="fc" id="L858">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) null).toString());</span>
+<span class="fc" id="L859">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append(i3).toString());</span>
+<span class="fc" id="L860">        assertEquals(baseStr + &quot;[a=&lt;null&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) null).toString());</span>
+<span class="fc" id="L861">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).toString());</span>
+<span class="fc" id="L862">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).append(&quot;b&quot;, i4).toString());</span>
+<span class="fc" id="L863">        assertEquals(baseStr + &quot;[a=&lt;Integer&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3, false).toString());</span>
+<span class="fc" id="L864">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), false).toString());</span>
+<span class="fc" id="L865">        assertEquals(baseStr + &quot;[a=[]]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), true).toString());</span>
+<span class="fc" id="L866">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), false).toString());</span>
+<span class="fc" id="L867">        assertEquals(baseStr + &quot;[a={}]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), true).toString());</span>
+<span class="fc" id="L868">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], false).toString());</span>
+<span class="fc" id="L869">        assertEquals(baseStr + &quot;[a={}]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], true).toString());</span>
+<span class="fc" id="L870">    }</span>
+
+    @Test
+    public void testObjectBuild() {
+<span class="fc" id="L874">        final Integer i3 = Integer.valueOf(3);</span>
+<span class="fc" id="L875">        final Integer i4 = Integer.valueOf(4);</span>
+<span class="fc" id="L876">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) null).build());</span>
+<span class="fc" id="L877">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append(i3).build());</span>
+<span class="fc" id="L878">        assertEquals(baseStr + &quot;[a=&lt;null&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) null).build());</span>
+<span class="fc" id="L879">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).build());</span>
+<span class="fc" id="L880">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3).append(&quot;b&quot;, i4).build());</span>
+<span class="fc" id="L881">        assertEquals(baseStr + &quot;[a=&lt;Integer&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, i3, false).build());</span>
+<span class="fc" id="L882">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), false).build());</span>
+<span class="fc" id="L883">        assertEquals(baseStr + &quot;[a=[]]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new ArrayList&lt;&gt;(), true).build());</span>
+<span class="fc" id="L884">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), false).build());</span>
+<span class="fc" id="L885">        assertEquals(baseStr + &quot;[a={}]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, new HashMap&lt;&gt;(), true).build());</span>
+<span class="fc" id="L886">        assertEquals(baseStr + &quot;[a=&lt;size=0&gt;]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], false).build());</span>
+<span class="fc" id="L887">        assertEquals(baseStr + &quot;[a={}]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (Object) new String[0], true).build());</span>
+<span class="fc" id="L888">    }</span>
+
+    @Test
+    public void testLong() {
+<span class="fc" id="L892">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append(3L).toString());</span>
+<span class="fc" id="L893">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L).toString());</span>
+<span class="fc" id="L894">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3L).append(&quot;b&quot;, 4L).toString());</span>
+<span class="fc" id="L895">    }</span>
+
+    @SuppressWarnings(&quot;cast&quot;) // cast is not really needed, keep for consistency
+    @Test
+    public void testInt() {
+<span class="fc" id="L900">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append(3).toString());</span>
+<span class="fc" id="L901">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3).toString());</span>
+<span class="fc" id="L902">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3).append(&quot;b&quot;, 4).toString());</span>
+<span class="fc" id="L903">    }</span>
+
+    @Test
+    public void testShort() {
+<span class="fc" id="L907">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append((short) 3).toString());</span>
+<span class="fc" id="L908">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (short) 3).toString());</span>
+<span class="fc" id="L909">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (short) 3).append(&quot;b&quot;, (short) 4).toString());</span>
+<span class="fc" id="L910">    }</span>
+
+    @Test
+    public void testChar() {
+<span class="fc" id="L914">        assertEquals(baseStr + &quot;[A]&quot;, new ToStringBuilder(base).append((char) 65).toString());</span>
+<span class="fc" id="L915">        assertEquals(baseStr + &quot;[a=A]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (char) 65).toString());</span>
+<span class="fc" id="L916">        assertEquals(baseStr + &quot;[a=A,b=B]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (char) 65).append(&quot;b&quot;, (char) 66).toString());</span>
+<span class="fc" id="L917">    }</span>
+
+    @Test
+    public void testByte() {
+<span class="fc" id="L921">        assertEquals(baseStr + &quot;[3]&quot;, new ToStringBuilder(base).append((byte) 3).toString());</span>
+<span class="fc" id="L922">        assertEquals(baseStr + &quot;[a=3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (byte) 3).toString());</span>
+<span class="fc" id="L923">        assertEquals(baseStr + &quot;[a=3,b=4]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (byte) 3).append(&quot;b&quot;, (byte) 4).toString());</span>
+<span class="fc" id="L924">    }</span>
+
+    @SuppressWarnings(&quot;cast&quot;)
+    @Test
+    public void testDouble() {
+<span class="fc" id="L929">        assertEquals(baseStr + &quot;[3.2]&quot;, new ToStringBuilder(base).append(3.2).toString());</span>
+<span class="fc" id="L930">        assertEquals(baseStr + &quot;[a=3.2]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3.2).toString());</span>
+<span class="fc" id="L931">        assertEquals(baseStr + &quot;[a=3.2,b=4.3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, 3.2).append(&quot;b&quot;, 4.3).toString());</span>
+<span class="fc" id="L932">    }</span>
+
+    @Test
+    public void testFloat() {
+<span class="fc" id="L936">        assertEquals(baseStr + &quot;[3.2]&quot;, new ToStringBuilder(base).append((float) 3.2).toString());</span>
+<span class="fc" id="L937">        assertEquals(baseStr + &quot;[a=3.2]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (float) 3.2).toString());</span>
+<span class="fc" id="L938">        assertEquals(baseStr + &quot;[a=3.2,b=4.3]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, (float) 3.2).append(&quot;b&quot;, (float) 4.3).toString());</span>
+<span class="fc" id="L939">    }</span>
+
+    @Test
+    public void testBoolean() {
+<span class="fc" id="L943">        assertEquals(baseStr + &quot;[true]&quot;, new ToStringBuilder(base).append(true).toString());</span>
+<span class="fc" id="L944">        assertEquals(baseStr + &quot;[a=true]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, true).toString());</span>
+<span class="fc" id="L945">        assertEquals(baseStr + &quot;[a=true,b=false]&quot;, new ToStringBuilder(base).append(&quot;a&quot;, true).append(&quot;b&quot;, false).toString());</span>
+<span class="fc" id="L946">    }</span>
+
+
+    @Test
+    public void testObjectArray() {
+<span class="fc" id="L951">        Object[] array = new Object[] {null, base, new int[] {3, 6}};</span>
+<span class="fc" id="L952">        assertEquals(baseStr + &quot;[{&lt;null&gt;,5,{3,6}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L953">        assertEquals(baseStr + &quot;[{&lt;null&gt;,5,{3,6}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L954">        array = null;</span>
+<span class="fc" id="L955">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L956">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L957">    }</span>
+
+    @Test
+    public void testLongArray() {
+<span class="fc" id="L961">        long[] array = new long[] {1, 2, -3, 4};</span>
+<span class="fc" id="L962">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L963">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L964">        array = null;</span>
+<span class="fc" id="L965">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L966">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L967">    }</span>
+
+    @Test
+    public void testIntArray() {
+<span class="fc" id="L971">        int[] array = new int[] {1, 2, -3, 4};</span>
+<span class="fc" id="L972">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L973">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L974">        array = null;</span>
+<span class="fc" id="L975">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L976">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L977">    }</span>
+
+    @Test
+    public void testShortArray() {
+<span class="fc" id="L981">        short[] array = new short[] {1, 2, -3, 4};</span>
+<span class="fc" id="L982">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L983">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L984">        array = null;</span>
+<span class="fc" id="L985">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L986">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L987">    }</span>
+
+    @Test
+    public void testByteArray() {
+<span class="fc" id="L991">        byte[] array = new byte[] {1, 2, -3, 4};</span>
+<span class="fc" id="L992">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L993">        assertEquals(baseStr + &quot;[{1,2,-3,4}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L994">        array = null;</span>
+<span class="fc" id="L995">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L996">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L997">    }</span>
+
+    @Test
+    public void testCharArray() {
+<span class="fc" id="L1001">        char[] array = new char[] {'A', '2', '_', 'D'};</span>
+<span class="fc" id="L1002">        assertEquals(baseStr + &quot;[{A,2,_,D}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1003">        assertEquals(baseStr + &quot;[{A,2,_,D}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1004">        array = null;</span>
+<span class="fc" id="L1005">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1006">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1007">    }</span>
+
+    @Test
+    public void testDoubleArray() {
+<span class="fc" id="L1011">        double[] array = new double[] {1.0, 2.9876, -3.00001, 4.3};</span>
+<span class="fc" id="L1012">        assertEquals(baseStr + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1013">        assertEquals(baseStr + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1014">        array = null;</span>
+<span class="fc" id="L1015">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1016">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1017">    }</span>
+
+    @Test
+    public void testFloatArray() {
+<span class="fc" id="L1021">        float[] array = new float[] {1.0f, 2.9876f, -3.00001f, 4.3f};</span>
+<span class="fc" id="L1022">        assertEquals(baseStr + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1023">        assertEquals(baseStr + &quot;[{1.0,2.9876,-3.00001,4.3}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1024">        array = null;</span>
+<span class="fc" id="L1025">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1026">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1027">    }</span>
+
+    @Test
+    public void testBooleanArray() {
+<span class="fc" id="L1031">        boolean[] array = new boolean[] {true, false, false};</span>
+<span class="fc" id="L1032">        assertEquals(baseStr + &quot;[{true,false,false}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1033">        assertEquals(baseStr + &quot;[{true,false,false}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1034">        array = null;</span>
+<span class="fc" id="L1035">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1036">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1037">    }</span>
+
+    @Test
+    public void testLongArrayArray() {
+<span class="fc" id="L1041">        long[][] array = new long[][] {{1, 2}, null, {5}};</span>
+<span class="fc" id="L1042">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1043">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1044">        array = null;</span>
+<span class="fc" id="L1045">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1046">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1047">    }</span>
+
+    @Test
+    public void testIntArrayArray() {
+<span class="fc" id="L1051">        int[][] array = new int[][] {{1, 2}, null, {5}};</span>
+<span class="fc" id="L1052">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1053">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1054">        array = null;</span>
+<span class="fc" id="L1055">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1056">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1057">    }</span>
+
+    @Test
+    public void testShortArrayArray() {
+<span class="fc" id="L1061">        short[][] array = new short[][] {{1, 2}, null, {5}};</span>
+<span class="fc" id="L1062">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1063">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1064">        array = null;</span>
+<span class="fc" id="L1065">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1066">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1067">    }</span>
+
+    @Test
+    public void testByteArrayArray() {
+<span class="fc" id="L1071">        byte[][] array = new byte[][] {{1, 2}, null, {5}};</span>
+<span class="fc" id="L1072">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1073">        assertEquals(baseStr + &quot;[{{1,2},&lt;null&gt;,{5}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1074">        array = null;</span>
+<span class="fc" id="L1075">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1076">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1077">    }</span>
+
+    @Test
+    public void testCharArrayArray() {
+<span class="fc" id="L1081">        char[][] array = new char[][] {{'A', 'B'}, null, {'p'}};</span>
+<span class="fc" id="L1082">        assertEquals(baseStr + &quot;[{{A,B},&lt;null&gt;,{p}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1083">        assertEquals(baseStr + &quot;[{{A,B},&lt;null&gt;,{p}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1084">        array = null;</span>
+<span class="fc" id="L1085">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1086">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1087">    }</span>
+
+    @Test
+    public void testDoubleArrayArray() {
+<span class="fc" id="L1091">        double[][] array = new double[][] {{1.0, 2.29686}, null, {Double.NaN}};</span>
+<span class="fc" id="L1092">        assertEquals(baseStr + &quot;[{{1.0,2.29686},&lt;null&gt;,{NaN}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1093">        assertEquals(baseStr + &quot;[{{1.0,2.29686},&lt;null&gt;,{NaN}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1094">        array = null;</span>
+<span class="fc" id="L1095">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1096">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1097">    }</span>
+
+    @Test
+    public void testFloatArrayArray() {
+<span class="fc" id="L1101">        float[][] array = new float[][] {{1.0f, 2.29686f}, null, {Float.NaN}};</span>
+<span class="fc" id="L1102">        assertEquals(baseStr + &quot;[{{1.0,2.29686},&lt;null&gt;,{NaN}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1103">        assertEquals(baseStr + &quot;[{{1.0,2.29686},&lt;null&gt;,{NaN}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1104">        array = null;</span>
+<span class="fc" id="L1105">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1106">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1107">    }</span>
+
+    @Test
+    public void testBooleanArrayArray() {
+<span class="fc" id="L1111">        boolean[][] array = new boolean[][] {{true, false}, null, {false}};</span>
+<span class="fc" id="L1112">        assertEquals(baseStr + &quot;[{{true,false},&lt;null&gt;,{false}}]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1113">        assertEquals(baseStr + &quot;[{{true,false},&lt;null&gt;,{false}}]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1114">        array = null;</span>
+<span class="fc" id="L1115">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append(array).toString());</span>
+<span class="fc" id="L1116">        assertEquals(baseStr + &quot;[&lt;null&gt;]&quot;, new ToStringBuilder(base).append((Object) array).toString());</span>
+<span class="fc" id="L1117">    }</span>
+
+    @Test
+    public void testObjectCycle() {
+<span class="fc" id="L1121">        final ObjectCycle a = new ObjectCycle();</span>
+<span class="fc" id="L1122">        final ObjectCycle b = new ObjectCycle();</span>
+<span class="fc" id="L1123">        a.obj = b;</span>
+<span class="fc" id="L1124">        b.obj = a;</span>
+
+<span class="fc" id="L1126">        final String expected = toBaseString(a) + &quot;[&quot; + toBaseString(b) + &quot;[&quot; + toBaseString(a) + &quot;]]&quot;;</span>
+<span class="fc" id="L1127">        assertEquals(expected, a.toString());</span>
+<span class="fc" id="L1128">    }</span>
+
+<span class="fc" id="L1130">    static class ObjectCycle {</span>
+        Object obj;
+
+        @Override
+        public String toString() {
+<span class="fc" id="L1135">            return new ToStringBuilder(this).append(obj).toString();</span>
+        }
+    }
+
+    @Test
+    public void testSimpleReflectionStatics() {
+<span class="fc" id="L1141">        final SimpleReflectionStaticFieldsFixture instance1 = new SimpleReflectionStaticFieldsFixture();</span>
+<span class="fc" id="L1142">        assertEquals(</span>
+<span class="fc" id="L1143">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1144">            ReflectionToStringBuilder.toString(instance1, null, false, true, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1145">        assertEquals(</span>
+<span class="fc" id="L1146">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1147">            ReflectionToStringBuilder.toString(instance1, null, true, true, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1148">        assertEquals(</span>
+<span class="fc" id="L1149">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1150">            this.toStringWithStatics(instance1, null, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1151">        assertEquals(</span>
+<span class="fc" id="L1152">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1153">            this.toStringWithStatics(instance1, null, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1154">    }</span>
+
+    /**
+     * Tests ReflectionToStringBuilder.toString() for statics.
+     */
+    @Test
+    public void testReflectionStatics() {
+<span class="fc" id="L1161">        final ReflectionStaticFieldsFixture instance1 = new ReflectionStaticFieldsFixture();</span>
+<span class="fc" id="L1162">        assertEquals(</span>
+<span class="fc" id="L1163">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345,instanceString=instanceString,instanceInt=67890]&quot;,</span>
+<span class="fc" id="L1164">            ReflectionToStringBuilder.toString(instance1, null, false, true, ReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1165">        assertEquals(</span>
+<span class="fc" id="L1166">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345,staticTransientString=staticTransientString,staticTransientInt=54321,instanceString=instanceString,instanceInt=67890,transientString=transientString,transientInt=98765]&quot;,</span>
+<span class="fc" id="L1167">            ReflectionToStringBuilder.toString(instance1, null, true, true, ReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1168">        assertEquals(</span>
+<span class="fc" id="L1169">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345,instanceString=instanceString,instanceInt=67890]&quot;,</span>
+<span class="fc" id="L1170">            this.toStringWithStatics(instance1, null, ReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1171">        assertEquals(</span>
+<span class="fc" id="L1172">            this.toBaseString(instance1) + &quot;[staticString=staticString,staticInt=12345,instanceString=instanceString,instanceInt=67890]&quot;,</span>
+<span class="fc" id="L1173">            this.toStringWithStatics(instance1, null, ReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1174">    }</span>
+
+    /**
+     * Tests ReflectionToStringBuilder.toString() for statics.
+     */
+    @Test
+    public void testInheritedReflectionStatics() {
+<span class="fc" id="L1181">        final InheritedReflectionStaticFieldsFixture instance1 = new InheritedReflectionStaticFieldsFixture();</span>
+<span class="fc" id="L1182">        assertEquals(</span>
+<span class="fc" id="L1183">            this.toBaseString(instance1) + &quot;[staticString2=staticString2,staticInt2=67890]&quot;,</span>
+<span class="fc" id="L1184">            ReflectionToStringBuilder.toString(instance1, null, false, true, InheritedReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1185">        assertEquals(</span>
+<span class="fc" id="L1186">            this.toBaseString(instance1) + &quot;[staticString2=staticString2,staticInt2=67890,staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1187">            ReflectionToStringBuilder.toString(instance1, null, false, true, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1188">        assertEquals(</span>
+<span class="fc" id="L1189">            this.toBaseString(instance1) + &quot;[staticString2=staticString2,staticInt2=67890,staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1190">            this.toStringWithStatics(instance1, null, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1191">        assertEquals(</span>
+<span class="fc" id="L1192">            this.toBaseString(instance1) + &quot;[staticString2=staticString2,staticInt2=67890,staticString=staticString,staticInt=12345]&quot;,</span>
+<span class="fc" id="L1193">            this.toStringWithStatics(instance1, null, SimpleReflectionStaticFieldsFixture.class));</span>
+<span class="fc" id="L1194">    }</span>
+
+    /**
+     * &lt;p&gt;This method uses reflection to build a suitable
+     * &lt;code&gt;toString&lt;/code&gt; value which includes static fields.&lt;/p&gt;
+     *
+     * &lt;p&gt;It uses &lt;code&gt;AccessibleObject.setAccessible&lt;/code&gt; to gain access to private
+     * fields. This means that it will throw a security exception if run
+     * under a security manager, if the permissions are not set up correctly.
+     * It is also not as efficient as testing explicitly. &lt;/p&gt;
+     *
+     * &lt;p&gt;Transient fields are not output.&lt;/p&gt;
+     *
+     * &lt;p&gt;Superclass fields will be appended up to and including the specified superclass.
+     * A null superclass is treated as &lt;code&gt;java.lang.Object&lt;/code&gt;.&lt;/p&gt;
+     *
+     * &lt;p&gt;If the style is &lt;code&gt;null&lt;/code&gt;, the default
+     * &lt;code&gt;ToStringStyle&lt;/code&gt; is used.&lt;/p&gt;
+     *
+     * @param &lt;T&gt; the type of the output object
+     * @param object  the Object to be output
+     * @param style  the style of the &lt;code&gt;toString&lt;/code&gt; to create,
+     *  may be &lt;code&gt;null&lt;/code&gt;
+     * @param reflectUpToClass  the superclass to reflect up to (inclusive),
+     *  may be &lt;code&gt;null&lt;/code&gt;
+     * @return the String result
+     * @throws IllegalArgumentException if the Object is &lt;code&gt;null&lt;/code&gt;
+     */
+    public &lt;T&gt; String toStringWithStatics(final T object, final ToStringStyle style, final Class&lt;? super T&gt; reflectUpToClass) {
+<span class="fc" id="L1223">        return ReflectionToStringBuilder.toString(object, style, false, true, reflectUpToClass);</span>
+    }
+
+    /**
+     * Tests ReflectionToStringBuilder setUpToClass().
+     */
+    @Test
+    public void test_setUpToClass_valid() {
+<span class="fc" id="L1231">        final Integer val = Integer.valueOf(5);</span>
+<span class="fc" id="L1232">        final ReflectionToStringBuilder test = new ReflectionToStringBuilder(val);</span>
+<span class="fc" id="L1233">        test.setUpToClass(Number.class);</span>
+<span class="fc" id="L1234">        test.toString();</span>
+<span class="fc" id="L1235">    }</span>
+
+    /**
+     * Tests ReflectionToStringBuilder setUpToClass().
+     */
+    @Test
+    public void test_setUpToClass_invalid() {
+<span class="fc" id="L1242">        final Integer val = Integer.valueOf(5);</span>
+<span class="fc" id="L1243">        final ReflectionToStringBuilder test = new ReflectionToStringBuilder(val);</span>
+<span class="pc" id="L1244">        assertThrows(IllegalArgumentException.class, () -&gt; test.setUpToClass(String.class));</span>
+<span class="fc" id="L1245">        test.toString();</span>
+<span class="fc" id="L1246">    }</span>
+
+    /**
+     * Tests ReflectionToStringBuilder.toString() for statics.
+     */
+<span class="fc" id="L1251">    class ReflectionStaticFieldsFixture {</span>
+        static final String staticString = &quot;staticString&quot;;
+        static final int staticInt = 12345;
+        static final transient String staticTransientString = &quot;staticTransientString&quot;;
+        static final transient int staticTransientInt = 54321;
+<span class="fc" id="L1256">        String instanceString = &quot;instanceString&quot;;</span>
+<span class="fc" id="L1257">        int instanceInt = 67890;</span>
+<span class="fc" id="L1258">        transient String transientString = &quot;transientString&quot;;</span>
+<span class="fc" id="L1259">        transient int transientInt = 98765;</span>
+    }
+
+    /**
+     * Test fixture for ReflectionToStringBuilder.toString() for statics.
+     */
+<span class="fc" id="L1265">    class SimpleReflectionStaticFieldsFixture {</span>
+        static final String staticString = &quot;staticString&quot;;
+        static final int staticInt = 12345;
+    }
+
+    /**
+     * Test fixture for ReflectionToStringBuilder.toString() for statics.
+     */
+    @SuppressWarnings(&quot;unused&quot;)
+<span class="fc" id="L1274">    class InheritedReflectionStaticFieldsFixture extends SimpleReflectionStaticFieldsFixture {</span>
+        static final String staticString2 = &quot;staticString2&quot;;
+        static final int staticInt2 = 67890;
+    }
+
+    @Test
+    public void testReflectionNull() {
+<span class="pc" id="L1281">        assertThrows(IllegalArgumentException.class, () -&gt; ReflectionToStringBuilder.toString(null));</span>
+<span class="fc" id="L1282">    }</span>
+
+    /**
+     * Points out failure to print anything from appendToString methods using MULTI_LINE_STYLE.
+     * See issue LANG-372.
+     */
+<span class="fc" id="L1288">    class MultiLineTestObject {</span>
+<span class="fc" id="L1289">        Integer i = Integer.valueOf(31337);</span>
+        @Override
+        public String toString() {
+<span class="fc" id="L1292">            return new ToStringBuilder(this).append(&quot;testInt&quot;, i).toString();</span>
+        }
+    }
+
+    @Test
+    public void testAppendToStringUsingMultiLineStyle() {
+<span class="fc" id="L1298">        final MultiLineTestObject obj = new MultiLineTestObject();</span>
+<span class="fc" id="L1299">        final ToStringBuilder testBuilder = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)</span>
+<span class="fc" id="L1300">                                          .appendToString(obj.toString());</span>
+<span class="fc" id="L1301">        assertEquals(-1, testBuilder.toString().indexOf(&quot;testInt=31337&quot;));</span>
+<span class="fc" id="L1302">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

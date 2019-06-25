@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CharSetTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">CharSetTest.java</span></div><h1>CharSetTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Modifier;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.CharSet}.
+ */
+<span class="fc" id="L35">public class CharSetTest  {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testClass() {
+<span class="fc" id="L40">        assertTrue(Modifier.isPublic(CharSet.class.getModifiers()));</span>
+<span class="fc" id="L41">        assertFalse(Modifier.isFinal(CharSet.class.getModifiers()));</span>
+<span class="fc" id="L42">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetInstance() {
+<span class="fc" id="L47">        assertSame(CharSet.EMPTY, CharSet.getInstance( (String) null));</span>
+<span class="fc" id="L48">        assertSame(CharSet.EMPTY, CharSet.getInstance(&quot;&quot;));</span>
+<span class="fc" id="L49">        assertSame(CharSet.ASCII_ALPHA, CharSet.getInstance(&quot;a-zA-Z&quot;));</span>
+<span class="fc" id="L50">        assertSame(CharSet.ASCII_ALPHA, CharSet.getInstance(&quot;A-Za-z&quot;));</span>
+<span class="fc" id="L51">        assertSame(CharSet.ASCII_ALPHA_LOWER, CharSet.getInstance(&quot;a-z&quot;));</span>
+<span class="fc" id="L52">        assertSame(CharSet.ASCII_ALPHA_UPPER, CharSet.getInstance(&quot;A-Z&quot;));</span>
+<span class="fc" id="L53">        assertSame(CharSet.ASCII_NUMERIC, CharSet.getInstance(&quot;0-9&quot;));</span>
+<span class="fc" id="L54">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetInstance_Stringarray() {
+<span class="fc" id="L59">        assertNull(CharSet.getInstance((String[]) null));</span>
+<span class="fc" id="L60">        assertEquals(&quot;[]&quot;, CharSet.getInstance(new String[0]).toString());</span>
+<span class="fc" id="L61">        assertEquals(&quot;[]&quot;, CharSet.getInstance(new String[] {null}).toString());</span>
+<span class="fc" id="L62">        assertEquals(&quot;[a-e]&quot;, CharSet.getInstance(new String[] {&quot;a-e&quot;}).toString());</span>
+<span class="fc" id="L63">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor_String_simple() {
+        CharSet set;
+        CharRange[] array;
+
+<span class="fc" id="L71">        set = CharSet.getInstance((String) null);</span>
+<span class="fc" id="L72">        array = set.getCharRanges();</span>
+<span class="fc" id="L73">        assertEquals(&quot;[]&quot;, set.toString());</span>
+<span class="fc" id="L74">        assertEquals(0, array.length);</span>
+
+<span class="fc" id="L76">        set = CharSet.getInstance(&quot;&quot;);</span>
+<span class="fc" id="L77">        array = set.getCharRanges();</span>
+<span class="fc" id="L78">        assertEquals(&quot;[]&quot;, set.toString());</span>
+<span class="fc" id="L79">        assertEquals(0, array.length);</span>
+
+<span class="fc" id="L81">        set = CharSet.getInstance(&quot;a&quot;);</span>
+<span class="fc" id="L82">        array = set.getCharRanges();</span>
+<span class="fc" id="L83">        assertEquals(&quot;[a]&quot;, set.toString());</span>
+<span class="fc" id="L84">        assertEquals(1, array.length);</span>
+<span class="fc" id="L85">        assertEquals(&quot;a&quot;, array[0].toString());</span>
+
+<span class="fc" id="L87">        set = CharSet.getInstance(&quot;^a&quot;);</span>
+<span class="fc" id="L88">        array = set.getCharRanges();</span>
+<span class="fc" id="L89">        assertEquals(&quot;[^a]&quot;, set.toString());</span>
+<span class="fc" id="L90">        assertEquals(1, array.length);</span>
+<span class="fc" id="L91">        assertEquals(&quot;^a&quot;, array[0].toString());</span>
+
+<span class="fc" id="L93">        set = CharSet.getInstance(&quot;a-e&quot;);</span>
+<span class="fc" id="L94">        array = set.getCharRanges();</span>
+<span class="fc" id="L95">        assertEquals(&quot;[a-e]&quot;, set.toString());</span>
+<span class="fc" id="L96">        assertEquals(1, array.length);</span>
+<span class="fc" id="L97">        assertEquals(&quot;a-e&quot;, array[0].toString());</span>
+
+<span class="fc" id="L99">        set = CharSet.getInstance(&quot;^a-e&quot;);</span>
+<span class="fc" id="L100">        array = set.getCharRanges();</span>
+<span class="fc" id="L101">        assertEquals(&quot;[^a-e]&quot;, set.toString());</span>
+<span class="fc" id="L102">        assertEquals(1, array.length);</span>
+<span class="fc" id="L103">        assertEquals(&quot;^a-e&quot;, array[0].toString());</span>
+<span class="fc" id="L104">    }</span>
+
+    @Test
+    public void testConstructor_String_combo() {
+        CharSet set;
+        CharRange[] array;
+
+<span class="fc" id="L111">        set = CharSet.getInstance(&quot;abc&quot;);</span>
+<span class="fc" id="L112">        array = set.getCharRanges();</span>
+<span class="fc" id="L113">        assertEquals(3, array.length);</span>
+<span class="fc" id="L114">        assertTrue(ArrayUtils.contains(array, CharRange.is('a')));</span>
+<span class="fc" id="L115">        assertTrue(ArrayUtils.contains(array, CharRange.is('b')));</span>
+<span class="fc" id="L116">        assertTrue(ArrayUtils.contains(array, CharRange.is('c')));</span>
+
+<span class="fc" id="L118">        set = CharSet.getInstance(&quot;a-ce-f&quot;);</span>
+<span class="fc" id="L119">        array = set.getCharRanges();</span>
+<span class="fc" id="L120">        assertEquals(2, array.length);</span>
+<span class="fc" id="L121">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('a', 'c')));</span>
+<span class="fc" id="L122">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('e', 'f')));</span>
+
+<span class="fc" id="L124">        set = CharSet.getInstance(&quot;ae-f&quot;);</span>
+<span class="fc" id="L125">        array = set.getCharRanges();</span>
+<span class="fc" id="L126">        assertEquals(2, array.length);</span>
+<span class="fc" id="L127">        assertTrue(ArrayUtils.contains(array, CharRange.is('a')));</span>
+<span class="fc" id="L128">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('e', 'f')));</span>
+
+<span class="fc" id="L130">        set = CharSet.getInstance(&quot;e-fa&quot;);</span>
+<span class="fc" id="L131">        array = set.getCharRanges();</span>
+<span class="fc" id="L132">        assertEquals(2, array.length);</span>
+<span class="fc" id="L133">        assertTrue(ArrayUtils.contains(array, CharRange.is('a')));</span>
+<span class="fc" id="L134">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('e', 'f')));</span>
+
+<span class="fc" id="L136">        set = CharSet.getInstance(&quot;ae-fm-pz&quot;);</span>
+<span class="fc" id="L137">        array = set.getCharRanges();</span>
+<span class="fc" id="L138">        assertEquals(4, array.length);</span>
+<span class="fc" id="L139">        assertTrue(ArrayUtils.contains(array, CharRange.is('a')));</span>
+<span class="fc" id="L140">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('e', 'f')));</span>
+<span class="fc" id="L141">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('m', 'p')));</span>
+<span class="fc" id="L142">        assertTrue(ArrayUtils.contains(array, CharRange.is('z')));</span>
+<span class="fc" id="L143">    }</span>
+
+    @Test
+    public void testConstructor_String_comboNegated() {
+        CharSet set;
+        CharRange[] array;
+
+<span class="fc" id="L150">        set = CharSet.getInstance(&quot;^abc&quot;);</span>
+<span class="fc" id="L151">        array = set.getCharRanges();</span>
+<span class="fc" id="L152">        assertEquals(3, array.length);</span>
+<span class="fc" id="L153">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('a')));</span>
+<span class="fc" id="L154">        assertTrue(ArrayUtils.contains(array, CharRange.is('b')));</span>
+<span class="fc" id="L155">        assertTrue(ArrayUtils.contains(array, CharRange.is('c')));</span>
+
+<span class="fc" id="L157">        set = CharSet.getInstance(&quot;b^ac&quot;);</span>
+<span class="fc" id="L158">        array = set.getCharRanges();</span>
+<span class="fc" id="L159">        assertEquals(3, array.length);</span>
+<span class="fc" id="L160">        assertTrue(ArrayUtils.contains(array, CharRange.is('b')));</span>
+<span class="fc" id="L161">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('a')));</span>
+<span class="fc" id="L162">        assertTrue(ArrayUtils.contains(array, CharRange.is('c')));</span>
+
+<span class="fc" id="L164">        set = CharSet.getInstance(&quot;db^ac&quot;);</span>
+<span class="fc" id="L165">        array = set.getCharRanges();</span>
+<span class="fc" id="L166">        assertEquals(4, array.length);</span>
+<span class="fc" id="L167">        assertTrue(ArrayUtils.contains(array, CharRange.is('d')));</span>
+<span class="fc" id="L168">        assertTrue(ArrayUtils.contains(array, CharRange.is('b')));</span>
+<span class="fc" id="L169">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('a')));</span>
+<span class="fc" id="L170">        assertTrue(ArrayUtils.contains(array, CharRange.is('c')));</span>
+
+<span class="fc" id="L172">        set = CharSet.getInstance(&quot;^b^a&quot;);</span>
+<span class="fc" id="L173">        array = set.getCharRanges();</span>
+<span class="fc" id="L174">        assertEquals(2, array.length);</span>
+<span class="fc" id="L175">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('b')));</span>
+<span class="fc" id="L176">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('a')));</span>
+
+<span class="fc" id="L178">        set = CharSet.getInstance(&quot;b^a-c^z&quot;);</span>
+<span class="fc" id="L179">        array = set.getCharRanges();</span>
+<span class="fc" id="L180">        assertEquals(3, array.length);</span>
+<span class="fc" id="L181">        assertTrue(ArrayUtils.contains(array, CharRange.isNotIn('a', 'c')));</span>
+<span class="fc" id="L182">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('z')));</span>
+<span class="fc" id="L183">        assertTrue(ArrayUtils.contains(array, CharRange.is('b')));</span>
+<span class="fc" id="L184">    }</span>
+
+    @Test
+    public void testConstructor_String_oddDash() {
+        CharSet set;
+        CharRange[] array;
+
+<span class="fc" id="L191">        set = CharSet.getInstance(&quot;-&quot;);</span>
+<span class="fc" id="L192">        array = set.getCharRanges();</span>
+<span class="fc" id="L193">        assertEquals(1, array.length);</span>
+<span class="fc" id="L194">        assertTrue(ArrayUtils.contains(array, CharRange.is('-')));</span>
+
+<span class="fc" id="L196">        set = CharSet.getInstance(&quot;--&quot;);</span>
+<span class="fc" id="L197">        array = set.getCharRanges();</span>
+<span class="fc" id="L198">        assertEquals(1, array.length);</span>
+<span class="fc" id="L199">        assertTrue(ArrayUtils.contains(array, CharRange.is('-')));</span>
+
+<span class="fc" id="L201">        set = CharSet.getInstance(&quot;---&quot;);</span>
+<span class="fc" id="L202">        array = set.getCharRanges();</span>
+<span class="fc" id="L203">        assertEquals(1, array.length);</span>
+<span class="fc" id="L204">        assertTrue(ArrayUtils.contains(array, CharRange.is('-')));</span>
+
+<span class="fc" id="L206">        set = CharSet.getInstance(&quot;----&quot;);</span>
+<span class="fc" id="L207">        array = set.getCharRanges();</span>
+<span class="fc" id="L208">        assertEquals(1, array.length);</span>
+<span class="fc" id="L209">        assertTrue(ArrayUtils.contains(array, CharRange.is('-')));</span>
+
+<span class="fc" id="L211">        set = CharSet.getInstance(&quot;-a&quot;);</span>
+<span class="fc" id="L212">        array = set.getCharRanges();</span>
+<span class="fc" id="L213">        assertEquals(2, array.length);</span>
+<span class="fc" id="L214">        assertTrue(ArrayUtils.contains(array, CharRange.is('-')));</span>
+<span class="fc" id="L215">        assertTrue(ArrayUtils.contains(array, CharRange.is('a')));</span>
+
+<span class="fc" id="L217">        set = CharSet.getInstance(&quot;a-&quot;);</span>
+<span class="fc" id="L218">        array = set.getCharRanges();</span>
+<span class="fc" id="L219">        assertEquals(2, array.length);</span>
+<span class="fc" id="L220">        assertTrue(ArrayUtils.contains(array, CharRange.is('a')));</span>
+<span class="fc" id="L221">        assertTrue(ArrayUtils.contains(array, CharRange.is('-')));</span>
+
+<span class="fc" id="L223">        set = CharSet.getInstance(&quot;a--&quot;);</span>
+<span class="fc" id="L224">        array = set.getCharRanges();</span>
+<span class="fc" id="L225">        assertEquals(1, array.length);</span>
+<span class="fc" id="L226">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('a', '-')));</span>
+
+<span class="fc" id="L228">        set = CharSet.getInstance(&quot;--a&quot;);</span>
+<span class="fc" id="L229">        array = set.getCharRanges();</span>
+<span class="fc" id="L230">        assertEquals(1, array.length);</span>
+<span class="fc" id="L231">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('-', 'a')));</span>
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testConstructor_String_oddNegate() {
+        CharSet set;
+        CharRange[] array;
+<span class="fc" id="L238">        set = CharSet.getInstance(&quot;^&quot;);</span>
+<span class="fc" id="L239">        array = set.getCharRanges();</span>
+<span class="fc" id="L240">        assertEquals(1, array.length);</span>
+<span class="fc" id="L241">        assertTrue(ArrayUtils.contains(array, CharRange.is('^'))); // &quot;^&quot;</span>
+
+<span class="fc" id="L243">        set = CharSet.getInstance(&quot;^^&quot;);</span>
+<span class="fc" id="L244">        array = set.getCharRanges();</span>
+<span class="fc" id="L245">        assertEquals(1, array.length);</span>
+<span class="fc" id="L246">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('^'))); // &quot;^^&quot;</span>
+
+<span class="fc" id="L248">        set = CharSet.getInstance(&quot;^^^&quot;);</span>
+<span class="fc" id="L249">        array = set.getCharRanges();</span>
+<span class="fc" id="L250">        assertEquals(2, array.length);</span>
+<span class="fc" id="L251">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('^'))); // &quot;^^&quot;</span>
+<span class="fc" id="L252">        assertTrue(ArrayUtils.contains(array, CharRange.is('^'))); // &quot;^&quot;</span>
+
+<span class="fc" id="L254">        set = CharSet.getInstance(&quot;^^^^&quot;);</span>
+<span class="fc" id="L255">        array = set.getCharRanges();</span>
+<span class="fc" id="L256">        assertEquals(1, array.length);</span>
+<span class="fc" id="L257">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('^'))); // &quot;^^&quot; x2</span>
+
+<span class="fc" id="L259">        set = CharSet.getInstance(&quot;a^&quot;);</span>
+<span class="fc" id="L260">        array = set.getCharRanges();</span>
+<span class="fc" id="L261">        assertEquals(2, array.length);</span>
+<span class="fc" id="L262">        assertTrue(ArrayUtils.contains(array, CharRange.is('a'))); // &quot;a&quot;</span>
+<span class="fc" id="L263">        assertTrue(ArrayUtils.contains(array, CharRange.is('^'))); // &quot;^&quot;</span>
+
+<span class="fc" id="L265">        set = CharSet.getInstance(&quot;^a-&quot;);</span>
+<span class="fc" id="L266">        array = set.getCharRanges();</span>
+<span class="fc" id="L267">        assertEquals(2, array.length);</span>
+<span class="fc" id="L268">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('a'))); // &quot;^a&quot;</span>
+<span class="fc" id="L269">        assertTrue(ArrayUtils.contains(array, CharRange.is('-'))); // &quot;-&quot;</span>
+
+<span class="fc" id="L271">        set = CharSet.getInstance(&quot;^^-c&quot;);</span>
+<span class="fc" id="L272">        array = set.getCharRanges();</span>
+<span class="fc" id="L273">        assertEquals(1, array.length);</span>
+<span class="fc" id="L274">        assertTrue(ArrayUtils.contains(array, CharRange.isNotIn('^', 'c'))); // &quot;^^-c&quot;</span>
+
+<span class="fc" id="L276">        set = CharSet.getInstance(&quot;^c-^&quot;);</span>
+<span class="fc" id="L277">        array = set.getCharRanges();</span>
+<span class="fc" id="L278">        assertEquals(1, array.length);</span>
+<span class="fc" id="L279">        assertTrue(ArrayUtils.contains(array, CharRange.isNotIn('c', '^'))); // &quot;^c-^&quot;</span>
+
+<span class="fc" id="L281">        set = CharSet.getInstance(&quot;^c-^d&quot;);</span>
+<span class="fc" id="L282">        array = set.getCharRanges();</span>
+<span class="fc" id="L283">        assertEquals(2, array.length);</span>
+<span class="fc" id="L284">        assertTrue(ArrayUtils.contains(array, CharRange.isNotIn('c', '^'))); // &quot;^c-^&quot;</span>
+<span class="fc" id="L285">        assertTrue(ArrayUtils.contains(array, CharRange.is('d'))); // &quot;d&quot;</span>
+
+<span class="fc" id="L287">        set = CharSet.getInstance(&quot;^^-&quot;);</span>
+<span class="fc" id="L288">        array = set.getCharRanges();</span>
+<span class="fc" id="L289">        assertEquals(2, array.length);</span>
+<span class="fc" id="L290">        assertTrue(ArrayUtils.contains(array, CharRange.isNot('^'))); // &quot;^^&quot;</span>
+<span class="fc" id="L291">        assertTrue(ArrayUtils.contains(array, CharRange.is('-'))); // &quot;-&quot;</span>
+<span class="fc" id="L292">    }</span>
+
+    @Test
+    public void testConstructor_String_oddCombinations() {
+        CharSet set;
+<span class="fc" id="L297">        CharRange[] array = null;</span>
+
+<span class="fc" id="L299">        set = CharSet.getInstance(&quot;a-^c&quot;);</span>
+<span class="fc" id="L300">        array = set.getCharRanges();</span>
+<span class="fc" id="L301">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('a', '^'))); // &quot;a-^&quot;</span>
+<span class="fc" id="L302">        assertTrue(ArrayUtils.contains(array, CharRange.is('c'))); // &quot;c&quot;</span>
+<span class="fc" id="L303">        assertFalse(set.contains('b'));</span>
+<span class="fc" id="L304">        assertTrue(set.contains('^'));</span>
+<span class="fc" id="L305">        assertTrue(set.contains('_')); // between ^ and a</span>
+<span class="fc" id="L306">        assertTrue(set.contains('c'));</span>
+
+<span class="fc" id="L308">        set = CharSet.getInstance(&quot;^a-^c&quot;);</span>
+<span class="fc" id="L309">        array = set.getCharRanges();</span>
+<span class="fc" id="L310">        assertTrue(ArrayUtils.contains(array, CharRange.isNotIn('a', '^'))); // &quot;^a-^&quot;</span>
+<span class="fc" id="L311">        assertTrue(ArrayUtils.contains(array, CharRange.is('c'))); // &quot;c&quot;</span>
+<span class="fc" id="L312">        assertTrue(set.contains('b'));</span>
+<span class="fc" id="L313">        assertFalse(set.contains('^'));</span>
+<span class="fc" id="L314">        assertFalse(set.contains('_')); // between ^ and a</span>
+
+<span class="fc" id="L316">        set = CharSet.getInstance(&quot;a- ^-- &quot;); //contains everything</span>
+<span class="fc" id="L317">        array = set.getCharRanges();</span>
+<span class="fc" id="L318">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('a', ' '))); // &quot;a- &quot;</span>
+<span class="fc" id="L319">        assertTrue(ArrayUtils.contains(array, CharRange.isNotIn('-', ' '))); // &quot;^-- &quot;</span>
+<span class="fc" id="L320">        assertTrue(set.contains('#'));</span>
+<span class="fc" id="L321">        assertTrue(set.contains('^'));</span>
+<span class="fc" id="L322">        assertTrue(set.contains('a'));</span>
+<span class="fc" id="L323">        assertTrue(set.contains('*'));</span>
+<span class="fc" id="L324">        assertTrue(set.contains('A'));</span>
+
+<span class="fc" id="L326">        set = CharSet.getInstance(&quot;^-b&quot;);</span>
+<span class="fc" id="L327">        array = set.getCharRanges();</span>
+<span class="fc" id="L328">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('^', 'b'))); // &quot;^-b&quot;</span>
+<span class="fc" id="L329">        assertTrue(set.contains('b'));</span>
+<span class="fc" id="L330">        assertTrue(set.contains('_')); // between ^ and a</span>
+<span class="fc" id="L331">        assertFalse(set.contains('A'));</span>
+<span class="fc" id="L332">        assertTrue(set.contains('^'));</span>
+
+<span class="fc" id="L334">        set = CharSet.getInstance(&quot;b-^&quot;);</span>
+<span class="fc" id="L335">        array = set.getCharRanges();</span>
+<span class="fc" id="L336">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('^', 'b'))); // &quot;b-^&quot;</span>
+<span class="fc" id="L337">        assertTrue(set.contains('b'));</span>
+<span class="fc" id="L338">        assertTrue(set.contains('^'));</span>
+<span class="fc" id="L339">        assertTrue(set.contains('a')); // between ^ and b</span>
+<span class="fc" id="L340">        assertFalse(set.contains('c'));</span>
+<span class="fc" id="L341">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testEquals_Object() {
+<span class="fc" id="L346">        final CharSet abc = CharSet.getInstance(&quot;abc&quot;);</span>
+<span class="fc" id="L347">        final CharSet abc2 = CharSet.getInstance(&quot;abc&quot;);</span>
+<span class="fc" id="L348">        final CharSet atoc = CharSet.getInstance(&quot;a-c&quot;);</span>
+<span class="fc" id="L349">        final CharSet atoc2 = CharSet.getInstance(&quot;a-c&quot;);</span>
+<span class="fc" id="L350">        final CharSet notatoc = CharSet.getInstance(&quot;^a-c&quot;);</span>
+<span class="fc" id="L351">        final CharSet notatoc2 = CharSet.getInstance(&quot;^a-c&quot;);</span>
+
+<span class="fc" id="L353">        assertNotEquals(null, abc);</span>
+
+<span class="fc" id="L355">        assertEquals(abc, abc);</span>
+<span class="fc" id="L356">        assertEquals(abc, abc2);</span>
+<span class="fc" id="L357">        assertNotEquals(abc, atoc);</span>
+<span class="fc" id="L358">        assertNotEquals(abc, notatoc);</span>
+
+<span class="fc" id="L360">        assertNotEquals(atoc, abc);</span>
+<span class="fc" id="L361">        assertEquals(atoc, atoc);</span>
+<span class="fc" id="L362">        assertEquals(atoc, atoc2);</span>
+<span class="fc" id="L363">        assertNotEquals(atoc, notatoc);</span>
+
+<span class="fc" id="L365">        assertNotEquals(notatoc, abc);</span>
+<span class="fc" id="L366">        assertNotEquals(notatoc, atoc);</span>
+<span class="fc" id="L367">        assertEquals(notatoc, notatoc);</span>
+<span class="fc" id="L368">        assertEquals(notatoc, notatoc2);</span>
+<span class="fc" id="L369">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L373">        final CharSet abc = CharSet.getInstance(&quot;abc&quot;);</span>
+<span class="fc" id="L374">        final CharSet abc2 = CharSet.getInstance(&quot;abc&quot;);</span>
+<span class="fc" id="L375">        final CharSet atoc = CharSet.getInstance(&quot;a-c&quot;);</span>
+<span class="fc" id="L376">        final CharSet atoc2 = CharSet.getInstance(&quot;a-c&quot;);</span>
+<span class="fc" id="L377">        final CharSet notatoc = CharSet.getInstance(&quot;^a-c&quot;);</span>
+<span class="fc" id="L378">        final CharSet notatoc2 = CharSet.getInstance(&quot;^a-c&quot;);</span>
+
+<span class="fc" id="L380">        assertEquals(abc.hashCode(), abc.hashCode());</span>
+<span class="fc" id="L381">        assertEquals(abc.hashCode(), abc2.hashCode());</span>
+<span class="fc" id="L382">        assertEquals(atoc.hashCode(), atoc.hashCode());</span>
+<span class="fc" id="L383">        assertEquals(atoc.hashCode(), atoc2.hashCode());</span>
+<span class="fc" id="L384">        assertEquals(notatoc.hashCode(), notatoc.hashCode());</span>
+<span class="fc" id="L385">        assertEquals(notatoc.hashCode(), notatoc2.hashCode());</span>
+<span class="fc" id="L386">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testContains_Char() {
+<span class="fc" id="L391">        final CharSet btod = CharSet.getInstance(&quot;b-d&quot;);</span>
+<span class="fc" id="L392">        final CharSet dtob = CharSet.getInstance(&quot;d-b&quot;);</span>
+<span class="fc" id="L393">        final CharSet bcd = CharSet.getInstance(&quot;bcd&quot;);</span>
+<span class="fc" id="L394">        final CharSet bd = CharSet.getInstance(&quot;bd&quot;);</span>
+<span class="fc" id="L395">        final CharSet notbtod = CharSet.getInstance(&quot;^b-d&quot;);</span>
+
+<span class="fc" id="L397">        assertFalse(btod.contains('a'));</span>
+<span class="fc" id="L398">        assertTrue(btod.contains('b'));</span>
+<span class="fc" id="L399">        assertTrue(btod.contains('c'));</span>
+<span class="fc" id="L400">        assertTrue(btod.contains('d'));</span>
+<span class="fc" id="L401">        assertFalse(btod.contains('e'));</span>
+
+<span class="fc" id="L403">        assertFalse(bcd.contains('a'));</span>
+<span class="fc" id="L404">        assertTrue(bcd.contains('b'));</span>
+<span class="fc" id="L405">        assertTrue(bcd.contains('c'));</span>
+<span class="fc" id="L406">        assertTrue(bcd.contains('d'));</span>
+<span class="fc" id="L407">        assertFalse(bcd.contains('e'));</span>
+
+<span class="fc" id="L409">        assertFalse(bd.contains('a'));</span>
+<span class="fc" id="L410">        assertTrue(bd.contains('b'));</span>
+<span class="fc" id="L411">        assertFalse(bd.contains('c'));</span>
+<span class="fc" id="L412">        assertTrue(bd.contains('d'));</span>
+<span class="fc" id="L413">        assertFalse(bd.contains('e'));</span>
+
+<span class="fc" id="L415">        assertTrue(notbtod.contains('a'));</span>
+<span class="fc" id="L416">        assertFalse(notbtod.contains('b'));</span>
+<span class="fc" id="L417">        assertFalse(notbtod.contains('c'));</span>
+<span class="fc" id="L418">        assertFalse(notbtod.contains('d'));</span>
+<span class="fc" id="L419">        assertTrue(notbtod.contains('e'));</span>
+
+<span class="fc" id="L421">        assertFalse(dtob.contains('a'));</span>
+<span class="fc" id="L422">        assertTrue(dtob.contains('b'));</span>
+<span class="fc" id="L423">        assertTrue(dtob.contains('c'));</span>
+<span class="fc" id="L424">        assertTrue(dtob.contains('d'));</span>
+<span class="fc" id="L425">        assertFalse(dtob.contains('e'));</span>
+
+<span class="fc" id="L427">        final CharRange[] array = dtob.getCharRanges();</span>
+<span class="fc" id="L428">        assertEquals(&quot;[b-d]&quot;, dtob.toString());</span>
+<span class="fc" id="L429">        assertEquals(1, array.length);</span>
+<span class="fc" id="L430">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L435">        CharSet set = CharSet.getInstance(&quot;a&quot;);</span>
+<span class="fc" id="L436">        assertEquals(set, SerializationUtils.clone(set));</span>
+<span class="fc" id="L437">        set = CharSet.getInstance(&quot;a-e&quot;);</span>
+<span class="fc" id="L438">        assertEquals(set, SerializationUtils.clone(set));</span>
+<span class="fc" id="L439">        set = CharSet.getInstance(&quot;be-f^a-z&quot;);</span>
+<span class="fc" id="L440">        assertEquals(set, SerializationUtils.clone(set));</span>
+<span class="fc" id="L441">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testStatics() {
+        CharRange[] array;
+
+<span class="fc" id="L448">        array = CharSet.EMPTY.getCharRanges();</span>
+<span class="fc" id="L449">        assertEquals(0, array.length);</span>
+
+<span class="fc" id="L451">        array = CharSet.ASCII_ALPHA.getCharRanges();</span>
+<span class="fc" id="L452">        assertEquals(2, array.length);</span>
+<span class="fc" id="L453">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('a', 'z')));</span>
+<span class="fc" id="L454">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('A', 'Z')));</span>
+
+<span class="fc" id="L456">        array = CharSet.ASCII_ALPHA_LOWER.getCharRanges();</span>
+<span class="fc" id="L457">        assertEquals(1, array.length);</span>
+<span class="fc" id="L458">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('a', 'z')));</span>
+
+<span class="fc" id="L460">        array = CharSet.ASCII_ALPHA_UPPER.getCharRanges();</span>
+<span class="fc" id="L461">        assertEquals(1, array.length);</span>
+<span class="fc" id="L462">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('A', 'Z')));</span>
+
+<span class="fc" id="L464">        array = CharSet.ASCII_NUMERIC.getCharRanges();</span>
+<span class="fc" id="L465">        assertEquals(1, array.length);</span>
+<span class="fc" id="L466">        assertTrue(ArrayUtils.contains(array, CharRange.isIn('0', '9')));</span>
+<span class="fc" id="L467">    }</span>
+
+    @Test
+    public void testJavadocExamples() {
+<span class="fc" id="L471">        assertFalse(CharSet.getInstance(&quot;^a-c&quot;).contains('a'));</span>
+<span class="fc" id="L472">        assertTrue(CharSet.getInstance(&quot;^a-c&quot;).contains('d'));</span>
+<span class="fc" id="L473">        assertTrue(CharSet.getInstance(&quot;^^a-c&quot;).contains('a'));</span>
+<span class="fc" id="L474">        assertFalse(CharSet.getInstance(&quot;^^a-c&quot;).contains('^'));</span>
+<span class="fc" id="L475">        assertTrue(CharSet.getInstance(&quot;^a-cd-f&quot;).contains('d'));</span>
+<span class="fc" id="L476">        assertTrue(CharSet.getInstance(&quot;a-c^&quot;).contains('^'));</span>
+<span class="fc" id="L477">        assertTrue(CharSet.getInstance(&quot;^&quot;, &quot;a-c&quot;).contains('^'));</span>
+<span class="fc" id="L478">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

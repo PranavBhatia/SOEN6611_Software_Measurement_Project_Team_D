@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InterpolationTestHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">InterpolationTestHelper.java</span></div><h1>InterpolationTestHelper.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.awt.event.KeyEvent;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.Lookup;
+
+import junitx.framework.Assert;
+
+/**
+ * A helper class that defines a bunch of tests related to variable
+ * interpolation. It can be used for running these tests on different
+ * configuration implementations.
+ *
+ * @author &lt;a
+ * href=&quot;http://commons.apache.org/configuration/team-list.html&quot;&gt;Commons
+ * Configuration team&lt;/a&gt;
+ */
+<span class="nc" id="L43">public class InterpolationTestHelper</span>
+{
+    /**
+     * Tests accessing and manipulating the interpolator object.
+     *
+     * @param config the configuration to test
+     */
+    public static void testGetInterpolator(final AbstractConfiguration config)
+    {
+<span class="fc" id="L52">        config.addProperty(&quot;var&quot;, &quot;${echo:testVar}&quot;);</span>
+<span class="fc" id="L53">        final ConfigurationInterpolator interpol = config.getInterpolator();</span>
+<span class="fc" id="L54">        interpol.registerLookup(&quot;echo&quot;, new Lookup()</span>
+<span class="fc" id="L55">        {</span>
+            @Override
+            public Object lookup(final String varName)
+            {
+<span class="fc" id="L59">                return &quot;Value of variable &quot; + varName;</span>
+            }
+        });
+<span class="fc" id="L62">        assertEquals(&quot;Wrong value of echo variable&quot;,</span>
+<span class="fc" id="L63">                &quot;Value of variable testVar&quot;, config.getString(&quot;var&quot;));</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Tests obtaining a configuration with all variables replaced by their
+     * actual values.
+     *
+     * @param config the configuration to test
+     * @return the interpolated configuration
+     */
+    public static Configuration testInterpolatedConfiguration(
+            final AbstractConfiguration config)
+    {
+<span class="fc" id="L76">        config.setProperty(&quot;applicationRoot&quot;, &quot;/home/applicationRoot&quot;);</span>
+<span class="fc" id="L77">        config.setProperty(&quot;db&quot;, &quot;${applicationRoot}/db/hypersonic&quot;);</span>
+<span class="fc" id="L78">        config.setProperty(&quot;inttest.interpol&quot;, &quot;${unknown.property}&quot;);</span>
+<span class="fc" id="L79">        config.setProperty(&quot;intkey.code&quot;,</span>
+                &quot;${const:java.awt.event.KeyEvent.VK_CANCEL}&quot;);
+<span class="fc" id="L81">        config.setProperty(&quot;inttest.sysprop&quot;, &quot;${sys:java.version}&quot;);</span>
+<span class="fc" id="L82">        config.setProperty(&quot;inttest.numvalue&quot;, &quot;3\\,1415&quot;);</span>
+<span class="fc" id="L83">        config.setProperty(&quot;inttest.value&quot;, &quot;${inttest.numvalue}&quot;);</span>
+<span class="fc" id="L84">        config.setProperty(&quot;inttest.list&quot;, &quot;${db}&quot;);</span>
+<span class="fc" id="L85">        config.addProperty(&quot;inttest.list&quot;, &quot;${inttest.value}&quot;);</span>
+
+<span class="fc" id="L87">        final Configuration c = config.interpolatedConfiguration();</span>
+<span class="fc" id="L88">        assertEquals(&quot;Property not replaced&quot;,</span>
+<span class="fc" id="L89">                &quot;/home/applicationRoot/db/hypersonic&quot;, c.getProperty(&quot;db&quot;));</span>
+<span class="fc" id="L90">        assertEquals(&quot;Const variable not replaced&quot;, KeyEvent.VK_CANCEL,</span>
+<span class="fc" id="L91">                c.getInt(&quot;intkey.code&quot;));</span>
+<span class="fc" id="L92">        assertEquals(&quot;Sys property not replaced&quot;, System</span>
+<span class="fc" id="L93">                .getProperty(&quot;java.version&quot;), c.getProperty(&quot;inttest.sysprop&quot;));</span>
+<span class="fc" id="L94">        assertEquals(&quot;Delimiter value not replaced&quot;, &quot;3,1415&quot;, c</span>
+<span class="fc" id="L95">                .getProperty(&quot;inttest.value&quot;));</span>
+<span class="fc" id="L96">        final List&lt;?&gt; lst = (List&lt;?&gt;) c.getProperty(&quot;inttest.list&quot;);</span>
+<span class="fc" id="L97">        assertEquals(&quot;Wrong number of list elements&quot;, 2, lst.size());</span>
+<span class="fc" id="L98">        assertEquals(&quot;List element 0 not replaced&quot;,</span>
+<span class="fc" id="L99">                &quot;/home/applicationRoot/db/hypersonic&quot;, lst.get(0));</span>
+<span class="fc" id="L100">        assertEquals(&quot;List element 1 not replaced&quot;, &quot;3,1415&quot;, lst</span>
+<span class="fc" id="L101">                        .get(1));</span>
+<span class="fc" id="L102">        assertEquals(&quot;Unresolvable variable not found&quot;,</span>
+<span class="fc" id="L103">                &quot;${unknown.property}&quot;, c.getProperty(&quot;inttest.interpol&quot;));</span>
+
+<span class="fc" id="L105">        return c;</span>
+    }
+
+    /**
+     * Tests basic interpolation facilities of the specified configuration.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolation(final Configuration config)
+    {
+<span class="fc" id="L115">        config.setProperty(&quot;applicationRoot&quot;, &quot;/home/applicationRoot&quot;);</span>
+<span class="fc" id="L116">        config.setProperty(&quot;db&quot;, &quot;${applicationRoot}/db/hypersonic&quot;);</span>
+<span class="fc" id="L117">        final String unInterpolatedValue = &quot;${applicationRoot2}/db/hypersonic&quot;;</span>
+<span class="fc" id="L118">        config.setProperty(&quot;dbFailedInterpolate&quot;, unInterpolatedValue);</span>
+<span class="fc" id="L119">        final String dbProp = &quot;/home/applicationRoot/db/hypersonic&quot;;</span>
+
+<span class="fc" id="L121">        assertEquals(&quot;Checking interpolated variable&quot;, dbProp, config</span>
+<span class="fc" id="L122">                .getString(&quot;db&quot;));</span>
+<span class="fc" id="L123">        assertEquals(&quot;lookup fails, leave variable as is&quot;, config</span>
+<span class="fc" id="L124">                .getString(&quot;dbFailedInterpolate&quot;), unInterpolatedValue);</span>
+
+<span class="fc" id="L126">        config.setProperty(&quot;arrayInt&quot;, &quot;${applicationRoot}/1&quot;);</span>
+<span class="fc" id="L127">        final String[] arrayInt = config.getStringArray(&quot;arrayInt&quot;);</span>
+<span class="fc" id="L128">        assertEquals(&quot;check first entry was interpolated&quot;,</span>
+                &quot;/home/applicationRoot/1&quot;, arrayInt[0]);
+
+<span class="fc" id="L131">        config.addProperty(&quot;path&quot;, Arrays.asList(&quot;/temp&quot;, &quot;C:\\Temp&quot;,&quot;/usr/local/tmp&quot;));</span>
+<span class="fc" id="L132">        config.setProperty(&quot;path.current&quot;, &quot;${path}&quot;);</span>
+<span class="fc" id="L133">        assertEquals(&quot;Interpolation with multi-valued property&quot;,</span>
+<span class="fc" id="L134">                &quot;/temp&quot;, config.getString(&quot;path.current&quot;));</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Tests interpolation of constant values.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationConstants(final Configuration config)
+    {
+<span class="fc" id="L144">        config.addProperty(&quot;key.code&quot;,</span>
+                &quot;${const:java.awt.event.KeyEvent.VK_CANCEL}&quot;);
+<span class="fc" id="L146">        assertEquals(&quot;Wrong value of constant variable&quot;,</span>
+<span class="fc" id="L147">                KeyEvent.VK_CANCEL, config.getInt(&quot;key.code&quot;));</span>
+<span class="fc" id="L148">        assertEquals(&quot;Wrong value when fetching constant from cache&quot;,</span>
+<span class="fc" id="L149">                KeyEvent.VK_CANCEL, config.getInt(&quot;key.code&quot;));</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * Tests interpolation of environment properties.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationEnvironment(final Configuration config)
+    {
+<span class="fc" id="L159">        final Map&lt;String, String&gt; env = System.getenv();</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        for (final Map.Entry&lt;String, String&gt; e : env.entrySet())</span>
+        {
+<span class="fc" id="L162">            config.addProperty(&quot;prop&quot; + e.getKey(), &quot;${env:&quot; + e.getKey() + &quot;}&quot;);</span>
+<span class="fc" id="L163">        }</span>
+
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        for (final Map.Entry&lt;String, String&gt; e : env.entrySet())</span>
+        {
+<span class="fc" id="L167">            assertEquals(&quot;Wrong value for environment property &quot; + e.getKey(),</span>
+<span class="fc" id="L168">                    e.getValue(), config.getString(&quot;prop&quot; + e.getKey()));</span>
+<span class="fc" id="L169">        }</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Tests whether a variable can be escaped, so that it won't be
+     * interpolated.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationEscaped(final Configuration config)
+    {
+<span class="fc" id="L180">        config.addProperty(&quot;var&quot;, &quot;x&quot;);</span>
+<span class="fc" id="L181">        config.addProperty(&quot;escVar&quot;, &quot;Use the variable $${${var}}.&quot;);</span>
+<span class="fc" id="L182">        assertEquals(&quot;Wrong escaped variable&quot;, &quot;Use the variable ${x}.&quot;,</span>
+<span class="fc" id="L183">                config.getString(&quot;escVar&quot;));</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Tests interpolation of localhost properties.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationLocalhost(final Configuration config)
+    {
+<span class="fc" id="L193">        final String[] localhostKeys =</span>
+        { &quot;name&quot;, &quot;canonical-name&quot;, &quot;address&quot; };
+<span class="fc" id="L195">        String[] localhostValues = null;</span>
+        try {
+<span class="fc" id="L197">            localhostValues = new String[] {</span>
+<span class="fc" id="L198">                    InetAddress.getLocalHost().getHostName(),</span>
+<span class="fc" id="L199">                    InetAddress.getLocalHost().getCanonicalHostName(),</span>
+<span class="fc" id="L200">                    InetAddress.getLocalHost().getHostAddress() };</span>
+<span class="nc" id="L201">        } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L202">            Assert.fail(e);</span>
+<span class="fc" id="L203">        }</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        for (int i = 0; i &lt; localhostKeys.length; i++)</span>
+        {
+<span class="fc" id="L206">            config.addProperty(&quot;prop&quot; + i, &quot;${localhost:&quot; + localhostKeys[i] + &quot;}&quot;);</span>
+        }
+
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        for (int i = 0; i &lt; localhostKeys.length; i++)</span>
+        {
+<span class="fc" id="L211">            assertEquals(&quot;Wrong value for system property &quot;</span>
+                    + localhostKeys[i], localhostValues[i],
+<span class="fc" id="L213">                    config.getString(&quot;prop&quot; + i));</span>
+        }
+<span class="fc" id="L215">    }</span>
+
+    /**
+     * Tests an invalid interpolation that results in an infinite loop. This
+     * loop should be detected and an exception should be thrown.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationLoop(final Configuration config)
+    {
+<span class="fc" id="L225">        config.setProperty(&quot;test.a&quot;, &quot;${test.b}&quot;);</span>
+<span class="fc" id="L226">        config.setProperty(&quot;test.b&quot;, &quot;${test.a}&quot;);</span>
+
+        try
+        {
+<span class="nc" id="L230">            config.getString(&quot;test.a&quot;);</span>
+<span class="nc" id="L231">            fail(&quot;IllegalStateException should have been thrown for looped property references&quot;);</span>
+        }
+<span class="fc" id="L233">        catch (final IllegalStateException e)</span>
+        {
+            // ok
+<span class="nc" id="L236">        }</span>
+
+<span class="fc" id="L238">    }</span>
+
+    /**
+     * Tests interpolation when a subset configuration is involved.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationSubset(final Configuration config)
+    {
+<span class="fc" id="L247">        config.addProperty(&quot;test.a&quot;, new Integer(42));</span>
+<span class="fc" id="L248">        config.addProperty(&quot;test.b&quot;, &quot;${test.a}&quot;);</span>
+<span class="fc" id="L249">        assertEquals(&quot;Wrong interpolated value&quot;, 42, config</span>
+<span class="fc" id="L250">                .getInt(&quot;test.b&quot;));</span>
+<span class="fc" id="L251">        final Configuration subset = config.subset(&quot;test&quot;);</span>
+<span class="fc" id="L252">        assertEquals(&quot;Wrong string property&quot;, &quot;42&quot;, subset</span>
+<span class="fc" id="L253">                .getString(&quot;b&quot;));</span>
+<span class="fc" id="L254">        assertEquals(&quot;Wrong int property&quot;, 42, subset.getInt(&quot;b&quot;));</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Tests interpolation of system properties.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationSystemProperties(final Configuration config)
+    {
+<span class="fc" id="L264">        final String[] sysProperties =</span>
+        { &quot;java.version&quot;, &quot;java.vendor&quot;, &quot;os.name&quot;, &quot;java.class.path&quot; };
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for (int i = 0; i &lt; sysProperties.length; i++)</span>
+        {
+<span class="fc" id="L268">            config.addProperty(&quot;prop&quot; + i, &quot;${sys:&quot; + sysProperties[i] + &quot;}&quot;);</span>
+        }
+
+<span class="fc bfc" id="L271" title="All 2 branches covered.">        for (int i = 0; i &lt; sysProperties.length; i++)</span>
+        {
+<span class="fc" id="L273">            assertEquals(&quot;Wrong value for system property &quot;</span>
+<span class="fc" id="L274">                    + sysProperties[i], System.getProperty(sysProperties[i]),</span>
+<span class="fc" id="L275">                    config.getString(&quot;prop&quot; + i));</span>
+        }
+<span class="fc" id="L277">    }</span>
+
+    /**
+     * Tests interpolation when the referred property is not found.
+     *
+     * @param config the configuration to test
+     */
+    public static void testInterpolationUnknownProperty(final Configuration config)
+    {
+<span class="fc" id="L286">        config.addProperty(&quot;test.interpol&quot;, &quot;${unknown.property}&quot;);</span>
+<span class="fc" id="L287">        assertEquals(&quot;Wrong interpolated unknown property&quot;,</span>
+<span class="fc" id="L288">                &quot;${unknown.property}&quot;, config.getString(&quot;test.interpol&quot;));</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * Tests an interpolation over multiple levels (i.e. the replacement of a
+     * variable is another variable and so on).
+     *
+     * @param config the configuration to test
+     */
+    public static void testMultipleInterpolation(final Configuration config)
+    {
+<span class="fc" id="L299">        config.setProperty(&quot;test.base-level&quot;, &quot;/base-level&quot;);</span>
+<span class="fc" id="L300">        config</span>
+<span class="fc" id="L301">                .setProperty(&quot;test.first-level&quot;,</span>
+                        &quot;${test.base-level}/first-level&quot;);
+<span class="fc" id="L303">        config.setProperty(&quot;test.second-level&quot;,</span>
+                &quot;${test.first-level}/second-level&quot;);
+<span class="fc" id="L305">        config.setProperty(&quot;test.third-level&quot;,</span>
+                &quot;${test.second-level}/third-level&quot;);
+
+<span class="fc" id="L308">        final String expectedValue = &quot;/base-level/first-level/second-level/third-level&quot;;</span>
+
+<span class="fc" id="L310">        assertEquals(config.getString(&quot;test.third-level&quot;),</span>
+                        expectedValue);
+<span class="fc" id="L312">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

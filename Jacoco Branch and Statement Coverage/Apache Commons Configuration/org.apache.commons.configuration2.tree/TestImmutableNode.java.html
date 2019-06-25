@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestImmutableNode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestImmutableNode.java</span></div><h1>TestImmutableNode.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+
+/**
+ * Test class for {@code ImmutableNode}
+ *
+ */
+<span class="fc" id="L39">public class TestImmutableNode</span>
+{
+    /** Constant for a test node name. */
+    private static final String NAME = &quot;testNode&quot;;
+
+    /** Constant for an attribute key. */
+    private static final String ATTR = &quot;attr&quot;;
+
+    /** Constant for an attribute value. */
+    private static final String ATTR_VALUE = &quot;attrValue&quot;;
+
+    /** Constant for a test node value. */
+<span class="fc" id="L51">    private static final Integer VALUE = 42;</span>
+
+    /** A counter for generating unique child node names. */
+    private int childCounter;
+
+    /**
+     * Sets up a builder with default settings.
+     *
+     * @return the default builder
+     */
+    private static ImmutableNode.Builder setUpBuilder()
+    {
+<span class="fc" id="L63">        final ImmutableNode.Builder builder = new ImmutableNode.Builder();</span>
+<span class="fc" id="L64">        builder.name(NAME).value(VALUE);</span>
+<span class="fc" id="L65">        return builder;</span>
+    }
+
+    /**
+     * Tests whether a node with basic properties can be created.
+     */
+    @Test
+    public void testSimpleProperties()
+    {
+<span class="fc" id="L74">        final ImmutableNode node = setUpBuilder().create();</span>
+<span class="fc" id="L75">        assertEquals(&quot;Wrong node name&quot;, NAME, node.getNodeName());</span>
+<span class="fc" id="L76">        assertTrue(&quot;Got children&quot;, node.getChildren().isEmpty());</span>
+<span class="fc" id="L77">        assertTrue(&quot;Got attributes&quot;, node.getAttributes().isEmpty());</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Tests that a node's children cannot be manipulated.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testChildrenImmutable()
+    {
+<span class="fc" id="L86">        final ImmutableNode node = setUpBuilder().create();</span>
+<span class="nc" id="L87">        node.getChildren().add(null);</span>
+<span class="nc" id="L88">    }</span>
+
+    /**
+     * Tests that a node's attributes cannot be directly manipulated.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAttributesImmutable()
+    {
+<span class="fc" id="L96">        final ImmutableNode node = setUpBuilder().create();</span>
+<span class="nc" id="L97">        node.getAttributes().put(&quot;test&quot;, VALUE);</span>
+<span class="nc" id="L98">    }</span>
+
+    /**
+     * Checks whether a node has the expected children.
+     *
+     * @param node the node to be checked
+     * @param expChildren the collection with the expected children
+     */
+    private static void checkChildNodes(final ImmutableNode node,
+            final Collection&lt;ImmutableNode&gt; expChildren)
+    {
+<span class="fc" id="L109">        assertEquals(&quot;Wrong number of child nodes&quot;, expChildren.size(), node</span>
+<span class="fc" id="L110">                .getChildren().size());</span>
+<span class="fc" id="L111">        final Iterator&lt;ImmutableNode&gt; itExp = expChildren.iterator();</span>
+<span class="fc" id="L112">        int idx = 0;</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        for(final ImmutableNode c : node.getChildren())</span>
+        {
+<span class="fc" id="L115">            assertEquals(&quot;Wrong child at &quot; + idx, itExp.next(), c);</span>
+<span class="fc" id="L116">            idx++;</span>
+<span class="fc" id="L117">        }</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Checks whether a node has exactly the specified children.
+     *
+     * @param parent the parent node to be checked
+     * @param children the expected children
+     */
+    private static void checkChildNodes(final ImmutableNode parent,
+            final ImmutableNode... children)
+    {
+<span class="fc" id="L129">        checkChildNodes(parent, Arrays.asList(children));</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * Tests whether child nodes can be added.
+     */
+    @Test
+    public void testNodeWithChildren()
+    {
+<span class="fc" id="L138">        final int childCount = 8;</span>
+<span class="fc" id="L139">        final List&lt;ImmutableNode&gt; childNodes = new ArrayList&lt;&gt;(childCount);</span>
+<span class="fc" id="L140">        final ImmutableNode.Builder builder = new ImmutableNode.Builder(childCount);</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        for (int i = 0; i &lt; childCount; i++)</span>
+        {
+<span class="fc" id="L143">            final ImmutableNode.Builder childBuilder = new ImmutableNode.Builder();</span>
+<span class="fc" id="L144">            final ImmutableNode child = childBuilder.name(NAME + i).value(i).create();</span>
+<span class="fc" id="L145">            builder.addChild(child);</span>
+<span class="fc" id="L146">            childNodes.add(child);</span>
+        }
+<span class="fc" id="L148">        final ImmutableNode node = builder.name(NAME).create();</span>
+<span class="fc" id="L149">        checkChildNodes(node, childNodes);</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * Tests whether multiple child nodes can be added to a builder.
+     */
+    @Test
+    public void testNodeWithAddMultipleChildren()
+    {
+<span class="fc" id="L158">        final int childCount = 4;</span>
+<span class="fc" id="L159">        final List&lt;ImmutableNode&gt; childNodes =</span>
+                new ArrayList&lt;&gt;(childCount);
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        for (int i = 0; i &lt; childCount; i++)</span>
+        {
+<span class="fc" id="L163">            final ImmutableNode.Builder childBuilder = new ImmutableNode.Builder();</span>
+<span class="fc" id="L164">            final ImmutableNode child = childBuilder.name(NAME + i).value(i).create();</span>
+<span class="fc" id="L165">            childNodes.add(child);</span>
+        }
+<span class="fc" id="L167">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L168">        final ImmutableNode node = builder.addChildren(childNodes).create();</span>
+<span class="fc" id="L169">        checkChildNodes(node, childNodes);</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Tests whether the builder ignores a null child node.
+     */
+    @Test
+    public void testNodeWithNullChild()
+    {
+<span class="fc" id="L178">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L179">        builder.addChild(null);</span>
+<span class="fc" id="L180">        final ImmutableNode node = builder.create();</span>
+<span class="fc" id="L181">        checkChildNodes(node);</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Tests that the list of children cannot be changed by a later manipulation
+     * of the builder.
+     */
+    @Test
+    public void testNodeWithChildrenManipulateLater()
+    {
+<span class="fc" id="L191">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L192">        final ImmutableNode child =</span>
+<span class="fc" id="L193">                new ImmutableNode.Builder().name(&quot;Child&quot;).create();</span>
+<span class="fc" id="L194">        final ImmutableNode node = builder.addChild(child).create();</span>
+<span class="fc" id="L195">        builder.addChild(new ImmutableNode.Builder().name(&quot;AnotherChild&quot;)</span>
+<span class="fc" id="L196">                .create());</span>
+<span class="fc" id="L197">        checkChildNodes(node, Collections.singleton(child));</span>
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Tests whether addChildren() can deal with null input.
+     */
+    @Test
+    public void testAddChildrenNull()
+    {
+<span class="fc" id="L206">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L207">        builder.addChildren(null);</span>
+<span class="fc" id="L208">        final ImmutableNode node = builder.create();</span>
+<span class="fc" id="L209">        assertTrue(&quot;Got children&quot;, node.getChildren().isEmpty());</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Tests whether null entries in a collection with new child nodes are ignored.
+     */
+    @Test
+    public void testAddChildrenNullElement()
+    {
+<span class="fc" id="L218">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L219">        final List&lt;ImmutableNode&gt; children = Arrays.asList(createChild(), null, createChild());</span>
+<span class="fc" id="L220">        builder.addChildren(children);</span>
+<span class="fc" id="L221">        final ImmutableNode node = builder.create();</span>
+<span class="fc" id="L222">        checkChildNodes(node, children.get(0), children.get(2));</span>
+<span class="fc" id="L223">    }</span>
+
+    /**
+     * Tests whether a node with attributes can be created.
+     */
+    @Test
+    public void testNodeWithAttributes()
+    {
+<span class="fc" id="L231">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L232">        final int attrCount = 4;</span>
+<span class="fc" id="L233">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        for (int i = 0; i &lt; attrCount; i++)</span>
+        {
+<span class="fc" id="L236">            final String attrName = NAME + i;</span>
+<span class="fc" id="L237">            attrs.put(attrName, i);</span>
+<span class="fc" id="L238">            builder.addAttribute(attrName, i);</span>
+        }
+<span class="fc" id="L240">        final ImmutableNode node = builder.create();</span>
+<span class="fc" id="L241">        checkAttributes(node, attrs);</span>
+<span class="fc" id="L242">    }</span>
+
+    /**
+     * Checks whether a node has the expected attributes.
+     *
+     * @param node the node to be checked
+     * @param expAttrs the expected attributes
+     */
+    private static void checkAttributes(final ImmutableNode node,
+            final Map&lt;String, ?&gt; expAttrs)
+    {
+<span class="fc" id="L253">        assertEquals(&quot;Wrong number of attributes&quot;, expAttrs.size(), node</span>
+<span class="fc" id="L254">                .getAttributes().size());</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">        for (final Map.Entry&lt;String, ?&gt; e : expAttrs.entrySet())</span>
+        {
+<span class="fc" id="L257">            assertEquals(&quot;Wrong value for &quot; + e.getKey(), e.getValue(), node</span>
+<span class="fc" id="L258">                    .getAttributes().get(e.getKey()));</span>
+<span class="fc" id="L259">        }</span>
+<span class="fc" id="L260">    }</span>
+
+    /**
+     * Tests that the map of attributes cannot be changed by a later
+     * manipulation of the builder.
+     */
+    @Test
+    public void testNodeWithAttributesManipulateLater()
+    {
+<span class="fc" id="L269">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L270">        builder.addAttribute(ATTR, ATTR_VALUE);</span>
+<span class="fc" id="L271">        final ImmutableNode node = builder.create();</span>
+<span class="fc" id="L272">        builder.addAttribute(&quot;attr2&quot;, &quot;a2&quot;);</span>
+<span class="fc" id="L273">        assertEquals(&quot;Wrong number of attributes&quot;, 1, node.getAttributes()</span>
+<span class="fc" id="L274">                .size());</span>
+<span class="fc" id="L275">        assertEquals(&quot;Wrong attribute&quot;, ATTR_VALUE, node.getAttributes().get(ATTR));</span>
+<span class="fc" id="L276">    }</span>
+
+    /**
+     * Tests whether multiple attributes can be added in a single operation.
+     */
+    @Test
+    public void testNodeWithMultipleAttributes()
+    {
+<span class="fc" id="L284">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L285">        final int attrCount = 4;</span>
+<span class="fc" id="L286">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L287" title="All 2 branches covered.">        for (int i = 0; i &lt; attrCount; i++)</span>
+        {
+<span class="fc" id="L289">            final String attrName = NAME + i;</span>
+<span class="fc" id="L290">            attrs.put(attrName, i);</span>
+        }
+<span class="fc" id="L292">        final ImmutableNode node = builder.addAttributes(attrs).create();</span>
+<span class="fc" id="L293">        checkAttributes(node, attrs);</span>
+<span class="fc" id="L294">    }</span>
+
+    /**
+     * Tests whether addAttributes() handles null input.
+     */
+    @Test
+    public void testAddAttributesNull()
+    {
+<span class="fc" id="L302">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L303">        builder.addAttributes(null);</span>
+<span class="fc" id="L304">        final ImmutableNode node = builder.create();</span>
+<span class="fc" id="L305">        assertTrue(&quot;Got attributes&quot;, node.getAttributes().isEmpty());</span>
+<span class="fc" id="L306">    }</span>
+
+    /**
+     * Creates a default node instance which can be used by tests for updating
+     * properties.
+     *
+     * @param value the value of the node
+     * @return the default node instance
+     */
+    private ImmutableNode createDefaultNode(final Object value)
+    {
+<span class="fc" id="L317">        return createDefaultNode(NAME, value);</span>
+    }
+
+    /**
+     * Creates a default node instance with a variable name and value that can
+     * be used by tests for updating properties.
+     *
+     * @param name the name of the node
+     * @param value the value of the node
+     * @return the default node instance
+     */
+    private ImmutableNode createDefaultNode(final String name, final Object value)
+    {
+<span class="fc" id="L330">        final ImmutableNode.Builder builder = new ImmutableNode.Builder(1);</span>
+<span class="fc" id="L331">        return builder.name(name).addChild(createChild())</span>
+<span class="fc" id="L332">                .addAttribute(&quot;testAttr&quot;, &quot;anotherTest&quot;).value(value).create();</span>
+    }
+
+    /**
+     * Creates a default child node with a unique name.
+     *
+     * @return the new child node
+     */
+    private ImmutableNode createChild()
+    {
+<span class="fc" id="L342">        final int idx = childCounter++;</span>
+<span class="fc" id="L343">        return new ImmutableNode.Builder().name(&quot;Child&quot; + idx)</span>
+<span class="fc" id="L344">                .value(&quot;childValue&quot; + idx).create();</span>
+    }
+
+    /**
+     * Checks whether an updated node has the expected basic properties.
+     *
+     * @param org the original node
+     * @param updated the updated node
+     */
+    private static void checkUpdatedNode(final ImmutableNode org,
+            final ImmutableNode updated)
+    {
+<span class="fc" id="L356">        assertNotSame(&quot;Same instance&quot;, org, updated);</span>
+<span class="fc" id="L357">        assertEquals(&quot;Wrong node name&quot;, NAME, updated.getNodeName());</span>
+<span class="fc" id="L358">        assertEquals(&quot;Wrong value&quot;, VALUE, updated.getValue());</span>
+<span class="fc" id="L359">    }</span>
+
+    /**
+     * Tests whether a new node with a changed value can be created.
+     */
+    @Test
+    public void testSetValue()
+    {
+<span class="fc" id="L367">        final ImmutableNode node = createDefaultNode(&quot;test&quot;);</span>
+<span class="fc" id="L368">        final ImmutableNode node2 = node.setValue(VALUE);</span>
+<span class="fc" id="L369">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L370">        assertSame(&quot;Different children&quot;, node.getChildren(),</span>
+<span class="fc" id="L371">                node2.getChildren());</span>
+<span class="fc" id="L372">        assertSame(&quot;Different attributes&quot;, node.getAttributes(),</span>
+<span class="fc" id="L373">                node2.getAttributes());</span>
+<span class="fc" id="L374">    }</span>
+
+    /**
+     * Tests whether the name of a node can be changed for a new instance.
+     */
+    @Test
+    public void testSetName()
+    {
+<span class="fc" id="L382">        final ImmutableNode node = createDefaultNode(&quot;anotherName&quot;, VALUE);</span>
+<span class="fc" id="L383">        final ImmutableNode node2 = node.setName(NAME);</span>
+<span class="fc" id="L384">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L385">        assertSame(&quot;Different children&quot;, node.getChildren(),</span>
+<span class="fc" id="L386">                node2.getChildren());</span>
+<span class="fc" id="L387">        assertSame(&quot;Different attributes&quot;, node.getAttributes(),</span>
+<span class="fc" id="L388">                node2.getAttributes());</span>
+<span class="fc" id="L389">    }</span>
+
+    /**
+     * Tests whether a child node can be added.
+     */
+    @Test
+    public void testAddChild()
+    {
+<span class="fc" id="L397">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L398">        final ImmutableNode child2 =</span>
+<span class="fc" id="L399">                new ImmutableNode.Builder().name(&quot;child2&quot;).create();</span>
+<span class="fc" id="L400">        final ImmutableNode node2 = node.addChild(child2);</span>
+<span class="fc" id="L401">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L402">        checkChildNodes(node2, node.getChildren().get(0), child2);</span>
+<span class="fc" id="L403">    }</span>
+
+    /**
+     * Tests getting named children.
+     */
+    @Test
+    public void testGetChildrenByName()
+    {
+<span class="fc" id="L411">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L412">        final ImmutableNode child2 =</span>
+<span class="fc" id="L413">                new ImmutableNode.Builder().name(&quot;child2&quot;).create();</span>
+<span class="fc" id="L414">        final ImmutableNode node2 = node.addChild(child2);</span>
+<span class="fc" id="L415">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L416">        assertEquals(&quot;child2&quot;, node2.getChildren(&quot;child2&quot;).get(0).getNodeName());</span>
+<span class="fc" id="L417">        assertEquals(child2, node2.getChildren(&quot;child2&quot;).get(0));</span>
+<span class="fc" id="L418">    }</span>
+
+    /**
+     * Tests getting named children.
+     */
+    @Test
+    public void testGetChildrenByNullName()
+    {
+<span class="fc" id="L426">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L427">        final ImmutableNode child2 =</span>
+<span class="fc" id="L428">                new ImmutableNode.Builder().name(&quot;child2&quot;).create();</span>
+<span class="fc" id="L429">        final ImmutableNode node2 = node.addChild(child2);</span>
+<span class="fc" id="L430">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L431">        assertTrue(node2.getChildren(null).isEmpty());</span>
+<span class="fc" id="L432">    }</span>
+
+    /**
+     * Tests getting named children.
+     */
+    @Test
+    public void testGetChildrenByMissingName()
+    {
+<span class="fc" id="L440">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L441">        final ImmutableNode child2 =</span>
+<span class="fc" id="L442">                new ImmutableNode.Builder().name(&quot;child2&quot;).create();</span>
+<span class="fc" id="L443">        final ImmutableNode node2 = node.addChild(child2);</span>
+<span class="fc" id="L444">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L445">        assertTrue(node2.getChildren(&quot;NotFound&quot;).isEmpty());</span>
+<span class="fc" id="L446">    }</span>
+
+    /**
+     * Tests whether a new null child node is rejected.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddChildNull()
+    {
+<span class="nc" id="L454">        createDefaultNode(VALUE).addChild(null);</span>
+<span class="nc" id="L455">    }</span>
+
+    /**
+     * Tests whether a child node can be removed.
+     */
+    @Test
+    public void testRemoveChildExisting()
+    {
+<span class="fc" id="L463">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L464">        final ImmutableNode child = node.getChildren().get(0);</span>
+<span class="fc" id="L465">        final ImmutableNode node2 = node.removeChild(child);</span>
+<span class="fc" id="L466">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L467">        checkChildNodes(node2);</span>
+<span class="fc" id="L468">    }</span>
+
+    /**
+     * Tests whether the correct child node is removed if there are multiple.
+     */
+    @Test
+    public void testRemoveChildMultiple()
+    {
+<span class="fc" id="L476">        final ImmutableNode childRemove = createChild();</span>
+<span class="fc" id="L477">        final ImmutableNode node =</span>
+<span class="fc" id="L478">                createDefaultNode(VALUE).addChild(createChild())</span>
+<span class="fc" id="L479">                        .addChild(childRemove).addChild(createChild());</span>
+<span class="fc" id="L480">        final ImmutableNode node2 = node.removeChild(childRemove);</span>
+<span class="fc" id="L481">        checkChildNodes(node2, node.getChildren().get(0), node.getChildren()</span>
+<span class="fc" id="L482">                .get(1), node.getChildren().get(3));</span>
+<span class="fc" id="L483">    }</span>
+
+    /**
+     * Tests whether the behavior of removeChildNode() if the node in question
+     * is not found.
+     */
+    @Test
+    public void testRemoveChildNodeNotExisting()
+    {
+<span class="fc" id="L492">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L493">        assertSame(&quot;Got different instance&quot;, node, node.removeChild(null));</span>
+<span class="fc" id="L494">    }</span>
+
+    /**
+     * Tests whether a child node can be replaced by another one.
+     */
+    @Test
+    public void testReplaceChildExisting()
+    {
+<span class="fc" id="L502">        final ImmutableNode childRemove = createChild();</span>
+<span class="fc" id="L503">        final ImmutableNode childReplace = createChild();</span>
+<span class="fc" id="L504">        final ImmutableNode node = createDefaultNode(VALUE).addChild(childRemove);</span>
+<span class="fc" id="L505">        final ImmutableNode node2 = node.replaceChild(childRemove, childReplace);</span>
+<span class="fc" id="L506">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L507">        checkChildNodes(node2, node.getChildren().get(0), childReplace);</span>
+<span class="fc" id="L508">    }</span>
+
+    /**
+     * Tests replaceChild() if the child node cannot be found.
+     */
+    @Test
+    public void testReplaceChildNotExisting()
+    {
+<span class="fc" id="L516">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L517">        assertSame(&quot;Got different instance&quot;, node,</span>
+<span class="fc" id="L518">                node.replaceChild(createChild(), createChild()));</span>
+<span class="fc" id="L519">    }</span>
+
+    /**
+     * Tries to replace a child node by null.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testReplaceChildNull()
+    {
+<span class="nc" id="L527">        createDefaultNode(VALUE).replaceChild(createChild(), null);</span>
+<span class="nc" id="L528">    }</span>
+
+    /**
+     * Tests whether attribute values can be set.
+     */
+    @Test
+    public void testSetAttribute()
+    {
+<span class="fc" id="L536">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L537">        final ImmutableNode node2 = node.setAttribute(&quot;attr&quot;, ATTR_VALUE);</span>
+<span class="fc" id="L538">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L539">        assertSame(&quot;Wrong children&quot;, node.getChildren(), node2.getChildren());</span>
+<span class="fc" id="L540">        final Map&lt;String, Object&gt; newAttrs =</span>
+<span class="fc" id="L541">                new HashMap&lt;&gt;(node.getAttributes());</span>
+<span class="fc" id="L542">        newAttrs.put(ATTR, ATTR_VALUE);</span>
+<span class="fc" id="L543">        checkAttributes(node2, newAttrs);</span>
+<span class="fc" id="L544">    }</span>
+
+    /**
+     * Tests whether an attribute can be overridden.
+     */
+    @Test
+    public void testSetAttributeOverride()
+    {
+<span class="fc" id="L552">        final ImmutableNode.Builder builder = setUpBuilder();</span>
+<span class="fc" id="L553">        final String attr2 = ATTR + &quot;_other&quot;;</span>
+<span class="fc" id="L554">        final Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L555">        attrs.put(ATTR, ATTR_VALUE);</span>
+<span class="fc" id="L556">        attrs.put(attr2, &quot;someValue&quot;);</span>
+<span class="fc" id="L557">        final ImmutableNode node = builder.addAttributes(attrs).create();</span>
+<span class="fc" id="L558">        final ImmutableNode node2 = node.setAttribute(attr2, VALUE);</span>
+<span class="fc" id="L559">        attrs.put(attr2, VALUE);</span>
+<span class="fc" id="L560">        checkAttributes(node2, attrs);</span>
+<span class="fc" id="L561">    }</span>
+
+    /**
+     * Tests whether multiple attributes can be set.
+     */
+    @Test
+    public void testSetAttributes()
+    {
+<span class="fc" id="L569">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L570">        final Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L571">        attributes.put(&quot;newAttribute1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L572">        attributes.put(&quot;newAttribute2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L573">        final ImmutableNode node2 = node.setAttributes(attributes);</span>
+<span class="fc" id="L574">        assertEquals(&quot;Wrong number of attributes&quot;, attributes.size()</span>
+<span class="fc" id="L575">                + node.getAttributes().size(), node2.getAttributes().size());</span>
+<span class="fc" id="L576">        checkAttributesContained(node2, attributes);</span>
+<span class="fc" id="L577">        checkAttributesContained(node2, node.getAttributes());</span>
+<span class="fc" id="L578">    }</span>
+
+    /**
+     * Helper method for testing whether a node contains all the attributes in
+     * the specified map.
+     *
+     * @param node the node to be checked
+     * @param attributes the map with expected attributes
+     */
+    private static void checkAttributesContained(final ImmutableNode node,
+            final Map&lt;String, Object&gt; attributes)
+    {
+<span class="fc bfc" id="L590" title="All 2 branches covered.">        for (final Map.Entry&lt;String, Object&gt; e : attributes.entrySet())</span>
+        {
+<span class="fc" id="L592">            assertEquals(&quot;Wrong attribute value&quot;, e.getValue(), node</span>
+<span class="fc" id="L593">                    .getAttributes().get(e.getKey()));</span>
+<span class="fc" id="L594">        }</span>
+<span class="fc" id="L595">    }</span>
+
+    /**
+     * Helper method for testing a setAttributes() operation which has no
+     * effect.
+     *
+     * @param attributes the map with attributes
+     */
+    private void checkSetAttributesNoOp(final Map&lt;String, Object&gt; attributes)
+    {
+<span class="fc" id="L605">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L606">        assertSame(&quot;Node was changed&quot;, node, node.setAttributes(attributes));</span>
+<span class="fc" id="L607">    }</span>
+
+    /**
+     * Tests setAttributes() if an empty map is passed in.
+     */
+    @Test
+    public void testSetAttributesEmpty()
+    {
+<span class="fc" id="L615">        checkSetAttributesNoOp(new HashMap&lt;String, Object&gt;());</span>
+<span class="fc" id="L616">    }</span>
+
+    /**
+     * Tests setAttributes() for null input.
+     */
+    @Test
+    public void testSetAttributesNull()
+    {
+<span class="fc" id="L624">        checkSetAttributesNoOp(null);</span>
+<span class="fc" id="L625">    }</span>
+
+    /**
+     * Tests whether an existing attribute can be removed.
+     */
+    @Test
+    public void testRemoveAttributeExisting()
+    {
+<span class="fc" id="L633">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L634">        final String attrName = node.getAttributes().keySet().iterator().next();</span>
+<span class="fc" id="L635">        final ImmutableNode node2 = node.removeAttribute(attrName);</span>
+<span class="fc" id="L636">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L637">        assertSame(&quot;Wrong children&quot;, node.getChildren(), node2.getChildren());</span>
+<span class="fc" id="L638">        assertTrue(&quot;Attribute not deleted&quot;, node2.getAttributes().isEmpty());</span>
+<span class="fc" id="L639">    }</span>
+
+    /**
+     * Tests removeAttribute() if the attribute does not exist.
+     */
+    @Test
+    public void testRemoveAttributeNotExisting()
+    {
+<span class="fc" id="L647">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L648">        assertSame(&quot;Got different instance&quot;, node, node.removeAttribute(ATTR));</span>
+<span class="fc" id="L649">    }</span>
+
+    /**
+     * Tests whether all children can be replaced at once.
+     */
+    @Test
+    public void testReplaceChildren()
+    {
+<span class="fc" id="L657">        final int childCount = 8;</span>
+<span class="fc" id="L658">        final Collection&lt;ImmutableNode&gt; newChildren =</span>
+                new ArrayList&lt;&gt;(childCount);
+<span class="fc bfc" id="L660" title="All 2 branches covered.">        for (int i = 0; i &lt; childCount; i++)</span>
+        {
+<span class="fc" id="L662">            newChildren.add(createChild());</span>
+        }
+<span class="fc" id="L664">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L665">        final ImmutableNode node2 = node.replaceChildren(newChildren);</span>
+<span class="fc" id="L666">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L667">        checkChildNodes(node2, newChildren);</span>
+<span class="fc" id="L668">    }</span>
+
+    /**
+     * Tests whether a node's children can be replaced by a null collection.
+     */
+    @Test
+    public void testReplaceChildrenNullCollection()
+    {
+<span class="fc" id="L676">        final ImmutableNode node = createDefaultNode(VALUE);</span>
+<span class="fc" id="L677">        final ImmutableNode node2 = node.replaceChildren(null);</span>
+<span class="fc" id="L678">        checkUpdatedNode(node, node2);</span>
+<span class="fc" id="L679">        checkChildNodes(node2);</span>
+<span class="fc" id="L680">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

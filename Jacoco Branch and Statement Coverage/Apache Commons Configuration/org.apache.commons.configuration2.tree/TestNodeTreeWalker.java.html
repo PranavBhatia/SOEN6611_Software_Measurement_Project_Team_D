@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestNodeTreeWalker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestNodeTreeWalker.java</span></div><h1>TestNodeTreeWalker.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code NodeTreeWalker}.
+ *
+ */
+<span class="fc" id="L31">public class TestNodeTreeWalker</span>
+{
+    /**
+     * Generates a name which indicates that the corresponding node was visited
+     * after its children.
+     *
+     * @param name the node name to be decorated
+     * @return the name with the after indicator
+     */
+    private static String visitAfterName(final String name)
+    {
+<span class="fc" id="L42">        return &quot;-&gt;&quot; + name;</span>
+    }
+
+    /**
+     * Creates a mock for a visitor.
+     *
+     * @return the visitor mock
+     */
+    private static ConfigurationNodeVisitor&lt;ImmutableNode&gt; visitorMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L54">        ConfigurationNodeVisitor&lt;ImmutableNode&gt; visitor =</span>
+<span class="fc" id="L55">                EasyMock.createMock(ConfigurationNodeVisitor.class);</span>
+<span class="fc" id="L56">        return visitor;</span>
+    }
+
+    /**
+     * Creates a mock for a node handler.
+     *
+     * @return the handler mock
+     */
+    private static NodeHandler&lt;ImmutableNode&gt; handlerMock()
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L68">        NodeHandler&lt;ImmutableNode&gt; handler =</span>
+<span class="fc" id="L69">                EasyMock.createMock(NodeHandler.class);</span>
+<span class="fc" id="L70">        return handler;</span>
+    }
+
+    /**
+     * Creates a dummy node handler.
+     *
+     * @return the node handler
+     */
+    private static NodeHandler&lt;ImmutableNode&gt; createHandler()
+    {
+<span class="fc" id="L80">        return new InMemoryNodeModel().getNodeHandler();</span>
+    }
+
+    /**
+     * Tries a walk() operation without a node handler.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testWalkNoNodeHandler()
+    {
+<span class="nc" id="L89">        NodeTreeWalker.INSTANCE.walkDFS(NodeStructureHelper.ROOT_AUTHORS_TREE,</span>
+                new TestVisitor(), null);
+<span class="nc" id="L91">    }</span>
+
+    /**
+     * Tries a walk operation without a visitor.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testWalkNoVisitor()
+    {
+<span class="pc" id="L99">        NodeTreeWalker.INSTANCE.walkDFS(NodeStructureHelper.ROOT_AUTHORS_TREE,</span>
+<span class="fc" id="L100">                null, createHandler());</span>
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * Tests whether walkDFS() can handle a null node.
+     */
+    @Test
+    public void testWalkDFSNoNode()
+    {
+<span class="fc" id="L109">        final ConfigurationNodeVisitor&lt;ImmutableNode&gt; visitor = visitorMock();</span>
+<span class="fc" id="L110">        final NodeHandler&lt;ImmutableNode&gt; handler = handlerMock();</span>
+<span class="fc" id="L111">        EasyMock.replay(visitor, handler);</span>
+<span class="fc" id="L112">        NodeTreeWalker.INSTANCE.walkDFS(null, visitor, handler);</span>
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Tests a DFS traversal.
+     */
+    @Test
+    public void testWalkDFS()
+    {
+<span class="fc" id="L121">        final List&lt;String&gt; expected = expectDFS();</span>
+<span class="fc" id="L122">        final TestVisitor visitor = new TestVisitor();</span>
+<span class="fc" id="L123">        NodeTreeWalker.INSTANCE.walkDFS(NodeStructureHelper.ROOT_AUTHORS_TREE,</span>
+<span class="fc" id="L124">                visitor, createHandler());</span>
+<span class="fc" id="L125">        assertEquals(&quot;Wrong visited nodes&quot;, expected, visitor.getVisitedNodes());</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Prepares a list with the names of nodes encountered during a DFS walk.
+     *
+     * @return the expected node names in DFS mode
+     */
+    private List&lt;String&gt; expectDFS()
+    {
+<span class="fc" id="L135">        final List&lt;String&gt; expected = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L136">        expected.add(NodeStructureHelper.ROOT_AUTHORS_TREE.getNodeName());</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        for (int authorIdx = 0; authorIdx &lt; NodeStructureHelper.authorsLength(); authorIdx++)</span>
+        {
+<span class="fc" id="L139">            expected.add(NodeStructureHelper.author(authorIdx));</span>
+<span class="fc" id="L140">            for (int workIdx = 0; workIdx &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">                    .worksLength(authorIdx); workIdx++)</span>
+            {
+<span class="fc" id="L143">                expected.add(NodeStructureHelper.work(authorIdx, workIdx));</span>
+<span class="fc" id="L144">                for (int personaIdx = 0; personaIdx &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">                        .personaeLength(authorIdx, workIdx); personaIdx++)</span>
+                {
+<span class="fc" id="L147">                    final String persona =</span>
+<span class="fc" id="L148">                            NodeStructureHelper.persona(authorIdx, workIdx,</span>
+                                    personaIdx);
+<span class="fc" id="L150">                    expected.add(persona);</span>
+<span class="fc" id="L151">                    expected.add(visitAfterName(persona));</span>
+                }
+<span class="fc" id="L153">                expected.add(visitAfterName(NodeStructureHelper.work(authorIdx,</span>
+                        workIdx)));
+            }
+<span class="fc" id="L156">            expected.add(visitAfterName(NodeStructureHelper.author(authorIdx)));</span>
+        }
+<span class="fc" id="L158">        expected.add(visitAfterName(NodeStructureHelper.ROOT_AUTHORS_TREE</span>
+<span class="fc" id="L159">                .getNodeName()));</span>
+<span class="fc" id="L160">        return expected;</span>
+    }
+
+    /**
+     * Tests whether the terminate flag is taken into account during a DFS walk.
+     */
+    @Test
+    public void testWalkDFSTerminate()
+    {
+<span class="fc" id="L169">        final TestVisitor visitor = new TestVisitor();</span>
+<span class="fc" id="L170">        final int nodeCount = 5;</span>
+<span class="fc" id="L171">        visitor.setMaxNodeCount(nodeCount);</span>
+<span class="fc" id="L172">        NodeTreeWalker.INSTANCE.walkDFS(NodeStructureHelper.ROOT_AUTHORS_TREE,</span>
+<span class="fc" id="L173">                visitor, createHandler());</span>
+<span class="fc" id="L174">        assertEquals(&quot;Wrong number of visited nodes&quot;, nodeCount, visitor</span>
+<span class="fc" id="L175">                .getVisitedNodes().size());</span>
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * Tests a BFS walk if node is passed in.
+     */
+    @Test
+    public void testWalkBFSNoNode()
+    {
+<span class="fc" id="L184">        final ConfigurationNodeVisitor&lt;ImmutableNode&gt; visitor = visitorMock();</span>
+<span class="fc" id="L185">        final NodeHandler&lt;ImmutableNode&gt; handler = handlerMock();</span>
+<span class="fc" id="L186">        EasyMock.replay(visitor, handler);</span>
+<span class="fc" id="L187">        NodeTreeWalker.INSTANCE.walkBFS(null, visitor, handler);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests a traversal in BFS mode.
+     */
+    @Test
+    public void testWalkBFS()
+    {
+<span class="fc" id="L196">        final List&lt;String&gt; expected = expectBFS();</span>
+<span class="fc" id="L197">        final TestVisitor visitor = new TestVisitor();</span>
+<span class="fc" id="L198">        NodeTreeWalker.INSTANCE.walkBFS(NodeStructureHelper.ROOT_AUTHORS_TREE,</span>
+<span class="fc" id="L199">                visitor, createHandler());</span>
+<span class="fc" id="L200">        assertEquals(&quot;Wrong visited nodes&quot;, expected, visitor.getVisitedNodes());</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * Prepares a list with the names of nodes encountered during a BFS walk.
+     *
+     * @return the expected node names in BFS mode
+     */
+    private List&lt;String&gt; expectBFS()
+    {
+<span class="fc" id="L210">        final List&lt;String&gt; expected = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L211">        final List&lt;String&gt; works = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L212">        final List&lt;String&gt; personae = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L213">        expected.add(NodeStructureHelper.ROOT_AUTHORS_TREE.getNodeName());</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        for (int authorIdx = 0; authorIdx &lt; NodeStructureHelper.authorsLength(); authorIdx++)</span>
+        {
+<span class="fc" id="L216">            expected.add(NodeStructureHelper.author(authorIdx));</span>
+<span class="fc" id="L217">            for (int workIdx = 0; workIdx &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">                    .worksLength(authorIdx); workIdx++)</span>
+            {
+<span class="fc" id="L220">                works.add(NodeStructureHelper.work(authorIdx, workIdx));</span>
+<span class="fc" id="L221">                for (int personIdx = 0; personIdx &lt; NodeStructureHelper</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">                        .personaeLength(authorIdx, workIdx); personIdx++)</span>
+                {
+<span class="fc" id="L224">                    personae.add(NodeStructureHelper.persona(authorIdx,</span>
+                            workIdx, personIdx));
+                }
+            }
+        }
+<span class="fc" id="L229">        expected.addAll(works);</span>
+<span class="fc" id="L230">        expected.addAll(personae);</span>
+<span class="fc" id="L231">        return expected;</span>
+    }
+
+    /**
+     * Tests whether the terminate flag is evaluated in BFS mode.
+     */
+    @Test
+    public void testWalkBFSTerminate()
+    {
+<span class="fc" id="L240">        final TestVisitor visitor = new TestVisitor();</span>
+<span class="fc" id="L241">        final int nodeCount = 9;</span>
+<span class="fc" id="L242">        visitor.setMaxNodeCount(nodeCount);</span>
+<span class="fc" id="L243">        NodeTreeWalker.INSTANCE.walkBFS(NodeStructureHelper.ROOT_AUTHORS_TREE,</span>
+<span class="fc" id="L244">                visitor, createHandler());</span>
+<span class="fc" id="L245">        assertEquals(&quot;Wrong number of visited nodes&quot;, nodeCount, visitor</span>
+<span class="fc" id="L246">                .getVisitedNodes().size());</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * A visitor implementation used for testing purposes. The visitor produces
+     * a list with the names of the nodes visited in the order it was called.
+     * With this it can be tested whether the nodes were visited in the correct
+     * order.
+     */
+<span class="fc" id="L255">    private static class TestVisitor implements</span>
+            ConfigurationNodeVisitor&lt;ImmutableNode&gt;
+    {
+        /** A list with the names of the visited nodes. */
+<span class="fc" id="L259">        private final List&lt;String&gt; visitedNodes = new LinkedList&lt;&gt;();</span>
+
+        /** The maximum number of nodes to be visited. */
+<span class="fc" id="L262">        private int maxNodeCount = Integer.MAX_VALUE;</span>
+
+        /**
+         * Returns the list with the names of the visited nodes.
+         *
+         * @return the visit list
+         */
+        public List&lt;String&gt; getVisitedNodes()
+        {
+<span class="fc" id="L271">            return visitedNodes;</span>
+        }
+
+        /**
+         * Returns the maximum number of nodes visited by this visitor.
+         *
+         * @return the maximum number of nodes
+         */
+        public int getMaxNodeCount()
+        {
+<span class="fc" id="L281">            return maxNodeCount;</span>
+        }
+
+        /**
+         * Sets the maximum number of nodes to be visited. After this the
+         * terminate flag is set.
+         *
+         * @param maxNodeCount the maximum number of nodes
+         */
+        public void setMaxNodeCount(final int maxNodeCount)
+        {
+<span class="fc" id="L292">            this.maxNodeCount = maxNodeCount;</span>
+<span class="fc" id="L293">        }</span>
+
+        @Override
+        public void visitBeforeChildren(final ImmutableNode node,
+                final NodeHandler&lt;ImmutableNode&gt; handler)
+        {
+<span class="fc" id="L299">            visitedNodes.add(handler.nodeName(node));</span>
+<span class="fc" id="L300">        }</span>
+
+        @Override
+        public void visitAfterChildren(final ImmutableNode node,
+                final NodeHandler&lt;ImmutableNode&gt; handler)
+        {
+<span class="fc" id="L306">            visitedNodes.add(visitAfterName(handler.nodeName(node)));</span>
+<span class="fc" id="L307">        }</span>
+
+        @Override
+        public boolean terminate()
+        {
+<span class="fc bfc" id="L312" title="All 2 branches covered.">            return visitedNodes.size() &gt;= getMaxNodeCount();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBasicBuilderParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestBasicBuilderParameters.java</span></div><h1>TestBasicBuilderParameters.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.configuration2.ConfigurationDecoder;
+import org.apache.commons.configuration2.io.ConfigurationLogger;
+import org.apache.commons.configuration2.beanutils.BeanHelper;
+import org.apache.commons.configuration2.convert.ConversionHandler;
+import org.apache.commons.configuration2.convert.DefaultConversionHandler;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.interpol.ConfigurationInterpolator;
+import org.apache.commons.configuration2.interpol.InterpolatorSpecification;
+import org.apache.commons.configuration2.interpol.Lookup;
+import org.apache.commons.configuration2.sync.ReadWriteSynchronizer;
+import org.apache.commons.configuration2.sync.Synchronizer;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code BasicBuilderParameters}.
+ *
+ */
+<span class="fc" id="L52">public class TestBasicBuilderParameters</span>
+{
+    /** The instance to be tested. */
+    private BasicBuilderParameters params;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L60">        params = new BasicBuilderParameters();</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Tests the default parameter values.
+     */
+    @Test
+    public void testDefaults()
+    {
+<span class="fc" id="L69">        final Map&lt;String, Object&gt; paramMap = params.getParameters();</span>
+<span class="fc" id="L70">        assertTrue(&quot;Got parameters&quot;, paramMap.isEmpty());</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Tests whether a defensive copy is created when the parameter map is
+     * returned.
+     */
+    @Test
+    public void testGetParametersDefensiveCopy()
+    {
+<span class="fc" id="L80">        final Map&lt;String, Object&gt; map1 = params.getParameters();</span>
+<span class="fc" id="L81">        final Map&lt;String, Object&gt; mapCopy = new HashMap&lt;&gt;(map1);</span>
+<span class="fc" id="L82">        map1.put(&quot;otherProperty&quot;, &quot;value&quot;);</span>
+<span class="fc" id="L83">        final Map&lt;String, Object&gt; map2 = params.getParameters();</span>
+<span class="fc" id="L84">        assertNotSame(&quot;Same map returned&quot;, map1, map2);</span>
+<span class="fc" id="L85">        assertEquals(&quot;Different properties&quot;, mapCopy, map2);</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Tests whether the logger parameter can be set.
+     */
+    @Test
+    public void testSetLogger()
+    {
+<span class="fc" id="L94">        final ConfigurationLogger log = EasyMock.createMock(ConfigurationLogger.class);</span>
+<span class="fc" id="L95">        EasyMock.replay(log);</span>
+<span class="fc" id="L96">        assertSame(&quot;Wrong result&quot;, params, params.setLogger(log));</span>
+<span class="fc" id="L97">        assertSame(&quot;Wrong logger parameter&quot;, log,</span>
+<span class="fc" id="L98">                params.getParameters().get(&quot;logger&quot;));</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Tests whether the throw exception on missing property can be set.
+     */
+    @Test
+    public void testSetThrowExceptionOnMissing()
+    {
+<span class="fc" id="L107">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L108">                params.setThrowExceptionOnMissing(true));</span>
+<span class="fc" id="L109">        assertEquals(&quot;Wrong flag value&quot;, Boolean.TRUE, params.getParameters()</span>
+<span class="fc" id="L110">                .get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Tests whether the list delimiter handler property can be set.
+     */
+    @Test
+    public void testSetListDelimiter()
+    {
+<span class="fc" id="L119">        final ListDelimiterHandler handler =</span>
+<span class="fc" id="L120">                EasyMock.createMock(ListDelimiterHandler.class);</span>
+<span class="fc" id="L121">        EasyMock.replay(handler);</span>
+<span class="fc" id="L122">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L123">                params.setListDelimiterHandler(handler));</span>
+<span class="fc" id="L124">        assertSame(&quot;Wrong delimiter handler&quot;, handler, params.getParameters()</span>
+<span class="fc" id="L125">                .get(&quot;listDelimiterHandler&quot;));</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Tests whether a {@code ConfigurationInterpolator} can be set.
+     */
+    @Test
+    public void testSetInterpolator()
+    {
+<span class="fc" id="L134">        final ConfigurationInterpolator ci =</span>
+<span class="fc" id="L135">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L136">        EasyMock.replay(ci);</span>
+<span class="fc" id="L137">        assertSame(&quot;Wrong result&quot;, params, params.setInterpolator(ci));</span>
+<span class="fc" id="L138">        assertSame(&quot;Wrong interpolator&quot;, ci,</span>
+<span class="fc" id="L139">                params.getParameters().get(&quot;interpolator&quot;));</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests whether prefix lookups can be set.
+     */
+    @Test
+    public void testSetPrefixLookups()
+    {
+<span class="fc" id="L148">        final Lookup look = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L149">        final Map&lt;String, Lookup&gt; lookups = Collections.singletonMap(&quot;test&quot;, look);</span>
+<span class="fc" id="L150">        assertSame(&quot;Wrong result&quot;, params, params.setPrefixLookups(lookups));</span>
+<span class="fc" id="L151">        final Map&lt;?, ?&gt; map = (Map&lt;?, ?&gt;) params.getParameters().get(&quot;prefixLookups&quot;);</span>
+<span class="fc" id="L152">        assertNotSame(&quot;No copy was created&quot;, lookups, map);</span>
+<span class="fc" id="L153">        assertEquals(&quot;Wrong lookup&quot;, look, map.get(&quot;test&quot;));</span>
+<span class="fc" id="L154">        assertEquals(&quot;Wrong number of lookups&quot;, 1, map.size());</span>
+<span class="fc" id="L155">        final Map&lt;?, ?&gt; map2 = (Map&lt;?, ?&gt;) params.getParameters().get(&quot;prefixLookups&quot;);</span>
+<span class="fc" id="L156">        assertNotSame(&quot;No copy in parameters&quot;, map, map2);</span>
+<span class="fc" id="L157">    }</span>
+
+    /**
+     * Tests whether null values are handled by setPrefixLookups().
+     */
+    @Test
+    public void testSetPrefixLookupsNull()
+    {
+<span class="fc" id="L165">        params.setPrefixLookups(new HashMap&lt;String, Lookup&gt;());</span>
+<span class="fc" id="L166">        params.setPrefixLookups(null);</span>
+<span class="fc" id="L167">        assertFalse(&quot;Found key&quot;,</span>
+<span class="fc" id="L168">                params.getParameters().containsKey(&quot;prefixLookups&quot;));</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Tests whether default lookups can be set.
+     */
+    @Test
+    public void testSetDefaultLookups()
+    {
+<span class="fc" id="L177">        final Lookup look = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L178">        final Collection&lt;Lookup&gt; looks = Collections.singleton(look);</span>
+<span class="fc" id="L179">        assertSame(&quot;Wrong result&quot;, params, params.setDefaultLookups(looks));</span>
+<span class="fc" id="L180">        final Collection&lt;?&gt; col =</span>
+<span class="fc" id="L181">                (Collection&lt;?&gt;) params.getParameters().get(&quot;defaultLookups&quot;);</span>
+<span class="fc" id="L182">        assertNotSame(&quot;No copy was created&quot;, col, looks);</span>
+<span class="fc" id="L183">        assertEquals(&quot;Wrong number of lookups&quot;, 1, col.size());</span>
+<span class="fc" id="L184">        assertSame(&quot;Wrong lookup&quot;, look, col.iterator().next());</span>
+<span class="fc" id="L185">        final Collection&lt;?&gt; col2 =</span>
+<span class="fc" id="L186">                (Collection&lt;?&gt;) params.getParameters().get(&quot;defaultLookups&quot;);</span>
+<span class="fc" id="L187">        assertNotSame(&quot;No copy in parameters&quot;, col, col2);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests whether null values are handled by setDefaultLookups().
+     */
+    @Test
+    public void testSetDefaultLookupsNull()
+    {
+<span class="fc" id="L196">        params.setDefaultLookups(new ArrayList&lt;Lookup&gt;());</span>
+<span class="fc" id="L197">        params.setDefaultLookups(null);</span>
+<span class="fc" id="L198">        assertFalse(&quot;Found key&quot;,</span>
+<span class="fc" id="L199">                params.getParameters().containsKey(&quot;defaultLookups&quot;));</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Tests whether a parent {@code ConfigurationInterpolator} can be set.
+     */
+    @Test
+    public void testSetParentInterpolator()
+    {
+<span class="fc" id="L208">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L209">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L210">        EasyMock.replay(parent);</span>
+<span class="fc" id="L211">        assertSame(&quot;Wrong result&quot;, params, params.setParentInterpolator(parent));</span>
+<span class="fc" id="L212">        assertSame(&quot;Wrong parent&quot;, parent,</span>
+<span class="fc" id="L213">                params.getParameters().get(&quot;parentInterpolator&quot;));</span>
+<span class="fc" id="L214">    }</span>
+
+    /**
+     * Tests whether a custom {@code ConfigurationInterpolator} overrides
+     * settings for custom lookups.
+     */
+    @Test
+    public void testSetLookupsAndInterpolator()
+    {
+<span class="fc" id="L223">        final Lookup look1 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L224">        final Lookup look2 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L225">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L226">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L227">        final ConfigurationInterpolator ci =</span>
+<span class="fc" id="L228">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L229">        params.setDefaultLookups(Collections.singleton(look1));</span>
+<span class="fc" id="L230">        params.setPrefixLookups(Collections.singletonMap(&quot;test&quot;, look2));</span>
+<span class="fc" id="L231">        params.setInterpolator(ci);</span>
+<span class="fc" id="L232">        params.setParentInterpolator(parent);</span>
+<span class="fc" id="L233">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L234">        assertFalse(&quot;Got prefix lookups&quot;, map.containsKey(&quot;prefixLookups&quot;));</span>
+<span class="fc" id="L235">        assertFalse(&quot;Got default lookups&quot;, map.containsKey(&quot;defaultLookups&quot;));</span>
+<span class="fc" id="L236">        assertFalse(&quot;Got a parent interpolator&quot;,</span>
+<span class="fc" id="L237">                map.containsKey(&quot;parentInterpolator&quot;));</span>
+<span class="fc" id="L238">    }</span>
+
+    /**
+     * Tries a merge with a null object.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testMergeNull()
+    {
+<span class="nc" id="L246">        params.merge(null);</span>
+<span class="nc" id="L247">    }</span>
+
+    /**
+     * Tests whether properties of other parameter objects can be merged.
+     */
+    @Test
+    public void testMerge()
+    {
+<span class="fc" id="L255">        final ListDelimiterHandler handler1 = EasyMock.createMock(ListDelimiterHandler.class);</span>
+<span class="fc" id="L256">        final ListDelimiterHandler handler2 = EasyMock.createMock(ListDelimiterHandler.class);</span>
+<span class="fc" id="L257">        final Map&lt;String, Object&gt; props = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L258">        props.put(&quot;throwExceptionOnMissing&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L259">        props.put(&quot;listDelimiterHandler&quot;, handler1);</span>
+<span class="fc" id="L260">        props.put(&quot;other&quot;, &quot;test&quot;);</span>
+<span class="fc" id="L261">        props.put(BuilderParameters.RESERVED_PARAMETER_PREFIX + &quot;test&quot;,</span>
+                &quot;reserved&quot;);
+<span class="fc" id="L263">        final BuilderParameters p = EasyMock.createMock(BuilderParameters.class);</span>
+<span class="fc" id="L264">        EasyMock.expect(p.getParameters()).andReturn(props);</span>
+<span class="fc" id="L265">        EasyMock.replay(p);</span>
+<span class="fc" id="L266">        params.setListDelimiterHandler(handler2);</span>
+<span class="fc" id="L267">        params.merge(p);</span>
+<span class="fc" id="L268">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L269">        assertEquals(&quot;Wrong list delimiter handler&quot;, handler2,</span>
+<span class="fc" id="L270">                map.get(&quot;listDelimiterHandler&quot;));</span>
+<span class="fc" id="L271">        assertEquals(&quot;Wrong exception flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L272">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L273">        assertEquals(&quot;Wrong other property&quot;, &quot;test&quot;, map.get(&quot;other&quot;));</span>
+<span class="fc" id="L274">        assertFalse(</span>
+                &quot;Reserved property was copied&quot;,
+<span class="fc" id="L276">                map.containsKey(BuilderParameters.RESERVED_PARAMETER_PREFIX</span>
+                        + &quot;test&quot;));
+<span class="fc" id="L278">    }</span>
+
+    /**
+     * Tests whether a specification object for interpolation can be obtained.
+     */
+    @Test
+    public void testFetchInterpolatorSpecification()
+    {
+<span class="fc" id="L286">        final ConfigurationInterpolator parent =</span>
+<span class="fc" id="L287">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L288">        final Lookup l1 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L289">        final Lookup l2 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L290">        final Lookup l3 = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L291">        final Map&lt;String, Lookup&gt; prefixLookups = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L292">        prefixLookups.put(&quot;p1&quot;, l1);</span>
+<span class="fc" id="L293">        prefixLookups.put(&quot;p2&quot;, l2);</span>
+<span class="fc" id="L294">        final Collection&lt;Lookup&gt; defLookups = Collections.singleton(l3);</span>
+<span class="fc" id="L295">        params.setParentInterpolator(parent);</span>
+<span class="fc" id="L296">        params.setPrefixLookups(prefixLookups);</span>
+<span class="fc" id="L297">        params.setDefaultLookups(defLookups);</span>
+<span class="fc" id="L298">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L299">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L300">                BasicBuilderParameters.fetchInterpolatorSpecification(map);</span>
+<span class="fc" id="L301">        assertSame(&quot;Wrong parent&quot;, parent, spec.getParentInterpolator());</span>
+<span class="fc" id="L302">        assertEquals(&quot;Wrong prefix lookups&quot;, prefixLookups,</span>
+<span class="fc" id="L303">                spec.getPrefixLookups());</span>
+<span class="fc" id="L304">        assertEquals(&quot;Wrong number of default lookups&quot;, 1, spec</span>
+<span class="fc" id="L305">                .getDefaultLookups().size());</span>
+<span class="fc" id="L306">        assertTrue(&quot;Wrong default lookup&quot;, spec.getDefaultLookups()</span>
+<span class="fc" id="L307">                .contains(l3));</span>
+<span class="fc" id="L308">    }</span>
+
+    /**
+     * Tests whether an InterpolatorSpecification can be fetched if a
+     * ConfigurationInterpolator is present.
+     */
+    @Test
+    public void testFetchInterpolatorSpecificationWithInterpolator()
+    {
+<span class="fc" id="L317">        final ConfigurationInterpolator ci =</span>
+<span class="fc" id="L318">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L319">        params.setInterpolator(ci);</span>
+<span class="fc" id="L320">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L321">                BasicBuilderParameters.fetchInterpolatorSpecification(params</span>
+<span class="fc" id="L322">                        .getParameters());</span>
+<span class="fc" id="L323">        assertSame(&quot;Wrong interpolator&quot;, ci, spec.getInterpolator());</span>
+<span class="fc" id="L324">        assertNull(&quot;Got a parent&quot;, spec.getParentInterpolator());</span>
+<span class="fc" id="L325">    }</span>
+
+    /**
+     * Tests fetchInterpolatorSpecification() if the map contains a property of
+     * an invalid data type.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchInterpolatorSpecificationInvalidDataType()
+    {
+<span class="fc" id="L334">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L335">        map.put(&quot;interpolator&quot;, this);</span>
+<span class="nc" id="L336">        BasicBuilderParameters.fetchInterpolatorSpecification(map);</span>
+<span class="nc" id="L337">    }</span>
+
+    /**
+     * Tests fetchInterpolatorSpecification() if the map with prefix lookups
+     * contains an invalid key.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchInterpolatorSpecificationInvalidMapKey()
+    {
+<span class="fc" id="L346">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L347">        final Map&lt;Object, Object&gt; prefix = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L348">        prefix.put(42, EasyMock.createMock(Lookup.class));</span>
+<span class="fc" id="L349">        map.put(&quot;prefixLookups&quot;, prefix);</span>
+<span class="nc" id="L350">        BasicBuilderParameters.fetchInterpolatorSpecification(map);</span>
+<span class="nc" id="L351">    }</span>
+
+    /**
+     * Tests fetchInterpolatorSpecification() if the map with prefix lookups
+     * contains an invalid value.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchInterpolatorSpecificationInvalidMapValue()
+    {
+<span class="fc" id="L360">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L361">        final Map&lt;Object, Object&gt; prefix = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L362">        prefix.put(&quot;test&quot;, this);</span>
+<span class="fc" id="L363">        map.put(&quot;prefixLookups&quot;, prefix);</span>
+<span class="nc" id="L364">        BasicBuilderParameters.fetchInterpolatorSpecification(map);</span>
+<span class="nc" id="L365">    }</span>
+
+    /**
+     * Tests fetchInterpolatorSpecification() if the collection with default
+     * lookups contains an invalid value.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchInterpolatorSpecificationInvalidCollectionValue()
+    {
+<span class="fc" id="L374">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L375">        map.put(&quot;defaultLookups&quot;, Collections.singleton(&quot;not a lookup&quot;));</span>
+<span class="nc" id="L376">        BasicBuilderParameters.fetchInterpolatorSpecification(map);</span>
+<span class="nc" id="L377">    }</span>
+
+    /**
+     * Tests that an empty map does not cause any problems.
+     */
+    @Test
+    public void testFetchInterpolatorSpecificationEmpty()
+    {
+<span class="fc" id="L385">        final InterpolatorSpecification spec =</span>
+<span class="fc" id="L386">                BasicBuilderParameters.fetchInterpolatorSpecification(params</span>
+<span class="fc" id="L387">                        .getParameters());</span>
+<span class="fc" id="L388">        assertNull(&quot;Got an interpolator&quot;, spec.getInterpolator());</span>
+<span class="fc" id="L389">        assertTrue(&quot;Got lookups&quot;, spec.getDefaultLookups().isEmpty());</span>
+<span class="fc" id="L390">    }</span>
+
+    /**
+     * Tries to obtain an {@code InterpolatorSpecification} from a null map.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchInterpolatorSpecificationNull()
+    {
+<span class="nc" id="L398">        BasicBuilderParameters.fetchInterpolatorSpecification(null);</span>
+<span class="nc" id="L399">    }</span>
+
+    /**
+     * Tests whether a cloned instance contains the same data as the original
+     * object.
+     */
+    @Test
+    public void testCloneValues()
+    {
+<span class="fc" id="L408">        final ConfigurationLogger log = EasyMock.createMock(ConfigurationLogger.class);</span>
+<span class="fc" id="L409">        final ConfigurationInterpolator ci =</span>
+<span class="fc" id="L410">                EasyMock.createMock(ConfigurationInterpolator.class);</span>
+<span class="fc" id="L411">        final ListDelimiterHandler handler1 = EasyMock.createMock(ListDelimiterHandler.class);</span>
+<span class="fc" id="L412">        final ListDelimiterHandler handler2 = EasyMock.createMock(ListDelimiterHandler.class);</span>
+<span class="fc" id="L413">        params.setListDelimiterHandler(handler1);</span>
+<span class="fc" id="L414">        params.setLogger(log);</span>
+<span class="fc" id="L415">        params.setInterpolator(ci);</span>
+<span class="fc" id="L416">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L417">        final BasicBuilderParameters clone = params.clone();</span>
+<span class="fc" id="L418">        params.setListDelimiterHandler(handler2);</span>
+<span class="fc" id="L419">        params.setThrowExceptionOnMissing(false);</span>
+<span class="fc" id="L420">        final Map&lt;String, Object&gt; map = clone.getParameters();</span>
+<span class="fc" id="L421">        assertSame(&quot;Wrong logger&quot;, log, map.get(&quot;logger&quot;));</span>
+<span class="fc" id="L422">        assertSame(&quot;Wrong interpolator&quot;, ci, map.get(&quot;interpolator&quot;));</span>
+<span class="fc" id="L423">        assertEquals(&quot;Wrong list delimiter handler&quot;, handler1,</span>
+<span class="fc" id="L424">                map.get(&quot;listDelimiterHandler&quot;));</span>
+<span class="fc" id="L425">        assertEquals(&quot;Wrong exception flag&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L426">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L427">    }</span>
+
+    /**
+     * Tests whether the map with prefix lookups is cloned, too.
+     */
+    @Test
+    public void testClonePrefixLookups()
+    {
+<span class="fc" id="L435">        final Lookup look = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L436">        final Map&lt;String, Lookup&gt; lookups = Collections.singletonMap(&quot;test&quot;, look);</span>
+<span class="fc" id="L437">        params.setPrefixLookups(lookups);</span>
+<span class="fc" id="L438">        final BasicBuilderParameters clone = params.clone();</span>
+<span class="fc" id="L439">        Map&lt;?, ?&gt; map = (Map&lt;?, ?&gt;) params.getParameters().get(&quot;prefixLookups&quot;);</span>
+<span class="fc" id="L440">        map.clear();</span>
+<span class="fc" id="L441">        map = (Map&lt;?, ?&gt;) clone.getParameters().get(&quot;prefixLookups&quot;);</span>
+<span class="fc" id="L442">        assertEquals(&quot;Wrong number of lookups&quot;, 1, map.size());</span>
+<span class="fc" id="L443">        assertSame(&quot;Wrong lookup&quot;, look, map.get(&quot;test&quot;));</span>
+<span class="fc" id="L444">    }</span>
+
+    /**
+     * Tests whether the collection with default lookups can be cloned, too.
+     */
+    @Test
+    public void testCloneDefaultLookups()
+    {
+<span class="fc" id="L452">        final Lookup look = EasyMock.createMock(Lookup.class);</span>
+<span class="fc" id="L453">        final Collection&lt;Lookup&gt; looks = Collections.singleton(look);</span>
+<span class="fc" id="L454">        params.setDefaultLookups(looks);</span>
+<span class="fc" id="L455">        final BasicBuilderParameters clone = params.clone();</span>
+<span class="fc" id="L456">        Collection&lt;?&gt; defLooks =</span>
+<span class="fc" id="L457">                (Collection&lt;?&gt;) params.getParameters().get(&quot;defaultLookups&quot;);</span>
+<span class="fc" id="L458">        defLooks.clear();</span>
+<span class="fc" id="L459">        defLooks = (Collection&lt;?&gt;) clone.getParameters().get(&quot;defaultLookups&quot;);</span>
+<span class="fc" id="L460">        assertEquals(&quot;Wrong number of default lookups&quot;, 1, defLooks.size());</span>
+<span class="fc" id="L461">        assertTrue(&quot;Wrong default lookup&quot;, defLooks.contains(look));</span>
+<span class="fc" id="L462">    }</span>
+
+    /**
+     * Tests whether a Synchronizer can be set.
+     */
+    @Test
+    public void testSetSynchronizer()
+    {
+<span class="fc" id="L470">        final Synchronizer sync = EasyMock.createMock(Synchronizer.class);</span>
+<span class="fc" id="L471">        EasyMock.replay(sync);</span>
+<span class="fc" id="L472">        assertSame(&quot;Wrong result&quot;, params, params.setSynchronizer(sync));</span>
+<span class="fc" id="L473">        assertSame(&quot;Synchronizer not set&quot;, sync,</span>
+<span class="fc" id="L474">                params.getParameters().get(&quot;synchronizer&quot;));</span>
+<span class="fc" id="L475">    }</span>
+
+    /**
+     * Tests whether a ConversionHandler can be set.
+     */
+    @Test
+    public void testSetConversionHandler()
+    {
+<span class="fc" id="L483">        final ConversionHandler handler =</span>
+<span class="fc" id="L484">                EasyMock.createMock(ConversionHandler.class);</span>
+<span class="fc" id="L485">        EasyMock.replay(handler);</span>
+<span class="fc" id="L486">        assertSame(&quot;Wrong result&quot;, params, params.setConversionHandler(handler));</span>
+<span class="fc" id="L487">        assertSame(&quot;ConversionHandler not set&quot;, handler, params.getParameters()</span>
+<span class="fc" id="L488">                .get(&quot;conversionHandler&quot;));</span>
+<span class="fc" id="L489">    }</span>
+
+    /**
+     * Tests whether a BeanHelper can be set.
+     */
+    @Test
+    public void testSetBeanHelper()
+    {
+<span class="fc" id="L497">        final BeanHelper helper = new BeanHelper();</span>
+<span class="fc" id="L498">        assertSame(&quot;Wrong result&quot;, params, params.setBeanHelper(helper));</span>
+<span class="fc" id="L499">        assertSame(&quot;BeanHelper not set&quot;, helper,</span>
+<span class="fc" id="L500">                BasicBuilderParameters.fetchBeanHelper(params.getParameters()));</span>
+<span class="fc" id="L501">    }</span>
+
+    /**
+     * Tests fetchBeanHelper() if no helper was set.
+     */
+    @Test
+    public void testFetchBeanHelperNoSet()
+    {
+<span class="fc" id="L509">        assertNull(&quot;Got a BeanHelper&quot;,</span>
+<span class="fc" id="L510">                BasicBuilderParameters.fetchBeanHelper(params.getParameters()));</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Tries to invoke fetchBeanHelper() on a null map.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchBeanHelperNullMap()
+    {
+<span class="nc" id="L519">        BasicBuilderParameters.fetchBeanHelper(null);</span>
+<span class="nc" id="L520">    }</span>
+
+    /**
+     * Tests whether a decoder can be set.
+     */
+    @Test
+    public void testSetConfigurationDecoder()
+    {
+<span class="fc" id="L528">        final ConfigurationDecoder decoder =</span>
+<span class="fc" id="L529">                EasyMock.createMock(ConfigurationDecoder.class);</span>
+<span class="fc" id="L530">        EasyMock.replay(decoder);</span>
+<span class="fc" id="L531">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L532">                params.setConfigurationDecoder(decoder));</span>
+<span class="fc" id="L533">        assertSame(&quot;Decoder not set&quot;, decoder,</span>
+<span class="fc" id="L534">                params.getParameters().get(&quot;configurationDecoder&quot;));</span>
+<span class="fc" id="L535">    }</span>
+
+    /**
+     * Tests whether null input is handled by inheritFrom().
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInheritFromNull()
+    {
+<span class="nc" id="L543">        params.inheritFrom(null);</span>
+<span class="nc" id="L544">    }</span>
+
+    /**
+     * Tests whether properties can be inherited from another parameters map.
+     */
+    @Test
+    public void testInheritFrom()
+    {
+<span class="fc" id="L552">        final BeanHelper beanHelper = new BeanHelper();</span>
+<span class="fc" id="L553">        final ConfigurationDecoder decoder =</span>
+<span class="fc" id="L554">                EasyMock.createMock(ConfigurationDecoder.class);</span>
+<span class="fc" id="L555">        final ConversionHandler conversionHandler = new DefaultConversionHandler();</span>
+<span class="fc" id="L556">        final ListDelimiterHandler listDelimiterHandler =</span>
+                new DefaultListDelimiterHandler('#');
+<span class="fc" id="L558">        final ConfigurationLogger logger = new ConfigurationLogger(&quot;test&quot;);</span>
+<span class="fc" id="L559">        final Synchronizer synchronizer = new ReadWriteSynchronizer();</span>
+<span class="fc" id="L560">        params.setBeanHelper(beanHelper).setConfigurationDecoder(decoder)</span>
+<span class="fc" id="L561">                .setConversionHandler(conversionHandler)</span>
+<span class="fc" id="L562">                .setListDelimiterHandler(listDelimiterHandler).setLogger(logger)</span>
+<span class="fc" id="L563">                .setSynchronizer(synchronizer).setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L564">        final BasicBuilderParameters p2 = new BasicBuilderParameters();</span>
+
+<span class="fc" id="L566">        p2.inheritFrom(params.getParameters());</span>
+<span class="fc" id="L567">        final Map&lt;String, Object&gt; parameters = p2.getParameters();</span>
+<span class="fc" id="L568">        assertEquals(&quot;Bean helper not set&quot;, beanHelper,</span>
+<span class="fc" id="L569">                parameters.get(&quot;config-BeanHelper&quot;));</span>
+<span class="fc" id="L570">        assertEquals(&quot;Decoder not set&quot;, decoder,</span>
+<span class="fc" id="L571">                parameters.get(&quot;configurationDecoder&quot;));</span>
+<span class="fc" id="L572">        assertEquals(&quot;Conversion handler not set&quot;, conversionHandler,</span>
+<span class="fc" id="L573">                parameters.get(&quot;conversionHandler&quot;));</span>
+<span class="fc" id="L574">        assertEquals(&quot;Delimiter handler not set&quot;, listDelimiterHandler,</span>
+<span class="fc" id="L575">                parameters.get(&quot;listDelimiterHandler&quot;));</span>
+<span class="fc" id="L576">        assertEquals(&quot;Logger not set&quot;, logger, parameters.get(&quot;logger&quot;));</span>
+<span class="fc" id="L577">        assertEquals(&quot;Synchronizer not set&quot;, synchronizer,</span>
+<span class="fc" id="L578">                parameters.get(&quot;synchronizer&quot;));</span>
+<span class="fc" id="L579">        assertEquals(&quot;Exception flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L580">                parameters.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L581">    }</span>
+
+    /**
+     * Tests that undefined properties are not copied over by inheritFrom().
+     */
+    @Test
+    public void testInheritFromUndefinedProperties()
+    {
+<span class="fc" id="L589">        final BasicBuilderParameters p2 =</span>
+<span class="fc" id="L590">                new BasicBuilderParameters().setThrowExceptionOnMissing(true);</span>
+
+<span class="fc" id="L592">        p2.inheritFrom(Collections.&lt;String, Object&gt; emptyMap());</span>
+<span class="fc" id="L593">        final Map&lt;String, Object&gt; parameters = p2.getParameters();</span>
+<span class="fc" id="L594">        assertEquals(&quot;Wrong number of properties&quot;, 1, parameters.size());</span>
+<span class="fc" id="L595">        assertEquals(&quot;Exception flag not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L596">                parameters.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L597">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

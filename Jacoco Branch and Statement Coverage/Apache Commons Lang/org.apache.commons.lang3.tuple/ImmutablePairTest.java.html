@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImmutablePairTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.tuple</a> &gt; <span class="el_source">ImmutablePairTest.java</span></div><h1>ImmutablePairTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.tuple;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test the Pair class.
+ */
+<span class="fc" id="L40">public class ImmutablePairTest {</span>
+
+    @Test
+    public void testEmptyArrayLength() {
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L45">        final ImmutablePair&lt;Integer, String&gt;[] empty = (ImmutablePair&lt;Integer, String&gt;[]) ImmutablePair.EMPTY_ARRAY;</span>
+<span class="fc" id="L46">        assertEquals(0, empty.length);</span>
+<span class="fc" id="L47">    }</span>
+
+    @Test
+    public void testEmptyArrayGenerics() {
+<span class="fc" id="L51">        final ImmutablePair&lt;Integer, String&gt;[] empty = ImmutablePair.emptyArray();</span>
+<span class="fc" id="L52">        assertEquals(0, empty.length);</span>
+<span class="fc" id="L53">    }</span>
+
+    @Test
+    public void testBasic() {
+<span class="fc" id="L57">        final ImmutablePair&lt;Integer, String&gt; pair = new ImmutablePair&lt;&gt;(0, &quot;foo&quot;);</span>
+<span class="fc" id="L58">        assertEquals(0, pair.left.intValue());</span>
+<span class="fc" id="L59">        assertEquals(0, pair.getLeft().intValue());</span>
+<span class="fc" id="L60">        assertEquals(&quot;foo&quot;, pair.right);</span>
+<span class="fc" id="L61">        assertEquals(&quot;foo&quot;, pair.getRight());</span>
+<span class="fc" id="L62">        final ImmutablePair&lt;Object, String&gt; pair2 = new ImmutablePair&lt;&gt;(null, &quot;bar&quot;);</span>
+<span class="fc" id="L63">        assertNull(pair2.left);</span>
+<span class="fc" id="L64">        assertNull(pair2.getLeft());</span>
+<span class="fc" id="L65">        assertEquals(&quot;bar&quot;, pair2.right);</span>
+<span class="fc" id="L66">        assertEquals(&quot;bar&quot;, pair2.getRight());</span>
+<span class="fc" id="L67">    }</span>
+
+    @Test
+    public void testEquals() {
+<span class="fc" id="L71">        assertEquals(ImmutablePair.of(null, &quot;foo&quot;), ImmutablePair.of(null, &quot;foo&quot;));</span>
+<span class="fc" id="L72">        assertNotEquals(ImmutablePair.of(&quot;foo&quot;, 0), ImmutablePair.of(&quot;foo&quot;, null));</span>
+<span class="fc" id="L73">        assertNotEquals(ImmutablePair.of(&quot;foo&quot;, &quot;bar&quot;), ImmutablePair.of(&quot;xyz&quot;, &quot;bar&quot;));</span>
+
+<span class="fc" id="L75">        final ImmutablePair&lt;String, String&gt; p = ImmutablePair.of(&quot;foo&quot;, &quot;bar&quot;);</span>
+<span class="fc" id="L76">        assertEquals(p, p);</span>
+<span class="fc" id="L77">        assertNotEquals(p, new Object());</span>
+<span class="fc" id="L78">    }</span>
+
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L82">        assertEquals(ImmutablePair.of(null, &quot;foo&quot;).hashCode(), ImmutablePair.of(null, &quot;foo&quot;).hashCode());</span>
+<span class="fc" id="L83">    }</span>
+
+    @Test
+    public void testNullPairEquals() {
+<span class="fc" id="L87">        assertEquals(ImmutablePair.nullPair(), ImmutablePair.nullPair());</span>
+<span class="fc" id="L88">    }</span>
+
+    @Test
+    public void testNullPairKey() {
+<span class="fc" id="L92">        assertNull(ImmutablePair.nullPair().getKey());</span>
+<span class="fc" id="L93">    }</span>
+
+    @Test
+    public void testNullPairLeft() {
+<span class="fc" id="L97">        assertNull(ImmutablePair.nullPair().getLeft());</span>
+<span class="fc" id="L98">    }</span>
+
+    @Test
+    public void testNullPairRight() {
+<span class="fc" id="L102">        assertNull(ImmutablePair.nullPair().getRight());</span>
+<span class="fc" id="L103">    }</span>
+
+    @Test
+    public void testNullPairSame() {
+<span class="fc" id="L107">        assertSame(ImmutablePair.nullPair(), ImmutablePair.nullPair());</span>
+<span class="fc" id="L108">    }</span>
+
+    @Test
+    public void testNullPairTyped() {
+        // No compiler warnings
+        // How do we assert that?
+<span class="fc" id="L114">        final ImmutablePair&lt;String, String&gt; pair = ImmutablePair.nullPair();</span>
+<span class="fc" id="L115">        assertNotNull(pair);</span>
+<span class="fc" id="L116">    }</span>
+
+    @Test
+    public void testNullPairValue() {
+<span class="fc" id="L120">        assertNull(ImmutablePair.nullPair().getValue());</span>
+<span class="fc" id="L121">    }</span>
+
+    @Test
+    public void testPairOf() {
+<span class="fc" id="L125">        final ImmutablePair&lt;Integer, String&gt; pair = ImmutablePair.of(0, &quot;foo&quot;);</span>
+<span class="fc" id="L126">        assertEquals(0, pair.left.intValue());</span>
+<span class="fc" id="L127">        assertEquals(0, pair.getLeft().intValue());</span>
+<span class="fc" id="L128">        assertEquals(&quot;foo&quot;, pair.right);</span>
+<span class="fc" id="L129">        assertEquals(&quot;foo&quot;, pair.getRight());</span>
+<span class="fc" id="L130">        final ImmutablePair&lt;Object, String&gt; pair2 = ImmutablePair.of(null, &quot;bar&quot;);</span>
+<span class="fc" id="L131">        assertNull(pair2.left);</span>
+<span class="fc" id="L132">        assertNull(pair2.getLeft());</span>
+<span class="fc" id="L133">        assertEquals(&quot;bar&quot;, pair2.right);</span>
+<span class="fc" id="L134">        assertEquals(&quot;bar&quot;, pair2.getRight());</span>
+<span class="fc" id="L135">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void testSerialization() throws Exception {
+<span class="fc" id="L140">        final ImmutablePair&lt;Integer, String&gt; origPair = ImmutablePair.of(0, &quot;foo&quot;);</span>
+<span class="fc" id="L141">        final ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L142">        final ObjectOutputStream out = new ObjectOutputStream(baos);</span>
+<span class="fc" id="L143">        out.writeObject(origPair);</span>
+<span class="fc" id="L144">        final ImmutablePair&lt;Integer, String&gt; deserializedPair = (ImmutablePair&lt;Integer, String&gt;) new ObjectInputStream(</span>
+<span class="fc" id="L145">                new ByteArrayInputStream(baos.toByteArray())).readObject();</span>
+<span class="fc" id="L146">        assertEquals(origPair, deserializedPair);</span>
+<span class="fc" id="L147">        assertEquals(origPair.hashCode(), deserializedPair.hashCode());</span>
+<span class="fc" id="L148">    }</span>
+
+    @Test
+    public void testToString() {
+<span class="fc" id="L152">        assertEquals(&quot;(null,null)&quot;, ImmutablePair.of(null, null).toString());</span>
+<span class="fc" id="L153">        assertEquals(&quot;(null,two)&quot;, ImmutablePair.of(null, &quot;two&quot;).toString());</span>
+<span class="fc" id="L154">        assertEquals(&quot;(one,null)&quot;, ImmutablePair.of(&quot;one&quot;, null).toString());</span>
+<span class="fc" id="L155">        assertEquals(&quot;(one,two)&quot;, ImmutablePair.of(&quot;one&quot;, &quot;two&quot;).toString());</span>
+<span class="fc" id="L156">    }</span>
+
+    @Test
+    public void testUseAsKeyOfHashMap() {
+<span class="fc" id="L160">        HashMap&lt;ImmutablePair&lt;Object, Object&gt;, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L161">        Object o1 = new Object();</span>
+<span class="fc" id="L162">        Object o2 = new Object();</span>
+<span class="fc" id="L163">        ImmutablePair&lt;Object, Object&gt; key1 = ImmutablePair.of(o1, o2);</span>
+<span class="fc" id="L164">        String value1 = &quot;a1&quot;;</span>
+<span class="fc" id="L165">        map.put(key1, value1);</span>
+<span class="fc" id="L166">        assertEquals(value1, map.get(key1));</span>
+<span class="fc" id="L167">        assertEquals(value1, map.get(ImmutablePair.of(o1, o2)));</span>
+<span class="fc" id="L168">    }</span>
+
+    @Test
+    public void testUseAsKeyOfTreeMap() {
+<span class="fc" id="L172">        TreeMap&lt;ImmutablePair&lt;Integer, Integer&gt;, String&gt; map = new TreeMap&lt;&gt;();</span>
+<span class="fc" id="L173">        map.put(ImmutablePair.of(1, 2), &quot;12&quot;);</span>
+<span class="fc" id="L174">        map.put(ImmutablePair.of(1, 1), &quot;11&quot;);</span>
+<span class="fc" id="L175">        map.put(ImmutablePair.of(0, 1), &quot;01&quot;);</span>
+<span class="fc" id="L176">        ArrayList&lt;ImmutablePair&lt;Integer, Integer&gt;&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L177">        expected.add(ImmutablePair.of(0, 1));</span>
+<span class="fc" id="L178">        expected.add(ImmutablePair.of(1, 1));</span>
+<span class="fc" id="L179">        expected.add(ImmutablePair.of(1, 2));</span>
+<span class="fc" id="L180">        Iterator&lt;Entry&lt;ImmutablePair&lt;Integer, Integer&gt;, String&gt;&gt; it = map.entrySet().iterator();</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        for (ImmutablePair&lt;Integer, Integer&gt; item : expected) {</span>
+<span class="fc" id="L182">            Entry&lt;ImmutablePair&lt;Integer, Integer&gt;, String&gt; entry = it.next();</span>
+<span class="fc" id="L183">            assertEquals(item, entry.getKey());</span>
+<span class="fc" id="L184">            assertEquals(item.getLeft() + &quot;&quot; + item.getRight(), entry.getValue());</span>
+<span class="fc" id="L185">        }</span>
+<span class="fc" id="L186">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

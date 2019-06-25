@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestFileExtensionConfigurationBuilderProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder.combined</a> &gt; <span class="el_source">TestFileExtensionConfigurationBuilderProvider.java</span></div><h1>TestFileExtensionConfigurationBuilderProvider.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder.combined;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Locale;
+
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.XMLPropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.BuilderParameters;
+import org.apache.commons.configuration2.builder.FileBasedBuilderParametersImpl;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code FileExtensionConfigurationBuilderProvider}.
+ *
+ */
+<span class="fc" id="L39">public class TestFileExtensionConfigurationBuilderProvider</span>
+{
+    /** Constant for the name of the default configuration class. */
+<span class="fc" id="L42">    private static final String DEF_CLASS = PropertiesConfiguration.class</span>
+<span class="fc" id="L43">            .getName();</span>
+
+    /** Constant for the name of the matching class. */
+<span class="fc" id="L46">    private static final String MATCH_CLASS = XMLPropertiesConfiguration.class</span>
+<span class="fc" id="L47">            .getName();</span>
+
+    /** The test file extension. */
+    private static final String EXT = &quot;xml&quot;;
+
+    /**
+     * Creates a test instance with default settings.
+     *
+     * @return the test object
+     */
+    private static FileExtensionConfigurationBuilderProvider setUpProvider()
+    {
+<span class="fc" id="L59">        final FileExtensionConfigurationBuilderProvider provider =</span>
+                new FileExtensionConfigurationBuilderProvider(
+<span class="fc" id="L61">                        BasicConfigurationBuilder.class.getName(), null,</span>
+                        MATCH_CLASS, DEF_CLASS, EXT, null);
+<span class="fc" id="L63">        return provider;</span>
+    }
+
+    /**
+     * Creates a mock for the configuration declaration.
+     *
+     * @return the mock object
+     */
+    private ConfigurationDeclaration setUpDecl()
+    {
+<span class="fc" id="L73">        final ConfigurationDeclaration decl =</span>
+<span class="fc" id="L74">                EasyMock.createMock(ConfigurationDeclaration.class);</span>
+<span class="fc" id="L75">        EasyMock.replay(decl);</span>
+<span class="fc" id="L76">        return decl;</span>
+    }
+
+    /**
+     * Tries to create an instance without the matching configuration class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoMatchingConfigClass()
+    {
+<span class="fc" id="L85">        new FileExtensionConfigurationBuilderProvider(</span>
+<span class="nc" id="L86">                BasicConfigurationBuilder.class.getName(), null, null,</span>
+                DEF_CLASS, EXT, null);
+<span class="nc" id="L88">    }</span>
+
+    /**
+     * Tries to create an instance without the default configuration class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoDefaultConfigClass()
+    {
+<span class="fc" id="L96">        new FileExtensionConfigurationBuilderProvider(</span>
+<span class="nc" id="L97">                BasicConfigurationBuilder.class.getName(), null, MATCH_CLASS,</span>
+                null, EXT, null);
+<span class="nc" id="L99">    }</span>
+
+    /**
+     * Tries to create an instance without a file extension.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInitNoExt()
+    {
+<span class="fc" id="L107">        new FileExtensionConfigurationBuilderProvider(</span>
+<span class="nc" id="L108">                BasicConfigurationBuilder.class.getName(), null, MATCH_CLASS,</span>
+                DEF_CLASS, null, null);
+<span class="nc" id="L110">    }</span>
+
+    /**
+     * Tests whether the super class is correctly initialized.
+     */
+    @Test
+    public void testInitSuper()
+    {
+<span class="fc" id="L118">        final FileExtensionConfigurationBuilderProvider provider =</span>
+                new FileExtensionConfigurationBuilderProvider(
+<span class="fc" id="L120">                        BasicConfigurationBuilder.class.getName(),</span>
+<span class="fc" id="L121">                        ReloadingFileBasedConfigurationBuilder.class.getName(),</span>
+                        MATCH_CLASS, DEF_CLASS, EXT, null);
+<span class="fc" id="L123">        assertEquals(&quot;Wrong builder class&quot;,</span>
+<span class="fc" id="L124">                BasicConfigurationBuilder.class.getName(),</span>
+<span class="fc" id="L125">                provider.getBuilderClass());</span>
+<span class="fc" id="L126">        assertEquals(&quot;Wrong reloading builder class&quot;,</span>
+<span class="fc" id="L127">                ReloadingFileBasedConfigurationBuilder.class.getName(),</span>
+<span class="fc" id="L128">                provider.getReloadingBuilderClass());</span>
+<span class="fc" id="L129">        assertEquals(&quot;Wrong configuration class&quot;, DEF_CLASS,</span>
+<span class="fc" id="L130">                provider.getConfigurationClass());</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests whether the correct configuration class is selected if no
+     * file-based parameters are provided.
+     */
+    @Test
+    public void testDetermineConfigurationClassNoParams()
+            throws ConfigurationException
+    {
+<span class="fc" id="L141">        final ConfigurationDeclaration decl = setUpDecl();</span>
+<span class="fc" id="L142">        final FileExtensionConfigurationBuilderProvider provider = setUpProvider();</span>
+<span class="fc" id="L143">        assertEquals(&quot;Wrong class&quot;, DEF_CLASS,</span>
+<span class="fc" id="L144">                provider.determineConfigurationClass(decl,</span>
+                        new ArrayList&lt;BuilderParameters&gt;()));
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Tests whether the correct configuration class is selected if the file
+     * name does not have an extension.
+     */
+    @Test
+    public void testDetermineConfigurationClassNoExtension()
+            throws ConfigurationException
+    {
+<span class="fc" id="L156">        final ConfigurationDeclaration decl = setUpDecl();</span>
+<span class="fc" id="L157">        final BuilderParameters params =</span>
+                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L159">                        .setPath(&quot;C:\\Test\\someTestConfiguration&quot;);</span>
+<span class="fc" id="L160">        final FileExtensionConfigurationBuilderProvider provider = setUpProvider();</span>
+<span class="fc" id="L161">        assertEquals(</span>
+                &quot;Wrong class&quot;,
+                DEF_CLASS,
+<span class="fc" id="L164">                provider.determineConfigurationClass(decl,</span>
+<span class="fc" id="L165">                        Collections.singleton(params)));</span>
+<span class="fc" id="L166">    }</span>
+
+    /**
+     * Tests whether the correct configuration class is selected if the file
+     * extension does not match.
+     */
+    @Test
+    public void testDetermineConfigurationClassExtensionNoMatch()
+            throws ConfigurationException
+    {
+<span class="fc" id="L176">        final ConfigurationDeclaration decl = setUpDecl();</span>
+<span class="fc" id="L177">        final BuilderParameters params =</span>
+                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L179">                        .setPath(&quot;C:\\Test\\someTestConfiguration.properties&quot;);</span>
+<span class="fc" id="L180">        final FileExtensionConfigurationBuilderProvider provider = setUpProvider();</span>
+<span class="fc" id="L181">        assertEquals(</span>
+                &quot;Wrong class&quot;,
+                DEF_CLASS,
+<span class="fc" id="L184">                provider.determineConfigurationClass(decl,</span>
+<span class="fc" id="L185">                        Collections.singleton(params)));</span>
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Tests whether the correct configuration class is selected if no file name
+     * is set.
+     */
+    @Test
+    public void testDeterminieConfigurationClassNoFileName()
+            throws ConfigurationException
+    {
+<span class="fc" id="L196">        final ConfigurationDeclaration decl = setUpDecl();</span>
+<span class="fc" id="L197">        final BuilderParameters params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L198">        final FileExtensionConfigurationBuilderProvider provider = setUpProvider();</span>
+<span class="fc" id="L199">        assertEquals(</span>
+                &quot;Wrong class&quot;,
+                DEF_CLASS,
+<span class="fc" id="L202">                provider.determineConfigurationClass(decl,</span>
+<span class="fc" id="L203">                        Collections.singleton(params)));</span>
+<span class="fc" id="L204">    }</span>
+
+    /**
+     * Tests whether the correct configuration class is selected if the file
+     * extension matches.
+     */
+    @Test
+    public void testDetermineConfigurationClassExtensionMatch()
+            throws ConfigurationException
+    {
+<span class="fc" id="L214">        final ConfigurationDeclaration decl = setUpDecl();</span>
+<span class="fc" id="L215">        final BuilderParameters params =</span>
+                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L217">                        .setPath(&quot;C:\\Test\\someTestConfiguration.&quot; + EXT);</span>
+<span class="fc" id="L218">        final FileExtensionConfigurationBuilderProvider provider = setUpProvider();</span>
+<span class="fc" id="L219">        assertEquals(</span>
+                &quot;Wrong class&quot;,
+                MATCH_CLASS,
+<span class="fc" id="L222">                provider.determineConfigurationClass(decl,</span>
+<span class="fc" id="L223">                        Collections.singleton(params)));</span>
+<span class="fc" id="L224">    }</span>
+
+    /**
+     * Tests that matches of file extensions are case insensitive.
+     */
+    @Test
+    public void testDetermineConfigurationClassMatchCase()
+            throws ConfigurationException
+    {
+<span class="fc" id="L233">        final ConfigurationDeclaration decl = setUpDecl();</span>
+<span class="fc" id="L234">        final BuilderParameters params =</span>
+                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L236">                        .setPath(&quot;C:\\Test\\someTestConfiguration.&quot;</span>
+<span class="fc" id="L237">                                + EXT.toUpperCase(Locale.ENGLISH));</span>
+<span class="fc" id="L238">        final FileExtensionConfigurationBuilderProvider provider = setUpProvider();</span>
+<span class="fc" id="L239">        assertEquals(</span>
+                &quot;Wrong class&quot;,
+                MATCH_CLASS,
+<span class="fc" id="L242">                provider.determineConfigurationClass(decl,</span>
+<span class="fc" id="L243">                        Collections.singleton(params)));</span>
+<span class="fc" id="L244">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

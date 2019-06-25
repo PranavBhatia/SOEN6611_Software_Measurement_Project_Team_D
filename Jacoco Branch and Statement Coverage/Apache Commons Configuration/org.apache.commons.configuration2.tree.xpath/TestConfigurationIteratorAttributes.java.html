@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationIteratorAttributes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree.xpath</a> &gt; <span class="el_source">TestConfigurationIteratorAttributes.java</span></div><h1>TestConfigurationIteratorAttributes.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree.xpath;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.jxpath.ri.QName;
+import org.apache.commons.jxpath.ri.model.NodePointer;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ConfigurationNodeIteratorAttributes}.
+ *
+ */
+<span class="fc" id="L37">public class TestConfigurationIteratorAttributes extends AbstractXPathTest</span>
+{
+    /** Constant for the name of another test attribute.*/
+    private static final String TEST_ATTR = &quot;test&quot;;
+
+    /** Constant for a namespace prefix. */
+    private static final String NAMESPACE = &quot;commons&quot;;
+
+    /** Constant for an attribute with a namespace prefix. */
+    private static final String NS_ATTR = NAMESPACE + &quot;:attr&quot;;
+
+    /** Stores the node pointer of the test node.*/
+    private ConfigurationNodePointer&lt;ImmutableNode&gt; pointer;
+
+    @Override
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L55">        super.setUp();</span>
+
+        // Adds further attributes to the test node
+<span class="fc" id="L58">        final ImmutableNode orgNode = root.getChildren().get(1);</span>
+<span class="fc" id="L59">        final ImmutableNode testNode =</span>
+<span class="fc" id="L60">                orgNode.setAttribute(TEST_ATTR, &quot;yes&quot;).setAttribute(NS_ATTR,</span>
+                        &quot;configuration&quot;);
+<span class="fc" id="L62">        pointer =</span>
+                new ConfigurationNodePointer&lt;&gt;(testNode,
+<span class="fc" id="L64">                        Locale.getDefault(), handler);</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Tests to iterate over all attributes.
+     */
+    @Test
+    public void testIterateAllAttributes()
+    {
+<span class="fc" id="L73">        final ConfigurationNodeIteratorAttribute&lt;ImmutableNode&gt; it =</span>
+                new ConfigurationNodeIteratorAttribute&lt;&gt;(pointer,
+                        new QName(null, &quot;*&quot;));
+<span class="fc" id="L76">        assertEquals(&quot;Wrong number of attributes&quot;, 3, iteratorSize(it));</span>
+<span class="fc" id="L77">        final List&lt;NodePointer&gt; attrs = iterationElements(it);</span>
+<span class="fc" id="L78">        final Set&lt;String&gt; attrNames = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (final NodePointer np : attrs)</span>
+        {
+<span class="fc" id="L81">            attrNames.add(np.getName().getName());</span>
+<span class="fc" id="L82">        }</span>
+<span class="fc" id="L83">        assertTrue(&quot;First attribute not found&quot;, attrNames.contains(ATTR_NAME));</span>
+<span class="fc" id="L84">        assertTrue(&quot;Second attribute not found&quot;, attrNames.contains(TEST_ATTR));</span>
+<span class="fc" id="L85">        assertTrue(&quot;Namespace attribute not found&quot;, attrNames.contains(NS_ATTR));</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Tests to iterate over attributes with a specific name.
+     */
+    @Test
+    public void testIterateSpecificAttribute()
+    {
+<span class="fc" id="L94">        final ConfigurationNodeIteratorAttribute&lt;ImmutableNode&gt; it =</span>
+                new ConfigurationNodeIteratorAttribute&lt;&gt;(pointer,
+                        new QName(null, TEST_ATTR));
+<span class="fc" id="L97">        assertEquals(&quot;Wrong number of attributes&quot;, 1, iteratorSize(it));</span>
+<span class="fc" id="L98">        assertEquals(&quot;Wrong attribute&quot;, TEST_ATTR, iterationElements(it).get(0)</span>
+<span class="fc" id="L99">                .getName().getName());</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Tests to iterate over non existing attributes.
+     */
+    @Test
+    public void testIterateUnknownAttribute()
+    {
+<span class="fc" id="L108">        final ConfigurationNodeIteratorAttribute&lt;ImmutableNode&gt; it =</span>
+                new ConfigurationNodeIteratorAttribute&lt;&gt;(pointer,
+                        new QName(null, &quot;unknown&quot;));
+<span class="fc" id="L111">        assertEquals(&quot;Found attributes&quot;, 0, iteratorSize(it));</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Tests iteration if an unknown namespace is specified.
+     */
+    @Test
+    public void testIterateNamespaceUnknown()
+    {
+<span class="fc" id="L120">        final ConfigurationNodeIteratorAttribute&lt;ImmutableNode&gt; it =</span>
+                new ConfigurationNodeIteratorAttribute&lt;&gt;(pointer,
+                        new QName(&quot;test&quot;, &quot;*&quot;));
+<span class="fc" id="L123">        assertEquals(&quot;Found attributes&quot;, 0, iteratorSize(it));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Tests whether a specific attribute with a namespace can be selected.
+     */
+    @Test
+    public void testIterateNamespaceAttribute()
+    {
+<span class="fc" id="L132">        final ConfigurationNodeIteratorAttribute&lt;ImmutableNode&gt; it =</span>
+                new ConfigurationNodeIteratorAttribute&lt;&gt;(pointer,
+                        new QName(NAMESPACE, &quot;attr&quot;));
+<span class="fc" id="L135">        assertEquals(&quot;Wrong number of attributes&quot;, 1, iteratorSize(it));</span>
+<span class="fc" id="L136">        assertEquals(&quot;Wrong attribute&quot;, NS_ATTR, iterationElements(it).get(0)</span>
+<span class="fc" id="L137">                .getName().getName());</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Tests whether a wildcard can be used together with a namespace.
+     */
+    @Test
+    public void testIterateNamespaceWildcard()
+    {
+<span class="fc" id="L146">        final ConfigurationNodeIteratorAttribute&lt;ImmutableNode&gt; it =</span>
+                new ConfigurationNodeIteratorAttribute&lt;&gt;(pointer,
+                        new QName(NAMESPACE, &quot;*&quot;));
+<span class="fc" id="L149">        assertEquals(&quot;Wrong number of attributes&quot;, 1, iteratorSize(it));</span>
+<span class="fc" id="L150">        assertEquals(&quot;Wrong attribute&quot;, NS_ATTR, iterationElements(it).get(0)</span>
+<span class="fc" id="L151">                .getName().getName());</span>
+<span class="fc" id="L152">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

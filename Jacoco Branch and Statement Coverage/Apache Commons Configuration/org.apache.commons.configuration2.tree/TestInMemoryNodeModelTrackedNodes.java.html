@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestInMemoryNodeModelTrackedNodes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">TestInMemoryNodeModelTrackedNodes.java</span></div><h1>TestInMemoryNodeModelTrackedNodes.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+import org.easymock.EasyMock;
+import org.easymock.IAnswer;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * A special test class for {@code InMemoryNodeModel} which tests the facilities
+ * for tracking nodes.
+ *
+ */
+<span class="fc" id="L51">public class TestInMemoryNodeModelTrackedNodes</span>
+{
+    /** Constant for the name of a new table field. */
+    private static final String NEW_FIELD = &quot;newTableField&quot;;
+
+    /** Constant for a test key. */
+    private static final String TEST_KEY = &quot;someTestKey&quot;;
+
+    /** Constant for the key used by the test selector. */
+    private static final String SELECTOR_KEY = &quot;tables.table(1)&quot;;
+
+    /** The root node for the test hierarchy. */
+    private static ImmutableNode root;
+
+    /** A default node selector initialized with a test key. */
+    private static NodeSelector selector;
+
+    /** The model to be tested. */
+    private InMemoryNodeModel model;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L74">        root =</span>
+<span class="fc" id="L75">                new ImmutableNode.Builder(1).addChild(</span>
+<span class="fc" id="L76">                        NodeStructureHelper.ROOT_TABLES_TREE).create();</span>
+<span class="fc" id="L77">        selector = new NodeSelector(SELECTOR_KEY);</span>
+<span class="fc" id="L78">    }</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L83">        model = new InMemoryNodeModel(root);</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Creates a default resolver which supports arbitrary queries on a target
+     * node.
+     *
+     * @return the resolver
+     */
+    private static NodeKeyResolver&lt;ImmutableNode&gt; createResolver()
+    {
+<span class="fc" id="L94">        return createResolver(true);</span>
+    }
+
+    /**
+     * Creates a default resolver which supports arbitrary queries on a target
+     * node and allows specifying the replay flag. If the boolean parameter is
+     * false, the mock is not replayed; so additional behaviors can be defined.
+     *
+     * @param replay the replay flag
+     * @return the resolver mock
+     */
+    private static NodeKeyResolver&lt;ImmutableNode&gt; createResolver(final boolean replay)
+    {
+        final NodeKeyResolver&lt;ImmutableNode&gt; resolver =
+<span class="fc" id="L108">                NodeStructureHelper.createResolverMock();</span>
+<span class="fc" id="L109">        NodeStructureHelper.expectResolveKeyForQueries(resolver);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (replay)</span>
+        {
+<span class="fc" id="L112">            EasyMock.replay(resolver);</span>
+        }
+<span class="fc" id="L114">        return resolver;</span>
+    }
+
+    /**
+     * Tries to call trackNode() with a key that does not yield any results.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testTrackNodeKeyNoResults()
+    {
+<span class="nc" id="L123">        model.trackNode(new NodeSelector(&quot;tables.unknown&quot;), createResolver());</span>
+<span class="nc" id="L124">    }</span>
+
+    /**
+     * Tries to call trackNode() with a key that selects multiple results.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testTrackNodeKeyMultipleResults()
+    {
+<span class="pc" id="L132">        model.trackNode(new NodeSelector(&quot;tables.table.fields.field.name&quot;),</span>
+<span class="fc" id="L133">                createResolver());</span>
+<span class="nc" id="L134">    }</span>
+
+    /**
+     * Tests whether a tracked node can be queried.
+     */
+    @Test
+    public void testGetTrackedNodeExisting()
+    {
+<span class="fc" id="L142">        final ImmutableNode node =</span>
+<span class="fc" id="L143">                NodeStructureHelper.nodeForKey(model, &quot;tables/table(1)&quot;);</span>
+<span class="fc" id="L144">        model.trackNode(selector, createResolver());</span>
+<span class="fc" id="L145">        assertSame(&quot;Wrong node&quot;, node, model.getTrackedNode(selector));</span>
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Tries to obtain a tracked node which is unknown.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testGetTrackedNodeNonExisting()
+    {
+<span class="nc" id="L154">        model.getTrackedNode(selector);</span>
+<span class="nc" id="L155">    }</span>
+
+    /**
+     * Tests whether a tracked node survives updates of the node model.
+     */
+    @Test
+    public void testGetTrackedNodeAfterUpdate()
+    {
+<span class="fc" id="L163">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L164">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L165">        model.clearProperty(&quot;tables.table(1).fields.field(1).name&quot;, resolver);</span>
+<span class="fc" id="L166">        final ImmutableNode node = model.getTrackedNode(selector);</span>
+<span class="fc" id="L167">        assertEquals(&quot;Wrong node&quot;, NodeStructureHelper.table(1), node</span>
+<span class="fc" id="L168">                .getChildren().get(0).getValue());</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Tests whether a tracked node can be queried even if it was removed from
+     * the structure.
+     */
+    @Test
+    public void testGetTrackedNodeAfterUpdateNoLongerExisting()
+    {
+<span class="fc" id="L178">        final ImmutableNode node =</span>
+<span class="fc" id="L179">                NodeStructureHelper.nodeForKey(model, &quot;tables/table(1)&quot;);</span>
+<span class="fc" id="L180">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L181">        initDetachedNode(resolver);</span>
+<span class="fc" id="L182">        assertSame(&quot;Wrong node&quot;, node, model.getTrackedNode(selector));</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Produces a tracked node with the default selector and executes an
+     * operation which detaches this node.
+     *
+     * @param resolver the {@code NodeKeyResolver}
+     */
+    private void initDetachedNode(final NodeKeyResolver&lt;ImmutableNode&gt; resolver)
+    {
+<span class="fc" id="L193">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L194">        model.clearTree(&quot;tables.table(0)&quot;, resolver);</span>
+<span class="fc" id="L195">    }</span>
+
+    /**
+     * Tests whether a tracked node can be queried even after the model was
+     * cleared.
+     */
+    @Test
+    public void testGetTrackedNodeAfterClear()
+    {
+<span class="fc" id="L204">        final ImmutableNode node =</span>
+<span class="fc" id="L205">                NodeStructureHelper.nodeForKey(model, &quot;tables/table(1)&quot;);</span>
+<span class="fc" id="L206">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L207">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L208">        model.clear(resolver);</span>
+<span class="fc" id="L209">        assertSame(&quot;Wrong node&quot;, node, model.getTrackedNode(selector));</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Tests whether a tracked node can be queried after the root node was
+     * changed.
+     */
+    @Test
+    public void testGetTrackedNodeAfterSetRootNode()
+    {
+<span class="fc" id="L219">        final ImmutableNode node =</span>
+<span class="fc" id="L220">                NodeStructureHelper.nodeForKey(model, &quot;tables/table(1)&quot;);</span>
+<span class="fc" id="L221">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L222">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L223">        model.setRootNode(root);</span>
+<span class="fc" id="L224">        assertSame(&quot;Wrong node&quot;, node, model.getTrackedNode(selector));</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tries to stop tracking of a node which is not tracked.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testUntrackNodeNonExisting()
+    {
+<span class="nc" id="L233">        model.untrackNode(selector);</span>
+<span class="nc" id="L234">    }</span>
+
+    /**
+     * Tests whether tracking of a node can be stopped.
+     */
+    @Test
+    public void testUntrackNode()
+    {
+<span class="fc" id="L242">        model.trackNode(selector, createResolver());</span>
+<span class="fc" id="L243">        model.untrackNode(selector);</span>
+        try
+        {
+<span class="nc" id="L246">            model.getTrackedNode(selector);</span>
+<span class="nc" id="L247">            fail(&quot;Could get untracked node!&quot;);</span>
+        }
+<span class="fc" id="L249">        catch (final ConfigurationRuntimeException crex)</span>
+        {
+            // expected
+<span class="nc" id="L252">        }</span>
+<span class="fc" id="L253">    }</span>
+
+    /**
+     * Tests whether a single node can be tracked multiple times.
+     */
+    @Test
+    public void testTrackNodeMultipleTimes()
+    {
+<span class="fc" id="L261">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L262">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L263">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L264">        model.untrackNode(selector);</span>
+<span class="fc" id="L265">        assertNotNull(&quot;No tracked node&quot;, model.getTrackedNode(selector));</span>
+<span class="fc" id="L266">    }</span>
+
+    /**
+     * Tests isDetached() for a node which has just been tracked.
+     */
+    @Test
+    public void testIsDetachedFalseNoUpdates()
+    {
+<span class="fc" id="L274">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L275">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L276">        assertFalse(&quot;Node is detached&quot;, model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L277">    }</span>
+
+    /**
+     * Tests isDetached() for a life node.
+     */
+    @Test
+    public void testIsDetachedFalseAfterUpdate()
+    {
+<span class="fc" id="L285">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L286">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L287">        model.clearProperty(&quot;tables.table(1).fields.field(1).name&quot;, resolver);</span>
+<span class="fc" id="L288">        assertFalse(&quot;Node is detached&quot;, model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * Tests isDetached() for an actually detached node.
+     */
+    @Test
+    public void testIsDetachedTrue()
+    {
+<span class="fc" id="L297">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L298">        initDetachedNode(resolver);</span>
+<span class="fc" id="L299">        assertTrue(&quot;Node is not detached&quot;,</span>
+<span class="fc" id="L300">                model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L301">    }</span>
+
+    /**
+     * Tests whether a clear() operation causes nodes to be detached.
+     */
+    @Test
+    public void testIsDetachedAfterClear()
+    {
+<span class="fc" id="L309">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L310">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L311">        model.clear(resolver);</span>
+<span class="fc" id="L312">        assertTrue(&quot;Node is not detached&quot;,</span>
+<span class="fc" id="L313">                model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Tests whether tracked nodes become detached when a new root node is set.
+     */
+    @Test
+    public void testIsDetachedAfterSetRoot()
+    {
+<span class="fc" id="L322">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L323">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L324">        model.clearProperty(&quot;tables.table(1).fields.field(1).name&quot;, resolver);</span>
+<span class="fc" id="L325">        model.setRootNode(root);</span>
+<span class="fc" id="L326">        assertTrue(&quot;Node is not detached&quot;,</span>
+<span class="fc" id="L327">                model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L328">    }</span>
+
+    /**
+     * Returns the fields node from the model.
+     *
+     * @return the fields node
+     */
+    private ImmutableNode fieldsNodeFromModel()
+    {
+<span class="fc" id="L337">        return NodeStructureHelper.nodeForKey(model, &quot;tables/table(1)/fields&quot;);</span>
+    }
+
+    /**
+     * Returns the fields node from a tracked node.
+     *
+     * @return the fields node
+     */
+    private ImmutableNode fieldsNodeFromTrackedNode()
+    {
+<span class="fc" id="L347">        return NodeStructureHelper.nodeForKey(model.getTrackedNode(selector),</span>
+                &quot;fields&quot;);
+    }
+
+    /**
+     * Helper method for checking whether the expected field node was removed.
+     *
+     * @param nodeFields the fields node
+     * @param idx the index of the removed field
+     */
+    private static void checkForRemovedField(final ImmutableNode nodeFields, final int idx)
+    {
+<span class="fc" id="L359">        assertEquals(&quot;Field not removed&quot;,</span>
+<span class="fc" id="L360">                NodeStructureHelper.fieldsLength(1) - 1, nodeFields</span>
+<span class="fc" id="L361">                        .getChildren().size());</span>
+<span class="fc" id="L362">        final Set&lt;String&gt; expectedNames = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L363">        final Set&lt;String&gt; actualNames = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L364" title="All 2 branches covered.">        for (int i = 0; i &lt; NodeStructureHelper.fieldsLength(1); i++)</span>
+        {
+<span class="fc bfc" id="L366" title="All 2 branches covered.">            if (idx != i)</span>
+            {
+<span class="fc" id="L368">                expectedNames.add(NodeStructureHelper.field(1, i));</span>
+            }
+        }
+<span class="fc bfc" id="L371" title="All 2 branches covered.">        for (final ImmutableNode field : nodeFields.getChildren())</span>
+        {
+<span class="fc" id="L373">            final ImmutableNode nodeName = field.getChildren().get(0);</span>
+<span class="fc" id="L374">            actualNames.add(String.valueOf(nodeName.getValue()));</span>
+<span class="fc" id="L375">        }</span>
+<span class="fc" id="L376">        assertEquals(&quot;Wrong field names&quot;, expectedNames, actualNames);</span>
+<span class="fc" id="L377">    }</span>
+
+    /**
+     * Tests whether clearProperty() can operate on a tracked node.
+     */
+    @Test
+    public void testClearPropertyOnTrackedNode()
+    {
+<span class="fc" id="L385">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L386">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L387">        model.clearProperty(&quot;fields.field(0).name&quot;, selector, resolver);</span>
+<span class="fc" id="L388">        final ImmutableNode nodeFields = fieldsNodeFromModel();</span>
+<span class="fc" id="L389">        checkForRemovedField(nodeFields, 0);</span>
+<span class="fc" id="L390">    }</span>
+
+    /**
+     * Tests a clearProperty() operation on a tracked node which is detached.
+     */
+    @Test
+    public void testClearPropertyOnDetachedNode()
+    {
+<span class="fc" id="L398">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L399">        initDetachedNode(resolver);</span>
+<span class="fc" id="L400">        final ImmutableNode rootNode = model.getRootNode();</span>
+<span class="fc" id="L401">        model.clearProperty(&quot;fields.field(0).name&quot;, selector, resolver);</span>
+<span class="fc" id="L402">        assertSame(&quot;Model root was changed&quot;, rootNode, model.getRootNode());</span>
+<span class="fc" id="L403">        final ImmutableNode nodeFields = fieldsNodeFromTrackedNode();</span>
+<span class="fc" id="L404">        checkForRemovedField(nodeFields, 0);</span>
+<span class="fc" id="L405">    }</span>
+
+    /**
+     * Tests whether clearTree() can operate on a tracked node.
+     */
+    @Test
+    public void testClearTreeOnTrackedNode()
+    {
+<span class="fc" id="L413">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L414">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L415">        model.clearTree(&quot;fields.field(1)&quot;, selector, resolver);</span>
+<span class="fc" id="L416">        final ImmutableNode nodeFields = fieldsNodeFromModel();</span>
+<span class="fc" id="L417">        checkForRemovedField(nodeFields, 1);</span>
+<span class="fc" id="L418">    }</span>
+
+    /**
+     * Tests a clearTree() operation on a tracked node which is detached.
+     */
+    @Test
+    public void testClearTreeOnDetachedNode()
+    {
+<span class="fc" id="L426">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L427">        initDetachedNode(resolver);</span>
+<span class="fc" id="L428">        final ImmutableNode rootNode = model.getRootNode();</span>
+<span class="fc" id="L429">        model.clearTree(&quot;fields.field(1)&quot;, selector, resolver);</span>
+<span class="fc" id="L430">        assertSame(&quot;Model root was changed&quot;, rootNode, model.getRootNode());</span>
+<span class="fc" id="L431">        final ImmutableNode nodeFields = fieldsNodeFromTrackedNode();</span>
+<span class="fc" id="L432">        checkForRemovedField(nodeFields, 1);</span>
+<span class="fc" id="L433">    }</span>
+
+    /**
+     * Tests whether a field node was added.
+     *
+     * @param nodeFields the fields node
+     */
+    private static void checkForAddedField(final ImmutableNode nodeFields)
+    {
+<span class="fc" id="L442">        assertEquals(&quot;Wrong number of children&quot;,</span>
+<span class="fc" id="L443">                NodeStructureHelper.fieldsLength(1) + 1, nodeFields</span>
+<span class="fc" id="L444">                        .getChildren().size());</span>
+<span class="fc" id="L445">        final ImmutableNode nodeField =</span>
+<span class="fc" id="L446">                nodeFields.getChildren().get(</span>
+<span class="fc" id="L447">                        NodeStructureHelper.fieldsLength(1));</span>
+<span class="fc" id="L448">        checkFieldNode(nodeField, NEW_FIELD);</span>
+<span class="fc" id="L449">    }</span>
+
+    /**
+     * Checks whether a field node has the expected content.
+     *
+     * @param nodeField the field node to be checked
+     * @param name the expected name of this field
+     */
+    private static void checkFieldNode(final ImmutableNode nodeField, final String name)
+    {
+<span class="fc" id="L459">        assertEquals(&quot;Wrong node name&quot;, &quot;field&quot;, nodeField.getNodeName());</span>
+<span class="fc" id="L460">        assertEquals(&quot;Wrong number of children of field node&quot;, 1, nodeField</span>
+<span class="fc" id="L461">                .getChildren().size());</span>
+<span class="fc" id="L462">        final ImmutableNode nodeName = nodeField.getChildren().get(0);</span>
+<span class="fc" id="L463">        assertEquals(&quot;Wrong name of name node&quot;, &quot;name&quot;, nodeName.getNodeName());</span>
+<span class="fc" id="L464">        assertEquals(&quot;Wrong node value&quot;, name, nodeName.getValue());</span>
+<span class="fc" id="L465">    }</span>
+
+    /**
+     * Tests whether an addProperty() operation works on a tracked node.
+     */
+    @Test
+    public void testAddPropertyOnTrackedNode()
+    {
+<span class="fc" id="L473">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L474">        NodeStructureHelper.expectResolveAddKeys(resolver);</span>
+<span class="fc" id="L475">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L476">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L477">        model.addProperty(&quot;fields.field(-1).name&quot;, selector,</span>
+<span class="fc" id="L478">                Collections.singleton(NEW_FIELD), resolver);</span>
+<span class="fc" id="L479">        checkForAddedField(fieldsNodeFromModel());</span>
+<span class="fc" id="L480">        checkForAddedField(fieldsNodeFromTrackedNode());</span>
+<span class="fc" id="L481">    }</span>
+
+    /**
+     * Tests an addProperty() operation on a tracked node that is detached.
+     */
+    @Test
+    public void testAddPropertyOnDetachedNode()
+    {
+<span class="fc" id="L489">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L490">        NodeStructureHelper.expectResolveAddKeys(resolver);</span>
+<span class="fc" id="L491">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L492">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L493">        initDetachedNode(resolver);</span>
+<span class="fc" id="L494">        final ImmutableNode rootNode = model.getRootNode();</span>
+<span class="fc" id="L495">        model.addProperty(&quot;fields.field(-1).name&quot;, selector,</span>
+<span class="fc" id="L496">                Collections.singleton(NEW_FIELD), resolver);</span>
+<span class="fc" id="L497">        assertSame(&quot;Root node was changed&quot;, rootNode, model.getRootNode());</span>
+<span class="fc" id="L498">        checkForAddedField(fieldsNodeFromTrackedNode());</span>
+<span class="fc" id="L499">    }</span>
+
+    /**
+     * Tests whether an addNodes() operation works on a tracked node.
+     */
+    @Test
+    public void testAddNodesOnTrackedNode()
+    {
+<span class="fc" id="L507">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L508">        NodeStructureHelper.expectResolveAddKeys(resolver);</span>
+<span class="fc" id="L509">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L510">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L511">        model.addNodes(&quot;fields&quot;, selector, Collections</span>
+<span class="fc" id="L512">                .singleton(NodeStructureHelper.createFieldNode(NEW_FIELD)),</span>
+                resolver);
+<span class="fc" id="L514">        checkForAddedField(fieldsNodeFromModel());</span>
+<span class="fc" id="L515">        checkForAddedField(fieldsNodeFromTrackedNode());</span>
+<span class="fc" id="L516">    }</span>
+
+    /**
+     * Tests an addNodes() operation on a tracked node that is detached.
+     */
+    @Test
+    public void testAddNodesOnDetachedNode()
+    {
+<span class="fc" id="L524">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L525">        NodeStructureHelper.expectResolveAddKeys(resolver);</span>
+<span class="fc" id="L526">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L527">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L528">        initDetachedNode(resolver);</span>
+<span class="fc" id="L529">        final ImmutableNode rootNode = model.getRootNode();</span>
+<span class="fc" id="L530">        model.addNodes(&quot;fields&quot;, selector, Collections</span>
+<span class="fc" id="L531">                .singleton(NodeStructureHelper.createFieldNode(NEW_FIELD)),</span>
+                resolver);
+<span class="fc" id="L533">        assertSame(&quot;Root node was changed&quot;, rootNode, model.getRootNode());</span>
+<span class="fc" id="L534">        checkForAddedField(fieldsNodeFromTrackedNode());</span>
+<span class="fc" id="L535">    }</span>
+
+    /**
+     * Prepares a mock for a resolver to handle keys for update operations.
+     * Support is limited. It is expected that only a single value is changed.
+     *
+     * @param resolver the {@code NodeKeyResolver} mock
+     */
+    private static void prepareResolverForUpdateKeys(
+            final NodeKeyResolver&lt;ImmutableNode&gt; resolver)
+    {
+<span class="fc" id="L546">        EasyMock.expect(</span>
+<span class="fc" id="L547">                resolver.resolveUpdateKey(</span>
+<span class="fc" id="L548">                        EasyMock.anyObject(ImmutableNode.class),</span>
+<span class="fc" id="L549">                        EasyMock.anyString(), EasyMock.anyObject(),</span>
+<span class="fc" id="L550">                        EasyMock.anyObject(TreeData.class)))</span>
+<span class="fc" id="L551">                .andAnswer(new IAnswer&lt;NodeUpdateData&lt;ImmutableNode&gt;&gt;() {</span>
+                    @Override
+                    public NodeUpdateData&lt;ImmutableNode&gt; answer()
+                            throws Throwable {
+                        final ImmutableNode root =
+<span class="fc" id="L556">                                (ImmutableNode) EasyMock.getCurrentArguments()[0];</span>
+<span class="fc" id="L557">                        final String key = (String) EasyMock.getCurrentArguments()[1];</span>
+                        final TreeData handler =
+<span class="fc" id="L559">                                (TreeData) EasyMock.getCurrentArguments()[3];</span>
+<span class="fc" id="L560">                        final List&lt;QueryResult&lt;ImmutableNode&gt;&gt; results =</span>
+<span class="fc" id="L561">                                DefaultExpressionEngine.INSTANCE.query(root,</span>
+                                        key, handler);
+<span class="fc" id="L563">                        assertEquals(&quot;Wrong number of query results&quot;, 1,</span>
+<span class="fc" id="L564">                                results.size());</span>
+<span class="fc" id="L565">                        return new NodeUpdateData&lt;&gt;(Collections</span>
+<span class="fc" id="L566">                                .singletonMap(results.get(0),</span>
+<span class="fc" id="L567">                                        EasyMock.getCurrentArguments()[2]),</span>
+                                null, null, null);
+                    }
+<span class="fc" id="L570">                }).anyTimes();</span>
+<span class="fc" id="L571">    }</span>
+
+    /**
+     * Checks whether a fields node was correctly changed by an update
+     * operation.
+     *
+     * @param nodeFields the fields node
+     * @param idx the index of the changed node
+     */
+    private static void checkedForChangedField(final ImmutableNode nodeFields, final int idx)
+    {
+<span class="fc" id="L582">        assertEquals(&quot;Wrong number of field nodes&quot;,</span>
+<span class="fc" id="L583">                NodeStructureHelper.fieldsLength(1), nodeFields.getChildren()</span>
+<span class="fc" id="L584">                .size());</span>
+<span class="fc" id="L585">        int childIndex = 0;</span>
+<span class="fc bfc" id="L586" title="All 2 branches covered.">        for (final ImmutableNode field : nodeFields.getChildren())</span>
+        {
+<span class="fc bfc" id="L588" title="All 2 branches covered.">            final String expName =</span>
+                    (childIndex == idx) ? NEW_FIELD : NodeStructureHelper
+<span class="fc" id="L590">                            .field(1, childIndex);</span>
+<span class="fc" id="L591">            checkFieldNode(field, expName);</span>
+<span class="fc" id="L592">            childIndex++;</span>
+<span class="fc" id="L593">        }</span>
+<span class="fc" id="L594">    }</span>
+
+    /**
+     * Tests whether a setProperty() operation works on a tracked node.
+     */
+    @Test
+    public void testSetPropertyOnTrackedNode()
+    {
+<span class="fc" id="L602">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L603">        prepareResolverForUpdateKeys(resolver);</span>
+<span class="fc" id="L604">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L605">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L606">        model.setProperty(&quot;fields.field(0).name&quot;, selector, NEW_FIELD, resolver);</span>
+<span class="fc" id="L607">        checkedForChangedField(fieldsNodeFromModel(), 0);</span>
+<span class="fc" id="L608">        checkedForChangedField(fieldsNodeFromTrackedNode(), 0);</span>
+<span class="fc" id="L609">    }</span>
+
+    /**
+     * Tests a setProperty() operation on a tracked node that is detached.
+     */
+    @Test
+    public void testSetPropertyOnDetachedNode()
+    {
+<span class="fc" id="L617">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L618">        prepareResolverForUpdateKeys(resolver);</span>
+<span class="fc" id="L619">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L620">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L621">        initDetachedNode(resolver);</span>
+<span class="fc" id="L622">        final ImmutableNode rootNode = model.getRootNode();</span>
+<span class="fc" id="L623">        model.setProperty(&quot;fields.field(0).name&quot;, selector, NEW_FIELD, resolver);</span>
+<span class="fc" id="L624">        assertSame(&quot;Root node of model was changed&quot;, rootNode,</span>
+<span class="fc" id="L625">                model.getRootNode());</span>
+<span class="fc" id="L626">        checkedForChangedField(fieldsNodeFromTrackedNode(), 0);</span>
+<span class="fc" id="L627">    }</span>
+
+    /**
+     * Tests whether a tracked node is handled correctly if an operation is
+     * executed on this node which causes the node to be detached. In this case,
+     * the node should be cleared (it makes no sense to use the last defined
+     * node instance).
+     */
+    @Test
+    public void testTrackedNodeClearedInOperation()
+    {
+<span class="fc" id="L638">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L639">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L640">        model.clearTree(null, selector, resolver);</span>
+<span class="fc" id="L641">        assertTrue(&quot;Node not detached&quot;, model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L642">        final ImmutableNode node = model.getTrackedNode(selector);</span>
+<span class="fc" id="L643">        assertEquals(&quot;Name was changed&quot;, &quot;table&quot;, node.getNodeName());</span>
+<span class="fc" id="L644">        assertFalse(&quot;Node is defined&quot;, model.getNodeHandler().isDefined(node));</span>
+<span class="fc" id="L645">    }</span>
+
+    /**
+     * Tests whether a node handler for a tracked node can be queried which is
+     * still active.
+     */
+    @Test
+    public void testGetTrackedNodeHandlerActive()
+    {
+<span class="fc" id="L654">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L655">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L656">        final NodeHandler&lt;ImmutableNode&gt; handler =</span>
+<span class="fc" id="L657">                model.getTrackedNodeHandler(selector);</span>
+<span class="fc" id="L658">        assertTrue(&quot;Wrong node handler: &quot; + handler,</span>
+                handler instanceof TrackedNodeHandler);
+<span class="fc" id="L660">        assertSame(&quot;Wrong root node&quot;, model.getTrackedNode(selector),</span>
+<span class="fc" id="L661">                handler.getRootNode());</span>
+<span class="fc" id="L662">        final TrackedNodeHandler tnh = (TrackedNodeHandler) handler;</span>
+<span class="fc" id="L663">        assertSame(&quot;Wrong parent handler&quot;, model.getTreeData(),</span>
+<span class="fc" id="L664">                tnh.getParentHandler());</span>
+<span class="fc" id="L665">    }</span>
+
+    /**
+     * Tests whether a node handler for a detached tracked node can be queried.
+     */
+    @Test
+    public void testGetTrackedNodeHandlerDetached()
+    {
+<span class="fc" id="L673">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L674">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L675">        initDetachedNode(resolver);</span>
+<span class="fc" id="L676">        final NodeHandler&lt;ImmutableNode&gt; handler =</span>
+<span class="fc" id="L677">                model.getTrackedNodeHandler(selector);</span>
+<span class="fc" id="L678">        assertSame(&quot;Wrong root node&quot;, model.getTrackedNode(selector),</span>
+<span class="fc" id="L679">                handler.getRootNode());</span>
+<span class="fc" id="L680">        assertTrue(&quot;Wrong handler: &quot; + handler, handler instanceof TreeData);</span>
+<span class="fc" id="L681">        assertNotSame(&quot;Shared handler&quot;, model.getNodeHandler(), handler);</span>
+<span class="fc" id="L682">    }</span>
+
+    /**
+     * Helper method for testing whether a tracked node can be replaced.
+     */
+    private void checkReplaceTrackedNode()
+    {
+<span class="fc" id="L689">        final ImmutableNode newNode =</span>
+<span class="fc" id="L690">                new ImmutableNode.Builder().name(&quot;newNode&quot;).create();</span>
+<span class="fc" id="L691">        model.replaceTrackedNode(selector, newNode);</span>
+<span class="fc" id="L692">        assertSame(&quot;Node not changed&quot;, newNode, model.getTrackedNode(selector));</span>
+<span class="fc" id="L693">        assertTrue(&quot;Node not detached&quot;, model.isTrackedNodeDetached(selector));</span>
+<span class="fc" id="L694">    }</span>
+
+    /**
+     * Tests whether an active tracked node can be replaced.
+     */
+    @Test
+    public void testReplaceTrackedNodeForActiveTrackedNode()
+    {
+<span class="fc" id="L702">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L703">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L704">        checkReplaceTrackedNode();</span>
+<span class="fc" id="L705">    }</span>
+
+    /**
+     * Tests whether a detached tracked node can be replaced.
+     */
+    @Test
+    public void testReplaceTrackedNodeForDetachedNode()
+    {
+<span class="fc" id="L713">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L714">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L715">        initDetachedNode(resolver);</span>
+<span class="fc" id="L716">        checkReplaceTrackedNode();</span>
+<span class="fc" id="L717">    }</span>
+
+    /**
+     * Tries to replace a tracked node with a null node.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testReplaceTrackedNodeNull()
+    {
+<span class="fc" id="L725">        model.trackNode(selector, createResolver());</span>
+<span class="nc" id="L726">        model.replaceTrackedNode(selector, null);</span>
+<span class="nc" id="L727">    }</span>
+
+    /**
+     * Prepares the resolver mock to expect a nodeKey() request.
+     *
+     * @param resolver the {@code NodeKeyResolver}
+     * @param node the node whose name is to be resolved
+     * @param key the key to be returned for this node
+     */
+    private void expectNodeKey(final NodeKeyResolver&lt;ImmutableNode&gt; resolver,
+            final ImmutableNode node, final String key)
+    {
+<span class="fc" id="L739">        final Map&lt;ImmutableNode, String&gt; cache = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L740">        EasyMock.expect(resolver.nodeKey(node, cache, model.getNodeHandler()))</span>
+<span class="fc" id="L741">                .andReturn(key);</span>
+<span class="fc" id="L742">    }</span>
+
+    /**
+     * Tests whether tracked nodes can be created from a key.
+     */
+    @Test
+    public void testSelectAndTrackNodes()
+    {
+<span class="fc" id="L750">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L751">        final String nodeKey1 = &quot;tables/table(0)&quot;;</span>
+<span class="fc" id="L752">        final String nodeKey2 = &quot;tables/table(1)&quot;;</span>
+<span class="fc" id="L753">        final ImmutableNode node1 = NodeStructureHelper.nodeForKey(root, nodeKey1);</span>
+<span class="fc" id="L754">        final ImmutableNode node2 = NodeStructureHelper.nodeForKey(root, nodeKey2);</span>
+<span class="fc" id="L755">        EasyMock.expect(</span>
+<span class="fc" id="L756">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L757">                .andReturn(Arrays.asList(node1, node2));</span>
+<span class="fc" id="L758">        expectNodeKey(resolver, node1, nodeKey1);</span>
+<span class="fc" id="L759">        expectNodeKey(resolver, node2, nodeKey2);</span>
+<span class="fc" id="L760">        EasyMock.replay(resolver);</span>
+
+<span class="fc" id="L762">        final Collection&lt;NodeSelector&gt; selectors =</span>
+<span class="fc" id="L763">                model.selectAndTrackNodes(TEST_KEY, resolver);</span>
+<span class="fc" id="L764">        final Iterator&lt;NodeSelector&gt; it = selectors.iterator();</span>
+<span class="fc" id="L765">        NodeSelector sel = it.next();</span>
+<span class="fc" id="L766">        assertEquals(&quot;Wrong selector 1&quot;, new NodeSelector(nodeKey1), sel);</span>
+<span class="fc" id="L767">        assertSame(&quot;Wrong tracked node 1&quot;, node1, model.getTrackedNode(sel));</span>
+<span class="fc" id="L768">        sel = it.next();</span>
+<span class="fc" id="L769">        assertEquals(&quot;Wrong selector 2&quot;, new NodeSelector(nodeKey2), sel);</span>
+<span class="fc" id="L770">        assertSame(&quot;Wrong tracked node 2&quot;, node2, model.getTrackedNode(sel));</span>
+<span class="fc" id="L771">        assertFalse(&quot;Too many selectors&quot;, it.hasNext());</span>
+<span class="fc" id="L772">    }</span>
+
+    /**
+     * Tests selectAndTrackNodes() if the key does not select any nodes.
+     */
+    @Test
+    public void testSelectAndTrackNodesNoSelection()
+    {
+<span class="fc" id="L780">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L781">        EasyMock.expect(</span>
+<span class="fc" id="L782">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L783">                .andReturn(Collections.&lt;ImmutableNode&gt;emptyList());</span>
+<span class="fc" id="L784">        EasyMock.replay(resolver);</span>
+
+<span class="fc" id="L786">        assertTrue(&quot;Got selectors&quot;,</span>
+<span class="fc" id="L787">                model.selectAndTrackNodes(TEST_KEY, resolver).isEmpty());</span>
+<span class="fc" id="L788">    }</span>
+
+    /**
+     * Tests whether selectAndTrackNodes() works for nodes that are already
+     * tracked.
+     */
+    @Test
+    public void testSelectAndTrackNodesNodeAlreadyTracked()
+    {
+<span class="fc" id="L797">        NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver();</span>
+<span class="fc" id="L798">        model.trackNode(selector, resolver);</span>
+<span class="fc" id="L799">        resolver = createResolver(false);</span>
+<span class="fc" id="L800">        final ImmutableNode node = model.getTrackedNode(selector);</span>
+<span class="fc" id="L801">        EasyMock.expect(</span>
+<span class="fc" id="L802">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L803">                .andReturn(Collections.singletonList(node));</span>
+<span class="fc" id="L804">        expectNodeKey(resolver, node, SELECTOR_KEY);</span>
+<span class="fc" id="L805">        EasyMock.replay(resolver);</span>
+
+<span class="fc" id="L807">        final Collection&lt;NodeSelector&gt; selectors =</span>
+<span class="fc" id="L808">                model.selectAndTrackNodes(TEST_KEY, resolver);</span>
+<span class="fc" id="L809">        assertEquals(&quot;Wrong number of selectors&quot;, 1, selectors.size());</span>
+<span class="fc" id="L810">        assertEquals(&quot;Wrong selector&quot;, selector, selectors.iterator().next());</span>
+<span class="fc" id="L811">        model.untrackNode(selector);</span>
+<span class="fc" id="L812">        assertSame(&quot;Node not tracked&quot;, node, model.getTrackedNode(selector));</span>
+<span class="fc" id="L813">    }</span>
+
+    /**
+     * Tests whether all children of a node can be tracked at once.
+     */
+    @Test
+    public void testTrackChildNodes()
+    {
+<span class="fc" id="L821">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L822">        final ImmutableNode node = NodeStructureHelper.nodeForKey(root, &quot;tables&quot;);</span>
+<span class="fc" id="L823">        final String[] keys = new String[node.getChildren().size()];</span>
+<span class="fc bfc" id="L824" title="All 2 branches covered.">        for (int i = 0; i &lt; keys.length; i++)</span>
+        {
+<span class="fc" id="L826">            final ImmutableNode child = node.getChildren().get(i);</span>
+<span class="fc" id="L827">            keys[i] =</span>
+<span class="fc" id="L828">                    String.format(&quot;%s.%s(%d)&quot;, node.getNodeName(),</span>
+<span class="fc" id="L829">                            child.getNodeName(), i);</span>
+<span class="fc" id="L830">            expectNodeKey(resolver, child, keys[i]);</span>
+        }
+<span class="fc" id="L832">        EasyMock.expect(</span>
+<span class="fc" id="L833">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L834">                .andReturn(Collections.singletonList(node));</span>
+<span class="fc" id="L835">        EasyMock.replay(resolver);</span>
+
+<span class="fc" id="L837">        final Collection&lt;NodeSelector&gt; selectors =</span>
+<span class="fc" id="L838">                model.trackChildNodes(TEST_KEY, resolver);</span>
+<span class="fc" id="L839">        assertEquals(&quot;Wrong number of selectors&quot;, node.getChildren().size(),</span>
+<span class="fc" id="L840">                selectors.size());</span>
+<span class="fc" id="L841">        int idx = 0;</span>
+<span class="fc bfc" id="L842" title="All 2 branches covered.">        for (final NodeSelector sel : selectors)</span>
+        {
+<span class="fc" id="L844">            assertEquals(&quot;Wrong selector&quot;, new NodeSelector(keys[idx]), sel);</span>
+<span class="fc" id="L845">            assertEquals(&quot;Wrong tracked node for &quot; + sel, node.getChildren()</span>
+<span class="fc" id="L846">                    .get(idx), model.getTrackedNode(sel));</span>
+<span class="fc" id="L847">            idx++;</span>
+<span class="fc" id="L848">        }</span>
+<span class="fc" id="L849">    }</span>
+
+    /**
+     * Checks trackChildNodes() if the passed in key has a result set which
+     * causes the operation to be aborted.
+     *
+     * @param queryResult the result set of the key
+     */
+    private void checkTrackChildNodesNoResult(final List&lt;ImmutableNode&gt; queryResult)
+    {
+<span class="fc" id="L859">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L860">        EasyMock.expect(</span>
+<span class="fc" id="L861">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L862">                .andReturn(queryResult);</span>
+<span class="fc" id="L863">        EasyMock.replay(resolver);</span>
+<span class="fc" id="L864">        final TreeData oldData = model.getTreeData();</span>
+
+<span class="fc" id="L866">        assertTrue(&quot;Got selectors&quot;, model.trackChildNodes(TEST_KEY, resolver)</span>
+<span class="fc" id="L867">                .isEmpty());</span>
+<span class="fc" id="L868">        assertSame(&quot;Model was changed&quot;, oldData, model.getTreeData());</span>
+<span class="fc" id="L869">    }</span>
+
+    /**
+     * Tests trackChildNodes() for a key that does not return any results.
+     */
+    @Test
+    public void testTrackChildNodesNoResults()
+    {
+<span class="fc" id="L877">        checkTrackChildNodesNoResult(Collections.&lt;ImmutableNode&gt; emptyList());</span>
+<span class="fc" id="L878">    }</span>
+
+    /**
+     * Tests trackChildNodes() for a key that returns more than a single result.
+     */
+    @Test
+    public void testTrackChildNodesMultipleResults()
+    {
+<span class="fc" id="L886">        checkTrackChildNodesNoResult(Arrays.asList(</span>
+<span class="fc" id="L887">                NodeStructureHelper.nodeForKey(root, &quot;tables/table(0)&quot;),</span>
+<span class="fc" id="L888">                NodeStructureHelper.nodeForKey(root, &quot;tables/table(1)&quot;)));</span>
+<span class="fc" id="L889">    }</span>
+
+    /**
+     * Tests trackChildNodes() for a key pointing to a node with no children.
+     */
+    @Test
+    public void testTrackChildNodesNodeWithNoChildren()
+    {
+<span class="fc" id="L897">        checkTrackChildNodesNoResult(Collections</span>
+<span class="fc" id="L898">                .singletonList(NodeStructureHelper.nodeForKey(root,</span>
+                        &quot;tables/table(0)/name&quot;)));
+<span class="fc" id="L900">    }</span>
+
+    /**
+     * Tests whether an existing child of a selected node can be tracked.
+     */
+    @Test
+    public void testTrackChildNodeWithCreationExisting()
+    {
+<span class="fc" id="L908">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L909">        final String childName = &quot;name&quot;;</span>
+<span class="fc" id="L910">        final String parentKey = &quot;tables/table(0)&quot;;</span>
+<span class="fc" id="L911">        final String childKey = parentKey + &quot;/&quot; + childName;</span>
+<span class="fc" id="L912">        final ImmutableNode node = NodeStructureHelper.nodeForKey(model, parentKey);</span>
+<span class="fc" id="L913">        final ImmutableNode child = NodeStructureHelper.nodeForKey(node, childName);</span>
+<span class="fc" id="L914">        EasyMock.expect(</span>
+<span class="fc" id="L915">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L916">                .andReturn(Collections.singletonList(node));</span>
+<span class="fc" id="L917">        expectNodeKey(resolver, child, childKey);</span>
+<span class="fc" id="L918">        EasyMock.replay(resolver);</span>
+
+<span class="fc" id="L920">        final NodeSelector childSelector =</span>
+<span class="fc" id="L921">                model.trackChildNodeWithCreation(TEST_KEY, childName, resolver);</span>
+<span class="fc" id="L922">        assertEquals(&quot;Wrong selector&quot;, new NodeSelector(childKey),</span>
+                childSelector);
+<span class="fc" id="L924">        assertSame(&quot;Wrong tracked node&quot;, child,</span>
+<span class="fc" id="L925">                model.getTrackedNode(childSelector));</span>
+<span class="fc" id="L926">    }</span>
+
+    /**
+     * Tests whether a child node to be tracked is created if necessary.
+     */
+    @Test
+    public void testTrackChildNodeWithCreationNonExisting()
+    {
+<span class="fc" id="L934">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L935">        final String childName = &quot;space&quot;;</span>
+<span class="fc" id="L936">        final String parentKey = &quot;tables/table(0)&quot;;</span>
+<span class="fc" id="L937">        final String childKey = parentKey + &quot;/&quot; + childName;</span>
+<span class="fc" id="L938">        final ImmutableNode node = NodeStructureHelper.nodeForKey(model, parentKey);</span>
+<span class="fc" id="L939">        EasyMock.expect(</span>
+<span class="fc" id="L940">                resolver.resolveNodeKey(root, TEST_KEY, model.getNodeHandler()))</span>
+<span class="fc" id="L941">                .andReturn(Collections.singletonList(node));</span>
+<span class="fc" id="L942">        EasyMock.expect(</span>
+<span class="fc" id="L943">                resolver.nodeKey(EasyMock.anyObject(ImmutableNode.class),</span>
+<span class="fc" id="L944">                        EasyMock.eq(new HashMap&lt;ImmutableNode, String&gt;()),</span>
+<span class="fc" id="L945">                        EasyMock.anyObject(TreeData.class)))</span>
+<span class="fc" id="L946">                .andReturn(childKey);</span>
+<span class="fc" id="L947">        EasyMock.replay(resolver);</span>
+
+<span class="fc" id="L949">        final NodeSelector childSelector =</span>
+<span class="fc" id="L950">                model.trackChildNodeWithCreation(TEST_KEY, childName, resolver);</span>
+<span class="fc" id="L951">        assertEquals(&quot;Wrong selector&quot;, new NodeSelector(childKey),</span>
+                childSelector);
+<span class="fc" id="L953">        final ImmutableNode child = model.getTrackedNode(childSelector);</span>
+<span class="fc" id="L954">        assertEquals(&quot;Wrong child name&quot;, childName, child.getNodeName());</span>
+<span class="fc" id="L955">        assertNull(&quot;Got a value&quot;, child.getValue());</span>
+<span class="fc" id="L956">        final ImmutableNode parent = model.getNodeHandler().getParent(child);</span>
+<span class="fc" id="L957">        assertEquals(&quot;Wrong parent node&quot;, &quot;table&quot;, parent.getNodeName());</span>
+<span class="fc" id="L958">        assertEquals(&quot;Wrong node path&quot;, child,</span>
+<span class="fc" id="L959">                NodeStructureHelper.nodeForKey(model, childKey));</span>
+<span class="fc" id="L960">    }</span>
+
+    /**
+     * Helper method for testing trackChildNodeWithCreation() if invalid query
+     * results are generated.
+     *
+     * @param queryResult the result set of the key
+     */
+    private void checkTrackChildNodeWithCreationInvalidKey(
+            final List&lt;ImmutableNode&gt; queryResult)
+    {
+<span class="fc" id="L971">        final NodeKeyResolver&lt;ImmutableNode&gt; resolver = createResolver(false);</span>
+<span class="fc" id="L972">        EasyMock.expect(</span>
+<span class="fc" id="L973">                resolver.resolveNodeKey(model.getRootNode(), TEST_KEY,</span>
+<span class="fc" id="L974">                        model.getNodeHandler())).andReturn(queryResult);</span>
+<span class="fc" id="L975">        EasyMock.replay(resolver);</span>
+<span class="nc" id="L976">        model.trackChildNodeWithCreation(TEST_KEY, &quot;someChild&quot;, resolver);</span>
+<span class="nc" id="L977">    }</span>
+
+    /**
+     * Tests trackChildNodeWithCreation() if the passed in key does not select a
+     * node.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testTrackChildNodeWithCreationNoResults()
+    {
+<span class="nc" id="L986">        checkTrackChildNodeWithCreationInvalidKey(new ArrayList&lt;ImmutableNode&gt;());</span>
+<span class="nc" id="L987">    }</span>
+
+    /**
+     * Tests trackChildNodeWithCreation() if the passed in key selects multiple
+     * nodes.
+     */
+    @Test(expected = ConfigurationRuntimeException.class)
+    public void testTrackChildNodeWithCreationMultipleResults()
+    {
+<span class="fc" id="L996">        final List&lt;ImmutableNode&gt; nodes =</span>
+<span class="fc" id="L997">                Arrays.asList(</span>
+<span class="fc" id="L998">                        NodeStructureHelper.nodeForKey(root, &quot;tables/table(0)&quot;),</span>
+<span class="fc" id="L999">                        NodeStructureHelper.nodeForKey(root, &quot;tables/table(1)&quot;));</span>
+<span class="nc" id="L1000">        checkTrackChildNodeWithCreationInvalidKey(nodes);</span>
+<span class="nc" id="L1001">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

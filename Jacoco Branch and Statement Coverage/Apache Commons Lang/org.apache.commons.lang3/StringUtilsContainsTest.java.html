@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringUtilsContainsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">StringUtilsContainsTest.java</span></div><h1>StringUtilsContainsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Locale;
+
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.DefaultLocale;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.StringUtils} - Contains methods
+ */
+<span class="fc" id="L31">public class StringUtilsContainsTest  {</span>
+    /**
+     * Supplementary character U+20000
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    private static final String CharU20000 = &quot;\uD840\uDC00&quot;;
+    /**
+     * Supplementary character U+20001
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    private static final String CharU20001 = &quot;\uD840\uDC01&quot;;
+    /**
+     * Incomplete supplementary character U+20000, high surrogate only.
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    private static final String CharUSuppCharHigh = &quot;\uDC00&quot;;
+
+    /**
+     * Incomplete supplementary character U+20000, low surrogate only.
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    private static final String CharUSuppCharLow = &quot;\uD840&quot;;
+
+    @Test
+    public void testContains_Char() {
+<span class="fc" id="L56">        assertFalse(StringUtils.contains(null, ' '));</span>
+<span class="fc" id="L57">        assertFalse(StringUtils.contains(&quot;&quot;, ' '));</span>
+<span class="fc" id="L58">        assertFalse(StringUtils.contains(&quot;&quot;, null));</span>
+<span class="fc" id="L59">        assertFalse(StringUtils.contains(null, null));</span>
+<span class="fc" id="L60">        assertTrue(StringUtils.contains(&quot;abc&quot;, 'a'));</span>
+<span class="fc" id="L61">        assertTrue(StringUtils.contains(&quot;abc&quot;, 'b'));</span>
+<span class="fc" id="L62">        assertTrue(StringUtils.contains(&quot;abc&quot;, 'c'));</span>
+<span class="fc" id="L63">        assertFalse(StringUtils.contains(&quot;abc&quot;, 'z'));</span>
+<span class="fc" id="L64">    }</span>
+
+    @Test
+    public void testContains_String() {
+<span class="fc" id="L68">        assertFalse(StringUtils.contains(null, null));</span>
+<span class="fc" id="L69">        assertFalse(StringUtils.contains(null, &quot;&quot;));</span>
+<span class="fc" id="L70">        assertFalse(StringUtils.contains(null, &quot;a&quot;));</span>
+<span class="fc" id="L71">        assertFalse(StringUtils.contains(&quot;&quot;, null));</span>
+<span class="fc" id="L72">        assertTrue(StringUtils.contains(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L73">        assertFalse(StringUtils.contains(&quot;&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L74">        assertTrue(StringUtils.contains(&quot;abc&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L75">        assertTrue(StringUtils.contains(&quot;abc&quot;, &quot;b&quot;));</span>
+<span class="fc" id="L76">        assertTrue(StringUtils.contains(&quot;abc&quot;, &quot;c&quot;));</span>
+<span class="fc" id="L77">        assertTrue(StringUtils.contains(&quot;abc&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L78">        assertFalse(StringUtils.contains(&quot;abc&quot;, &quot;z&quot;));</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContains_StringWithBadSupplementaryChars() {
+        // Test edge case: 1/2 of a (broken) supplementary char
+<span class="fc" id="L87">        assertFalse(StringUtils.contains(CharUSuppCharHigh, CharU20001));</span>
+<span class="fc" id="L88">        assertFalse(StringUtils.contains(CharUSuppCharLow, CharU20001));</span>
+<span class="fc" id="L89">        assertFalse(StringUtils.contains(CharU20001, CharUSuppCharHigh));</span>
+<span class="fc" id="L90">        assertEquals(0, CharU20001.indexOf(CharUSuppCharLow));</span>
+<span class="fc" id="L91">        assertTrue(StringUtils.contains(CharU20001, CharUSuppCharLow));</span>
+<span class="fc" id="L92">        assertTrue(StringUtils.contains(CharU20001 + CharUSuppCharLow + &quot;a&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L93">        assertTrue(StringUtils.contains(CharU20001 + CharUSuppCharHigh + &quot;a&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContains_StringWithSupplementaryChars() {
+<span class="fc" id="L101">        assertTrue(StringUtils.contains(CharU20000 + CharU20001, CharU20000));</span>
+<span class="fc" id="L102">        assertTrue(StringUtils.contains(CharU20000 + CharU20001, CharU20001));</span>
+<span class="fc" id="L103">        assertTrue(StringUtils.contains(CharU20000, CharU20000));</span>
+<span class="fc" id="L104">        assertFalse(StringUtils.contains(CharU20000, CharU20001));</span>
+<span class="fc" id="L105">    }</span>
+
+    @Test
+    public void testContainsAny_StringCharArray() {
+<span class="fc" id="L109">        assertFalse(StringUtils.containsAny(null, (char[]) null));</span>
+<span class="fc" id="L110">        assertFalse(StringUtils.containsAny(null, new char[0]));</span>
+<span class="fc" id="L111">        assertFalse(StringUtils.containsAny(null, 'a', 'b'));</span>
+
+<span class="fc" id="L113">        assertFalse(StringUtils.containsAny(&quot;&quot;, (char[]) null));</span>
+<span class="fc" id="L114">        assertFalse(StringUtils.containsAny(&quot;&quot;, new char[0]));</span>
+<span class="fc" id="L115">        assertFalse(StringUtils.containsAny(&quot;&quot;, 'a', 'b'));</span>
+
+<span class="fc" id="L117">        assertFalse(StringUtils.containsAny(&quot;zzabyycdxx&quot;, (char[]) null));</span>
+<span class="fc" id="L118">        assertFalse(StringUtils.containsAny(&quot;zzabyycdxx&quot;, new char[0]));</span>
+<span class="fc" id="L119">        assertTrue(StringUtils.containsAny(&quot;zzabyycdxx&quot;, 'z', 'a'));</span>
+<span class="fc" id="L120">        assertTrue(StringUtils.containsAny(&quot;zzabyycdxx&quot;, 'b', 'y'));</span>
+<span class="fc" id="L121">        assertTrue(StringUtils.containsAny(&quot;zzabyycdxx&quot;, 'z', 'y'));</span>
+<span class="fc" id="L122">        assertFalse(StringUtils.containsAny(&quot;ab&quot;, 'z'));</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsAny_StringCharArrayWithBadSupplementaryChars() {
+        // Test edge case: 1/2 of a (broken) supplementary char
+<span class="fc" id="L131">        assertFalse(StringUtils.containsAny(CharUSuppCharHigh, CharU20001.toCharArray()));</span>
+<span class="fc" id="L132">        assertFalse(StringUtils.containsAny(&quot;abc&quot; + CharUSuppCharHigh + &quot;xyz&quot;, CharU20001.toCharArray()));</span>
+<span class="fc" id="L133">        assertEquals(-1, CharUSuppCharLow.indexOf(CharU20001));</span>
+<span class="fc" id="L134">        assertFalse(StringUtils.containsAny(CharUSuppCharLow, CharU20001.toCharArray()));</span>
+<span class="fc" id="L135">        assertFalse(StringUtils.containsAny(CharU20001, CharUSuppCharHigh.toCharArray()));</span>
+<span class="fc" id="L136">        assertEquals(0, CharU20001.indexOf(CharUSuppCharLow));</span>
+<span class="fc" id="L137">        assertTrue(StringUtils.containsAny(CharU20001, CharUSuppCharLow.toCharArray()));</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsAny_StringCharArrayWithSupplementaryChars() {
+<span class="fc" id="L145">        assertTrue(StringUtils.containsAny(CharU20000 + CharU20001, CharU20000.toCharArray()));</span>
+<span class="fc" id="L146">        assertTrue(StringUtils.containsAny(&quot;a&quot; + CharU20000 + CharU20001, &quot;a&quot;.toCharArray()));</span>
+<span class="fc" id="L147">        assertTrue(StringUtils.containsAny(CharU20000 + &quot;a&quot; + CharU20001, &quot;a&quot;.toCharArray()));</span>
+<span class="fc" id="L148">        assertTrue(StringUtils.containsAny(CharU20000 + CharU20001 + &quot;a&quot;, &quot;a&quot;.toCharArray()));</span>
+<span class="fc" id="L149">        assertTrue(StringUtils.containsAny(CharU20000 + CharU20001, CharU20001.toCharArray()));</span>
+<span class="fc" id="L150">        assertTrue(StringUtils.containsAny(CharU20000, CharU20000.toCharArray()));</span>
+        // Sanity check:
+<span class="fc" id="L152">        assertEquals(-1, CharU20000.indexOf(CharU20001));</span>
+<span class="fc" id="L153">        assertEquals(0, CharU20000.indexOf(CharU20001.charAt(0)));</span>
+<span class="fc" id="L154">        assertEquals(-1, CharU20000.indexOf(CharU20001.charAt(1)));</span>
+        // Test:
+<span class="fc" id="L156">        assertFalse(StringUtils.containsAny(CharU20000, CharU20001.toCharArray()));</span>
+<span class="fc" id="L157">        assertFalse(StringUtils.containsAny(CharU20001, CharU20000.toCharArray()));</span>
+<span class="fc" id="L158">    }</span>
+
+    @Test
+    public void testContainsAny_StringString() {
+<span class="fc" id="L162">        assertFalse(StringUtils.containsAny(null, (String) null));</span>
+<span class="fc" id="L163">        assertFalse(StringUtils.containsAny(null, &quot;&quot;));</span>
+<span class="fc" id="L164">        assertFalse(StringUtils.containsAny(null, &quot;ab&quot;));</span>
+
+<span class="fc" id="L166">        assertFalse(StringUtils.containsAny(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L167">        assertFalse(StringUtils.containsAny(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L168">        assertFalse(StringUtils.containsAny(&quot;&quot;, &quot;ab&quot;));</span>
+
+<span class="fc" id="L170">        assertFalse(StringUtils.containsAny(&quot;zzabyycdxx&quot;, (String) null));</span>
+<span class="fc" id="L171">        assertFalse(StringUtils.containsAny(&quot;zzabyycdxx&quot;, &quot;&quot;));</span>
+<span class="fc" id="L172">        assertTrue(StringUtils.containsAny(&quot;zzabyycdxx&quot;, &quot;za&quot;));</span>
+<span class="fc" id="L173">        assertTrue(StringUtils.containsAny(&quot;zzabyycdxx&quot;, &quot;by&quot;));</span>
+<span class="fc" id="L174">        assertTrue(StringUtils.containsAny(&quot;zzabyycdxx&quot;, &quot;zy&quot;));</span>
+<span class="fc" id="L175">        assertFalse(StringUtils.containsAny(&quot;ab&quot;, &quot;z&quot;));</span>
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsAny_StringWithBadSupplementaryChars() {
+        // Test edge case: 1/2 of a (broken) supplementary char
+<span class="fc" id="L184">        assertFalse(StringUtils.containsAny(CharUSuppCharHigh, CharU20001));</span>
+<span class="fc" id="L185">        assertEquals(-1, CharUSuppCharLow.indexOf(CharU20001));</span>
+<span class="fc" id="L186">        assertFalse(StringUtils.containsAny(CharUSuppCharLow, CharU20001));</span>
+<span class="fc" id="L187">        assertFalse(StringUtils.containsAny(CharU20001, CharUSuppCharHigh));</span>
+<span class="fc" id="L188">        assertEquals(0, CharU20001.indexOf(CharUSuppCharLow));</span>
+<span class="fc" id="L189">        assertTrue(StringUtils.containsAny(CharU20001, CharUSuppCharLow));</span>
+<span class="fc" id="L190">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsAny_StringWithSupplementaryChars() {
+<span class="fc" id="L197">        assertTrue(StringUtils.containsAny(CharU20000 + CharU20001, CharU20000));</span>
+<span class="fc" id="L198">        assertTrue(StringUtils.containsAny(CharU20000 + CharU20001, CharU20001));</span>
+<span class="fc" id="L199">        assertTrue(StringUtils.containsAny(CharU20000, CharU20000));</span>
+        // Sanity check:
+<span class="fc" id="L201">        assertEquals(-1, CharU20000.indexOf(CharU20001));</span>
+<span class="fc" id="L202">        assertEquals(0, CharU20000.indexOf(CharU20001.charAt(0)));</span>
+<span class="fc" id="L203">        assertEquals(-1, CharU20000.indexOf(CharU20001.charAt(1)));</span>
+        // Test:
+<span class="fc" id="L205">        assertFalse(StringUtils.containsAny(CharU20000, CharU20001));</span>
+<span class="fc" id="L206">        assertFalse(StringUtils.containsAny(CharU20001, CharU20000));</span>
+<span class="fc" id="L207">    }</span>
+
+    @Test
+    public void testContainsAny_StringStringArray() {
+<span class="fc" id="L211">        assertFalse(StringUtils.containsAny(null, (String[]) null));</span>
+<span class="fc" id="L212">        assertFalse(StringUtils.containsAny(null, new String[0]));</span>
+<span class="fc" id="L213">        assertFalse(StringUtils.containsAny(null, new String[] { &quot;hello&quot; }));</span>
+<span class="fc" id="L214">        assertFalse(StringUtils.containsAny(&quot;&quot;, (String[]) null));</span>
+<span class="fc" id="L215">        assertFalse(StringUtils.containsAny(&quot;&quot;, new String[0]));</span>
+<span class="fc" id="L216">        assertFalse(StringUtils.containsAny(&quot;&quot;, new String[] { &quot;hello&quot; }));</span>
+<span class="fc" id="L217">        assertFalse(StringUtils.containsAny(&quot;hello, goodbye&quot;, (String[]) null));</span>
+<span class="fc" id="L218">        assertFalse(StringUtils.containsAny(&quot;hello, goodbye&quot;, new String[0]));</span>
+<span class="fc" id="L219">        assertTrue(StringUtils.containsAny(&quot;hello, goodbye&quot;, new String[]{&quot;hello&quot;, &quot;goodbye&quot;}));</span>
+<span class="fc" id="L220">        assertTrue(StringUtils.containsAny(&quot;hello, goodbye&quot;, new String[]{&quot;hello&quot;, &quot;Goodbye&quot;}));</span>
+<span class="fc" id="L221">        assertFalse(StringUtils.containsAny(&quot;hello, goodbye&quot;, new String[]{&quot;Hello&quot;, &quot;Goodbye&quot;}));</span>
+<span class="fc" id="L222">        assertFalse(StringUtils.containsAny(&quot;hello, goodbye&quot;, new String[]{&quot;Hello&quot;, null}));</span>
+<span class="fc" id="L223">        assertFalse(StringUtils.containsAny(&quot;hello, null&quot;, new String[] { &quot;Hello&quot;, null }));</span>
+        // Javadoc examples:
+<span class="fc" id="L225">        assertTrue(StringUtils.containsAny(&quot;abcd&quot;, &quot;ab&quot;, null));</span>
+<span class="fc" id="L226">        assertTrue(StringUtils.containsAny(&quot;abcd&quot;, &quot;ab&quot;, &quot;cd&quot;));</span>
+<span class="fc" id="L227">        assertTrue(StringUtils.containsAny(&quot;abc&quot;, &quot;d&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L228">    }</span>
+
+    @DefaultLocale(language = &quot;de&quot;, country = &quot;DE&quot;)
+    @Test
+    public void testContainsIgnoreCase_LocaleIndependence() {
+<span class="fc" id="L233">        final Locale[] locales = { Locale.ENGLISH, new Locale(&quot;tr&quot;), Locale.getDefault() };</span>
+
+<span class="fc" id="L235">        final String[][] tdata = {</span>
+            { &quot;i&quot;, &quot;I&quot; },
+            { &quot;I&quot;, &quot;i&quot; },
+            { &quot;\u03C2&quot;, &quot;\u03C3&quot; },
+            { &quot;\u03A3&quot;, &quot;\u03C2&quot; },
+            { &quot;\u03A3&quot;, &quot;\u03C3&quot; },
+        };
+
+<span class="fc" id="L243">        final String[][] fdata = {</span>
+            { &quot;\u00DF&quot;, &quot;SS&quot; },
+        };
+
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        for (final Locale testLocale : locales) {</span>
+<span class="fc" id="L248">            Locale.setDefault(testLocale);</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">            for (int j = 0; j &lt; tdata.length; j++) {</span>
+<span class="fc" id="L250">                assertTrue(StringUtils.containsIgnoreCase(tdata[j][0], tdata[j][1]),</span>
+<span class="fc" id="L251">                        Locale.getDefault() + &quot;: &quot; + j + &quot; &quot; + tdata[j][0] + &quot; &quot; + tdata[j][1]);</span>
+            }
+<span class="fc bfc" id="L253" title="All 2 branches covered.">            for (int j = 0; j &lt; fdata.length; j++) {</span>
+<span class="fc" id="L254">                assertFalse(StringUtils.containsIgnoreCase(fdata[j][0], fdata[j][1]),</span>
+<span class="fc" id="L255">                        Locale.getDefault() + &quot;: &quot; + j + &quot; &quot; + fdata[j][0] + &quot; &quot; + fdata[j][1]);</span>
+            }
+        }
+<span class="fc" id="L258">    }</span>
+
+    @Test
+    public void testContainsIgnoreCase_StringString() {
+<span class="fc" id="L262">        assertFalse(StringUtils.containsIgnoreCase(null, null));</span>
+
+        // Null tests
+<span class="fc" id="L265">        assertFalse(StringUtils.containsIgnoreCase(null, &quot;&quot;));</span>
+<span class="fc" id="L266">        assertFalse(StringUtils.containsIgnoreCase(null, &quot;a&quot;));</span>
+<span class="fc" id="L267">        assertFalse(StringUtils.containsIgnoreCase(null, &quot;abc&quot;));</span>
+
+<span class="fc" id="L269">        assertFalse(StringUtils.containsIgnoreCase(&quot;&quot;, null));</span>
+<span class="fc" id="L270">        assertFalse(StringUtils.containsIgnoreCase(&quot;a&quot;, null));</span>
+<span class="fc" id="L271">        assertFalse(StringUtils.containsIgnoreCase(&quot;abc&quot;, null));</span>
+
+        // Match len = 0
+<span class="fc" id="L274">        assertTrue(StringUtils.containsIgnoreCase(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L275">        assertTrue(StringUtils.containsIgnoreCase(&quot;a&quot;, &quot;&quot;));</span>
+<span class="fc" id="L276">        assertTrue(StringUtils.containsIgnoreCase(&quot;abc&quot;, &quot;&quot;));</span>
+
+        // Match len = 1
+<span class="fc" id="L279">        assertFalse(StringUtils.containsIgnoreCase(&quot;&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L280">        assertTrue(StringUtils.containsIgnoreCase(&quot;a&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L281">        assertTrue(StringUtils.containsIgnoreCase(&quot;abc&quot;, &quot;a&quot;));</span>
+<span class="fc" id="L282">        assertFalse(StringUtils.containsIgnoreCase(&quot;&quot;, &quot;A&quot;));</span>
+<span class="fc" id="L283">        assertTrue(StringUtils.containsIgnoreCase(&quot;a&quot;, &quot;A&quot;));</span>
+<span class="fc" id="L284">        assertTrue(StringUtils.containsIgnoreCase(&quot;abc&quot;, &quot;A&quot;));</span>
+
+        // Match len &gt; 1
+<span class="fc" id="L287">        assertFalse(StringUtils.containsIgnoreCase(&quot;&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L288">        assertFalse(StringUtils.containsIgnoreCase(&quot;a&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L289">        assertTrue(StringUtils.containsIgnoreCase(&quot;xabcz&quot;, &quot;abc&quot;));</span>
+<span class="fc" id="L290">        assertFalse(StringUtils.containsIgnoreCase(&quot;&quot;, &quot;ABC&quot;));</span>
+<span class="fc" id="L291">        assertFalse(StringUtils.containsIgnoreCase(&quot;a&quot;, &quot;ABC&quot;));</span>
+<span class="fc" id="L292">        assertTrue(StringUtils.containsIgnoreCase(&quot;xabcz&quot;, &quot;ABC&quot;));</span>
+<span class="fc" id="L293">    }</span>
+
+    @Test
+    public void testContainsNone_CharArray() {
+<span class="fc" id="L297">        final String str1 = &quot;a&quot;;</span>
+<span class="fc" id="L298">        final String str2 = &quot;b&quot;;</span>
+<span class="fc" id="L299">        final String str3 = &quot;ab.&quot;;</span>
+<span class="fc" id="L300">        final char[] chars1= {'b'};</span>
+<span class="fc" id="L301">        final char[] chars2= {'.'};</span>
+<span class="fc" id="L302">        final char[] chars3= {'c', 'd'};</span>
+<span class="fc" id="L303">        final char[] emptyChars = new char[0];</span>
+<span class="fc" id="L304">        assertTrue(StringUtils.containsNone(null, (char[]) null));</span>
+<span class="fc" id="L305">        assertTrue(StringUtils.containsNone(&quot;&quot;, (char[]) null));</span>
+<span class="fc" id="L306">        assertTrue(StringUtils.containsNone(null, emptyChars));</span>
+<span class="fc" id="L307">        assertTrue(StringUtils.containsNone(str1, emptyChars));</span>
+<span class="fc" id="L308">        assertTrue(StringUtils.containsNone(&quot;&quot;, emptyChars));</span>
+<span class="fc" id="L309">        assertTrue(StringUtils.containsNone(&quot;&quot;, chars1));</span>
+<span class="fc" id="L310">        assertTrue(StringUtils.containsNone(str1, chars1));</span>
+<span class="fc" id="L311">        assertTrue(StringUtils.containsNone(str1, chars2));</span>
+<span class="fc" id="L312">        assertTrue(StringUtils.containsNone(str1, chars3));</span>
+<span class="fc" id="L313">        assertFalse(StringUtils.containsNone(str2, chars1));</span>
+<span class="fc" id="L314">        assertTrue(StringUtils.containsNone(str2, chars2));</span>
+<span class="fc" id="L315">        assertTrue(StringUtils.containsNone(str2, chars3));</span>
+<span class="fc" id="L316">        assertFalse(StringUtils.containsNone(str3, chars1));</span>
+<span class="fc" id="L317">        assertFalse(StringUtils.containsNone(str3, chars2));</span>
+<span class="fc" id="L318">        assertTrue(StringUtils.containsNone(str3, chars3));</span>
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsNone_CharArrayWithBadSupplementaryChars() {
+        // Test edge case: 1/2 of a (broken) supplementary char
+<span class="fc" id="L327">        assertTrue(StringUtils.containsNone(CharUSuppCharHigh, CharU20001.toCharArray()));</span>
+<span class="fc" id="L328">        assertEquals(-1, CharUSuppCharLow.indexOf(CharU20001));</span>
+<span class="fc" id="L329">        assertTrue(StringUtils.containsNone(CharUSuppCharLow, CharU20001.toCharArray()));</span>
+<span class="fc" id="L330">        assertEquals(-1, CharU20001.indexOf(CharUSuppCharHigh));</span>
+<span class="fc" id="L331">        assertTrue(StringUtils.containsNone(CharU20001, CharUSuppCharHigh.toCharArray()));</span>
+<span class="fc" id="L332">        assertEquals(0, CharU20001.indexOf(CharUSuppCharLow));</span>
+<span class="fc" id="L333">        assertFalse(StringUtils.containsNone(CharU20001, CharUSuppCharLow.toCharArray()));</span>
+<span class="fc" id="L334">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsNone_CharArrayWithSupplementaryChars() {
+<span class="fc" id="L341">        assertFalse(StringUtils.containsNone(CharU20000 + CharU20001, CharU20000.toCharArray()));</span>
+<span class="fc" id="L342">        assertFalse(StringUtils.containsNone(CharU20000 + CharU20001, CharU20001.toCharArray()));</span>
+<span class="fc" id="L343">        assertFalse(StringUtils.containsNone(CharU20000, CharU20000.toCharArray()));</span>
+        // Sanity check:
+<span class="fc" id="L345">        assertEquals(-1, CharU20000.indexOf(CharU20001));</span>
+<span class="fc" id="L346">        assertEquals(0, CharU20000.indexOf(CharU20001.charAt(0)));</span>
+<span class="fc" id="L347">        assertEquals(-1, CharU20000.indexOf(CharU20001.charAt(1)));</span>
+        // Test:
+<span class="fc" id="L349">        assertTrue(StringUtils.containsNone(CharU20000, CharU20001.toCharArray()));</span>
+<span class="fc" id="L350">        assertTrue(StringUtils.containsNone(CharU20001, CharU20000.toCharArray()));</span>
+<span class="fc" id="L351">    }</span>
+
+    @Test
+    public void testContainsNone_String() {
+<span class="fc" id="L355">        final String str1 = &quot;a&quot;;</span>
+<span class="fc" id="L356">        final String str2 = &quot;b&quot;;</span>
+<span class="fc" id="L357">        final String str3 = &quot;ab.&quot;;</span>
+<span class="fc" id="L358">        final String chars1= &quot;b&quot;;</span>
+<span class="fc" id="L359">        final String chars2= &quot;.&quot;;</span>
+<span class="fc" id="L360">        final String chars3= &quot;cd&quot;;</span>
+<span class="fc" id="L361">        assertTrue(StringUtils.containsNone(null, (String) null));</span>
+<span class="fc" id="L362">        assertTrue(StringUtils.containsNone(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L363">        assertTrue(StringUtils.containsNone(null, &quot;&quot;));</span>
+<span class="fc" id="L364">        assertTrue(StringUtils.containsNone(str1, &quot;&quot;));</span>
+<span class="fc" id="L365">        assertTrue(StringUtils.containsNone(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L366">        assertTrue(StringUtils.containsNone(&quot;&quot;, chars1));</span>
+<span class="fc" id="L367">        assertTrue(StringUtils.containsNone(str1, chars1));</span>
+<span class="fc" id="L368">        assertTrue(StringUtils.containsNone(str1, chars2));</span>
+<span class="fc" id="L369">        assertTrue(StringUtils.containsNone(str1, chars3));</span>
+<span class="fc" id="L370">        assertFalse(StringUtils.containsNone(str2, chars1));</span>
+<span class="fc" id="L371">        assertTrue(StringUtils.containsNone(str2, chars2));</span>
+<span class="fc" id="L372">        assertTrue(StringUtils.containsNone(str2, chars3));</span>
+<span class="fc" id="L373">        assertFalse(StringUtils.containsNone(str3, chars1));</span>
+<span class="fc" id="L374">        assertFalse(StringUtils.containsNone(str3, chars2));</span>
+<span class="fc" id="L375">        assertTrue(StringUtils.containsNone(str3, chars3));</span>
+<span class="fc" id="L376">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsNone_StringWithBadSupplementaryChars() {
+        // Test edge case: 1/2 of a (broken) supplementary char
+<span class="fc" id="L384">        assertTrue(StringUtils.containsNone(CharUSuppCharHigh, CharU20001));</span>
+<span class="fc" id="L385">        assertEquals(-1, CharUSuppCharLow.indexOf(CharU20001));</span>
+<span class="fc" id="L386">        assertTrue(StringUtils.containsNone(CharUSuppCharLow, CharU20001));</span>
+<span class="fc" id="L387">        assertEquals(-1, CharU20001.indexOf(CharUSuppCharHigh));</span>
+<span class="fc" id="L388">        assertTrue(StringUtils.containsNone(CharU20001, CharUSuppCharHigh));</span>
+<span class="fc" id="L389">        assertEquals(0, CharU20001.indexOf(CharUSuppCharLow));</span>
+<span class="fc" id="L390">        assertFalse(StringUtils.containsNone(CharU20001, CharUSuppCharLow));</span>
+<span class="fc" id="L391">    }</span>
+
+    /**
+     * See http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html
+     */
+    @Test
+    public void testContainsNone_StringWithSupplementaryChars() {
+<span class="fc" id="L398">        assertFalse(StringUtils.containsNone(CharU20000 + CharU20001, CharU20000));</span>
+<span class="fc" id="L399">        assertFalse(StringUtils.containsNone(CharU20000 + CharU20001, CharU20001));</span>
+<span class="fc" id="L400">        assertFalse(StringUtils.containsNone(CharU20000, CharU20000));</span>
+        // Sanity check:
+<span class="fc" id="L402">        assertEquals(-1, CharU20000.indexOf(CharU20001));</span>
+<span class="fc" id="L403">        assertEquals(0, CharU20000.indexOf(CharU20001.charAt(0)));</span>
+<span class="fc" id="L404">        assertEquals(-1, CharU20000.indexOf(CharU20001.charAt(1)));</span>
+        // Test:
+<span class="fc" id="L406">        assertTrue(StringUtils.containsNone(CharU20000, CharU20001));</span>
+<span class="fc" id="L407">        assertTrue(StringUtils.containsNone(CharU20001, CharU20000));</span>
+<span class="fc" id="L408">    }</span>
+
+    @Test
+    public void testContainsOnly_CharArray() {
+<span class="fc" id="L412">        final String str1 = &quot;a&quot;;</span>
+<span class="fc" id="L413">        final String str2 = &quot;b&quot;;</span>
+<span class="fc" id="L414">        final String str3 = &quot;ab&quot;;</span>
+<span class="fc" id="L415">        final char[] chars1= {'b'};</span>
+<span class="fc" id="L416">        final char[] chars2= {'a'};</span>
+<span class="fc" id="L417">        final char[] chars3= {'a', 'b'};</span>
+<span class="fc" id="L418">        final char[] emptyChars = new char[0];</span>
+<span class="fc" id="L419">        assertFalse(StringUtils.containsOnly(null, (char[]) null));</span>
+<span class="fc" id="L420">        assertFalse(StringUtils.containsOnly(&quot;&quot;, (char[]) null));</span>
+<span class="fc" id="L421">        assertFalse(StringUtils.containsOnly(null, emptyChars));</span>
+<span class="fc" id="L422">        assertFalse(StringUtils.containsOnly(str1, emptyChars));</span>
+<span class="fc" id="L423">        assertTrue(StringUtils.containsOnly(&quot;&quot;, emptyChars));</span>
+<span class="fc" id="L424">        assertTrue(StringUtils.containsOnly(&quot;&quot;, chars1));</span>
+<span class="fc" id="L425">        assertFalse(StringUtils.containsOnly(str1, chars1));</span>
+<span class="fc" id="L426">        assertTrue(StringUtils.containsOnly(str1, chars2));</span>
+<span class="fc" id="L427">        assertTrue(StringUtils.containsOnly(str1, chars3));</span>
+<span class="fc" id="L428">        assertTrue(StringUtils.containsOnly(str2, chars1));</span>
+<span class="fc" id="L429">        assertFalse(StringUtils.containsOnly(str2, chars2));</span>
+<span class="fc" id="L430">        assertTrue(StringUtils.containsOnly(str2, chars3));</span>
+<span class="fc" id="L431">        assertFalse(StringUtils.containsOnly(str3, chars1));</span>
+<span class="fc" id="L432">        assertFalse(StringUtils.containsOnly(str3, chars2));</span>
+<span class="fc" id="L433">        assertTrue(StringUtils.containsOnly(str3, chars3));</span>
+<span class="fc" id="L434">    }</span>
+
+    @Test
+    public void testContainsOnly_String() {
+<span class="fc" id="L438">        final String str1 = &quot;a&quot;;</span>
+<span class="fc" id="L439">        final String str2 = &quot;b&quot;;</span>
+<span class="fc" id="L440">        final String str3 = &quot;ab&quot;;</span>
+<span class="fc" id="L441">        final String chars1= &quot;b&quot;;</span>
+<span class="fc" id="L442">        final String chars2= &quot;a&quot;;</span>
+<span class="fc" id="L443">        final String chars3= &quot;ab&quot;;</span>
+<span class="fc" id="L444">        assertFalse(StringUtils.containsOnly(null, (String) null));</span>
+<span class="fc" id="L445">        assertFalse(StringUtils.containsOnly(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L446">        assertFalse(StringUtils.containsOnly(null, &quot;&quot;));</span>
+<span class="fc" id="L447">        assertFalse(StringUtils.containsOnly(str1, &quot;&quot;));</span>
+<span class="fc" id="L448">        assertTrue(StringUtils.containsOnly(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L449">        assertTrue(StringUtils.containsOnly(&quot;&quot;, chars1));</span>
+<span class="fc" id="L450">        assertFalse(StringUtils.containsOnly(str1, chars1));</span>
+<span class="fc" id="L451">        assertTrue(StringUtils.containsOnly(str1, chars2));</span>
+<span class="fc" id="L452">        assertTrue(StringUtils.containsOnly(str1, chars3));</span>
+<span class="fc" id="L453">        assertTrue(StringUtils.containsOnly(str2, chars1));</span>
+<span class="fc" id="L454">        assertFalse(StringUtils.containsOnly(str2, chars2));</span>
+<span class="fc" id="L455">        assertTrue(StringUtils.containsOnly(str2, chars3));</span>
+<span class="fc" id="L456">        assertFalse(StringUtils.containsOnly(str3, chars1));</span>
+<span class="fc" id="L457">        assertFalse(StringUtils.containsOnly(str3, chars2));</span>
+<span class="fc" id="L458">        assertTrue(StringUtils.containsOnly(str3, chars3));</span>
+<span class="fc" id="L459">    }</span>
+
+    @Test
+    public void testContainsWhitespace() {
+<span class="fc" id="L463">        assertFalse( StringUtils.containsWhitespace(&quot;&quot;) );</span>
+<span class="fc" id="L464">        assertTrue( StringUtils.containsWhitespace(&quot; &quot;) );</span>
+<span class="fc" id="L465">        assertFalse( StringUtils.containsWhitespace(&quot;a&quot;) );</span>
+<span class="fc" id="L466">        assertTrue( StringUtils.containsWhitespace(&quot;a &quot;) );</span>
+<span class="fc" id="L467">        assertTrue( StringUtils.containsWhitespace(&quot; a&quot;) );</span>
+<span class="fc" id="L468">        assertTrue( StringUtils.containsWhitespace(&quot;a\t&quot;) );</span>
+<span class="fc" id="L469">        assertTrue( StringUtils.containsWhitespace(&quot;\n&quot;) );</span>
+<span class="fc" id="L470">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

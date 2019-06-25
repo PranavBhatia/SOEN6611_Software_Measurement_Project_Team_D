@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBuilderConfigurationWrapperFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestBuilderConfigurationWrapperFactory.java</span></div><h1>TestBuilderConfigurationWrapperFactory.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Collection;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.BuilderConfigurationWrapperFactory.EventSourceSupport;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.apache.commons.configuration2.event.EventSource;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code BuilderConfigurationWrapperFactory}.
+ *
+ */
+<span class="fc" id="L44">public class TestBuilderConfigurationWrapperFactory</span>
+{
+    /**
+     * Tests the default event source support level.
+     */
+    @Test
+    public void testDefaultEventSourceSupport()
+    {
+<span class="fc" id="L52">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory();
+<span class="fc" id="L54">        assertEquals(&quot;Wrong result&quot;, EventSourceSupport.NONE,</span>
+<span class="fc" id="L55">                factory.getEventSourceSupport());</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Returns a mock builder which always returns the specified configuration.
+     *
+     * @param conf the builder's result configuration
+     * @return the mock builder
+     */
+    private ConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt; createBuilderMock(
+            final BaseHierarchicalConfiguration conf)
+    {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L69">        ConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt; builder =</span>
+<span class="fc" id="L70">                EasyMock.createMock(ConfigurationBuilder.class);</span>
+        try
+        {
+<span class="fc" id="L73">            EasyMock.expect(builder.getConfiguration()).andReturn(conf)</span>
+<span class="fc" id="L74">                    .anyTimes();</span>
+        }
+<span class="nc" id="L76">        catch (final ConfigurationException e)</span>
+        {
+            // Cannot happen
+<span class="nc" id="L79">            fail(&quot;Unexpected exception: &quot; + e);</span>
+<span class="fc" id="L80">        }</span>
+<span class="fc" id="L81">        return builder;</span>
+    }
+
+    /**
+     * Tests whether the returned configuration correctly wraps the builder.
+     */
+    @Test
+    public void testConfigurationBuilderWrapper()
+    {
+<span class="fc" id="L90">        final BaseHierarchicalConfiguration conf =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L92">        final ConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt; builder =</span>
+<span class="fc" id="L93">                createBuilderMock(conf);</span>
+<span class="fc" id="L94">        EasyMock.replay(builder);</span>
+<span class="fc" id="L95">        conf.addProperty(&quot;test1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L96">        conf.addProperty(&quot;test2&quot;, &quot;42&quot;);</span>
+<span class="fc" id="L97">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory();
+<span class="fc" id="L99">        final HierarchicalConfiguration&lt;?&gt; wrapper =</span>
+<span class="fc" id="L100">                factory.createBuilderConfigurationWrapper(</span>
+                        HierarchicalConfiguration.class, builder);
+<span class="fc" id="L102">        assertEquals(&quot;Wrong value (1)&quot;, &quot;value1&quot;, wrapper.getString(&quot;test1&quot;));</span>
+<span class="fc" id="L103">        assertEquals(&quot;Wrong value (2)&quot;, 42, wrapper.getInt(&quot;test2&quot;));</span>
+<span class="fc" id="L104">        assertSame(&quot;Wrong root node&quot;, conf.getNodeModel().getNodeHandler()</span>
+<span class="fc" id="L105">                .getRootNode(), wrapper.getNodeModel().getNodeHandler()</span>
+<span class="fc" id="L106">                .getRootNode());</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Tests the factory if support for EventSource is disabled.
+     */
+    @Test
+    public void testEventSourceSupportNone()
+    {
+<span class="fc" id="L115">        final BaseHierarchicalConfiguration conf =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L117">        final ConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt; builder =</span>
+<span class="fc" id="L118">                createBuilderMock(conf);</span>
+<span class="fc" id="L119">        EasyMock.replay(builder);</span>
+<span class="fc" id="L120">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory();
+<span class="fc" id="L122">        final HierarchicalConfiguration&lt;?&gt; wrapper =</span>
+<span class="fc" id="L123">                factory.createBuilderConfigurationWrapper(</span>
+                        HierarchicalConfiguration.class, builder);
+<span class="fc" id="L125">        assertFalse(&quot;EventSource support&quot;, wrapper instanceof EventSource);</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Tests the EventSource support level 'dummy'.
+     */
+    @Test
+    public void testEventSourceSupportDummy()
+    {
+<span class="fc" id="L134">        final BaseHierarchicalConfiguration conf =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L136">        final ConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt; builder =</span>
+<span class="fc" id="L137">                createBuilderMock(conf);</span>
+<span class="fc" id="L138">        EasyMock.replay(builder);</span>
+<span class="fc" id="L139">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory(EventSourceSupport.DUMMY);
+<span class="fc" id="L141">        final EventSource src =</span>
+<span class="fc" id="L142">                (EventSource) factory.createBuilderConfigurationWrapper(</span>
+                        HierarchicalConfiguration.class, builder);
+<span class="fc" id="L144">        src.addEventListener(ConfigurationEvent.ANY, null);</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * Tests whether EventSource methods can be delegated to the builder.
+     */
+    @Test
+    public void testEventSourceSupportBuilder() throws ConfigurationException
+    {
+<span class="fc" id="L153">        final BasicConfigurationBuilder&lt;PropertiesConfiguration&gt; builder =</span>
+                new BasicConfigurationBuilder&lt;&gt;(
+                        PropertiesConfiguration.class);
+<span class="fc" id="L156">        final EventListener&lt;ConfigurationEvent&gt; l1 = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L157">        final EventListener&lt;ConfigurationEvent&gt; l2 = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L158">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory(
+                        EventSourceSupport.BUILDER);
+<span class="fc" id="L161">        final EventSource src =</span>
+<span class="fc" id="L162">                (EventSource) factory.createBuilderConfigurationWrapper(</span>
+                        Configuration.class, builder);
+
+<span class="fc" id="L165">        src.addEventListener(ConfigurationEvent.ANY, l1);</span>
+<span class="fc" id="L166">        src.addEventListener(ConfigurationEvent.ANY_HIERARCHICAL, l2);</span>
+<span class="fc" id="L167">        assertTrue(</span>
+                &quot;Wrong result for existing listener&quot;,
+<span class="fc" id="L169">                src.removeEventListener(ConfigurationEvent.ANY_HIERARCHICAL, l2));</span>
+<span class="fc" id="L170">        assertFalse(</span>
+                &quot;Wrong result for non-existing listener&quot;,
+<span class="fc" id="L172">                src.removeEventListener(ConfigurationEvent.ANY_HIERARCHICAL, l2));</span>
+<span class="fc" id="L173">        final PropertiesConfiguration config = builder.getConfiguration();</span>
+<span class="fc" id="L174">        final Collection&lt;EventListener&lt;? super ConfigurationEvent&gt;&gt; listeners =</span>
+<span class="fc" id="L175">                config.getEventListeners(ConfigurationEvent.ANY_HIERARCHICAL);</span>
+<span class="fc" id="L176">        assertTrue(&quot;Registered listener not found&quot;, listeners.contains(l1));</span>
+<span class="fc" id="L177">        assertFalse(&quot;Removed listener still found&quot;, listeners.contains(l2));</span>
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Tests whether event source support of level builder is possible even for a
+     * mock builder.
+     */
+    @Test
+    public void testEventSourceSupportMockBuilder()
+    {
+<span class="fc" id="L187">        final BaseHierarchicalConfiguration conf =</span>
+                new BaseHierarchicalConfiguration();
+<span class="fc" id="L189">        final ConfigurationBuilder&lt;BaseHierarchicalConfiguration&gt; builder =</span>
+<span class="fc" id="L190">                createBuilderMock(conf);</span>
+<span class="fc" id="L191">        final EventListenerTestImpl listener = new EventListenerTestImpl(null);</span>
+<span class="fc" id="L192">        builder.addEventListener(ConfigurationEvent.ANY, listener);</span>
+<span class="fc" id="L193">        EasyMock.replay(builder);</span>
+
+<span class="fc" id="L195">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory(EventSourceSupport.BUILDER);
+<span class="fc" id="L197">        final EventSource src =</span>
+<span class="fc" id="L198">                (EventSource) factory.createBuilderConfigurationWrapper(</span>
+                        HierarchicalConfiguration.class, builder);
+<span class="fc" id="L200">        src.addEventListener(ConfigurationEvent.ANY, listener);</span>
+<span class="fc" id="L201">        EasyMock.verify(builder);</span>
+<span class="fc" id="L202">    }</span>
+
+    /**
+     * Tries to create a wrapper without passing an interface class.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateBuilderConfigurationWrapperNoClass()
+    {
+<span class="fc" id="L210">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory(
+                        EventSourceSupport.BUILDER);
+<span class="pc" id="L213">        factory.createBuilderConfigurationWrapper(null,</span>
+<span class="fc" id="L214">                createBuilderMock(new BaseHierarchicalConfiguration()));</span>
+<span class="nc" id="L215">    }</span>
+
+    /**
+     * Tries to create a wrapper without passing a builder.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateBuilderConfigurationWrapperNoBuilder()
+    {
+<span class="fc" id="L223">        final BuilderConfigurationWrapperFactory factory =</span>
+                new BuilderConfigurationWrapperFactory();
+<span class="nc" id="L225">        factory.createBuilderConfigurationWrapper(Configuration.class, null);</span>
+<span class="nc" id="L226">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

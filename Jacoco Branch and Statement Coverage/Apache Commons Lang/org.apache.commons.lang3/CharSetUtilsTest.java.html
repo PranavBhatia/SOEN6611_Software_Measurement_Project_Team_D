@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CharSetUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">CharSetUtilsTest.java</span></div><h1>CharSetUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.CharSetUtils}.
+ */
+<span class="fc" id="L33">public class CharSetUtilsTest  {</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L38">        assertNotNull(new CharSetUtils());</span>
+<span class="fc" id="L39">        final Constructor&lt;?&gt;[] cons = CharSetUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L40">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L41">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L42">        assertTrue(Modifier.isPublic(CharSetUtils.class.getModifiers()));</span>
+<span class="fc" id="L43">        assertFalse(Modifier.isFinal(CharSetUtils.class.getModifiers()));</span>
+<span class="fc" id="L44">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testSqueeze_StringString() {
+<span class="fc" id="L49">        assertNull(CharSetUtils.squeeze(null, (String) null));</span>
+<span class="fc" id="L50">        assertNull(CharSetUtils.squeeze(null, &quot;&quot;));</span>
+
+<span class="fc" id="L52">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L53">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L54">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L56">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, (String) null));</span>
+<span class="fc" id="L57">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L58">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, &quot;a-e&quot;));</span>
+<span class="fc" id="L59">        assertEquals(&quot;helo&quot;, CharSetUtils.squeeze(&quot;hello&quot;, &quot;l-p&quot;));</span>
+<span class="fc" id="L60">        assertEquals(&quot;heloo&quot;, CharSetUtils.squeeze(&quot;helloo&quot;, &quot;l&quot;));</span>
+<span class="fc" id="L61">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;helloo&quot;, &quot;^l&quot;));</span>
+<span class="fc" id="L62">    }</span>
+
+    @Test
+    public void testSqueeze_StringStringarray() {
+<span class="fc" id="L66">        assertNull(CharSetUtils.squeeze(null, (String[]) null));</span>
+<span class="fc" id="L67">        assertNull(CharSetUtils.squeeze(null, new String[0]));</span>
+<span class="fc" id="L68">        assertNull(CharSetUtils.squeeze(null, new String[] {null}));</span>
+<span class="fc" id="L69">        assertNull(CharSetUtils.squeeze(null, new String[] {&quot;el&quot;}));</span>
+
+<span class="fc" id="L71">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;, (String[]) null));</span>
+<span class="fc" id="L72">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;));</span>
+<span class="fc" id="L73">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L74">        assertEquals(&quot;&quot;, CharSetUtils.squeeze(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L76">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, (String[]) null));</span>
+<span class="fc" id="L77">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;));</span>
+<span class="fc" id="L78">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, new String[] {null}));</span>
+<span class="fc" id="L79">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L81">        assertEquals(&quot;helo&quot;, CharSetUtils.squeeze(&quot;hello&quot;, &quot;el&quot;));</span>
+<span class="fc" id="L82">        assertEquals(&quot;hello&quot;, CharSetUtils.squeeze(&quot;hello&quot;, &quot;e&quot;));</span>
+<span class="fc" id="L83">        assertEquals(&quot;fofof&quot;, CharSetUtils.squeeze(&quot;fooffooff&quot;, &quot;of&quot;));</span>
+<span class="fc" id="L84">        assertEquals(&quot;fof&quot;, CharSetUtils.squeeze(&quot;fooooff&quot;, &quot;fo&quot;));</span>
+<span class="fc" id="L85">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testContainsAny_StringString() {
+<span class="fc" id="L90">        assertFalse(CharSetUtils.containsAny(null, (String) null));</span>
+<span class="fc" id="L91">        assertFalse(CharSetUtils.containsAny(null, &quot;&quot;));</span>
+
+<span class="fc" id="L93">        assertFalse(CharSetUtils.containsAny(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L94">        assertFalse(CharSetUtils.containsAny(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L95">        assertFalse(CharSetUtils.containsAny(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L97">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;, (String) null));</span>
+<span class="fc" id="L98">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L99">        assertTrue(CharSetUtils.containsAny(&quot;hello&quot;, &quot;a-e&quot;));</span>
+<span class="fc" id="L100">        assertTrue(CharSetUtils.containsAny(&quot;hello&quot;, &quot;l-p&quot;));</span>
+<span class="fc" id="L101">    }</span>
+
+    @Test
+    public void testContainsAny_StringStringarray() {
+<span class="fc" id="L105">        assertFalse(CharSetUtils.containsAny(null, (String[]) null));</span>
+<span class="fc" id="L106">        assertFalse(CharSetUtils.containsAny(null));</span>
+<span class="fc" id="L107">        assertFalse(CharSetUtils.containsAny(null, new String[] {null}));</span>
+<span class="fc" id="L108">        assertFalse(CharSetUtils.containsAny(null, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L110">        assertFalse(CharSetUtils.containsAny(&quot;&quot;, (String[]) null));</span>
+<span class="fc" id="L111">        assertFalse(CharSetUtils.containsAny(&quot;&quot;));</span>
+<span class="fc" id="L112">        assertFalse(CharSetUtils.containsAny(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L113">        assertFalse(CharSetUtils.containsAny(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L115">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;, (String[]) null));</span>
+<span class="fc" id="L116">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;));</span>
+<span class="fc" id="L117">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;, new String[] {null}));</span>
+<span class="fc" id="L118">        assertTrue(CharSetUtils.containsAny(&quot;hello&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L120">        assertTrue(CharSetUtils.containsAny(&quot;hello&quot;, &quot;el&quot;));</span>
+<span class="fc" id="L121">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;, &quot;x&quot;));</span>
+<span class="fc" id="L122">        assertTrue(CharSetUtils.containsAny(&quot;hello&quot;, &quot;e-i&quot;));</span>
+<span class="fc" id="L123">        assertTrue(CharSetUtils.containsAny(&quot;hello&quot;, &quot;a-z&quot;));</span>
+<span class="fc" id="L124">        assertFalse(CharSetUtils.containsAny(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L125">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testCount_StringString() {
+<span class="fc" id="L130">        assertEquals(0, CharSetUtils.count(null, (String) null));</span>
+<span class="fc" id="L131">        assertEquals(0, CharSetUtils.count(null, &quot;&quot;));</span>
+
+<span class="fc" id="L133">        assertEquals(0, CharSetUtils.count(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L134">        assertEquals(0, CharSetUtils.count(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L135">        assertEquals(0, CharSetUtils.count(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L137">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;, (String) null));</span>
+<span class="fc" id="L138">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L139">        assertEquals(1, CharSetUtils.count(&quot;hello&quot;, &quot;a-e&quot;));</span>
+<span class="fc" id="L140">        assertEquals(3, CharSetUtils.count(&quot;hello&quot;, &quot;l-p&quot;));</span>
+<span class="fc" id="L141">    }</span>
+
+    @Test
+    public void testCount_StringStringarray() {
+<span class="fc" id="L145">        assertEquals(0, CharSetUtils.count(null, (String[]) null));</span>
+<span class="fc" id="L146">        assertEquals(0, CharSetUtils.count(null));</span>
+<span class="fc" id="L147">        assertEquals(0, CharSetUtils.count(null, new String[] {null}));</span>
+<span class="fc" id="L148">        assertEquals(0, CharSetUtils.count(null, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L150">        assertEquals(0, CharSetUtils.count(&quot;&quot;, (String[]) null));</span>
+<span class="fc" id="L151">        assertEquals(0, CharSetUtils.count(&quot;&quot;));</span>
+<span class="fc" id="L152">        assertEquals(0, CharSetUtils.count(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L153">        assertEquals(0, CharSetUtils.count(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L155">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;, (String[]) null));</span>
+<span class="fc" id="L156">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;));</span>
+<span class="fc" id="L157">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;, new String[] {null}));</span>
+<span class="fc" id="L158">        assertEquals(1, CharSetUtils.count(&quot;hello&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L160">        assertEquals(3, CharSetUtils.count(&quot;hello&quot;, &quot;el&quot;));</span>
+<span class="fc" id="L161">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;, &quot;x&quot;));</span>
+<span class="fc" id="L162">        assertEquals(2, CharSetUtils.count(&quot;hello&quot;, &quot;e-i&quot;));</span>
+<span class="fc" id="L163">        assertEquals(5, CharSetUtils.count(&quot;hello&quot;, &quot;a-z&quot;));</span>
+<span class="fc" id="L164">        assertEquals(0, CharSetUtils.count(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L165">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testKeep_StringString() {
+<span class="fc" id="L170">        assertNull(CharSetUtils.keep(null, (String) null));</span>
+<span class="fc" id="L171">        assertNull(CharSetUtils.keep(null, &quot;&quot;));</span>
+
+<span class="fc" id="L173">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L174">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L175">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L177">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;hello&quot;, (String) null));</span>
+<span class="fc" id="L178">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L179">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;xyz&quot;));</span>
+<span class="fc" id="L180">        assertEquals(&quot;hello&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;a-z&quot;));</span>
+<span class="fc" id="L181">        assertEquals(&quot;hello&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;oleh&quot;));</span>
+<span class="fc" id="L182">        assertEquals(&quot;ell&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;el&quot;));</span>
+<span class="fc" id="L183">    }</span>
+
+    @Test
+    public void testKeep_StringStringarray() {
+<span class="fc" id="L187">        assertNull(CharSetUtils.keep(null, (String[]) null));</span>
+<span class="fc" id="L188">        assertNull(CharSetUtils.keep(null, new String[0]));</span>
+<span class="fc" id="L189">        assertNull(CharSetUtils.keep(null, new String[] {null}));</span>
+<span class="fc" id="L190">        assertNull(CharSetUtils.keep(null, new String[] {&quot;a-e&quot;}));</span>
+
+<span class="fc" id="L192">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;, (String[]) null));</span>
+<span class="fc" id="L193">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;));</span>
+<span class="fc" id="L194">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L195">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L197">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;hello&quot;, (String[]) null));</span>
+<span class="fc" id="L198">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;hello&quot;));</span>
+<span class="fc" id="L199">        assertEquals(&quot;&quot;, CharSetUtils.keep(&quot;hello&quot;, new String[] {null}));</span>
+<span class="fc" id="L200">        assertEquals(&quot;e&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L202">        assertEquals(&quot;e&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;a-e&quot;));</span>
+<span class="fc" id="L203">        assertEquals(&quot;ell&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;el&quot;));</span>
+<span class="fc" id="L204">        assertEquals(&quot;hello&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;elho&quot;));</span>
+<span class="fc" id="L205">        assertEquals(&quot;hello&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;a-z&quot;));</span>
+<span class="fc" id="L206">        assertEquals(&quot;----&quot;, CharSetUtils.keep(&quot;----&quot;, &quot;-&quot;));</span>
+<span class="fc" id="L207">        assertEquals(&quot;ll&quot;, CharSetUtils.keep(&quot;hello&quot;, &quot;l&quot;));</span>
+<span class="fc" id="L208">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testDelete_StringString() {
+<span class="fc" id="L213">        assertNull(CharSetUtils.delete(null, (String) null));</span>
+<span class="fc" id="L214">        assertNull(CharSetUtils.delete(null, &quot;&quot;));</span>
+
+<span class="fc" id="L216">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;, (String) null));</span>
+<span class="fc" id="L217">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;, &quot;&quot;));</span>
+<span class="fc" id="L218">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L220">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, (String) null));</span>
+<span class="fc" id="L221">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L222">        assertEquals(&quot;hllo&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;a-e&quot;));</span>
+<span class="fc" id="L223">        assertEquals(&quot;he&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;l-p&quot;));</span>
+<span class="fc" id="L224">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;z&quot;));</span>
+<span class="fc" id="L225">    }</span>
+
+    @Test
+    public void testDelete_StringStringarray() {
+<span class="fc" id="L229">        assertNull(CharSetUtils.delete(null, (String[]) null));</span>
+<span class="fc" id="L230">        assertNull(CharSetUtils.delete(null, new String[0]));</span>
+<span class="fc" id="L231">        assertNull(CharSetUtils.delete(null, new String[] {null}));</span>
+<span class="fc" id="L232">        assertNull(CharSetUtils.delete(null, new String[] {&quot;el&quot;}));</span>
+
+<span class="fc" id="L234">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;, (String[]) null));</span>
+<span class="fc" id="L235">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;));</span>
+<span class="fc" id="L236">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;, new String[] {null}));</span>
+<span class="fc" id="L237">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;&quot;, &quot;a-e&quot;));</span>
+
+<span class="fc" id="L239">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, (String[]) null));</span>
+<span class="fc" id="L240">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;));</span>
+<span class="fc" id="L241">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, new String[] {null}));</span>
+<span class="fc" id="L242">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;xyz&quot;));</span>
+
+<span class="fc" id="L244">        assertEquals(&quot;ho&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;el&quot;));</span>
+<span class="fc" id="L245">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;elho&quot;));</span>
+<span class="fc" id="L246">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L247">        assertEquals(&quot;hello&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;&quot;));</span>
+<span class="fc" id="L248">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;a-z&quot;));</span>
+<span class="fc" id="L249">        assertEquals(&quot;&quot;, CharSetUtils.delete(&quot;----&quot;, &quot;-&quot;));</span>
+<span class="fc" id="L250">        assertEquals(&quot;heo&quot;, CharSetUtils.delete(&quot;hello&quot;, &quot;l&quot;));</span>
+<span class="fc" id="L251">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractCombinerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree</a> &gt; <span class="el_source">AbstractCombinerTest.java</span></div><h1>AbstractCombinerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * A base class for testing combiner implementations. This base class provides
+ * some functionality for loading the test configurations, which are to be
+ * combined. Concrete sub classes only need to create the correct combiner
+ * object.
+ *
+ */
+<span class="fc" id="L39">public abstract class AbstractCombinerTest</span>
+{
+    /** Constant for the first test configuration. */
+<span class="fc" id="L42">    private static final File CONF1 = ConfigurationAssert.getTestFile(&quot;testcombine1.xml&quot;);</span>
+
+    /** Constant for the second test configuration. */
+<span class="fc" id="L45">    private static final File CONF2 = ConfigurationAssert.getTestFile(&quot;testcombine2.xml&quot;);</span>
+
+    /** The combiner to be tested. */
+    protected NodeCombiner combiner;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L53">        combiner = createCombiner();</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Creates the combiner to be tested. This method is called by
+     * {@code setUp()}. It must be implemented in concrete sub classes.
+     *
+     * @return the combiner to be tested
+     */
+    protected abstract NodeCombiner createCombiner();
+
+    /**
+     * Constructs a union configuration based on the source configurations.
+     *
+     * @return the union configuration
+     * @throws ConfigurationException if an error occurs
+     */
+    protected BaseHierarchicalConfiguration createCombinedConfiguration()
+            throws ConfigurationException
+    {
+<span class="fc" id="L73">        final XMLConfiguration conf1 = new XMLConfiguration();</span>
+<span class="fc" id="L74">        new FileHandler(conf1).load(CONF1);</span>
+<span class="fc" id="L75">        final XMLConfiguration conf2 = new XMLConfiguration();</span>
+<span class="fc" id="L76">        new FileHandler(conf2).load(CONF2);</span>
+<span class="fc" id="L77">        final ImmutableNode cn =</span>
+<span class="fc" id="L78">                combiner.combine(conf1.getNodeModel().getNodeHandler()</span>
+<span class="fc" id="L79">                        .getRootNode(), conf2.getNodeModel().getNodeHandler()</span>
+<span class="fc" id="L80">                        .getRootNode());</span>
+
+<span class="fc" id="L82">        final BaseHierarchicalConfiguration result = new BaseHierarchicalConfiguration();</span>
+<span class="fc" id="L83">        result.getNodeModel().setRootNode(cn);</span>
+
+<span class="fc" id="L85">        return result;</span>
+    }
+
+    /**
+     * Tests a newly created combiner.
+     */
+    @Test
+    public void testInit()
+    {
+<span class="fc" id="L94">        assertTrue(&quot;Combiner has list nodes&quot;, combiner.getListNodes().isEmpty());</span>
+<span class="fc" id="L95">        assertFalse(&quot;Node is list node&quot;, combiner</span>
+<span class="fc" id="L96">                .isListNode(NodeStructureHelper.createNode(&quot;test&quot;, null)));</span>
+<span class="fc" id="L97">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

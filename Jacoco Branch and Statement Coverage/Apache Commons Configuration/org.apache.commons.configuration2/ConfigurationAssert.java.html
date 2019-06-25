@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfigurationAssert.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">ConfigurationAssert.java</span></div><h1>ConfigurationAssert.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
+
+/**
+ * Assertions on configurations for the unit tests. This class also provides
+ * access to test files.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="nc" id="L41">public class ConfigurationAssert</span>
+{
+    /** Constant for the name of the directory with the test files. */
+    public static final String TEST_DIR_NAME = &quot;target/test-classes&quot;;
+
+    /** Constant for the name of the directory with the output files. */
+    public static final String OUT_DIR_NAME = &quot;target&quot;;
+
+    /** The directory with the test files. */
+<span class="fc" id="L50">    public static final File TEST_DIR = new File(TEST_DIR_NAME);</span>
+
+    /** The directory with the output files. */
+<span class="fc" id="L53">    public static final File OUT_DIR = new File(OUT_DIR_NAME);</span>
+
+    /**
+     * Checks the content of a configuration.
+     *
+     * @param expected the expected properties
+     * @param actual the configuration to check
+     */
+    public static void assertConfigurationEquals(final ImmutableConfiguration expected, final ImmutableConfiguration actual)
+    {
+        // check that the actual configuration contains all the properties of the expected configuration
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = expected.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L66">            final String key = it.next();</span>
+<span class="fc" id="L67">            assertTrue(&quot;The actual configuration doesn't contain the expected key '&quot; + key + &quot;'&quot;, actual.containsKey(key));</span>
+<span class="fc" id="L68">            assertEquals(&quot;Value of the '&quot; + key + &quot;' property&quot;, expected.getProperty(key), actual.getProperty(key));</span>
+<span class="fc" id="L69">        }</span>
+
+        // check that the actual configuration has no extra properties
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = actual.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L74">            final String key = it.next();</span>
+<span class="fc" id="L75">            assertTrue(&quot;The actual configuration contains an extra key '&quot; + key + &quot;'&quot;, expected.containsKey(key));</span>
+<span class="fc" id="L76">        }</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Returns a {@code File} object for the specified test file.
+     *
+     * @param name the name of the test file
+     * @return a {@code File} object pointing to that test file
+     */
+    public static File getTestFile(final String name)
+    {
+<span class="fc" id="L87">        return new File(TEST_DIR, name);</span>
+    }
+
+    /**
+     * Returns a {@code File} object for the specified out file.
+     *
+     * @param name the name of the out file
+     * @return a {@code File} object pointing to that out file
+     */
+    public static File getOutFile(final String name)
+    {
+<span class="fc" id="L98">        return new File(OUT_DIR, name);</span>
+    }
+
+    /**
+     * Returns a URL pointing to the specified test file. If the URL cannot be
+     * constructed, a runtime exception is thrown.
+     *
+     * @param name the name of the test file
+     * @return the corresponding URL
+     */
+    public static URL getTestURL(final String name)
+    {
+<span class="fc" id="L110">        return urlFromFile(getTestFile(name));</span>
+    }
+
+    /**
+     * Returns a URL pointing to the specified output file. If the URL cannot be
+     * constructed, a runtime exception is thrown.
+     *
+     * @param name the name of the output file
+     * @return the corresponding URL
+     */
+    public static URL getOutURL(final String name)
+    {
+<span class="nc" id="L122">        return urlFromFile(getOutFile(name));</span>
+    }
+
+    /**
+     * Helper method for testing the equals() implementation of a class. It is
+     * also checked, whether hashCode() is compatible with equals().
+     *
+     * @param o1 test object 1
+     * @param o2 test object 2
+     * @param expEquals the expected result of equals()
+     */
+    public static void checkEquals(final Object o1, final Object o2, final boolean expEquals)
+    {
+<span class="fc" id="L135">        assertEquals(&quot;Wrong result of equals()&quot;, expEquals, o1.equals(o2));</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (o2 != null)</span>
+        {
+<span class="fc" id="L138">            assertEquals(&quot;Not symmetric&quot;, expEquals, o2.equals(o1));</span>
+        }
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        if (expEquals)</span>
+        {
+<span class="fc" id="L142">            assertEquals(&quot;Different hash codes&quot;, o1.hashCode(), o2.hashCode());</span>
+        }
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Returns a list with all keys defined for the specified configuration.
+     *
+     * @param config the configuration
+     * @return a list with all keys of this configuration
+     */
+    public static List&lt;String&gt; keysToList(final ImmutableConfiguration config)
+    {
+<span class="fc" id="L154">        final List&lt;String&gt; keyList = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L155">        appendKeys(config, keyList);</span>
+<span class="fc" id="L156">        return keyList;</span>
+    }
+
+    /**
+     * Returns a set with all keys defined for the specified configuration.
+     *
+     * @param config the configuration
+     * @return a set with all keys of this configuration
+     */
+    public static Set&lt;String&gt; keysToSet(final ImmutableConfiguration config)
+    {
+<span class="fc" id="L167">        final Set&lt;String&gt; keySet = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L168">        appendKeys(config, keySet);</span>
+<span class="fc" id="L169">        return keySet;</span>
+    }
+
+    /**
+     * Appends all keys in the specified configuration to the given collection.
+     *
+     * @param config the configuration
+     * @param collection the target collection
+     */
+    public static void appendKeys(final ImmutableConfiguration config,
+            final Collection&lt;String&gt; collection)
+    {
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        for (final Iterator&lt;String&gt; it = config.getKeys(); it.hasNext();)</span>
+        {
+<span class="fc" id="L183">            collection.add(it.next());</span>
+        }
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * Helper method for converting a file to a URL.
+     *
+     * @param file the file
+     * @return the corresponding URL
+     * @throws ConfigurationRuntimeException if the URL cannot be constructed
+     */
+    private static URL urlFromFile(final File file)
+    {
+        try
+        {
+<span class="fc" id="L198">            return file.toURI().toURL();</span>
+        }
+<span class="nc" id="L200">        catch (final MalformedURLException mex)</span>
+        {
+<span class="nc" id="L202">            throw new ConfigurationRuntimeException(mex);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

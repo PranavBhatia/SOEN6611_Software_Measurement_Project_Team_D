@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestConfigurationNodePointer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.tree.xpath</a> &gt; <span class="el_source">TestConfigurationNodePointer.java</span></div><h1>TestConfigurationNodePointer.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.tree.xpath;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Locale;
+
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.jxpath.ri.QName;
+import org.apache.commons.jxpath.ri.model.NodeIterator;
+import org.apache.commons.jxpath.ri.model.NodePointer;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test class for {@code ConfigurationNodePointer}.
+ *
+ */
+<span class="fc" id="L36">public class TestConfigurationNodePointer extends AbstractXPathTest</span>
+{
+    /** Stores the node pointer to be tested. */
+    private ConfigurationNodePointer&lt;ImmutableNode&gt; pointer;
+
+    @Override
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L45">        super.setUp();</span>
+<span class="fc" id="L46">        pointer =</span>
+                new ConfigurationNodePointer&lt;&gt;(root,
+<span class="fc" id="L48">                        Locale.getDefault(), handler);</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * Tests comparing child node pointers for child nodes.
+     */
+    @Test
+    public void testCompareChildNodePointersChildren()
+    {
+<span class="fc" id="L57">        final NodePointer p1 = new ConfigurationNodePointer&lt;&gt;(</span>
+<span class="fc" id="L58">                pointer, root.getChildren().get(1), handler);</span>
+<span class="fc" id="L59">        final NodePointer p2 = new ConfigurationNodePointer&lt;&gt;(</span>
+<span class="fc" id="L60">                pointer, root.getChildren().get(3), handler);</span>
+<span class="fc" id="L61">        assertEquals(&quot;Incorrect order&quot;, -1, pointer.compareChildNodePointers(</span>
+                p1, p2));
+<span class="fc" id="L63">        assertEquals(&quot;Incorrect symmetric order&quot;, 1, pointer</span>
+<span class="fc" id="L64">                .compareChildNodePointers(p2, p1));</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Tests whether a comparison of child node pointers handle the case that
+     * the child nodes are unknown. (This should not happen in practice.)
+     */
+    @Test
+    public void testCompareChildNodePointersAttributes()
+    {
+<span class="fc" id="L74">        final ImmutableNode n1 = new ImmutableNode.Builder().name(&quot;n1&quot;).create();</span>
+<span class="fc" id="L75">        final ImmutableNode n2 = new ImmutableNode.Builder().name(&quot;n2&quot;).create();</span>
+<span class="fc" id="L76">        final NodePointer p1 =</span>
+                new ConfigurationNodePointer&lt;&gt;(pointer, n1,
+                        handler);
+<span class="fc" id="L79">        final NodePointer p2 =</span>
+                new ConfigurationNodePointer&lt;&gt;(pointer, n2,
+                        handler);
+<span class="fc" id="L82">        assertEquals(&quot;Incorrect order&quot;, 0,</span>
+<span class="fc" id="L83">                pointer.compareChildNodePointers(p1, p2));</span>
+<span class="fc" id="L84">        assertEquals(&quot;Incorrect symmetric order&quot;, 0,</span>
+<span class="fc" id="L85">                pointer.compareChildNodePointers(p2, p1));</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Tests the attribute flag.
+     */
+    @Test
+    public void testIsAttribute()
+    {
+<span class="fc" id="L94">        assertFalse(&quot;Node is an attribute&quot;, pointer.isAttribute());</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Tests if leaves in the tree are correctly detected.
+     */
+    @Test
+    public void testIsLeave()
+    {
+<span class="fc" id="L103">        assertFalse(&quot;Root node is leaf&quot;, pointer.isLeaf());</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Tests the leaf flag for a real leaf node.
+     */
+    @Test
+    public void testIsLeafTrue()
+    {
+<span class="fc" id="L112">        final ImmutableNode leafNode =</span>
+<span class="fc" id="L113">                new ImmutableNode.Builder().name(&quot;leafNode&quot;).create();</span>
+<span class="fc" id="L114">        pointer =</span>
+                new ConfigurationNodePointer&lt;&gt;(pointer, leafNode,
+                        handler);
+<span class="fc" id="L117">        assertTrue(&quot;Not a leaf node&quot;, pointer.isLeaf());</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Tests the iterators returned by the node pointer.
+     */
+    @Test
+    public void testIterators()
+    {
+<span class="fc" id="L126">        checkIterators(pointer);</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Recursive helper method for testing the returned iterators.
+     *
+     * @param p the node pointer to test
+     */
+    private void checkIterators(final NodePointer p)
+    {
+<span class="fc" id="L136">        final ImmutableNode node = (ImmutableNode) p.getNode();</span>
+<span class="fc" id="L137">        NodeIterator it = p.childIterator(null, false, null);</span>
+<span class="fc" id="L138">        assertEquals(&quot;Iterator count differs from children count&quot;, node</span>
+<span class="fc" id="L139">                .getChildren().size(), iteratorSize(it));</span>
+
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        for (int index = 1; it.setPosition(index); index++)</span>
+        {
+<span class="fc" id="L143">            final NodePointer pchild = it.getNodePointer();</span>
+<span class="fc" id="L144">            assertEquals(&quot;Wrong child&quot;, node.getChildren().get(index - 1),</span>
+<span class="fc" id="L145">                    pchild.getNode());</span>
+<span class="fc" id="L146">            checkIterators(pchild);</span>
+        }
+
+<span class="fc" id="L149">        it = p.attributeIterator(new QName(null, &quot;*&quot;));</span>
+<span class="fc" id="L150">        assertEquals(&quot;Iterator count differs from attribute count&quot;, node</span>
+<span class="fc" id="L151">                .getAttributes().size(), iteratorSize(it));</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        for (int index = 1; it.setPosition(index); index++)</span>
+        {
+<span class="fc" id="L154">            final NodePointer pattr = it.getNodePointer();</span>
+<span class="fc" id="L155">            assertTrue(&quot;Node pointer is no attribute&quot;, pattr.isAttribute());</span>
+<span class="fc" id="L156">            assertTrue(&quot;Wrong attribute name&quot;, node.getAttributes()</span>
+<span class="fc" id="L157">                    .containsKey(pattr.getName().getName()));</span>
+        }
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Tests that no new value can be set.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetValue()
+    {
+<span class="nc" id="L167">        pointer.setValue(&quot;newValue&quot;);</span>
+<span class="nc" id="L168">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

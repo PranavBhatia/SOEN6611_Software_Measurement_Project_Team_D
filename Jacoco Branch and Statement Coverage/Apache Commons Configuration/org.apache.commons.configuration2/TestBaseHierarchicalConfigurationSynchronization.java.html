@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestBaseHierarchicalConfigurationSynchronization.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestBaseHierarchicalConfigurationSynchronization.java</span></div><h1>TestBaseHierarchicalConfigurationSynchronization.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import org.apache.commons.configuration2.SynchronizerTestImpl.Methods;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.InMemoryNodeModel;
+import org.apache.commons.configuration2.tree.NodeStructureHelper;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * A test class for {@code BaseHierarchicalConfiguration} which checks whether
+ * the Synchronizer is called correctly by the methods specific for hierarchical
+ * configurations.
+ *
+ */
+<span class="fc" id="L50">public class TestBaseHierarchicalConfigurationSynchronization</span>
+{
+    /** The test synchronizer. */
+    private SynchronizerTestImpl sync;
+
+    /** The test file to be read. */
+    private File testFile;
+
+    /** The test configuration. */
+    private BaseHierarchicalConfiguration config;
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L64">        final XMLConfiguration c = new XMLConfiguration();</span>
+<span class="fc" id="L65">        testFile = ConfigurationAssert.getTestFile(&quot;test.xml&quot;);</span>
+<span class="fc" id="L66">        new FileHandler(c).load(testFile);</span>
+<span class="fc" id="L67">        sync = new SynchronizerTestImpl();</span>
+<span class="fc" id="L68">        c.setSynchronizer(sync);</span>
+<span class="fc" id="L69">        config = c;</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Tests whether getMaxIndex() is correctly synchronized.
+     */
+    @Test
+    public void testGetMaxIndexSynchronized()
+    {
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        assertTrue(&quot;Wrong max index&quot;, config.getMaxIndex(&quot;list.item&quot;) &gt; 0);</span>
+<span class="fc" id="L79">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Tests whether getRootElementName() is correctly synchronized.
+     */
+    @Test
+    public void testGetRootElementNameSynchronized()
+    {
+<span class="fc" id="L88">        assertEquals(&quot;Wrong root element name&quot;, &quot;testconfig&quot;,</span>
+<span class="fc" id="L89">                config.getRootElementName());</span>
+<span class="fc" id="L90">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Tests whether clone() is correctly synchronized.
+     */
+    @Test
+    public void testCloneSynchronized()
+    {
+<span class="fc" id="L99">        final BaseHierarchicalConfiguration clone =</span>
+<span class="fc" id="L100">                (BaseHierarchicalConfiguration) config.clone();</span>
+<span class="fc" id="L101">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L102">        assertNotSame(&quot;Synchronizer was not cloned&quot;, config.getSynchronizer(),</span>
+<span class="fc" id="L103">                clone.getSynchronizer());</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Tests whether addNodes() is correctly synchronized.
+     */
+    @Test
+    public void testAddNodesSynchronized()
+    {
+<span class="fc" id="L112">        final ImmutableNode node = NodeStructureHelper.createNode(&quot;newNode&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L113">        config.addNodes(&quot;test.addNodes&quot;, Collections.singleton(node));</span>
+<span class="fc" id="L114">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Tests whether clearTree() is correctly synchronized.
+     */
+    @Test
+    public void testClearTreeSynchronized()
+    {
+<span class="fc" id="L123">        config.clearTree(&quot;clear&quot;);</span>
+<span class="fc" id="L124">        sync.verify(Methods.BEGIN_WRITE, Methods.END_WRITE);</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Tests whether synchronization is performed when copying a configuration.
+     */
+    @Test
+    public void testCopyConstructorSynchronized()
+    {
+<span class="fc" id="L133">        final BaseHierarchicalConfiguration copy =</span>
+                new BaseHierarchicalConfiguration(config);
+<span class="fc" id="L135">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L136">        assertNotSame(&quot;Synchronizer was copied&quot;, sync, copy.getSynchronizer());</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Tests whether synchronization is performed when constructing a
+     * SubnodeConfiguration.
+     */
+    @Test
+    public void testConfigurationAtSynchronized()
+    {
+<span class="fc" id="L146">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub = config.configurationAt(&quot;element2&quot;);</span>
+<span class="fc" id="L147">        assertEquals(&quot;Wrong property&quot;, &quot;I'm complex!&quot;,</span>
+<span class="fc" id="L148">                sub.getString(&quot;subelement.subsubelement&quot;));</span>
+<span class="fc" id="L149">        sync.verify(Methods.BEGIN_READ, Methods.END_READ, Methods.BEGIN_READ,</span>
+                Methods.END_READ);
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests whether synchronization is performed when constructing multiple
+     * SubnodeConfiguration objects.
+     */
+    @Test
+    public void testConfigurationsAtSynchronized()
+    {
+<span class="fc" id="L160">        final List&lt;HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; subs =</span>
+<span class="fc" id="L161">                config.configurationsAt(&quot;list.item&quot;);</span>
+<span class="fc" id="L162">        assertFalse(&quot;No subnode configurations&quot;, subs.isEmpty());</span>
+<span class="fc" id="L163">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L164">    }</span>
+
+    /**
+     * Tests whether childConfigurationsAt() is correctly synchronized.
+     */
+    @Test
+    public void testChildConfigurationsAtSynchronized()
+    {
+<span class="fc" id="L172">        final List&lt;HierarchicalConfiguration&lt;ImmutableNode&gt;&gt; subs =</span>
+<span class="fc" id="L173">                config.childConfigurationsAt(&quot;clear&quot;);</span>
+<span class="fc" id="L174">        assertFalse(&quot;No subnode configurations&quot;, subs.isEmpty());</span>
+<span class="fc" id="L175">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * Tests whether the specified configuration is detached.
+     *
+     * @param c the configuration to test
+     * @return a flag whether the root node of this configuration is detached
+     */
+    private static boolean isDetached(final HierarchicalConfiguration&lt;ImmutableNode&gt; c)
+    {
+<span class="fc" id="L186">        assertTrue(&quot;Not a sub configuration&quot;, c instanceof SubnodeConfiguration);</span>
+<span class="fc" id="L187">        final InMemoryNodeModel nodeModel = ((SubnodeConfiguration) c).getRootNodeModel();</span>
+<span class="fc" id="L188">        return nodeModel.isTrackedNodeDetached(((SubnodeConfiguration) c)</span>
+<span class="fc" id="L189">                        .getRootSelector());</span>
+    }
+
+    /**
+     * Tests whether updates on nodes are communicated to all
+     * SubnodeConfigurations of a configuration.
+     */
+    @Test
+    public void testSubnodeUpdate()
+    {
+<span class="fc" id="L199">        config.addProperty(&quot;element2.test&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L200">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub =</span>
+<span class="fc" id="L201">                config.configurationAt(&quot;element2&quot;, true);</span>
+<span class="fc" id="L202">        final HierarchicalConfiguration&lt;ImmutableNode&gt; subsub =</span>
+<span class="fc" id="L203">                sub.configurationAt(&quot;subelement&quot;, true);</span>
+<span class="fc" id="L204">        config.clearTree(&quot;element2.subelement&quot;);</span>
+<span class="fc" id="L205">        assertFalse(&quot;Sub1 detached&quot;, isDetached(sub));</span>
+<span class="fc" id="L206">        assertTrue(&quot;Sub2 still attached&quot;, isDetached(subsub));</span>
+<span class="fc" id="L207">    }</span>
+
+    /**
+     * Tests whether updates caused by a SubnodeConfiguration are communicated
+     * to all other SubnodeConfigurations.
+     */
+    @Test
+    public void testSubnodeUpdateBySubnode()
+    {
+<span class="fc" id="L216">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub =</span>
+<span class="fc" id="L217">                config.configurationAt(&quot;element2&quot;, true);</span>
+<span class="fc" id="L218">        final HierarchicalConfiguration&lt;ImmutableNode&gt; subsub =</span>
+<span class="fc" id="L219">                sub.configurationAt(&quot;subelement&quot;, true);</span>
+<span class="fc" id="L220">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub2 =</span>
+<span class="fc" id="L221">                config.configurationAt(&quot;element2.subelement&quot;, true);</span>
+<span class="fc" id="L222">        sub.clearTree(&quot;subelement&quot;);</span>
+<span class="fc" id="L223">        assertTrue(&quot;Sub2 still attached&quot;, isDetached(sub2));</span>
+<span class="fc" id="L224">        assertTrue(&quot;Subsub still attached&quot;, isDetached(subsub));</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tests whether a clone() operation also copies the data used to manage
+     * SubnodeConfiguration objects.
+     */
+    @Test
+    public void testCloneCopySubnodeData()
+    {
+<span class="fc" id="L234">        final BaseHierarchicalConfiguration conf2 =</span>
+                new BaseHierarchicalConfiguration(config);
+
+<span class="fc" id="L237">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub =</span>
+<span class="fc" id="L238">                conf2.configurationAt(&quot;element2.subelement&quot;, true);</span>
+        @SuppressWarnings(&quot;unchecked&quot;) // clone retains the type
+        final
+<span class="fc" id="L241">        HierarchicalConfiguration&lt;ImmutableNode&gt; copy =</span>
+<span class="fc" id="L242">                (HierarchicalConfiguration&lt;ImmutableNode&gt;) conf2.clone();</span>
+<span class="fc" id="L243">        final HierarchicalConfiguration&lt;ImmutableNode&gt; sub2 =</span>
+<span class="fc" id="L244">                copy.configurationAt(&quot;element2.subelement&quot;, true);</span>
+        // This must not cause a validate operation on sub1, but on sub2
+<span class="fc" id="L246">        copy.clearTree(&quot;element2&quot;);</span>
+<span class="fc" id="L247">        assertTrue(&quot;Sub2 not detached&quot;, isDetached(sub2));</span>
+<span class="fc" id="L248">        assertFalse(&quot;Sub 1 was detached&quot;, isDetached(sub));</span>
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * Tests whether subset() is correctly synchronized.
+     */
+    @Test
+    public void testSubsetSynchronized()
+    {
+<span class="fc" id="L257">        final Configuration subset = config.subset(&quot;test&quot;);</span>
+<span class="fc" id="L258">        sync.verify(Methods.BEGIN_READ, Methods.END_READ);</span>
+<span class="fc" id="L259">        assertSame(&quot;Wrong Synchronizer&quot;, sync, subset.getSynchronizer());</span>
+<span class="fc" id="L260">    }</span>
+
+    /**
+     * Tests that access to an initialized configuration's sub configurations is
+     * possible without a special synchronizer.
+     */
+    @Test
+    public void testReadOnlyAccessToSubConfigurations()
+            throws ConfigurationException
+    {
+<span class="fc" id="L270">        final FileBasedConfigurationBuilder&lt;XMLConfiguration&gt; builder =</span>
+                new FileBasedConfigurationBuilder&lt;&gt;(
+                        XMLConfiguration.class);
+<span class="fc" id="L273">        builder.configure(new Parameters().fileBased().setFile(testFile));</span>
+<span class="fc" id="L274">        config = builder.getConfiguration();</span>
+
+<span class="fc" id="L276">        final CountDownLatch startLatch = new CountDownLatch(1);</span>
+<span class="fc" id="L277">        final Collection&lt;SubNodeAccessThread&gt; threads =</span>
+                new ArrayList&lt;&gt;();
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        for (int i = 0; i &lt; 4; i++)</span>
+        {
+<span class="fc" id="L281">            final SubNodeAccessThread t =</span>
+                    new SubNodeAccessThread(config, startLatch, &quot;element2&quot;,
+                            &quot;subelement.subsubelement&quot;);
+<span class="fc" id="L284">            t.start();</span>
+<span class="fc" id="L285">            threads.add(t);</span>
+        }
+<span class="fc bfc" id="L287" title="All 2 branches covered.">        for (int i = 0; i &lt; 4; i++)</span>
+        {
+<span class="fc" id="L289">            final SubNodeAccessThread t =</span>
+                    new SubNodeAccessThread(config, startLatch,
+                            &quot;element2.subelement&quot;, &quot;subsubelement&quot;);
+<span class="fc" id="L292">            t.start();</span>
+<span class="fc" id="L293">            threads.add(t);</span>
+        }
+
+<span class="fc" id="L296">        startLatch.countDown();</span>
+<span class="fc bfc" id="L297" title="All 2 branches covered.">        for (final SubNodeAccessThread t : threads)</span>
+        {
+<span class="fc" id="L299">            t.verify();</span>
+<span class="fc" id="L300">        }</span>
+<span class="fc" id="L301">    }</span>
+
+    /**
+     * A thread class for testing concurrent access to SubNode configurations.
+     */
+    private static class SubNodeAccessThread extends Thread
+    {
+        /** The test configuration. */
+        private final HierarchicalConfiguration&lt;ImmutableNode&gt; config;
+
+        /** The latch for synchronizing thread start. */
+        private final CountDownLatch latch;
+
+        /** The key for the sub configuration. */
+        private final String keySub;
+
+        /** The key for the property. */
+        private final String keyProp;
+
+        /** The value read by this thread. */
+        private String value;
+
+        /**
+         * Creates a new instance of {@code SubNodeAccessThread}
+         *
+         * @param c the test configuration
+         * @param startLatch the start latch
+         * @param keySubConfig the key for the sub configuration
+         * @param keyProperty the key for the property
+         */
+        public SubNodeAccessThread(final HierarchicalConfiguration&lt;ImmutableNode&gt; c,
+                final CountDownLatch startLatch, final String keySubConfig,
+                final String keyProperty)
+<span class="fc" id="L334">        {</span>
+<span class="fc" id="L335">            config = c;</span>
+<span class="fc" id="L336">            latch = startLatch;</span>
+<span class="fc" id="L337">            keySub = keySubConfig;</span>
+<span class="fc" id="L338">            keyProp = keyProperty;</span>
+<span class="fc" id="L339">        }</span>
+
+        @Override
+        public void run()
+        {
+            try
+            {
+<span class="fc" id="L346">                latch.await();</span>
+<span class="fc" id="L347">                final HierarchicalConfiguration&lt;ImmutableNode&gt; subConfig =</span>
+<span class="fc" id="L348">                        config.configurationAt(keySub, true);</span>
+<span class="fc" id="L349">                value = subConfig.getString(keyProp);</span>
+            }
+<span class="nc" id="L351">            catch (final InterruptedException iex)</span>
+            {
+                // ignore
+<span class="fc" id="L354">            }</span>
+<span class="fc" id="L355">        }</span>
+
+        /**
+         * Verifies that the correct value was read.
+         */
+        public void verify()
+        {
+            try
+            {
+<span class="fc" id="L364">                join();</span>
+            }
+<span class="nc" id="L366">            catch (final InterruptedException e)</span>
+            {
+<span class="nc" id="L368">                fail(&quot;Waiting was interrupted: &quot; + e);</span>
+<span class="fc" id="L369">            }</span>
+<span class="fc" id="L370">            assertEquals(&quot;Wrong value&quot;, &quot;I'm complex!&quot;, value);</span>
+<span class="fc" id="L371">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

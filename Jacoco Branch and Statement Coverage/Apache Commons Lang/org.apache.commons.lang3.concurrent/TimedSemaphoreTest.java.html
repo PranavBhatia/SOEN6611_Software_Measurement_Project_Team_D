@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimedSemaphoreTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.concurrent</a> &gt; <span class="el_source">TimedSemaphoreTest.java</span></div><h1>TimedSemaphoreTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.concurrent;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.easymock.EasyMock;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for TimedSemaphore.
+ */
+<span class="fc" id="L37">public class TimedSemaphoreTest {</span>
+    /** Constant for the time period. */
+    private static final long PERIOD = 500;
+
+    /** Constant for the time unit. */
+<span class="fc" id="L42">    private static final TimeUnit UNIT = TimeUnit.MILLISECONDS;</span>
+
+    /** Constant for the default limit. */
+    private static final int LIMIT = 10;
+
+    /**
+     * Tests creating a new instance.
+     */
+    @Test
+    public void testInit() {
+<span class="fc" id="L52">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L53">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L54">        EasyMock.replay(service);</span>
+<span class="fc" id="L55">        final TimedSemaphore semaphore = new TimedSemaphore(service, PERIOD, UNIT,</span>
+                LIMIT);
+<span class="fc" id="L57">        EasyMock.verify(service);</span>
+<span class="fc" id="L58">        assertEquals(service, semaphore.getExecutorService(), &quot;Wrong service&quot;);</span>
+<span class="fc" id="L59">        assertEquals(PERIOD, semaphore.getPeriod(), &quot;Wrong period&quot;);</span>
+<span class="fc" id="L60">        assertEquals(UNIT, semaphore.getUnit(), &quot;Wrong unit&quot;);</span>
+<span class="fc" id="L61">        assertEquals(0, semaphore.getLastAcquiresPerPeriod(), &quot;Statistic available&quot;);</span>
+<span class="fc" id="L62">        assertEquals(0.0, semaphore.getAverageCallsPerPeriod(), .05, &quot;Average available&quot;);</span>
+<span class="fc" id="L63">        assertFalse(semaphore.isShutdown(), &quot;Already shutdown&quot;);</span>
+<span class="fc" id="L64">        assertEquals(LIMIT, semaphore.getLimit(), &quot;Wrong limit&quot;);</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Tries to create an instance with a negative period. This should cause an
+     * exception.
+     */
+    @Test
+    public void testInitInvalidPeriod() {
+<span class="pc" id="L73">        assertThrows(IllegalArgumentException.class, () -&gt; new TimedSemaphore(0L, UNIT, LIMIT));</span>
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Tests whether a default executor service is created if no service is
+     * provided.
+     */
+    @Test
+    public void testInitDefaultService() {
+<span class="fc" id="L82">        final TimedSemaphore semaphore = new TimedSemaphore(PERIOD, UNIT, LIMIT);</span>
+<span class="fc" id="L83">        final ScheduledThreadPoolExecutor exec = (ScheduledThreadPoolExecutor) semaphore</span>
+<span class="fc" id="L84">                .getExecutorService();</span>
+<span class="fc" id="L85">        assertFalse(exec.getContinueExistingPeriodicTasksAfterShutdownPolicy(), &quot;Wrong periodic task policy&quot;);</span>
+<span class="fc" id="L86">        assertFalse(exec.getExecuteExistingDelayedTasksAfterShutdownPolicy(), &quot;Wrong delayed task policy&quot;);</span>
+<span class="fc" id="L87">        assertFalse(exec.isShutdown(), &quot;Already shutdown&quot;);</span>
+<span class="fc" id="L88">        semaphore.shutdown();</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Tests starting the timer.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testStartTimer() throws InterruptedException {
+<span class="fc" id="L98">        final TimedSemaphoreTestImpl semaphore = new TimedSemaphoreTestImpl(PERIOD,</span>
+                UNIT, LIMIT);
+<span class="fc" id="L100">        final ScheduledFuture&lt;?&gt; future = semaphore.startTimer();</span>
+<span class="fc" id="L101">        assertNotNull(future, &quot;No future returned&quot;);</span>
+<span class="fc" id="L102">        Thread.sleep(PERIOD);</span>
+<span class="fc" id="L103">        final int trials = 10;</span>
+<span class="fc" id="L104">        int count = 0;</span>
+        do {
+<span class="fc" id="L106">            Thread.sleep(PERIOD);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">            assertFalse(count++ &gt; trials, &quot;endOfPeriod() not called!&quot;);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        } while (semaphore.getPeriodEnds() &lt;= 0);</span>
+<span class="fc" id="L109">        semaphore.shutdown();</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests the shutdown() method if the executor belongs to the semaphore. In
+     * this case it has to be shut down.
+     */
+    @Test
+    public void testShutdownOwnExecutor() {
+<span class="fc" id="L118">        final TimedSemaphore semaphore = new TimedSemaphore(PERIOD, UNIT, LIMIT);</span>
+<span class="fc" id="L119">        semaphore.shutdown();</span>
+<span class="fc" id="L120">        assertTrue(semaphore.isShutdown(), &quot;Not shutdown&quot;);</span>
+<span class="fc" id="L121">        assertTrue(semaphore.getExecutorService().isShutdown(), &quot;Executor not shutdown&quot;);</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Tests the shutdown() method for a shared executor service before a task
+     * was started. This should do pretty much nothing.
+     */
+    @Test
+    public void testShutdownSharedExecutorNoTask() {
+<span class="fc" id="L130">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L131">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L132">        EasyMock.replay(service);</span>
+<span class="fc" id="L133">        final TimedSemaphore semaphore = new TimedSemaphore(service, PERIOD, UNIT,</span>
+                LIMIT);
+<span class="fc" id="L135">        semaphore.shutdown();</span>
+<span class="fc" id="L136">        assertTrue(semaphore.isShutdown(), &quot;Not shutdown&quot;);</span>
+<span class="fc" id="L137">        EasyMock.verify(service);</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Prepares an executor service mock to expect the start of the timer.
+     *
+     * @param service the mock
+     * @param future the future
+     */
+    private void prepareStartTimer(final ScheduledExecutorService service,
+            final ScheduledFuture&lt;?&gt; future) {
+<span class="fc" id="L148">        service.scheduleAtFixedRate((Runnable) EasyMock.anyObject(), EasyMock</span>
+<span class="fc" id="L149">                .eq(PERIOD), EasyMock.eq(PERIOD), EasyMock.eq(UNIT));</span>
+<span class="fc" id="L150">        EasyMock.expectLastCall().andReturn(future);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Tests the shutdown() method for a shared executor after the task was
+     * started. In this case the task must be canceled.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testShutdownSharedExecutorTask() throws InterruptedException {
+<span class="fc" id="L161">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L162">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L163">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L164">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L165">        EasyMock.expect(Boolean.valueOf(future.cancel(false))).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L166">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L167">        final TimedSemaphoreTestImpl semaphore = new TimedSemaphoreTestImpl(service,</span>
+                PERIOD, UNIT, LIMIT);
+<span class="fc" id="L169">        semaphore.acquire();</span>
+<span class="fc" id="L170">        semaphore.shutdown();</span>
+<span class="fc" id="L171">        assertTrue(semaphore.isShutdown(), &quot;Not shutdown&quot;);</span>
+<span class="fc" id="L172">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Tests multiple invocations of the shutdown() method.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testShutdownMultipleTimes() throws InterruptedException {
+<span class="fc" id="L182">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L183">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L184">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L185">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L186">        EasyMock.expect(Boolean.valueOf(future.cancel(false))).andReturn(Boolean.TRUE);</span>
+<span class="fc" id="L187">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L188">        final TimedSemaphoreTestImpl semaphore = new TimedSemaphoreTestImpl(service,</span>
+                PERIOD, UNIT, LIMIT);
+<span class="fc" id="L190">        semaphore.acquire();</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        for (int i = 0; i &lt; 10; i++) {</span>
+<span class="fc" id="L192">            semaphore.shutdown();</span>
+        }
+<span class="fc" id="L194">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L195">    }</span>
+
+    /**
+     * Tests the acquire() method if a limit is set.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testAcquireLimit() throws InterruptedException {
+<span class="fc" id="L204">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L205">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L206">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L207">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L208">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L209">        final int count = 10;</span>
+<span class="fc" id="L210">        final CountDownLatch latch = new CountDownLatch(count - 1);</span>
+<span class="fc" id="L211">        final TimedSemaphore semaphore = new TimedSemaphore(service, PERIOD, UNIT, 1);</span>
+<span class="fc" id="L212">        final SemaphoreThread t = new SemaphoreThread(semaphore, latch, count,</span>
+                count - 1);
+<span class="fc" id="L214">        semaphore.setLimit(count - 1);</span>
+
+        // start a thread that calls the semaphore count times
+<span class="fc" id="L217">        t.start();</span>
+<span class="fc" id="L218">        latch.await();</span>
+        // now the semaphore's limit should be reached and the thread blocked
+<span class="fc" id="L220">        assertEquals(count - 1, semaphore.getAcquireCount(), &quot;Wrong semaphore count&quot;);</span>
+
+        // this wakes up the thread, it should call the semaphore once more
+<span class="fc" id="L223">        semaphore.endOfPeriod();</span>
+<span class="fc" id="L224">        t.join();</span>
+<span class="fc" id="L225">        assertEquals(1, semaphore.getAcquireCount(), &quot;Wrong semaphore count (2)&quot;);</span>
+<span class="fc" id="L226">        assertEquals(count - 1, semaphore.getLastAcquiresPerPeriod(), &quot;Wrong acquire() count&quot;);</span>
+<span class="fc" id="L227">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Tests the acquire() method if more threads are involved than the limit.
+     * This method starts a number of threads that all invoke the semaphore. The
+     * semaphore's limit is set to 1, so in each period only a single thread can
+     * acquire the semaphore.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testAcquireMultipleThreads() throws InterruptedException {
+<span class="fc" id="L240">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L241">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L242">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L243">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L244">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L245">        final TimedSemaphoreTestImpl semaphore = new TimedSemaphoreTestImpl(service,</span>
+                PERIOD, UNIT, 1);
+<span class="fc" id="L247">        semaphore.latch = new CountDownLatch(1);</span>
+<span class="fc" id="L248">        final int count = 10;</span>
+<span class="fc" id="L249">        final SemaphoreThread[] threads = new SemaphoreThread[count];</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L251">            threads[i] = new SemaphoreThread(semaphore, null, 1, 0);</span>
+<span class="fc" id="L252">            threads[i].start();</span>
+        }
+<span class="fc bfc" id="L254" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L255">            semaphore.latch.await();</span>
+<span class="fc" id="L256">            assertEquals(1, semaphore.getAcquireCount(), &quot;Wrong count&quot;);</span>
+<span class="fc" id="L257">            semaphore.latch = new CountDownLatch(1);</span>
+<span class="fc" id="L258">            semaphore.endOfPeriod();</span>
+<span class="fc" id="L259">            assertEquals(1, semaphore.getLastAcquiresPerPeriod(), &quot;Wrong acquire count&quot;);</span>
+        }
+<span class="fc bfc" id="L261" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L262">            threads[i].join();</span>
+        }
+<span class="fc" id="L264">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Tests the acquire() method if no limit is set. A test thread is started
+     * that calls the semaphore a large number of times. Even if the semaphore's
+     * period does not end, the thread should never block.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testAcquireNoLimit() throws InterruptedException {
+<span class="fc" id="L276">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L277">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L278">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L279">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L280">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L281">        final TimedSemaphoreTestImpl semaphore = new TimedSemaphoreTestImpl(service,</span>
+                PERIOD, UNIT, TimedSemaphore.NO_LIMIT);
+<span class="fc" id="L283">        final int count = 1000;</span>
+<span class="fc" id="L284">        final CountDownLatch latch = new CountDownLatch(count);</span>
+<span class="fc" id="L285">        final SemaphoreThread t = new SemaphoreThread(semaphore, latch, count, count);</span>
+<span class="fc" id="L286">        t.start();</span>
+<span class="fc" id="L287">        latch.await();</span>
+<span class="fc" id="L288">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * Tries to call acquire() after shutdown(). This should cause an exception.
+     */
+    @Test
+    public void testPassAfterShutdown() {
+<span class="fc" id="L296">        final TimedSemaphore semaphore = new TimedSemaphore(PERIOD, UNIT, LIMIT);</span>
+<span class="fc" id="L297">        semaphore.shutdown();</span>
+<span class="fc" id="L298">        assertThrows(IllegalStateException.class, semaphore::acquire);</span>
+<span class="fc" id="L299">    }</span>
+
+    /**
+     * Tests a bigger number of invocations that span multiple periods. The
+     * period is set to a very short time. A background thread calls the
+     * semaphore a large number of times. While it runs at last one end of a
+     * period should be reached.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testAcquireMultiplePeriods() throws InterruptedException {
+<span class="fc" id="L311">        final int count = 1000;</span>
+<span class="fc" id="L312">        final TimedSemaphoreTestImpl semaphore = new TimedSemaphoreTestImpl(</span>
+                PERIOD / 10, TimeUnit.MILLISECONDS, 1);
+<span class="fc" id="L314">        semaphore.setLimit(count / 4);</span>
+<span class="fc" id="L315">        final CountDownLatch latch = new CountDownLatch(count);</span>
+<span class="fc" id="L316">        final SemaphoreThread t = new SemaphoreThread(semaphore, latch, count, count);</span>
+<span class="fc" id="L317">        t.start();</span>
+<span class="fc" id="L318">        latch.await();</span>
+<span class="fc" id="L319">        semaphore.shutdown();</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">        assertTrue(semaphore.getPeriodEnds() &gt; 0, &quot;End of period not reached&quot;);</span>
+<span class="fc" id="L321">    }</span>
+
+    /**
+     * Tests the methods for statistics.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testGetAverageCallsPerPeriod() throws InterruptedException {
+<span class="fc" id="L330">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L331">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L332">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L333">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L334">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L335">        final TimedSemaphore semaphore = new TimedSemaphore(service, PERIOD, UNIT,</span>
+                LIMIT);
+<span class="fc" id="L337">        semaphore.acquire();</span>
+<span class="fc" id="L338">        semaphore.endOfPeriod();</span>
+<span class="fc" id="L339">        assertEquals(1.0, semaphore.getAverageCallsPerPeriod(), .005, &quot;Wrong average (1)&quot;);</span>
+<span class="fc" id="L340">        semaphore.acquire();</span>
+<span class="fc" id="L341">        semaphore.acquire();</span>
+<span class="fc" id="L342">        semaphore.endOfPeriod();</span>
+<span class="fc" id="L343">        assertEquals(1.5, semaphore.getAverageCallsPerPeriod(), .005, &quot;Wrong average (2)&quot;);</span>
+<span class="fc" id="L344">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L345">    }</span>
+
+    /**
+     * Tests whether the available non-blocking calls can be queried.
+     *
+     * @throws java.lang.InterruptedException so we don't have to catch it
+     */
+    @Test
+    public void testGetAvailablePermits() throws InterruptedException {
+<span class="fc" id="L354">        final ScheduledExecutorService service = EasyMock</span>
+<span class="fc" id="L355">                .createMock(ScheduledExecutorService.class);</span>
+<span class="fc" id="L356">        final ScheduledFuture&lt;?&gt; future = EasyMock.createMock(ScheduledFuture.class);</span>
+<span class="fc" id="L357">        prepareStartTimer(service, future);</span>
+<span class="fc" id="L358">        EasyMock.replay(service, future);</span>
+<span class="fc" id="L359">        final TimedSemaphore semaphore = new TimedSemaphore(service, PERIOD, UNIT,</span>
+                LIMIT);
+<span class="fc bfc" id="L361" title="All 2 branches covered.">        for (int i = 0; i &lt; LIMIT; i++) {</span>
+<span class="fc" id="L362">            assertEquals(LIMIT - i, semaphore.getAvailablePermits(), &quot;Wrong available count at &quot; + i);</span>
+<span class="fc" id="L363">            semaphore.acquire();</span>
+        }
+<span class="fc" id="L365">        semaphore.endOfPeriod();</span>
+<span class="fc" id="L366">        assertEquals(LIMIT, semaphore.getAvailablePermits(), &quot;Wrong available count in new period&quot;);</span>
+<span class="fc" id="L367">        EasyMock.verify(service, future);</span>
+<span class="fc" id="L368">    }</span>
+
+    /**
+     * Tests the tryAcquire() method. It is checked whether the semaphore can be acquired
+     * by a bunch of threads the expected number of times and not more.
+     */
+    @Test
+    public void testTryAcquire() throws InterruptedException {
+<span class="fc" id="L376">        final TimedSemaphore semaphore = new TimedSemaphore(PERIOD, TimeUnit.SECONDS,</span>
+                LIMIT);
+<span class="fc" id="L378">        final TryAcquireThread[] threads = new TryAcquireThread[3 * LIMIT];</span>
+<span class="fc" id="L379">        final CountDownLatch latch = new CountDownLatch(1);</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">        for (int i = 0; i &lt; threads.length; i++) {</span>
+<span class="fc" id="L381">            threads[i] = new TryAcquireThread(semaphore, latch);</span>
+<span class="fc" id="L382">            threads[i].start();</span>
+        }
+
+<span class="fc" id="L385">        latch.countDown();</span>
+<span class="fc" id="L386">        int permits = 0;</span>
+<span class="fc bfc" id="L387" title="All 2 branches covered.">        for (final TryAcquireThread t : threads) {</span>
+<span class="fc" id="L388">            t.join();</span>
+<span class="fc bfc" id="L389" title="All 2 branches covered.">            if (t.acquired) {</span>
+<span class="fc" id="L390">                permits++;</span>
+            }
+        }
+<span class="fc" id="L393">        assertEquals(LIMIT, permits, &quot;Wrong number of permits granted&quot;);</span>
+<span class="fc" id="L394">    }</span>
+
+    /**
+     * Tries to call tryAcquire() after shutdown(). This should cause an exception.
+     */
+    @Test
+    public void testTryAcquireAfterShutdown() {
+<span class="fc" id="L401">        final TimedSemaphore semaphore = new TimedSemaphore(PERIOD, UNIT, LIMIT);</span>
+<span class="fc" id="L402">        semaphore.shutdown();</span>
+<span class="fc" id="L403">        assertThrows(IllegalStateException.class, semaphore::tryAcquire);</span>
+<span class="fc" id="L404">    }</span>
+
+    /**
+     * A specialized implementation of {@code TimedSemaphore} that is easier to
+     * test.
+     */
+    private static class TimedSemaphoreTestImpl extends TimedSemaphore {
+        /** A mock scheduled future. */
+        ScheduledFuture&lt;?&gt; schedFuture;
+
+        /** A latch for synchronizing with the main thread. */
+        volatile CountDownLatch latch;
+
+        /** Counter for the endOfPeriod() invocations. */
+        private int periodEnds;
+
+        TimedSemaphoreTestImpl(final long timePeriod, final TimeUnit timeUnit,
+                final int limit) {
+<span class="fc" id="L422">            super(timePeriod, timeUnit, limit);</span>
+<span class="fc" id="L423">        }</span>
+
+        TimedSemaphoreTestImpl(final ScheduledExecutorService service,
+                final long timePeriod, final TimeUnit timeUnit, final int limit) {
+<span class="fc" id="L427">            super(service, timePeriod, timeUnit, limit);</span>
+<span class="fc" id="L428">        }</span>
+
+        /**
+         * Returns the number of invocations of the endOfPeriod() method.
+         *
+         * @return the endOfPeriod() invocations
+         */
+        int getPeriodEnds() {
+<span class="fc" id="L436">            synchronized (this) {</span>
+<span class="fc" id="L437">                return periodEnds;</span>
+            }
+        }
+
+        /**
+         * Invokes the latch if one is set.
+         *
+         * @throws java.lang.InterruptedException because it is declared that way in TimedSemaphore
+         */
+        @Override
+        public synchronized void acquire() throws InterruptedException {
+<span class="fc" id="L448">            super.acquire();</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">            if (latch != null) {</span>
+<span class="fc" id="L450">                latch.countDown();</span>
+            }
+<span class="fc" id="L452">        }</span>
+
+        /**
+         * Counts the number of invocations.
+         */
+        @Override
+        protected synchronized void endOfPeriod() {
+<span class="fc" id="L459">            super.endOfPeriod();</span>
+<span class="fc" id="L460">            periodEnds++;</span>
+<span class="fc" id="L461">        }</span>
+
+        /**
+         * Either returns the mock future or calls the super method.
+         */
+        @Override
+        protected ScheduledFuture&lt;?&gt; startTimer() {
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">            return schedFuture != null ? schedFuture : super.startTimer();</span>
+        }
+    }
+
+    /**
+     * A test thread class that will be used by tests for triggering the
+     * semaphore. The thread calls the semaphore a configurable number of times.
+     * When this is done, it can notify the main thread.
+     */
+    private static class SemaphoreThread extends Thread {
+        /** The semaphore. */
+        private final TimedSemaphore semaphore;
+
+        /** A latch for communication with the main thread. */
+        private final CountDownLatch latch;
+
+        /** The number of acquire() calls. */
+        private final int count;
+
+        /** The number of invocations of the latch. */
+        private final int latchCount;
+
+<span class="fc" id="L490">        SemaphoreThread(final TimedSemaphore b, final CountDownLatch l, final int c, final int lc) {</span>
+<span class="fc" id="L491">            semaphore = b;</span>
+<span class="fc" id="L492">            latch = l;</span>
+<span class="fc" id="L493">            count = c;</span>
+<span class="fc" id="L494">            latchCount = lc;</span>
+<span class="fc" id="L495">        }</span>
+
+        /**
+         * Calls acquire() on the semaphore for the specified number of times.
+         * Optionally the latch will also be triggered to synchronize with the
+         * main test thread.
+         */
+        @Override
+        public void run() {
+            try {
+<span class="fc bfc" id="L505" title="All 2 branches covered.">                for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L506">                    semaphore.acquire();</span>
+
+<span class="fc bfc" id="L508" title="All 2 branches covered.">                    if (i &lt; latchCount) {</span>
+<span class="fc" id="L509">                        latch.countDown();</span>
+                    }
+                }
+<span class="nc" id="L512">            } catch (final InterruptedException iex) {</span>
+<span class="nc" id="L513">                Thread.currentThread().interrupt();</span>
+<span class="fc" id="L514">            }</span>
+<span class="fc" id="L515">        }</span>
+    }
+
+    /**
+     * A test thread class which invokes {@code tryAcquire()} on the test semaphore and
+     * records the return value.
+     */
+    private static class TryAcquireThread extends Thread {
+        /** The semaphore. */
+        private final TimedSemaphore semaphore;
+
+        /** A latch for communication with the main thread. */
+        private final CountDownLatch latch;
+
+        /** Flag whether a permit could be acquired. */
+        private boolean acquired;
+
+<span class="fc" id="L532">        TryAcquireThread(final TimedSemaphore s, final CountDownLatch l) {</span>
+<span class="fc" id="L533">            semaphore = s;</span>
+<span class="fc" id="L534">            latch = l;</span>
+<span class="fc" id="L535">        }</span>
+
+        @Override
+        public void run() {
+            try {
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">                if (latch.await(10, TimeUnit.SECONDS)) {</span>
+<span class="fc" id="L541">                    acquired = semaphore.tryAcquire();</span>
+                }
+<span class="nc" id="L543">            } catch (final InterruptedException iex) {</span>
+                // ignore
+<span class="fc" id="L545">            }</span>
+<span class="fc" id="L546">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ThreadUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">ThreadUtilsTest.java</span></div><h1>ThreadUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Unit tests {@link org.apache.commons.lang3.ThreadUtils}.
+ */
+<span class="fc" id="L41">public class ThreadUtilsTest {</span>
+
+    @Test
+    public void testNullThreadName() {
+<span class="pc" id="L45">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadsByName(null));</span>
+<span class="fc" id="L46">    }</span>
+
+    @Test
+    public void testNullThreadGroupName() {
+<span class="pc" id="L50">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadGroupsByName(null));</span>
+<span class="fc" id="L51">    }</span>
+
+    @Test
+    public void testNullThreadThreadGroupName1() {
+<span class="pc" id="L55">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadsByName(null, &quot;tgname&quot;));</span>
+<span class="fc" id="L56">    }</span>
+
+    @Test
+    public void testNullThreadThreadGroupName2() {
+<span class="pc" id="L60">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadsByName(&quot;tname&quot;, (String) null));</span>
+<span class="fc" id="L61">    }</span>
+
+    @Test
+    public void testNullThreadThreadGroupName3() {
+<span class="pc" id="L65">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadsByName(null, (String) null));</span>
+<span class="fc" id="L66">    }</span>
+
+    @Test
+    public void testNullThreadThreadGroup1() {
+<span class="pc" id="L70">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadsByName(&quot;tname&quot;, (ThreadGroup) null));</span>
+<span class="fc" id="L71">    }</span>
+
+    @Test
+    public void testNullThreadThreadGroup2() {
+<span class="pc" id="L75">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadById(1L, (ThreadGroup) null));</span>
+<span class="fc" id="L76">    }</span>
+
+    @Test
+    public void testNullThreadThreadGroup3() {
+<span class="pc" id="L80">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadsByName(null, (ThreadGroup) null));</span>
+<span class="fc" id="L81">    }</span>
+
+    @Test
+    public void testInvalidThreadId() {
+<span class="pc" id="L85">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadById(-5L));</span>
+<span class="fc" id="L86">    }</span>
+
+    @Test
+    public void testThreadGroupsByIdFail() {
+<span class="fc" id="L90">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L91">                () -&gt; ThreadUtils.findThreadById(Thread.currentThread().getId(), (String) null));</span>
+<span class="fc" id="L92">    }</span>
+
+    @Test
+    public void testThreadgroupsNullParent() {
+<span class="fc" id="L96">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L97">                () -&gt; ThreadUtils.findThreadGroups(null, true, ThreadUtils.ALWAYS_TRUE_PREDICATE));</span>
+<span class="fc" id="L98">    }</span>
+
+    @Test
+    public void testThreadgroupsNullPredicate() {
+<span class="pc" id="L102">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreadGroups(null));</span>
+<span class="fc" id="L103">    }</span>
+
+    @Test
+    public void testThreadsNullPredicate() {
+<span class="pc" id="L107">        assertThrows(IllegalArgumentException.class, () -&gt; ThreadUtils.findThreads(null));</span>
+<span class="fc" id="L108">    }</span>
+
+    @Test
+    public void testNoThread() {
+<span class="fc" id="L112">        assertEquals(0, ThreadUtils.findThreadsByName(&quot;some_thread_which_does_not_exist_18762ZucTT&quot;).size());</span>
+<span class="fc" id="L113">    }</span>
+
+    @Test
+    public void testNoThreadGroup() {
+<span class="fc" id="L117">        assertEquals(0, ThreadUtils.findThreadGroupsByName(&quot;some_thread_group_which_does_not_exist_18762ZucTTII&quot;).size());</span>
+<span class="fc" id="L118">    }</span>
+
+    @Test
+    public void testSystemThreadGroupExists() {
+<span class="fc" id="L122">        final ThreadGroup systemThreadGroup = ThreadUtils.getSystemThreadGroup();</span>
+<span class="fc" id="L123">        assertNotNull(systemThreadGroup);</span>
+<span class="fc" id="L124">        assertNull(systemThreadGroup.getParent());</span>
+<span class="fc" id="L125">        assertEquals(&quot;system&quot;, systemThreadGroup.getName());</span>
+<span class="fc" id="L126">    }</span>
+
+    @Test
+    public void testAtLeastOneThreadExists() {
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        assertTrue(ThreadUtils.getAllThreads().size() &gt; 0);</span>
+<span class="fc" id="L131">    }</span>
+
+    @Test
+    public void testAtLeastOneThreadGroupsExists() {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        assertTrue(ThreadUtils.getAllThreadGroups().size() &gt; 0);</span>
+<span class="fc" id="L136">    }</span>
+
+    @Test
+    public void testThreadsSameName() throws InterruptedException {
+<span class="fc" id="L140">        final Thread t1 = new TestThread(&quot;thread1_XXOOLL__&quot;);</span>
+<span class="fc" id="L141">        final Thread alsot1 = new TestThread(&quot;thread1_XXOOLL__&quot;);</span>
+
+        try {
+<span class="fc" id="L144">            t1.start();</span>
+<span class="fc" id="L145">            alsot1.start();</span>
+<span class="fc" id="L146">            assertEquals(2, ThreadUtils.findThreadsByName(&quot;thread1_XXOOLL__&quot;).size());</span>
+        } finally {
+<span class="fc" id="L148">            t1.interrupt();</span>
+<span class="fc" id="L149">            alsot1.interrupt();</span>
+<span class="fc" id="L150">            t1.join();</span>
+<span class="fc" id="L151">            alsot1.join();</span>
+        }
+<span class="fc" id="L153">    }</span>
+
+    @Test
+    public void testThreads() throws InterruptedException {
+<span class="fc" id="L157">        final Thread t1 = new TestThread(&quot;thread1_XXOOLL__&quot;);</span>
+<span class="fc" id="L158">        final Thread t2 = new TestThread(&quot;thread2_XXOOLL__&quot;);</span>
+
+        try {
+<span class="fc" id="L161">            t1.start();</span>
+<span class="fc" id="L162">            t2.start();</span>
+<span class="fc" id="L163">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread2_XXOOLL__&quot;).size());</span>
+        } finally {
+<span class="fc" id="L165">            t1.interrupt();</span>
+<span class="fc" id="L166">            t2.interrupt();</span>
+<span class="fc" id="L167">            t1.join();</span>
+<span class="fc" id="L168">            t2.join();</span>
+        }
+<span class="fc" id="L170">    }</span>
+
+    @Test
+    public void testThreadsById() throws InterruptedException {
+<span class="fc" id="L174">        final Thread t1 = new TestThread(&quot;thread1_XXOOLL__&quot;);</span>
+<span class="fc" id="L175">        final Thread t2 = new TestThread(&quot;thread2_XXOOLL__&quot;);</span>
+
+        try {
+<span class="fc" id="L178">            t1.start();</span>
+<span class="fc" id="L179">            t2.start();</span>
+<span class="fc" id="L180">            assertSame(t1, ThreadUtils.findThreadById(t1.getId()));</span>
+<span class="fc" id="L181">            assertSame(t2, ThreadUtils.findThreadById(t2.getId()));</span>
+        } finally {
+<span class="fc" id="L183">            t1.interrupt();</span>
+<span class="fc" id="L184">            t2.interrupt();</span>
+<span class="fc" id="L185">            t1.join();</span>
+<span class="fc" id="L186">            t2.join();</span>
+        }
+<span class="fc" id="L188">    }</span>
+
+    @Test
+    public void testThreadsByIdWrongGroup() throws InterruptedException {
+<span class="fc" id="L192">        final Thread t1 = new TestThread(&quot;thread1_XXOOLL__&quot;);</span>
+<span class="fc" id="L193">        final ThreadGroup tg = new ThreadGroup(&quot;tg__HHEE22&quot;);</span>
+
+        try {
+<span class="fc" id="L196">            t1.start();</span>
+<span class="fc" id="L197">            assertNull(ThreadUtils.findThreadById(t1.getId(), tg));</span>
+        } finally {
+<span class="fc" id="L199">            t1.interrupt();</span>
+<span class="fc" id="L200">            t1.join();</span>
+<span class="fc" id="L201">            tg.destroy();</span>
+        }
+<span class="fc" id="L203">    }</span>
+
+
+    @Test
+    public void testThreadGroups() throws InterruptedException {
+<span class="fc" id="L208">        final ThreadGroup threadGroup = new ThreadGroup(&quot;thread_group_DDZZ99__&quot;);</span>
+<span class="fc" id="L209">        final Thread t1 = new TestThread(threadGroup, &quot;thread1_XXOOPP__&quot;);</span>
+<span class="fc" id="L210">        final Thread t2 = new TestThread(threadGroup, &quot;thread2_XXOOPP__&quot;);</span>
+
+        try {
+<span class="fc" id="L213">            t1.start();</span>
+<span class="fc" id="L214">            t2.start();</span>
+<span class="fc" id="L215">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread1_XXOOPP__&quot;).size());</span>
+<span class="fc" id="L216">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread1_XXOOPP__&quot;, &quot;thread_group_DDZZ99__&quot;).size());</span>
+<span class="fc" id="L217">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread2_XXOOPP__&quot;, &quot;thread_group_DDZZ99__&quot;).size());</span>
+<span class="fc" id="L218">            assertEquals(0, ThreadUtils.findThreadsByName(&quot;thread1_XXOOPP__&quot;, &quot;non_existent_thread_group_JJHHZZ__&quot;).size());</span>
+<span class="fc" id="L219">            assertEquals(0, ThreadUtils.findThreadsByName(&quot;non_existent_thread_BBDDWW__&quot;, &quot;thread_group_DDZZ99__&quot;).size());</span>
+<span class="fc" id="L220">            assertEquals(1, ThreadUtils.findThreadGroupsByName(&quot;thread_group_DDZZ99__&quot;).size());</span>
+<span class="fc" id="L221">            assertEquals(0, ThreadUtils.findThreadGroupsByName(&quot;non_existent_thread_group_JJHHZZ__&quot;).size());</span>
+<span class="fc" id="L222">            assertNotNull(ThreadUtils.findThreadById(t1.getId(), threadGroup));</span>
+        } finally {
+<span class="fc" id="L224">            t1.interrupt();</span>
+<span class="fc" id="L225">            t2.interrupt();</span>
+<span class="fc" id="L226">            t1.join();</span>
+<span class="fc" id="L227">            t2.join();</span>
+<span class="fc" id="L228">            threadGroup.destroy();</span>
+        }
+<span class="fc" id="L230">    }</span>
+
+    @Test
+    public void testThreadGroupsRef() throws InterruptedException {
+<span class="fc" id="L234">        final ThreadGroup threadGroup = new ThreadGroup(&quot;thread_group_DDZZ99__&quot;);</span>
+<span class="fc" id="L235">        final ThreadGroup deadThreadGroup = new ThreadGroup(&quot;dead_thread_group_MMQQSS__&quot;);</span>
+<span class="fc" id="L236">        deadThreadGroup.destroy();</span>
+<span class="fc" id="L237">        final Thread t1 = new TestThread(threadGroup, &quot;thread1_XXOOPP__&quot;);</span>
+<span class="fc" id="L238">        final Thread t2 = new TestThread(threadGroup, &quot;thread2_XXOOPP__&quot;);</span>
+
+        try {
+<span class="fc" id="L241">            t1.start();</span>
+<span class="fc" id="L242">            t2.start();</span>
+<span class="fc" id="L243">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread1_XXOOPP__&quot;).size());</span>
+<span class="fc" id="L244">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread1_XXOOPP__&quot;, threadGroup).size());</span>
+<span class="fc" id="L245">            assertEquals(1, ThreadUtils.findThreadsByName(&quot;thread2_XXOOPP__&quot;, threadGroup).size());</span>
+<span class="fc" id="L246">            assertEquals(0, ThreadUtils.findThreadsByName(&quot;thread1_XXOOPP__&quot;, deadThreadGroup).size());</span>
+        } finally {
+<span class="fc" id="L248">            t1.interrupt();</span>
+<span class="fc" id="L249">            t2.interrupt();</span>
+<span class="fc" id="L250">            t1.join();</span>
+<span class="fc" id="L251">            t2.join();</span>
+<span class="fc" id="L252">            threadGroup.destroy();</span>
+<span class="fc" id="L253">            assertEquals(0, ThreadUtils.findThreadsByName(&quot;thread2_XXOOPP__&quot;, threadGroup).size());</span>
+        }
+<span class="fc" id="L255">    }</span>
+
+    @Test
+    public void testThreadGroupsById() throws InterruptedException {
+<span class="fc" id="L259">        final ThreadGroup threadGroup = new ThreadGroup(&quot;thread_group_DDZZ99__&quot;);</span>
+<span class="fc" id="L260">        final Thread t1 = new TestThread(threadGroup, &quot;thread1_XXOOPP__&quot;);</span>
+<span class="fc" id="L261">        final Thread t2 = new TestThread(threadGroup, &quot;thread2_XXOOPP__&quot;);</span>
+<span class="fc" id="L262">        final long nonExistingId = t1.getId()+t2.getId();</span>
+
+        try {
+<span class="fc" id="L265">            t1.start();</span>
+<span class="fc" id="L266">            t2.start();</span>
+<span class="fc" id="L267">            assertSame(t1, ThreadUtils.findThreadById(t1.getId(), &quot;thread_group_DDZZ99__&quot;));</span>
+<span class="fc" id="L268">            assertSame(t2, ThreadUtils.findThreadById(t2.getId(), &quot;thread_group_DDZZ99__&quot;));</span>
+<span class="fc" id="L269">            assertNull(ThreadUtils.findThreadById(nonExistingId, &quot;non_existent_thread_group_JJHHZZ__&quot;));</span>
+<span class="fc" id="L270">            assertNull(ThreadUtils.findThreadById(nonExistingId, &quot;thread_group_DDZZ99__&quot;));</span>
+        } finally {
+<span class="fc" id="L272">            t1.interrupt();</span>
+<span class="fc" id="L273">            t2.interrupt();</span>
+<span class="fc" id="L274">            t1.join();</span>
+<span class="fc" id="L275">            t2.join();</span>
+<span class="fc" id="L276">            threadGroup.destroy();</span>
+        }
+<span class="fc" id="L278">    }</span>
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L282">        assertNotNull(new ThreadUtils());</span>
+<span class="fc" id="L283">        final Constructor&lt;?&gt;[] cons = ThreadUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L284">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L285">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L286">        assertTrue(Modifier.isPublic(ThreadUtils.class.getModifiers()));</span>
+<span class="fc" id="L287">        assertFalse(Modifier.isFinal(ThreadUtils.class.getModifiers()));</span>
+<span class="fc" id="L288">    }</span>
+
+    @Test
+    public void testComplexThreadGroups() throws Exception {
+<span class="fc" id="L292">        final ThreadGroup threadGroup1 = new ThreadGroup(&quot;thread_group_1__&quot;);</span>
+<span class="fc" id="L293">        final ThreadGroup threadGroup2 = new ThreadGroup(&quot;thread_group_2__&quot;);</span>
+<span class="fc" id="L294">        final ThreadGroup threadGroup3 = new ThreadGroup(threadGroup2, &quot;thread_group_3__&quot;);</span>
+<span class="fc" id="L295">        final ThreadGroup threadGroup4 = new ThreadGroup(threadGroup2, &quot;thread_group_4__&quot;);</span>
+<span class="fc" id="L296">        final ThreadGroup threadGroup5 = new ThreadGroup(threadGroup1, &quot;thread_group_5__&quot;);</span>
+<span class="fc" id="L297">        final ThreadGroup threadGroup6 = new ThreadGroup(threadGroup4, &quot;thread_group_6__&quot;);</span>
+<span class="fc" id="L298">        final ThreadGroup threadGroup7 = new ThreadGroup(threadGroup4, &quot;thread_group_7__&quot;);</span>
+<span class="fc" id="L299">        final ThreadGroup threadGroup7Doubled = new ThreadGroup(threadGroup4, &quot;thread_group_7__&quot;);</span>
+<span class="fc" id="L300">        final List&lt;ThreadGroup&gt; threadGroups = Arrays.asList(threadGroup1, threadGroup2, threadGroup3, threadGroup4, threadGroup5, threadGroup6, threadGroup7, threadGroup7Doubled);</span>
+
+<span class="fc" id="L302">        final Thread t1 = new TestThread(&quot;thread1_X__&quot;);</span>
+<span class="fc" id="L303">        final Thread t2 = new TestThread(threadGroup1, &quot;thread2_X__&quot;);</span>
+<span class="fc" id="L304">        final Thread t3 = new TestThread(threadGroup2, &quot;thread3_X__&quot;);</span>
+<span class="fc" id="L305">        final Thread t4 = new TestThread(threadGroup3, &quot;thread4_X__&quot;);</span>
+<span class="fc" id="L306">        final Thread t5 = new TestThread(threadGroup4, &quot;thread5_X__&quot;);</span>
+<span class="fc" id="L307">        final Thread t6 = new TestThread(threadGroup5, &quot;thread6_X__&quot;);</span>
+<span class="fc" id="L308">        final Thread t7 = new TestThread(threadGroup6, &quot;thread7_X__&quot;);</span>
+<span class="fc" id="L309">        final Thread t8 = new TestThread(threadGroup4, &quot;thread8_X__&quot;);</span>
+<span class="fc" id="L310">        final Thread t9 = new TestThread(threadGroup6, &quot;thread9_X__&quot;);</span>
+<span class="fc" id="L311">        final Thread t10 = new TestThread(threadGroup3, &quot;thread10_X__&quot;);</span>
+<span class="fc" id="L312">        final Thread t11 = new TestThread(threadGroup7, &quot;thread11_X__&quot;);</span>
+<span class="fc" id="L313">        final Thread t11Doubled = new TestThread(threadGroup7Doubled, &quot;thread11_X__&quot;);</span>
+<span class="fc" id="L314">        final List&lt;Thread&gt; threads = Arrays.asList(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t11Doubled);</span>
+
+        try {
+<span class="fc bfc" id="L317" title="All 2 branches covered.">            for (final Thread thread : threads) {</span>
+<span class="fc" id="L318">                thread.start();</span>
+<span class="fc" id="L319">            }</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">            assertTrue(ThreadUtils.getAllThreadGroups().size() &gt;= 7);</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">            assertTrue(ThreadUtils.getAllThreads().size() &gt;= 11);</span>
+<span class="pc bpc" id="L322" title="1 of 2 branches missed.">            assertTrue(ThreadUtils.findThreads(ThreadUtils.ALWAYS_TRUE_PREDICATE).size() &gt;= 11);</span>
+<span class="fc" id="L323">            assertEquals(1, ThreadUtils.findThreadsByName(t4.getName(), threadGroup3.getName()).size());</span>
+<span class="fc" id="L324">            assertEquals(0, ThreadUtils.findThreadsByName(t4.getName(), threadGroup2.getName()).size());</span>
+<span class="fc" id="L325">            assertEquals(2, ThreadUtils.findThreadsByName(t11.getName(), threadGroup7.getName()).size());</span>
+        }finally {
+<span class="fc bfc" id="L327" title="All 2 branches covered.">            for (final Thread thread : threads) {</span>
+<span class="fc" id="L328">                thread.interrupt();</span>
+<span class="fc" id="L329">                thread.join();</span>
+<span class="fc" id="L330">            }</span>
+<span class="fc bfc" id="L331" title="All 2 branches covered.">            for (final ThreadGroup threadGroup : threadGroups) {</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">                if (!threadGroup.isDestroyed()) {</span>
+<span class="fc" id="L333">                    threadGroup.destroy();</span>
+                }
+<span class="fc" id="L335">            }</span>
+        }
+<span class="fc" id="L337">    }</span>
+
+
+    private static class TestThread extends Thread {
+<span class="fc" id="L341">        private final CountDownLatch latch = new CountDownLatch(1);</span>
+
+        TestThread(final String name) {
+<span class="fc" id="L344">            super(name);</span>
+<span class="fc" id="L345">        }</span>
+
+        TestThread(final ThreadGroup group, final String name) {
+<span class="fc" id="L348">            super(group, name);</span>
+<span class="fc" id="L349">        }</span>
+
+        @Override
+        public synchronized void start() {
+<span class="fc" id="L353">            super.start();</span>
+            try {
+<span class="fc" id="L355">                latch.await();</span>
+<span class="nc" id="L356">            } catch (final InterruptedException e) {</span>
+<span class="nc" id="L357">                Thread.currentThread().interrupt();</span>
+<span class="fc" id="L358">            }</span>
+<span class="fc" id="L359">        }</span>
+
+        @Override
+        public void run() {
+<span class="fc" id="L363">            latch.countDown();</span>
+            try {
+<span class="fc" id="L365">                synchronized(this) {</span>
+<span class="nc" id="L366">                    this.wait();</span>
+<span class="nc" id="L367">                }</span>
+<span class="fc" id="L368">            } catch (final InterruptedException e) {</span>
+<span class="fc" id="L369">                Thread.currentThread().interrupt();</span>
+<span class="nc" id="L370">            }</span>
+<span class="fc" id="L371">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

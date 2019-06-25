@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestEventListenerList.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.event</a> &gt; <span class="el_source">TestEventListenerList.java</span></div><h1>TestEventListenerList.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.event;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Test class for {@code EventListenerList.}
+ *
+ * @since 2.0
+ */
+<span class="fc" id="L41">public class TestEventListenerList</span>
+{
+    /** Constant for a test event message. */
+    private static final String MESSAGE = &quot;TestEventMessage&quot;;
+
+    /** Type for the base event. */
+    private static EventType&lt;EventBase&gt; typeBase;
+
+    /** Type for sub event 1. */
+    private static EventType&lt;EventSub1&gt; typeSub1;
+
+    /** Type for sub event 2. */
+    private static EventType&lt;EventSub2&gt; typeSub2;
+
+    /** The list to be tested. */
+    private EventListenerList list;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception
+    {
+<span class="fc" id="L61">        typeBase = new EventType&lt;&gt;(Event.ANY, &quot;BASE&quot;);</span>
+<span class="fc" id="L62">        typeSub1 = new EventType&lt;&gt;(typeBase, &quot;SUB1&quot;);</span>
+<span class="fc" id="L63">        typeSub2 = new EventType&lt;&gt;(typeBase, &quot;SUB2&quot;);</span>
+<span class="fc" id="L64">    }</span>
+
+    @Before
+    public void setUp() throws Exception
+    {
+<span class="fc" id="L69">        list = new EventListenerList();</span>
+<span class="fc" id="L70">    }</span>
+
+    /**
+     * Tries to register a listener for a null event type.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterEventTypeNull()
+    {
+<span class="nc" id="L78">        list.addEventListener(null, new ListenerTestImpl());</span>
+<span class="nc" id="L79">    }</span>
+
+    /**
+     * Tests that null event listeners cannot be registered.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterListenerNull()
+    {
+<span class="nc" id="L87">        list.addEventListener(typeBase, null);</span>
+<span class="nc" id="L88">    }</span>
+
+    /**
+     * Tests that a null event is rejected by fire().
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFireNullEvent()
+    {
+<span class="nc" id="L96">        list.fire(null);</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Tests whether events matching the registration type are delivered.
+     */
+    @Test
+    public void testReceiveEventOfExactType()
+    {
+<span class="fc" id="L105">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L106">        list.addEventListener(typeSub1, listener);</span>
+
+<span class="fc" id="L108">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L109">        listener.assertEvent(this, typeSub1, MESSAGE);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Tests whether multiple event listeners can be registered.
+     */
+    @Test
+    public void testReceiveEventMultipleListeners()
+    {
+<span class="fc" id="L118">        final ListenerTestImpl listener1 = new ListenerTestImpl();</span>
+<span class="fc" id="L119">        final ListenerTestImpl listener2 = new ListenerTestImpl();</span>
+<span class="fc" id="L120">        list.addEventListener(typeSub1, listener1);</span>
+<span class="fc" id="L121">        list.addEventListener(typeSub1, listener2);</span>
+
+<span class="fc" id="L123">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L124">        listener1.assertEvent(this, typeSub1, MESSAGE);</span>
+<span class="fc" id="L125">        listener2.assertEvent(this, typeSub1, MESSAGE);</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Tests whether the event type is taken into account when calling
+     * listeners.
+     */
+    @Test
+    public void testReceiveEventDifferentType()
+    {
+<span class="fc" id="L135">        final ListenerTestImpl listener1 = new ListenerTestImpl();</span>
+<span class="fc" id="L136">        final ListenerTestImpl listener2 = new ListenerTestImpl();</span>
+<span class="fc" id="L137">        list.addEventListener(typeSub1, listener1);</span>
+<span class="fc" id="L138">        list.addEventListener(typeSub2, listener2);</span>
+
+<span class="fc" id="L140">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L141">        listener1.assertEvent(this, typeSub1, MESSAGE);</span>
+<span class="fc" id="L142">        listener2.assertNoEvent();</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Tests that events of a base type do not cause a listener to be invoked.
+     */
+    @Test
+    public void testSuppressEventOfSuperType()
+    {
+<span class="fc" id="L151">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L152">        list.addEventListener(typeSub1, listener);</span>
+
+<span class="fc" id="L154">        list.fire(new EventBase(this, typeBase, MESSAGE));</span>
+<span class="fc" id="L155">        listener.assertNoEvent();</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Tests that events of a derived type are delivered to listeners registered
+     * for a base type.
+     */
+    @Test
+    public void testReceiveEventSubType()
+    {
+<span class="fc" id="L165">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L166">        list.addEventListener(typeBase, listener);</span>
+
+<span class="fc" id="L168">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L169">        listener.assertEvent(this, typeSub1, MESSAGE);</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Tests whether an event listener can be registered via a registration data
+     * object.
+     */
+    @Test
+    public void testListenerRegistrationWithListenerData()
+    {
+<span class="fc" id="L179">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L180">        final EventListenerRegistrationData&lt;EventSub1&gt; regData =</span>
+                new EventListenerRegistrationData&lt;&gt;(typeSub1, listener);
+<span class="fc" id="L182">        list.addEventListener(regData);</span>
+
+<span class="fc" id="L184">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L185">        listener.assertEvent(this, typeSub1, MESSAGE);</span>
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Tries to register a listener with a null registration data object.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testListenerRegistrationWithNullListenerData()
+    {
+<span class="nc" id="L194">        list.addEventListener(null);</span>
+<span class="nc" id="L195">    }</span>
+
+    /**
+     * Tests removeEventListener() for a non-existing event listener.
+     */
+    @Test
+    public void testRemoveEventListenerNonExistingListener()
+    {
+<span class="fc" id="L203">        list.addEventListener(typeBase, new ListenerTestImpl());</span>
+<span class="fc" id="L204">        assertFalse(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L205">                list.removeEventListener(typeBase, new ListenerTestImpl()));</span>
+<span class="fc" id="L206">    }</span>
+
+    /**
+     * Tests removeEventListener() if another event type is specified for an
+     * existing listener.
+     */
+    @Test
+    public void testRemoveEventListenerNonExistingEventType()
+    {
+<span class="fc" id="L215">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L216">        list.addEventListener(typeSub1, listener);</span>
+
+<span class="fc" id="L218">        assertFalse(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L219">                list.removeEventListener(typeBase, listener));</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Tests whether an event listener can be removed.
+     */
+    @Test
+    public void testRemoveEventListenerExisting()
+    {
+<span class="fc" id="L228">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L229">        list.addEventListener(typeSub1, listener);</span>
+
+<span class="fc" id="L231">        assertTrue(&quot;Wrong result&quot;, list.removeEventListener(typeSub1, listener));</span>
+<span class="fc" id="L232">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L233">        listener.assertNoEvent();</span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * Tests that removeEventListener() can handle a null registration object.
+     */
+    @Test
+    public void testRemoveEventListenerNullRegistration()
+    {
+<span class="fc" id="L242">        assertFalse(&quot;Wrong result&quot;, list.removeEventListener(null));</span>
+<span class="fc" id="L243">    }</span>
+
+    /**
+     * Tests that removeEventListener() can handle a null listener.
+     */
+    @Test
+    public void testRemoveEventListenerNullListener()
+    {
+<span class="fc" id="L251">        assertFalse(&quot;Wrong result&quot;, list.removeEventListener(typeBase, null));</span>
+<span class="fc" id="L252">    }</span>
+
+    /**
+     * Tests that removeEventListener() can handle a null event type.
+     */
+    @Test
+    public void testRemoveEventListenerNullType()
+    {
+<span class="fc" id="L260">        assertFalse(&quot;Wrong result&quot;,</span>
+<span class="fc" id="L261">                list.removeEventListener(null, new ListenerTestImpl()));</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Tests that a listener can be registered multiple times for different
+     * event types.
+     */
+    @Test
+    public void testMultipleListenerRegistration()
+    {
+<span class="fc" id="L271">        final ListenerTestImpl listener = new ListenerTestImpl();</span>
+<span class="fc" id="L272">        list.addEventListener(typeSub1, listener);</span>
+<span class="fc" id="L273">        list.addEventListener(typeSub2, listener);</span>
+
+<span class="fc" id="L275">        list.fire(new EventSub2(this, typeSub2, MESSAGE));</span>
+<span class="fc" id="L276">        list.removeEventListener(typeSub1, listener);</span>
+<span class="fc" id="L277">        list.fire(new EventSub1(this, typeSub1, MESSAGE));</span>
+<span class="fc" id="L278">        listener.assertEvent(this, typeSub2, MESSAGE);</span>
+<span class="fc" id="L279">    }</span>
+
+    /**
+     * Helper method for collecting the elements in the given iterable.
+     *
+     * @param iterable the iterable
+     * @return a list with the content of the iterable
+     */
+    private static &lt;T&gt; List&lt;T&gt; fetchElements(final Iterable&lt;? extends T&gt; iterable)
+    {
+<span class="fc" id="L289">        final List&lt;T&gt; elems = new LinkedList&lt;&gt;();</span>
+<span class="fc bfc" id="L290" title="All 2 branches covered.">        for (final T listener : iterable)</span>
+        {
+<span class="fc" id="L292">            elems.add(listener);</span>
+<span class="fc" id="L293">        }</span>
+<span class="fc" id="L294">        return elems;</span>
+    }
+
+    /**
+     * Helper method for checking whether a specific set of event listeners is
+     * returned by getEventListeners().
+     *
+     * @param eventType the event type
+     * @param expListeners the expected listeners
+     */
+    private void checkEventListenersForType(
+            final EventType&lt;? extends Event&gt; eventType,
+            final EventListener&lt;?&gt;... expListeners)
+    {
+<span class="fc" id="L308">        final List&lt;?&gt; listeners = fetchElements(list.getEventListeners(eventType));</span>
+<span class="fc" id="L309">        assertEquals(&quot;Wrong number of listeners&quot;, expListeners.length,</span>
+<span class="fc" id="L310">                listeners.size());</span>
+<span class="fc" id="L311">        assertTrue(&quot;Wrong event listeners: &quot; + listeners,</span>
+<span class="fc" id="L312">                listeners.containsAll(Arrays.asList(expListeners)));</span>
+<span class="fc" id="L313">    }</span>
+
+    /**
+     * Tests whether event listeners for a null type can be queried.
+     */
+    @Test
+    public void testGetEventListenersNull()
+    {
+<span class="fc" id="L321">        assertTrue(&quot;Got listeners&quot;,</span>
+<span class="fc" id="L322">                fetchElements(list.getEventListeners(null)).isEmpty());</span>
+<span class="fc" id="L323">    }</span>
+
+    /**
+     * Tests that an empty result is correctly handled by getEventListeners().
+     */
+    @Test
+    public void testGetEventListenersNoMatch()
+    {
+<span class="fc" id="L331">        list.addEventListener(typeSub1, new ListenerTestImpl());</span>
+<span class="fc" id="L332">        checkEventListenersForType(typeSub2);</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * Tests whether only matching event listeners are returned by
+     * getEventListeners().
+     */
+    @Test
+    public void testGetEventListenersMatchingType()
+    {
+<span class="fc" id="L342">        final ListenerTestImpl listener1 = new ListenerTestImpl();</span>
+<span class="fc" id="L343">        final ListenerTestImpl listener2 = new ListenerTestImpl();</span>
+<span class="fc" id="L344">        list.addEventListener(typeSub1, listener1);</span>
+<span class="fc" id="L345">        list.addEventListener(typeSub2, listener2);</span>
+<span class="fc" id="L346">        checkEventListenersForType(typeSub1, listener1);</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * Tests whether the base type is taken into account when querying for event
+     * listeners.
+     */
+    @Test
+    public void testGetEventListenersBaseType()
+    {
+<span class="fc" id="L356">        final ListenerTestImpl listener1 = new ListenerTestImpl();</span>
+<span class="fc" id="L357">        final ListenerTestImpl listener2 = new ListenerTestImpl();</span>
+<span class="fc" id="L358">        list.addEventListener(typeBase, listener1);</span>
+<span class="fc" id="L359">        list.addEventListener(typeBase, listener2);</span>
+<span class="fc" id="L360">        checkEventListenersForType(typeSub1, listener1, listener2);</span>
+<span class="fc" id="L361">    }</span>
+
+    /**
+     * Tests that the iterator returned by getEventListeners() throws an
+     * exception if the iteration goes beyond the last element.
+     */
+    @Test(expected = NoSuchElementException.class)
+    public void testGetEventListenersIteratorNextNoElement()
+    {
+<span class="fc" id="L370">        final ListenerTestImpl listener1 = new ListenerTestImpl();</span>
+<span class="fc" id="L371">        final ListenerTestImpl listener2 = new ListenerTestImpl();</span>
+<span class="fc" id="L372">        list.addEventListener(typeBase, listener1);</span>
+<span class="fc" id="L373">        list.addEventListener(typeBase, listener2);</span>
+<span class="fc" id="L374">        final Iterator&lt;EventListener&lt;? super EventBase&gt;&gt; iterator =</span>
+<span class="fc" id="L375">                list.getEventListeners(typeBase).iterator();</span>
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">        for (int i = 0; i &lt; 3; i++)</span>
+        {
+<span class="fc" id="L378">            iterator.next();</span>
+        }
+<span class="nc" id="L380">    }</span>
+
+    /**
+     * Tests that the iterator returned by getEventListeners() does not support
+     * remove() operations.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetEventListenersIteratorRemove()
+    {
+<span class="fc" id="L389">        list.addEventListener(typeBase, new ListenerTestImpl());</span>
+<span class="fc" id="L390">        final Iterator&lt;EventListener&lt;? super EventBase&gt;&gt; iterator =</span>
+<span class="fc" id="L391">                list.getEventListeners(typeBase).iterator();</span>
+<span class="fc" id="L392">        assertTrue(&quot;Wrong result&quot;, iterator.hasNext());</span>
+<span class="nc" id="L393">        iterator.remove();</span>
+<span class="nc" id="L394">    }</span>
+
+    /**
+     * Tests whether the event listener iterator validates the passed in event
+     * object.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testEventListenerIteratorWrongEvent()
+    {
+<span class="fc" id="L403">        final EventListener&lt;EventSub2&gt; listener = new EventListener&lt;EventSub2&gt;()</span>
+<span class="fc" id="L404">        {</span>
+            @Override
+            public void onEvent(final EventSub2 event)
+            {
+<span class="nc" id="L408">            }</span>
+        };
+<span class="fc" id="L410">        list.addEventListener(typeSub2, listener);</span>
+<span class="fc" id="L411">        final EventListenerList.EventListenerIterator&lt;EventSub2&gt; iterator =</span>
+<span class="fc" id="L412">                list.getEventListenerIterator(typeSub2);</span>
+<span class="fc" id="L413">        assertTrue(&quot;No elements&quot;, iterator.hasNext());</span>
+<span class="nc" id="L414">        iterator.invokeNext(new EventBase(this, typeBase, &quot;Test&quot;));</span>
+<span class="nc" id="L415">    }</span>
+
+    /**
+     * Tests that a null event is handled by the iterator.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testEventListenerIteratorNullEvent()
+    {
+<span class="fc" id="L423">        list.addEventListener(typeBase, new ListenerTestImpl());</span>
+<span class="fc" id="L424">        final EventListenerList.EventListenerIterator&lt;EventBase&gt; iterator =</span>
+<span class="fc" id="L425">                list.getEventListenerIterator(typeBase);</span>
+<span class="nc" id="L426">        iterator.invokeNext(null);</span>
+<span class="nc" id="L427">    }</span>
+
+    /**
+     * Tests whether all event listener registrations can be queried.
+     */
+    @Test
+    public void testGetRegistrations()
+    {
+<span class="fc" id="L435">        final EventListenerRegistrationData&lt;EventSub1&gt; reg1 =</span>
+                new EventListenerRegistrationData&lt;&gt;(typeSub1,
+                        new ListenerTestImpl());
+<span class="fc" id="L438">        final EventListenerRegistrationData&lt;EventSub2&gt; reg2 =</span>
+                new EventListenerRegistrationData&lt;&gt;(typeSub2,
+                        new ListenerTestImpl());
+<span class="fc" id="L441">        list.addEventListener(reg1);</span>
+<span class="fc" id="L442">        list.addEventListener(reg2);</span>
+
+<span class="fc" id="L444">        final List&lt;EventListenerRegistrationData&lt;?&gt;&gt; registrations =</span>
+<span class="fc" id="L445">                list.getRegistrations();</span>
+<span class="fc" id="L446">        assertEquals(&quot;Wrong number of registrations&quot;, 2, registrations.size());</span>
+<span class="fc" id="L447">        assertTrue(&quot;Registration 1 not found&quot;, registrations.contains(reg1));</span>
+<span class="fc" id="L448">        assertTrue(&quot;Registration 2 not found&quot;, registrations.contains(reg2));</span>
+<span class="fc" id="L449">    }</span>
+
+    /**
+     * Tests that the list with registration information cannot be modified.
+     */
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetRegistrationsModify()
+    {
+<span class="nc" id="L457">        list.getRegistrations().add(</span>
+                new EventListenerRegistrationData&lt;&gt;(typeBase,
+                        new ListenerTestImpl()));
+<span class="nc" id="L460">    }</span>
+
+    /**
+     * Tests whether the list can be cleared.
+     */
+    @Test
+    public void testClear()
+    {
+<span class="fc" id="L468">        list.addEventListener(typeSub1, new ListenerTestImpl());</span>
+<span class="fc" id="L469">        list.addEventListener(typeSub2, new ListenerTestImpl());</span>
+
+<span class="fc" id="L471">        list.clear();</span>
+<span class="fc" id="L472">        assertTrue(&quot;Got listeners&quot;, list.getRegistrations().isEmpty());</span>
+<span class="fc" id="L473">    }</span>
+
+    /**
+     * Tests whether the content of another list can be added.
+     */
+    @Test
+    public void testAddAll()
+    {
+<span class="fc" id="L481">        final EventListener&lt;EventBase&gt; l1 = new ListenerTestImpl();</span>
+<span class="fc" id="L482">        final EventListener&lt;EventBase&gt; l2 = new ListenerTestImpl();</span>
+<span class="fc" id="L483">        final EventListener&lt;EventBase&gt; l3 = new ListenerTestImpl();</span>
+<span class="fc" id="L484">        list.addEventListener(typeBase, l1);</span>
+<span class="fc" id="L485">        final EventListenerList list2 = new EventListenerList();</span>
+<span class="fc" id="L486">        list2.addEventListener(typeSub1, l2);</span>
+<span class="fc" id="L487">        list2.addEventListener(typeBase, l3);</span>
+
+<span class="fc" id="L489">        list.addAll(list2);</span>
+<span class="fc" id="L490">        final Iterator&lt;EventListenerRegistrationData&lt;?&gt;&gt; it =</span>
+<span class="fc" id="L491">                list.getRegistrations().iterator();</span>
+<span class="fc" id="L492">        EventListenerRegistrationData&lt;?&gt; reg = it.next();</span>
+<span class="fc" id="L493">        assertEquals(&quot;Wrong type (1)&quot;, typeBase, reg.getEventType());</span>
+<span class="fc" id="L494">        assertEquals(&quot;Wrong listener (1)&quot;, l1, reg.getListener());</span>
+<span class="fc" id="L495">        reg = it.next();</span>
+<span class="fc" id="L496">        assertEquals(&quot;Wrong type (2)&quot;, typeSub1, reg.getEventType());</span>
+<span class="fc" id="L497">        assertEquals(&quot;Wrong listener (2)&quot;, l2, reg.getListener());</span>
+<span class="fc" id="L498">        reg = it.next();</span>
+<span class="fc" id="L499">        assertEquals(&quot;Wrong type (3)&quot;, typeBase, reg.getEventType());</span>
+<span class="fc" id="L500">        assertEquals(&quot;Wrong listener (3)&quot;, l3, reg.getListener());</span>
+<span class="fc" id="L501">    }</span>
+
+    /**
+     * Tries to add the content of a null list.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddAllNull()
+    {
+<span class="nc" id="L509">        list.addAll(null);</span>
+<span class="nc" id="L510">    }</span>
+
+    /**
+     * Tests whether event listener registrations derived from a super type can
+     * be queried.
+     */
+    @Test
+    public void testGetEventListenerRegistrationsForSuperType()
+    {
+<span class="fc" id="L519">        final ListenerTestImpl l1 = new ListenerTestImpl();</span>
+<span class="fc" id="L520">        final ListenerTestImpl l2 = new ListenerTestImpl();</span>
+        @SuppressWarnings(&quot;unchecked&quot;)
+        final
+<span class="fc" id="L523">        EventListener&lt;Event&gt; l3 = EasyMock.createMock(EventListener.class);</span>
+<span class="fc" id="L524">        list.addEventListener(typeSub1, l1);</span>
+<span class="fc" id="L525">        list.addEventListener(Event.ANY, l3);</span>
+<span class="fc" id="L526">        list.addEventListener(typeBase, l2);</span>
+
+<span class="fc" id="L528">        final List&lt;EventListenerRegistrationData&lt;? extends EventBase&gt;&gt; regs =</span>
+<span class="fc" id="L529">                list.getRegistrationsForSuperType(typeBase);</span>
+<span class="fc" id="L530">        final Iterator&lt;EventListenerRegistrationData&lt;? extends EventBase&gt;&gt; iterator =</span>
+<span class="fc" id="L531">                regs.iterator();</span>
+<span class="fc" id="L532">        assertEquals(&quot;Wrong listener 1&quot;, l1, iterator.next().getListener());</span>
+<span class="fc" id="L533">        assertEquals(&quot;Wrong listener 2&quot;, l2, iterator.next().getListener());</span>
+<span class="fc" id="L534">        assertFalse(&quot;Too many elements&quot;, iterator.hasNext());</span>
+<span class="fc" id="L535">    }</span>
+
+    /**
+     * Test event class. For testing purposes, a small hierarchy of test event
+     * class is created. This way it can be checked whether event types are
+     * correctly evaluated and take the event hierarchy into account.
+     */
+    private static class EventBase extends Event
+    {
+        private static final long serialVersionUID = 1L;
+
+        /** An event message for testing pay-load. */
+        private final String message;
+
+        public EventBase(final Object source, final EventType&lt;? extends EventBase&gt; type,
+                final String msg)
+        {
+<span class="fc" id="L552">            super(source, type);</span>
+<span class="fc" id="L553">            message = msg;</span>
+<span class="fc" id="L554">        }</span>
+
+        public String getMessage()
+        {
+<span class="fc" id="L558">            return message;</span>
+        }
+    }
+
+    /**
+     * A test event class derived from the base test event class.
+     */
+    private static class EventSub1 extends EventBase
+    {
+        private static final long serialVersionUID = 1L;
+
+        public EventSub1(final Object source, final EventType&lt;? extends EventSub1&gt; type,
+                final String msg)
+        {
+<span class="fc" id="L572">            super(source, type, msg);</span>
+<span class="fc" id="L573">        }</span>
+    }
+
+    /**
+     * Another test event class derived from the base class.
+     */
+    private static class EventSub2 extends EventBase
+    {
+        private static final long serialVersionUID = 1L;
+
+        public EventSub2(final Object source, final EventType&lt;? extends EventSub2&gt; type,
+                final String msg)
+        {
+<span class="fc" id="L586">            super(source, type, msg);</span>
+<span class="fc" id="L587">        }</span>
+    }
+
+    /**
+     * A test event listener implementation. This listener class expects that it
+     * receives at most a single event. This event is stored for further
+     * evaluation.
+     */
+    private static class ListenerTestImpl implements EventListener&lt;EventBase&gt;
+    {
+        /** The event received by this object. */
+        private EventBase receivedEvent;
+
+        @Override
+        public void onEvent(final EventBase event)
+        {
+<span class="fc" id="L603">            assertNull(&quot;Too many events: &quot; + event, receivedEvent);</span>
+<span class="fc" id="L604">            receivedEvent = event;</span>
+<span class="fc" id="L605">        }</span>
+
+        /**
+         * Checks that this listener has not received any event.
+         */
+        public void assertNoEvent()
+        {
+<span class="fc" id="L612">            assertNull(&quot;Unexpected event received: &quot; + receivedEvent,</span>
+                    receivedEvent);
+<span class="fc" id="L614">        }</span>
+
+        /**
+         * Checks that this listener has received an event with the expected
+         * properties.
+         *
+         * @param expSource the expected source
+         * @param expType the expected type
+         * @param expMessage the expected message
+         */
+        public void assertEvent(final Object expSource, final EventType&lt;?&gt; expType,
+                final String expMessage)
+        {
+<span class="fc" id="L627">            assertNotNull(&quot;No event received&quot;, receivedEvent);</span>
+<span class="fc" id="L628">            assertEquals(&quot;Wrong source&quot;, expSource, receivedEvent.getSource());</span>
+<span class="fc" id="L629">            assertEquals(&quot;Wrong event type&quot;, expType,</span>
+<span class="fc" id="L630">                    receivedEvent.getEventType());</span>
+<span class="fc" id="L631">            assertEquals(&quot;Wrong message&quot;, expMessage,</span>
+<span class="fc" id="L632">                    receivedEvent.getMessage());</span>
+<span class="fc" id="L633">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

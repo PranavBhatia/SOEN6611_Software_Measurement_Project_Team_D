@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExceptionUtilsTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.exception</a> &gt; <span class="el_source">ExceptionUtilsTest.java</span></div><h1>ExceptionUtilsTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3.exception;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.List;
+
+import org.apache.commons.lang3.test.NotVisibleExceptionFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests {@link org.apache.commons.lang3.exception.ExceptionUtils}.
+ *
+ * @since 1.0
+ */
+<span class="fc" id="L45">public class ExceptionUtilsTest {</span>
+
+    /**
+     * Provides a method with a well known chained/nested exception
+     * name which matches the full signature (e.g. has a return value
+     * of &lt;code&gt;Throwable&lt;/code&gt;.
+     */
+    private static class ExceptionWithCause extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        private Throwable cause;
+
+        ExceptionWithCause(final String str, final Throwable cause) {
+<span class="fc" id="L58">            super(str);</span>
+<span class="fc" id="L59">            setCause(cause);</span>
+<span class="fc" id="L60">        }</span>
+
+        ExceptionWithCause(final Throwable cause) {
+<span class="fc" id="L63">            super();</span>
+<span class="fc" id="L64">            setCause(cause);</span>
+<span class="fc" id="L65">        }</span>
+
+        @Override
+        public Throwable getCause() {
+<span class="fc" id="L69">            return cause;</span>
+        }
+
+        public void setCause(final Throwable cause) {
+<span class="fc" id="L73">            this.cause = cause;</span>
+<span class="fc" id="L74">        }</span>
+    }
+    /**
+     * Provides a method with a well known chained/nested exception
+     * name which does not match the full signature (e.g. lacks a
+     * return value of &lt;code&gt;Throwable&lt;/code&gt;.
+     */
+    private static class ExceptionWithoutCause extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        @SuppressWarnings(&quot;unused&quot;)
+        public void getTargetException() {
+            // noop
+<span class="nc" id="L87">        }</span>
+    }
+    // Temporary classes to allow the nested exception code to be removed
+    // prior to a rewrite of this test class.
+    private static class NestableException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        @SuppressWarnings(&quot;unused&quot;)
+        NestableException() {
+<span class="nc" id="L96">            super();</span>
+<span class="nc" id="L97">        }</span>
+
+        NestableException(final Throwable t) {
+<span class="fc" id="L100">            super(t);</span>
+<span class="fc" id="L101">        }</span>
+    }
+<span class="fc" id="L103">    public static class TestThrowable extends Throwable {</span>
+        private static final long serialVersionUID = 1L;
+    }
+    private static int redeclareCheckedException() {
+<span class="nc" id="L107">        return throwsCheckedException();</span>
+    }
+    private static int throwsCheckedException() {
+        try {
+<span class="fc" id="L111">            throw new IOException();</span>
+<span class="fc" id="L112">        } catch (final Exception e) {</span>
+<span class="nc" id="L113">            return ExceptionUtils.&lt;Integer&gt;rethrow(e);</span>
+        }
+    }
+
+
+    private NestableException nested;
+
+
+    private Throwable withCause;
+
+    private Throwable withoutCause;
+
+    private Throwable jdkNoCause;
+
+    //-----------------------------------------------------------------------
+
+    private ExceptionWithCause cyclicCause;
+
+    private Throwable notVisibleException;
+
+    private Throwable createExceptionWithCause() {
+        try {
+            try {
+<span class="fc" id="L136">                throw new ExceptionWithCause(createExceptionWithoutCause());</span>
+<span class="fc" id="L137">            } catch (final Throwable t) {</span>
+<span class="fc" id="L138">                throw new ExceptionWithCause(t);</span>
+            }
+<span class="fc" id="L140">        } catch (final Throwable t) {</span>
+<span class="fc" id="L141">            return t;</span>
+        }
+    }
+
+    //-----------------------------------------------------------------------
+    private Throwable createExceptionWithoutCause() {
+        try {
+<span class="fc" id="L148">            throw new ExceptionWithoutCause();</span>
+<span class="fc" id="L149">        } catch (final Throwable t) {</span>
+<span class="fc" id="L150">            return t;</span>
+        }
+    }
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L156">        withoutCause = createExceptionWithoutCause();</span>
+<span class="fc" id="L157">        nested = new NestableException(withoutCause);</span>
+<span class="fc" id="L158">        withCause = new ExceptionWithCause(nested);</span>
+<span class="fc" id="L159">        jdkNoCause = new NullPointerException();</span>
+<span class="fc" id="L160">        final ExceptionWithCause a = new ExceptionWithCause(null);</span>
+<span class="fc" id="L161">        final ExceptionWithCause b = new ExceptionWithCause(a);</span>
+<span class="fc" id="L162">        a.setCause(b);</span>
+<span class="fc" id="L163">        cyclicCause = new ExceptionWithCause(a);</span>
+<span class="fc" id="L164">        notVisibleException = NotVisibleExceptionFactory.createException(withoutCause);</span>
+<span class="fc" id="L165">    }</span>
+
+    @AfterEach
+    public void tearDown() {
+<span class="fc" id="L169">        withoutCause = null;</span>
+<span class="fc" id="L170">        nested = null;</span>
+<span class="fc" id="L171">        withCause = null;</span>
+<span class="fc" id="L172">        jdkNoCause = null;</span>
+<span class="fc" id="L173">        cyclicCause = null;</span>
+<span class="fc" id="L174">        notVisibleException = null;</span>
+<span class="fc" id="L175">    }</span>
+
+    @Test
+    public void test_getMessage_Throwable() {
+<span class="fc" id="L179">        Throwable th = null;</span>
+<span class="fc" id="L180">        assertEquals(&quot;&quot;, ExceptionUtils.getMessage(th));</span>
+
+<span class="fc" id="L182">        th = new IllegalArgumentException(&quot;Base&quot;);</span>
+<span class="fc" id="L183">        assertEquals(&quot;IllegalArgumentException: Base&quot;, ExceptionUtils.getMessage(th));</span>
+
+<span class="fc" id="L185">        th = new ExceptionWithCause(&quot;Wrapper&quot;, th);</span>
+<span class="fc" id="L186">        assertEquals(&quot;ExceptionUtilsTest.ExceptionWithCause: Wrapper&quot;, ExceptionUtils.getMessage(th));</span>
+<span class="fc" id="L187">    }</span>
+
+    @Test
+    public void test_getRootCauseMessage_Throwable() {
+<span class="fc" id="L191">        Throwable th = null;</span>
+<span class="fc" id="L192">        assertEquals(&quot;&quot;, ExceptionUtils.getRootCauseMessage(th));</span>
+
+<span class="fc" id="L194">        th = new IllegalArgumentException(&quot;Base&quot;);</span>
+<span class="fc" id="L195">        assertEquals(&quot;IllegalArgumentException: Base&quot;, ExceptionUtils.getRootCauseMessage(th));</span>
+
+<span class="fc" id="L197">        th = new ExceptionWithCause(&quot;Wrapper&quot;, th);</span>
+<span class="fc" id="L198">        assertEquals(&quot;IllegalArgumentException: Base&quot;, ExceptionUtils.getRootCauseMessage(th));</span>
+<span class="fc" id="L199">    }</span>
+
+    @Test
+    public void testCatchTechniques() {
+<span class="fc" id="L203">        IOException ioe = assertThrows(IOException.class, ExceptionUtilsTest::throwsCheckedException);</span>
+<span class="fc" id="L204">        assertEquals(1, ExceptionUtils.getThrowableCount(ioe));</span>
+
+<span class="fc" id="L206">        ioe = assertThrows(IOException.class, ExceptionUtilsTest::redeclareCheckedException);</span>
+<span class="fc" id="L207">        assertEquals(1, ExceptionUtils.getThrowableCount(ioe));</span>
+<span class="fc" id="L208">    }</span>
+
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L212">        assertNotNull(new ExceptionUtils());</span>
+<span class="fc" id="L213">        final Constructor&lt;?&gt;[] cons = ExceptionUtils.class.getDeclaredConstructors();</span>
+<span class="fc" id="L214">        assertEquals(1, cons.length);</span>
+<span class="fc" id="L215">        assertTrue(Modifier.isPublic(cons[0].getModifiers()));</span>
+<span class="fc" id="L216">        assertTrue(Modifier.isPublic(ExceptionUtils.class.getModifiers()));</span>
+<span class="fc" id="L217">        assertFalse(Modifier.isFinal(ExceptionUtils.class.getModifiers()));</span>
+<span class="fc" id="L218">    }</span>
+
+    //-----------------------------------------------------------------------
+    @SuppressWarnings(&quot;deprecation&quot;) // Specifically tests the deprecated methods
+    @Test
+    public void testGetCause_Throwable() {
+<span class="fc" id="L224">        assertSame(null, ExceptionUtils.getCause(null));</span>
+<span class="fc" id="L225">        assertSame(null, ExceptionUtils.getCause(withoutCause));</span>
+<span class="fc" id="L226">        assertSame(withoutCause, ExceptionUtils.getCause(nested));</span>
+<span class="fc" id="L227">        assertSame(nested, ExceptionUtils.getCause(withCause));</span>
+<span class="fc" id="L228">        assertSame(null, ExceptionUtils.getCause(jdkNoCause));</span>
+<span class="fc" id="L229">        assertSame(cyclicCause.getCause(), ExceptionUtils.getCause(cyclicCause));</span>
+<span class="fc" id="L230">        assertSame(cyclicCause.getCause().getCause(), ExceptionUtils.getCause(cyclicCause.getCause()));</span>
+<span class="fc" id="L231">        assertSame(cyclicCause.getCause(), ExceptionUtils.getCause(cyclicCause.getCause().getCause()));</span>
+<span class="fc" id="L232">        assertSame(withoutCause, ExceptionUtils.getCause(notVisibleException));</span>
+<span class="fc" id="L233">    }</span>
+
+    @SuppressWarnings(&quot;deprecation&quot;) // Specifically tests the deprecated methods
+    @Test
+    public void testGetCause_ThrowableArray() {
+<span class="fc" id="L238">        assertSame(null, ExceptionUtils.getCause(null, null));</span>
+<span class="fc" id="L239">        assertSame(null, ExceptionUtils.getCause(null, new String[0]));</span>
+
+        // not known type, so match on supplied method names
+<span class="fc" id="L242">        assertSame(nested, ExceptionUtils.getCause(withCause, null));  // default names</span>
+<span class="fc" id="L243">        assertSame(null, ExceptionUtils.getCause(withCause, new String[0]));</span>
+<span class="fc" id="L244">        assertSame(null, ExceptionUtils.getCause(withCause, new String[]{null}));</span>
+<span class="fc" id="L245">        assertSame(nested, ExceptionUtils.getCause(withCause, new String[]{&quot;getCause&quot;}));</span>
+
+        // not known type, so match on supplied method names
+<span class="fc" id="L248">        assertSame(null, ExceptionUtils.getCause(withoutCause, null));</span>
+<span class="fc" id="L249">        assertSame(null, ExceptionUtils.getCause(withoutCause, new String[0]));</span>
+<span class="fc" id="L250">        assertSame(null, ExceptionUtils.getCause(withoutCause, new String[]{null}));</span>
+<span class="fc" id="L251">        assertSame(null, ExceptionUtils.getCause(withoutCause, new String[]{&quot;getCause&quot;}));</span>
+<span class="fc" id="L252">        assertSame(null, ExceptionUtils.getCause(withoutCause, new String[]{&quot;getTargetException&quot;}));</span>
+<span class="fc" id="L253">    }</span>
+
+    @Test
+    public void testGetRootCause_Throwable() {
+<span class="fc" id="L257">        assertSame(null, ExceptionUtils.getRootCause(null));</span>
+<span class="fc" id="L258">        assertSame(withoutCause, ExceptionUtils.getRootCause(withoutCause));</span>
+<span class="fc" id="L259">        assertSame(withoutCause, ExceptionUtils.getRootCause(nested));</span>
+<span class="fc" id="L260">        assertSame(withoutCause, ExceptionUtils.getRootCause(withCause));</span>
+<span class="fc" id="L261">        assertSame(jdkNoCause, ExceptionUtils.getRootCause(jdkNoCause));</span>
+<span class="fc" id="L262">        assertSame(cyclicCause.getCause().getCause(), ExceptionUtils.getRootCause(cyclicCause));</span>
+<span class="fc" id="L263">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetRootCauseStackTrace_Throwable() {
+<span class="fc" id="L268">        assertEquals(0, ExceptionUtils.getRootCauseStackTrace(null).length);</span>
+
+<span class="fc" id="L270">        final Throwable cause = createExceptionWithCause();</span>
+<span class="fc" id="L271">        String[] stackTrace = ExceptionUtils.getRootCauseStackTrace(cause);</span>
+<span class="fc" id="L272">        boolean match = false;</span>
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        for (final String element : stackTrace) {</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">            if (element.startsWith(ExceptionUtils.WRAPPED_MARKER)) {</span>
+<span class="fc" id="L275">                match = true;</span>
+<span class="fc" id="L276">                break;</span>
+            }
+        }
+<span class="fc" id="L279">        assertTrue(match);</span>
+
+<span class="fc" id="L281">        stackTrace = ExceptionUtils.getRootCauseStackTrace(withoutCause);</span>
+<span class="fc" id="L282">        match = false;</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">        for (final String element : stackTrace) {</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">            if (element.startsWith(ExceptionUtils.WRAPPED_MARKER)) {</span>
+<span class="nc" id="L285">                match = true;</span>
+<span class="nc" id="L286">                break;</span>
+            }
+        }
+<span class="fc" id="L289">        assertFalse(match);</span>
+<span class="fc" id="L290">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetThrowableCount_Throwable() {
+<span class="fc" id="L295">        assertEquals(0, ExceptionUtils.getThrowableCount(null));</span>
+<span class="fc" id="L296">        assertEquals(1, ExceptionUtils.getThrowableCount(withoutCause));</span>
+<span class="fc" id="L297">        assertEquals(2, ExceptionUtils.getThrowableCount(nested));</span>
+<span class="fc" id="L298">        assertEquals(3, ExceptionUtils.getThrowableCount(withCause));</span>
+<span class="fc" id="L299">        assertEquals(1, ExceptionUtils.getThrowableCount(jdkNoCause));</span>
+<span class="fc" id="L300">        assertEquals(3, ExceptionUtils.getThrowableCount(cyclicCause));</span>
+<span class="fc" id="L301">    }</span>
+
+    @Test
+    public void testGetThrowableList_Throwable_jdkNoCause() {
+<span class="fc" id="L305">        final List&lt;?&gt; throwables = ExceptionUtils.getThrowableList(jdkNoCause);</span>
+<span class="fc" id="L306">        assertEquals(1, throwables.size());</span>
+<span class="fc" id="L307">        assertSame(jdkNoCause, throwables.get(0));</span>
+<span class="fc" id="L308">    }</span>
+
+    @Test
+    public void testGetThrowableList_Throwable_nested() {
+<span class="fc" id="L312">        final List&lt;?&gt; throwables = ExceptionUtils.getThrowableList(nested);</span>
+<span class="fc" id="L313">        assertEquals(2, throwables.size());</span>
+<span class="fc" id="L314">        assertSame(nested, throwables.get(0));</span>
+<span class="fc" id="L315">        assertSame(withoutCause, throwables.get(1));</span>
+<span class="fc" id="L316">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetThrowableList_Throwable_null() {
+<span class="fc" id="L321">        final List&lt;?&gt; throwables = ExceptionUtils.getThrowableList(null);</span>
+<span class="fc" id="L322">        assertEquals(0, throwables.size());</span>
+<span class="fc" id="L323">    }</span>
+
+    @Test
+    public void testGetThrowableList_Throwable_recursiveCause() {
+<span class="fc" id="L327">        final List&lt;?&gt; throwables = ExceptionUtils.getThrowableList(cyclicCause);</span>
+<span class="fc" id="L328">        assertEquals(3, throwables.size());</span>
+<span class="fc" id="L329">        assertSame(cyclicCause, throwables.get(0));</span>
+<span class="fc" id="L330">        assertSame(cyclicCause.getCause(), throwables.get(1));</span>
+<span class="fc" id="L331">        assertSame(cyclicCause.getCause().getCause(), throwables.get(2));</span>
+<span class="fc" id="L332">    }</span>
+
+    @Test
+    public void testGetThrowableList_Throwable_withCause() {
+<span class="fc" id="L336">        final List&lt;?&gt; throwables = ExceptionUtils.getThrowableList(withCause);</span>
+<span class="fc" id="L337">        assertEquals(3, throwables.size());</span>
+<span class="fc" id="L338">        assertSame(withCause, throwables.get(0));</span>
+<span class="fc" id="L339">        assertSame(nested, throwables.get(1));</span>
+<span class="fc" id="L340">        assertSame(withoutCause, throwables.get(2));</span>
+<span class="fc" id="L341">    }</span>
+
+    @Test
+    public void testGetThrowableList_Throwable_withoutCause() {
+<span class="fc" id="L345">        final List&lt;?&gt; throwables = ExceptionUtils.getThrowableList(withoutCause);</span>
+<span class="fc" id="L346">        assertEquals(1, throwables.size());</span>
+<span class="fc" id="L347">        assertSame(withoutCause, throwables.get(0));</span>
+<span class="fc" id="L348">    }</span>
+
+    @Test
+    public void testGetThrowables_Throwable_jdkNoCause() {
+<span class="fc" id="L352">        final Throwable[] throwables = ExceptionUtils.getThrowables(jdkNoCause);</span>
+<span class="fc" id="L353">        assertEquals(1, throwables.length);</span>
+<span class="fc" id="L354">        assertSame(jdkNoCause, throwables[0]);</span>
+<span class="fc" id="L355">    }</span>
+
+    @Test
+    public void testGetThrowables_Throwable_nested() {
+<span class="fc" id="L359">        final Throwable[] throwables = ExceptionUtils.getThrowables(nested);</span>
+<span class="fc" id="L360">        assertEquals(2, throwables.length);</span>
+<span class="fc" id="L361">        assertSame(nested, throwables[0]);</span>
+<span class="fc" id="L362">        assertSame(withoutCause, throwables[1]);</span>
+<span class="fc" id="L363">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testGetThrowables_Throwable_null() {
+<span class="fc" id="L368">        assertEquals(0, ExceptionUtils.getThrowables(null).length);</span>
+<span class="fc" id="L369">    }</span>
+
+    @Test
+    public void testGetThrowables_Throwable_recursiveCause() {
+<span class="fc" id="L373">        final Throwable[] throwables = ExceptionUtils.getThrowables(cyclicCause);</span>
+<span class="fc" id="L374">        assertEquals(3, throwables.length);</span>
+<span class="fc" id="L375">        assertSame(cyclicCause, throwables[0]);</span>
+<span class="fc" id="L376">        assertSame(cyclicCause.getCause(), throwables[1]);</span>
+<span class="fc" id="L377">        assertSame(cyclicCause.getCause().getCause(), throwables[2]);</span>
+<span class="fc" id="L378">    }</span>
+
+    @Test
+    public void testGetThrowables_Throwable_withCause() {
+<span class="fc" id="L382">        final Throwable[] throwables = ExceptionUtils.getThrowables(withCause);</span>
+<span class="fc" id="L383">        assertEquals(3, throwables.length);</span>
+<span class="fc" id="L384">        assertSame(withCause, throwables[0]);</span>
+<span class="fc" id="L385">        assertSame(nested, throwables[1]);</span>
+<span class="fc" id="L386">        assertSame(withoutCause, throwables[2]);</span>
+<span class="fc" id="L387">    }</span>
+
+    @Test
+    public void testGetThrowables_Throwable_withoutCause() {
+<span class="fc" id="L391">        final Throwable[] throwables = ExceptionUtils.getThrowables(withoutCause);</span>
+<span class="fc" id="L392">        assertEquals(1, throwables.length);</span>
+<span class="fc" id="L393">        assertSame(withoutCause, throwables[0]);</span>
+<span class="fc" id="L394">    }</span>
+
+    @Test
+    public void testIndexOf_ThrowableClass() {
+<span class="fc" id="L398">        assertEquals(-1, ExceptionUtils.indexOfThrowable(null, null));</span>
+<span class="fc" id="L399">        assertEquals(-1, ExceptionUtils.indexOfThrowable(null, NestableException.class));</span>
+
+<span class="fc" id="L401">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withoutCause, null));</span>
+<span class="fc" id="L402">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withoutCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L403">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withoutCause, NestableException.class));</span>
+<span class="fc" id="L404">        assertEquals(0, ExceptionUtils.indexOfThrowable(withoutCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L406">        assertEquals(-1, ExceptionUtils.indexOfThrowable(nested, null));</span>
+<span class="fc" id="L407">        assertEquals(-1, ExceptionUtils.indexOfThrowable(nested, ExceptionWithCause.class));</span>
+<span class="fc" id="L408">        assertEquals(0, ExceptionUtils.indexOfThrowable(nested, NestableException.class));</span>
+<span class="fc" id="L409">        assertEquals(1, ExceptionUtils.indexOfThrowable(nested, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L411">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, null));</span>
+<span class="fc" id="L412">        assertEquals(0, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L413">        assertEquals(1, ExceptionUtils.indexOfThrowable(withCause, NestableException.class));</span>
+<span class="fc" id="L414">        assertEquals(2, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L416">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, Exception.class));</span>
+<span class="fc" id="L417">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, Throwable.class));</span>
+<span class="fc" id="L418">    }</span>
+
+    @Test
+    public void testIndexOf_ThrowableClassInt() {
+<span class="fc" id="L422">        assertEquals(-1, ExceptionUtils.indexOfThrowable(null, null, 0));</span>
+<span class="fc" id="L423">        assertEquals(-1, ExceptionUtils.indexOfThrowable(null, NestableException.class, 0));</span>
+
+<span class="fc" id="L425">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withoutCause, null));</span>
+<span class="fc" id="L426">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withoutCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L427">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withoutCause, NestableException.class, 0));</span>
+<span class="fc" id="L428">        assertEquals(0, ExceptionUtils.indexOfThrowable(withoutCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L430">        assertEquals(-1, ExceptionUtils.indexOfThrowable(nested, null, 0));</span>
+<span class="fc" id="L431">        assertEquals(-1, ExceptionUtils.indexOfThrowable(nested, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L432">        assertEquals(0, ExceptionUtils.indexOfThrowable(nested, NestableException.class, 0));</span>
+<span class="fc" id="L433">        assertEquals(1, ExceptionUtils.indexOfThrowable(nested, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L435">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, null));</span>
+<span class="fc" id="L436">        assertEquals(0, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L437">        assertEquals(1, ExceptionUtils.indexOfThrowable(withCause, NestableException.class, 0));</span>
+<span class="fc" id="L438">        assertEquals(2, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L440">        assertEquals(0, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithCause.class, -1));</span>
+<span class="fc" id="L441">        assertEquals(0, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L442">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithCause.class, 1));</span>
+<span class="fc" id="L443">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, ExceptionWithCause.class, 9));</span>
+
+<span class="fc" id="L445">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, Exception.class, 0));</span>
+<span class="fc" id="L446">        assertEquals(-1, ExceptionUtils.indexOfThrowable(withCause, Throwable.class, 0));</span>
+<span class="fc" id="L447">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testIndexOfType_ThrowableClass() {
+<span class="fc" id="L452">        assertEquals(-1, ExceptionUtils.indexOfType(null, null));</span>
+<span class="fc" id="L453">        assertEquals(-1, ExceptionUtils.indexOfType(null, NestableException.class));</span>
+
+<span class="fc" id="L455">        assertEquals(-1, ExceptionUtils.indexOfType(withoutCause, null));</span>
+<span class="fc" id="L456">        assertEquals(-1, ExceptionUtils.indexOfType(withoutCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L457">        assertEquals(-1, ExceptionUtils.indexOfType(withoutCause, NestableException.class));</span>
+<span class="fc" id="L458">        assertEquals(0, ExceptionUtils.indexOfType(withoutCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L460">        assertEquals(-1, ExceptionUtils.indexOfType(nested, null));</span>
+<span class="fc" id="L461">        assertEquals(-1, ExceptionUtils.indexOfType(nested, ExceptionWithCause.class));</span>
+<span class="fc" id="L462">        assertEquals(0, ExceptionUtils.indexOfType(nested, NestableException.class));</span>
+<span class="fc" id="L463">        assertEquals(1, ExceptionUtils.indexOfType(nested, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L465">        assertEquals(-1, ExceptionUtils.indexOfType(withCause, null));</span>
+<span class="fc" id="L466">        assertEquals(0, ExceptionUtils.indexOfType(withCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L467">        assertEquals(1, ExceptionUtils.indexOfType(withCause, NestableException.class));</span>
+<span class="fc" id="L468">        assertEquals(2, ExceptionUtils.indexOfType(withCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L470">        assertEquals(0, ExceptionUtils.indexOfType(withCause, Exception.class));</span>
+<span class="fc" id="L471">        assertEquals(0, ExceptionUtils.indexOfType(withCause, Throwable.class));</span>
+<span class="fc" id="L472">    }</span>
+
+    @Test
+    public void testIndexOfType_ThrowableClassInt() {
+<span class="fc" id="L476">        assertEquals(-1, ExceptionUtils.indexOfType(null, null, 0));</span>
+<span class="fc" id="L477">        assertEquals(-1, ExceptionUtils.indexOfType(null, NestableException.class, 0));</span>
+
+<span class="fc" id="L479">        assertEquals(-1, ExceptionUtils.indexOfType(withoutCause, null));</span>
+<span class="fc" id="L480">        assertEquals(-1, ExceptionUtils.indexOfType(withoutCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L481">        assertEquals(-1, ExceptionUtils.indexOfType(withoutCause, NestableException.class, 0));</span>
+<span class="fc" id="L482">        assertEquals(0, ExceptionUtils.indexOfType(withoutCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L484">        assertEquals(-1, ExceptionUtils.indexOfType(nested, null, 0));</span>
+<span class="fc" id="L485">        assertEquals(-1, ExceptionUtils.indexOfType(nested, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L486">        assertEquals(0, ExceptionUtils.indexOfType(nested, NestableException.class, 0));</span>
+<span class="fc" id="L487">        assertEquals(1, ExceptionUtils.indexOfType(nested, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L489">        assertEquals(-1, ExceptionUtils.indexOfType(withCause, null));</span>
+<span class="fc" id="L490">        assertEquals(0, ExceptionUtils.indexOfType(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L491">        assertEquals(1, ExceptionUtils.indexOfType(withCause, NestableException.class, 0));</span>
+<span class="fc" id="L492">        assertEquals(2, ExceptionUtils.indexOfType(withCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L494">        assertEquals(0, ExceptionUtils.indexOfType(withCause, ExceptionWithCause.class, -1));</span>
+<span class="fc" id="L495">        assertEquals(0, ExceptionUtils.indexOfType(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L496">        assertEquals(-1, ExceptionUtils.indexOfType(withCause, ExceptionWithCause.class, 1));</span>
+<span class="fc" id="L497">        assertEquals(-1, ExceptionUtils.indexOfType(withCause, ExceptionWithCause.class, 9));</span>
+
+<span class="fc" id="L499">        assertEquals(0, ExceptionUtils.indexOfType(withCause, Exception.class, 0));</span>
+<span class="fc" id="L500">        assertEquals(0, ExceptionUtils.indexOfType(withCause, Throwable.class, 0));</span>
+<span class="fc" id="L501">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testPrintRootCauseStackTrace_Throwable() {
+<span class="fc" id="L506">        ExceptionUtils.printRootCauseStackTrace(null);</span>
+        // could pipe system.err to a known stream, but not much point as
+        // internally this method calls stream method anyway
+<span class="fc" id="L509">    }</span>
+
+    //-----------------------------------------------------------------------
+
+    @Test
+    public void testPrintRootCauseStackTrace_ThrowableStream() {
+<span class="fc" id="L515">        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);</span>
+<span class="fc" id="L516">        ExceptionUtils.printRootCauseStackTrace(null, (PrintStream) null);</span>
+<span class="fc" id="L517">        ExceptionUtils.printRootCauseStackTrace(null, new PrintStream(out));</span>
+<span class="fc" id="L518">        assertEquals(0, out.toString().length());</span>
+
+<span class="fc" id="L520">        out = new ByteArrayOutputStream(1024);</span>
+<span class="fc" id="L521">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L523">                () -&gt; ExceptionUtils.printRootCauseStackTrace(withCause, (PrintStream) null));</span>
+
+<span class="fc" id="L525">        out = new ByteArrayOutputStream(1024);</span>
+<span class="fc" id="L526">        final Throwable cause = createExceptionWithCause();</span>
+<span class="fc" id="L527">        ExceptionUtils.printRootCauseStackTrace(cause, new PrintStream(out));</span>
+<span class="fc" id="L528">        String stackTrace = out.toString();</span>
+<span class="fc" id="L529">        assertTrue(stackTrace.contains(ExceptionUtils.WRAPPED_MARKER));</span>
+
+<span class="fc" id="L531">        out = new ByteArrayOutputStream(1024);</span>
+<span class="fc" id="L532">        ExceptionUtils.printRootCauseStackTrace(withoutCause, new PrintStream(out));</span>
+<span class="fc" id="L533">        stackTrace = out.toString();</span>
+<span class="fc" id="L534">        assertFalse(stackTrace.contains(ExceptionUtils.WRAPPED_MARKER));</span>
+<span class="fc" id="L535">    }</span>
+
+    @Test
+    public void testPrintRootCauseStackTrace_ThrowableWriter() {
+<span class="fc" id="L539">        StringWriter writer = new StringWriter(1024);</span>
+<span class="fc" id="L540">        ExceptionUtils.printRootCauseStackTrace(null, (PrintWriter) null);</span>
+<span class="fc" id="L541">        ExceptionUtils.printRootCauseStackTrace(null, new PrintWriter(writer));</span>
+<span class="fc" id="L542">        assertEquals(0, writer.getBuffer().length());</span>
+
+<span class="fc" id="L544">        writer = new StringWriter(1024);</span>
+<span class="fc" id="L545">        assertThrows(</span>
+                IllegalArgumentException.class,
+<span class="nc" id="L547">                () -&gt; ExceptionUtils.printRootCauseStackTrace(withCause, (PrintWriter) null));</span>
+
+<span class="fc" id="L549">        writer = new StringWriter(1024);</span>
+<span class="fc" id="L550">        final Throwable cause = createExceptionWithCause();</span>
+<span class="fc" id="L551">        ExceptionUtils.printRootCauseStackTrace(cause, new PrintWriter(writer));</span>
+<span class="fc" id="L552">        String stackTrace = writer.toString();</span>
+<span class="fc" id="L553">        assertTrue(stackTrace.contains(ExceptionUtils.WRAPPED_MARKER));</span>
+
+<span class="fc" id="L555">        writer = new StringWriter(1024);</span>
+<span class="fc" id="L556">        ExceptionUtils.printRootCauseStackTrace(withoutCause, new PrintWriter(writer));</span>
+<span class="fc" id="L557">        stackTrace = writer.toString();</span>
+<span class="fc" id="L558">        assertFalse(stackTrace.contains(ExceptionUtils.WRAPPED_MARKER));</span>
+<span class="fc" id="L559">    }</span>
+
+    @Test
+    public void testRemoveCommonFrames_ListList() {
+<span class="pc" id="L563">        assertThrows(IllegalArgumentException.class, () -&gt; ExceptionUtils.removeCommonFrames(null, null));</span>
+<span class="fc" id="L564">    }</span>
+
+    @Test
+    public void testThrow() {
+<span class="fc" id="L568">        final Exception expected = new InterruptedException();</span>
+<span class="pc" id="L569">        Exception actual = assertThrows(Exception.class, () -&gt; ExceptionUtils.rethrow(expected));</span>
+<span class="fc" id="L570">        assertSame(expected, actual);</span>
+<span class="fc" id="L571">    }</span>
+
+    @Test
+    public void testThrowableOf_ThrowableClass() {
+<span class="fc" id="L575">        assertEquals(null, ExceptionUtils.throwableOfThrowable(null, null));</span>
+<span class="fc" id="L576">        assertEquals(null, ExceptionUtils.throwableOfThrowable(null, NestableException.class));</span>
+
+<span class="fc" id="L578">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withoutCause, null));</span>
+<span class="fc" id="L579">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withoutCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L580">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withoutCause, NestableException.class));</span>
+<span class="fc" id="L581">        assertEquals(withoutCause, ExceptionUtils.throwableOfThrowable(withoutCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L583">        assertEquals(null, ExceptionUtils.throwableOfThrowable(nested, null));</span>
+<span class="fc" id="L584">        assertEquals(null, ExceptionUtils.throwableOfThrowable(nested, ExceptionWithCause.class));</span>
+<span class="fc" id="L585">        assertEquals(nested, ExceptionUtils.throwableOfThrowable(nested, NestableException.class));</span>
+<span class="fc" id="L586">        assertEquals(nested.getCause(), ExceptionUtils.throwableOfThrowable(nested, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L588">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, null));</span>
+<span class="fc" id="L589">        assertEquals(withCause, ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L590">        assertEquals(withCause.getCause(), ExceptionUtils.throwableOfThrowable(withCause, NestableException.class));</span>
+<span class="fc" id="L591">        assertEquals(withCause.getCause().getCause(), ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L593">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, Exception.class));</span>
+<span class="fc" id="L594">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, Throwable.class));</span>
+<span class="fc" id="L595">    }</span>
+
+    @Test
+    public void testThrowableOf_ThrowableClassInt() {
+<span class="fc" id="L599">        assertEquals(null, ExceptionUtils.throwableOfThrowable(null, null, 0));</span>
+<span class="fc" id="L600">        assertEquals(null, ExceptionUtils.throwableOfThrowable(null, NestableException.class, 0));</span>
+
+<span class="fc" id="L602">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withoutCause, null));</span>
+<span class="fc" id="L603">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withoutCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L604">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withoutCause, NestableException.class, 0));</span>
+<span class="fc" id="L605">        assertEquals(withoutCause, ExceptionUtils.throwableOfThrowable(withoutCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L607">        assertEquals(null, ExceptionUtils.throwableOfThrowable(nested, null, 0));</span>
+<span class="fc" id="L608">        assertEquals(null, ExceptionUtils.throwableOfThrowable(nested, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L609">        assertEquals(nested, ExceptionUtils.throwableOfThrowable(nested, NestableException.class, 0));</span>
+<span class="fc" id="L610">        assertEquals(nested.getCause(), ExceptionUtils.throwableOfThrowable(nested, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L612">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, null));</span>
+<span class="fc" id="L613">        assertEquals(withCause, ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L614">        assertEquals(withCause.getCause(), ExceptionUtils.throwableOfThrowable(withCause, NestableException.class, 0));</span>
+<span class="fc" id="L615">        assertEquals(withCause.getCause().getCause(), ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L617">        assertEquals(withCause, ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithCause.class, -1));</span>
+<span class="fc" id="L618">        assertEquals(withCause, ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L619">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithCause.class, 1));</span>
+<span class="fc" id="L620">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, ExceptionWithCause.class, 9));</span>
+
+<span class="fc" id="L622">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, Exception.class, 0));</span>
+<span class="fc" id="L623">        assertEquals(null, ExceptionUtils.throwableOfThrowable(withCause, Throwable.class, 0));</span>
+<span class="fc" id="L624">    }</span>
+
+    @Test
+    public void testThrowableOfType_ThrowableClass() {
+<span class="fc" id="L628">        assertEquals(null, ExceptionUtils.throwableOfType(null, null));</span>
+<span class="fc" id="L629">        assertEquals(null, ExceptionUtils.throwableOfType(null, NestableException.class));</span>
+
+<span class="fc" id="L631">        assertEquals(null, ExceptionUtils.throwableOfType(withoutCause, null));</span>
+<span class="fc" id="L632">        assertEquals(null, ExceptionUtils.throwableOfType(withoutCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L633">        assertEquals(null, ExceptionUtils.throwableOfType(withoutCause, NestableException.class));</span>
+<span class="fc" id="L634">        assertEquals(withoutCause, ExceptionUtils.throwableOfType(withoutCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L636">        assertEquals(null, ExceptionUtils.throwableOfType(nested, null));</span>
+<span class="fc" id="L637">        assertEquals(null, ExceptionUtils.throwableOfType(nested, ExceptionWithCause.class));</span>
+<span class="fc" id="L638">        assertEquals(nested, ExceptionUtils.throwableOfType(nested, NestableException.class));</span>
+<span class="fc" id="L639">        assertEquals(nested.getCause(), ExceptionUtils.throwableOfType(nested, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L641">        assertEquals(null, ExceptionUtils.throwableOfType(withCause, null));</span>
+<span class="fc" id="L642">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, ExceptionWithCause.class));</span>
+<span class="fc" id="L643">        assertEquals(withCause.getCause(), ExceptionUtils.throwableOfType(withCause, NestableException.class));</span>
+<span class="fc" id="L644">        assertEquals(withCause.getCause().getCause(), ExceptionUtils.throwableOfType(withCause, ExceptionWithoutCause.class));</span>
+
+<span class="fc" id="L646">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, Exception.class));</span>
+<span class="fc" id="L647">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, Throwable.class));</span>
+<span class="fc" id="L648">    }</span>
+
+    @Test
+    public void testThrowableOfType_ThrowableClassInt() {
+<span class="fc" id="L652">        assertEquals(null, ExceptionUtils.throwableOfType(null, null, 0));</span>
+<span class="fc" id="L653">        assertEquals(null, ExceptionUtils.throwableOfType(null, NestableException.class, 0));</span>
+
+<span class="fc" id="L655">        assertEquals(null, ExceptionUtils.throwableOfType(withoutCause, null));</span>
+<span class="fc" id="L656">        assertEquals(null, ExceptionUtils.throwableOfType(withoutCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L657">        assertEquals(null, ExceptionUtils.throwableOfType(withoutCause, NestableException.class, 0));</span>
+<span class="fc" id="L658">        assertEquals(withoutCause, ExceptionUtils.throwableOfType(withoutCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L660">        assertEquals(null, ExceptionUtils.throwableOfType(nested, null, 0));</span>
+<span class="fc" id="L661">        assertEquals(null, ExceptionUtils.throwableOfType(nested, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L662">        assertEquals(nested, ExceptionUtils.throwableOfType(nested, NestableException.class, 0));</span>
+<span class="fc" id="L663">        assertEquals(nested.getCause(), ExceptionUtils.throwableOfType(nested, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L665">        assertEquals(null, ExceptionUtils.throwableOfType(withCause, null));</span>
+<span class="fc" id="L666">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L667">        assertEquals(withCause.getCause(), ExceptionUtils.throwableOfType(withCause, NestableException.class, 0));</span>
+<span class="fc" id="L668">        assertEquals(withCause.getCause().getCause(), ExceptionUtils.throwableOfType(withCause, ExceptionWithoutCause.class, 0));</span>
+
+<span class="fc" id="L670">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, ExceptionWithCause.class, -1));</span>
+<span class="fc" id="L671">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, ExceptionWithCause.class, 0));</span>
+<span class="fc" id="L672">        assertEquals(null, ExceptionUtils.throwableOfType(withCause, ExceptionWithCause.class, 1));</span>
+<span class="fc" id="L673">        assertEquals(null, ExceptionUtils.throwableOfType(withCause, ExceptionWithCause.class, 9));</span>
+
+<span class="fc" id="L675">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, Exception.class, 0));</span>
+<span class="fc" id="L676">        assertEquals(withCause, ExceptionUtils.throwableOfType(withCause, Throwable.class, 0));</span>
+<span class="fc" id="L677">    }</span>
+
+    @Test
+    public void testWrapAndUnwrapCheckedException() {
+<span class="pc" id="L681">        Throwable t = assertThrows(Throwable.class, () -&gt; ExceptionUtils.wrapAndThrow(new IOException()));</span>
+<span class="fc" id="L682">        assertTrue(ExceptionUtils.hasCause(t, IOException.class));</span>
+<span class="fc" id="L683">    }</span>
+
+    @Test
+    public void testWrapAndUnwrapError() {
+<span class="pc" id="L687">        Throwable t = assertThrows(Throwable.class, () -&gt; ExceptionUtils.wrapAndThrow(new OutOfMemoryError()));</span>
+<span class="fc" id="L688">        assertTrue(ExceptionUtils.hasCause(t, Error.class));</span>
+<span class="fc" id="L689">    }</span>
+
+    @Test
+    public void testWrapAndUnwrapRuntimeException() {
+<span class="pc" id="L693">        Throwable t = assertThrows(Throwable.class, () -&gt; ExceptionUtils.wrapAndThrow(new IllegalArgumentException()));</span>
+<span class="fc" id="L694">        assertTrue(ExceptionUtils.hasCause(t, RuntimeException.class));</span>
+<span class="fc" id="L695">    }</span>
+
+    @Test
+    public void testWrapAndUnwrapThrowable() {
+<span class="pc" id="L699">        Throwable t = assertThrows(Throwable.class, () -&gt; ExceptionUtils.wrapAndThrow(new TestThrowable()));</span>
+<span class="fc" id="L700">        assertTrue(ExceptionUtils.hasCause(t, TestThrowable.class));</span>
+<span class="fc" id="L701">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

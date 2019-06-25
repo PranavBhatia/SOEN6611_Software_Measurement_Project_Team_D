@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StrSubstitutorTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.text</a> &gt; <span class="el_source">StrSubstitutorTest.java</span></div><h1>StrSubstitutorTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.text;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for StrSubstitutor.
+ */
+@Deprecated
+<span class="fc" id="L40">public class StrSubstitutorTest {</span>
+
+    private Map&lt;String, String&gt; values;
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L46">        values = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L47">        values.put(&quot;animal&quot;, &quot;quick brown fox&quot;);</span>
+<span class="fc" id="L48">        values.put(&quot;target&quot;, &quot;lazy dog&quot;);</span>
+<span class="fc" id="L49">    }</span>
+
+    @AfterEach
+    public void tearDown() {
+<span class="fc" id="L53">        values = null;</span>
+<span class="fc" id="L54">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests simple key replace.
+     */
+    @Test
+    public void testReplaceSimple() {
+<span class="fc" id="L62">        doTestReplace(&quot;The quick brown fox jumps over the lazy dog.&quot;, &quot;The ${animal} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Tests simple key replace.
+     */
+    @Test
+    public void testReplaceSolo() {
+<span class="fc" id="L70">        doTestReplace(&quot;quick brown fox&quot;, &quot;${animal}&quot;, false);</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Tests replace with no variables.
+     */
+    @Test
+    public void testReplaceNoVariables() {
+<span class="fc" id="L78">        doTestNoReplace(&quot;The balloon arrived.&quot;);</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Tests replace with null.
+     */
+    @Test
+    public void testReplaceNull() {
+<span class="fc" id="L86">        doTestNoReplace(null);</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Tests replace with null.
+     */
+    @Test
+    public void testReplaceEmpty() {
+<span class="fc" id="L94">        doTestNoReplace(&quot;&quot;);</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Tests key replace changing map after initialization (not recommended).
+     */
+    @Test
+    public void testReplaceChangedMap() {
+<span class="fc" id="L102">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+<span class="fc" id="L103">        values.put(&quot;target&quot;, &quot;moon&quot;);</span>
+<span class="fc" id="L104">        assertEquals(&quot;The quick brown fox jumps over the moon.&quot;, sub.replace(&quot;The ${animal} jumps over the ${target}.&quot;));</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Tests unknown key replace.
+     */
+    @Test
+    public void testReplaceUnknownKey() {
+<span class="fc" id="L112">        doTestReplace(&quot;The ${person} jumps over the lazy dog.&quot;, &quot;The ${person} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L113">        doTestReplace(&quot;The ${person} jumps over the lazy dog. 1234567890.&quot;, &quot;The ${person} jumps over the ${target}. ${undefined.number:-1234567890}.&quot;, true);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Tests adjacent keys.
+     */
+    @Test
+    public void testReplaceAdjacentAtStart() {
+<span class="fc" id="L121">        values.put(&quot;code&quot;, &quot;GBP&quot;);</span>
+<span class="fc" id="L122">        values.put(&quot;amount&quot;, &quot;12.50&quot;);</span>
+<span class="fc" id="L123">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+<span class="fc" id="L124">        assertEquals(&quot;GBP12.50 charged&quot;, sub.replace(&quot;${code}${amount} charged&quot;));</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Tests adjacent keys.
+     */
+    @Test
+    public void testReplaceAdjacentAtEnd() {
+<span class="fc" id="L132">        values.put(&quot;code&quot;, &quot;GBP&quot;);</span>
+<span class="fc" id="L133">        values.put(&quot;amount&quot;, &quot;12.50&quot;);</span>
+<span class="fc" id="L134">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+<span class="fc" id="L135">        assertEquals(&quot;Amount is GBP12.50&quot;, sub.replace(&quot;Amount is ${code}${amount}&quot;));</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Tests simple recursive replace.
+     */
+    @Test
+    public void testReplaceRecursive() {
+<span class="fc" id="L143">        values.put(&quot;animal&quot;, &quot;${critter}&quot;);</span>
+<span class="fc" id="L144">        values.put(&quot;target&quot;, &quot;${pet}&quot;);</span>
+<span class="fc" id="L145">        values.put(&quot;pet&quot;, &quot;${petCharacteristic} dog&quot;);</span>
+<span class="fc" id="L146">        values.put(&quot;petCharacteristic&quot;, &quot;lazy&quot;);</span>
+<span class="fc" id="L147">        values.put(&quot;critter&quot;, &quot;${critterSpeed} ${critterColor} ${critterType}&quot;);</span>
+<span class="fc" id="L148">        values.put(&quot;critterSpeed&quot;, &quot;quick&quot;);</span>
+<span class="fc" id="L149">        values.put(&quot;critterColor&quot;, &quot;brown&quot;);</span>
+<span class="fc" id="L150">        values.put(&quot;critterType&quot;, &quot;fox&quot;);</span>
+<span class="fc" id="L151">        doTestReplace(&quot;The quick brown fox jumps over the lazy dog.&quot;, &quot;The ${animal} jumps over the ${target}.&quot;, true);</span>
+
+<span class="fc" id="L153">        values.put(&quot;pet&quot;, &quot;${petCharacteristicUnknown:-lazy} dog&quot;);</span>
+<span class="fc" id="L154">        doTestReplace(&quot;The quick brown fox jumps over the lazy dog.&quot;, &quot;The ${animal} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Tests escaping.
+     */
+    @Test
+    public void testReplaceEscaping() {
+<span class="fc" id="L162">        doTestReplace(&quot;The ${animal} jumps over the lazy dog.&quot;, &quot;The $${animal} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L163">    }</span>
+
+    /**
+     * Tests escaping.
+     */
+    @Test
+    public void testReplaceSoloEscaping() {
+<span class="fc" id="L170">        doTestReplace(&quot;${animal}&quot;, &quot;$${animal}&quot;, false);</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Tests complex escaping.
+     */
+    @Test
+    public void testReplaceComplexEscaping() {
+<span class="fc" id="L178">        doTestReplace(&quot;The ${quick brown fox} jumps over the lazy dog.&quot;, &quot;The $${${animal}} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L179">        doTestReplace(&quot;The ${quick brown fox} jumps over the lazy dog. ${1234567890}.&quot;, &quot;The $${${animal}} jumps over the ${target}. $${${undefined.number:-1234567890}}.&quot;, true);</span>
+<span class="fc" id="L180">    }</span>
+
+    /**
+     * Tests when no prefix or suffix.
+     */
+    @Test
+    public void testReplaceNoPrefixNoSuffix() {
+<span class="fc" id="L187">        doTestReplace(&quot;The animal jumps over the lazy dog.&quot;, &quot;The animal jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Tests when no incomplete prefix.
+     */
+    @Test
+    public void testReplaceIncompletePrefix() {
+<span class="fc" id="L195">        doTestReplace(&quot;The {animal} jumps over the lazy dog.&quot;, &quot;The {animal} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests when prefix but no suffix.
+     */
+    @Test
+    public void testReplacePrefixNoSuffix() {
+<span class="fc" id="L203">        doTestReplace(&quot;The ${animal jumps over the ${target} lazy dog.&quot;, &quot;The ${animal jumps over the ${target} ${target}.&quot;, true);</span>
+<span class="fc" id="L204">    }</span>
+
+    /**
+     * Tests when suffix but no prefix.
+     */
+    @Test
+    public void testReplaceNoPrefixSuffix() {
+<span class="fc" id="L211">        doTestReplace(&quot;The animal} jumps over the lazy dog.&quot;, &quot;The animal} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Tests when no variable name.
+     */
+    @Test
+    public void testReplaceEmptyKeys() {
+<span class="fc" id="L219">        doTestReplace(&quot;The ${} jumps over the lazy dog.&quot;, &quot;The ${} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L220">        doTestReplace(&quot;The animal jumps over the lazy dog.&quot;, &quot;The ${:-animal} jumps over the ${target}.&quot;, true);</span>
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Tests replace creates output same as input.
+     */
+    @Test
+    public void testReplaceToIdentical() {
+<span class="fc" id="L228">        values.put(&quot;animal&quot;, &quot;$${${thing}}&quot;);</span>
+<span class="fc" id="L229">        values.put(&quot;thing&quot;, &quot;animal&quot;);</span>
+<span class="fc" id="L230">        doTestReplace(&quot;The ${animal} jumps.&quot;, &quot;The ${animal} jumps.&quot;, true);</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * Tests a cyclic replace operation.
+     * The cycle should be detected and cause an exception to be thrown.
+     */
+    @Test
+    public void testCyclicReplacement() {
+<span class="fc" id="L239">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L240">        map.put(&quot;animal&quot;, &quot;${critter}&quot;);</span>
+<span class="fc" id="L241">        map.put(&quot;target&quot;, &quot;${pet}&quot;);</span>
+<span class="fc" id="L242">        map.put(&quot;pet&quot;, &quot;${petCharacteristic} dog&quot;);</span>
+<span class="fc" id="L243">        map.put(&quot;petCharacteristic&quot;, &quot;lazy&quot;);</span>
+<span class="fc" id="L244">        map.put(&quot;critter&quot;, &quot;${critterSpeed} ${critterColor} ${critterType}&quot;);</span>
+<span class="fc" id="L245">        map.put(&quot;critterSpeed&quot;, &quot;quick&quot;);</span>
+<span class="fc" id="L246">        map.put(&quot;critterColor&quot;, &quot;brown&quot;);</span>
+<span class="fc" id="L247">        map.put(&quot;critterType&quot;, &quot;${animal}&quot;);</span>
+<span class="fc" id="L248">        StrSubstitutor sub = new StrSubstitutor(map);</span>
+<span class="fc" id="L249">        assertThrows(</span>
+                IllegalStateException.class,
+<span class="nc" id="L251">                () -&gt; sub.replace(&quot;The ${animal} jumps over the ${target}.&quot;),</span>
+                &quot;Cyclic replacement was not detected!&quot;);
+
+        // also check even when default value is set.
+<span class="fc" id="L255">        map.put(&quot;critterType&quot;, &quot;${animal:-fox}&quot;);</span>
+<span class="fc" id="L256">        StrSubstitutor sub2 = new StrSubstitutor(map);</span>
+<span class="fc" id="L257">        assertThrows(</span>
+                IllegalStateException.class,
+<span class="nc" id="L259">                () -&gt; sub2.replace(&quot;The ${animal} jumps over the ${target}.&quot;),</span>
+                &quot;Cyclic replacement was not detected!&quot;);
+<span class="fc" id="L261">    }</span>
+
+    /**
+     * Tests interpolation with weird boundary patterns.
+     */
+    @Test
+    public void testReplaceWeirdPattens() {
+<span class="fc" id="L268">        doTestNoReplace(&quot;&quot;);</span>
+<span class="fc" id="L269">        doTestNoReplace(&quot;${}&quot;);</span>
+<span class="fc" id="L270">        doTestNoReplace(&quot;${ }&quot;);</span>
+<span class="fc" id="L271">        doTestNoReplace(&quot;${\t}&quot;);</span>
+<span class="fc" id="L272">        doTestNoReplace(&quot;${\n}&quot;);</span>
+<span class="fc" id="L273">        doTestNoReplace(&quot;${\b}&quot;);</span>
+<span class="fc" id="L274">        doTestNoReplace(&quot;${&quot;);</span>
+<span class="fc" id="L275">        doTestNoReplace(&quot;$}&quot;);</span>
+<span class="fc" id="L276">        doTestNoReplace(&quot;}&quot;);</span>
+<span class="fc" id="L277">        doTestNoReplace(&quot;${}$&quot;);</span>
+<span class="fc" id="L278">        doTestNoReplace(&quot;${${&quot;);</span>
+<span class="fc" id="L279">        doTestNoReplace(&quot;${${}}&quot;);</span>
+<span class="fc" id="L280">        doTestNoReplace(&quot;${$${}}&quot;);</span>
+<span class="fc" id="L281">        doTestNoReplace(&quot;${$$${}}&quot;);</span>
+<span class="fc" id="L282">        doTestNoReplace(&quot;${$$${$}}&quot;);</span>
+<span class="fc" id="L283">        doTestNoReplace(&quot;${${}}&quot;);</span>
+<span class="fc" id="L284">        doTestNoReplace(&quot;${${ }}&quot;);</span>
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Tests simple key replace.
+     */
+    @Test
+    public void testReplacePartialString_noReplace() {
+<span class="fc" id="L292">        final StrSubstitutor sub = new StrSubstitutor();</span>
+<span class="fc" id="L293">        assertEquals(&quot;${animal} jumps&quot;, sub.replace(&quot;The ${animal} jumps over the ${target}.&quot;, 4, 15));</span>
+<span class="fc" id="L294">    }</span>
+
+    /**
+     * Tests whether a variable can be replaced in a variable name.
+     */
+    @Test
+    public void testReplaceInVariable() {
+<span class="fc" id="L301">        values.put(&quot;animal.1&quot;, &quot;fox&quot;);</span>
+<span class="fc" id="L302">        values.put(&quot;animal.2&quot;, &quot;mouse&quot;);</span>
+<span class="fc" id="L303">        values.put(&quot;species&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L304">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+<span class="fc" id="L305">        sub.setEnableSubstitutionInVariables(true);</span>
+<span class="fc" id="L306">        assertEquals(</span>
+                &quot;The mouse jumps over the lazy dog.&quot;,
+<span class="fc" id="L308">                sub.replace(&quot;The ${animal.${species}} jumps over the ${target}.&quot;),</span>
+                &quot;Wrong result (1)&quot;);
+<span class="fc" id="L310">        values.put(&quot;species&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L311">        assertEquals(</span>
+                &quot;The fox jumps over the lazy dog.&quot;,
+<span class="fc" id="L313">                sub.replace(&quot;The ${animal.${species}} jumps over the ${target}.&quot;),</span>
+                &quot;Wrong result (2)&quot;);
+<span class="fc" id="L315">        assertEquals(</span>
+                &quot;The fox jumps over the lazy dog.&quot;,
+<span class="fc" id="L317">                sub.replace(&quot;The ${unknown.animal.${unknown.species:-1}:-fox} jumps over the ${unknown.target:-lazy dog}.&quot;),</span>
+                &quot;Wrong result (3)&quot;);
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Tests whether substitution in variable names is disabled per default.
+     */
+    @Test
+    public void testReplaceInVariableDisabled() {
+<span class="fc" id="L326">        values.put(&quot;animal.1&quot;, &quot;fox&quot;);</span>
+<span class="fc" id="L327">        values.put(&quot;animal.2&quot;, &quot;mouse&quot;);</span>
+<span class="fc" id="L328">        values.put(&quot;species&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L329">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+<span class="fc" id="L330">        assertEquals(</span>
+                &quot;The ${animal.${species}} jumps over the lazy dog.&quot;,
+<span class="fc" id="L332">                sub.replace(&quot;The ${animal.${species}} jumps over the ${target}.&quot;),</span>
+                &quot;Wrong result (1)&quot;);
+<span class="fc" id="L334">        assertEquals(</span>
+                &quot;The ${animal.${species:-1}} jumps over the lazy dog.&quot;,
+<span class="fc" id="L336">                sub.replace(&quot;The ${animal.${species:-1}} jumps over the ${target}.&quot;),</span>
+                &quot;Wrong result (2)&quot;);
+<span class="fc" id="L338">    }</span>
+
+    /**
+     * Tests complex and recursive substitution in variable names.
+     */
+    @Test
+    public void testReplaceInVariableRecursive() {
+<span class="fc" id="L345">        values.put(&quot;animal.2&quot;, &quot;brown fox&quot;);</span>
+<span class="fc" id="L346">        values.put(&quot;animal.1&quot;, &quot;white mouse&quot;);</span>
+<span class="fc" id="L347">        values.put(&quot;color&quot;, &quot;white&quot;);</span>
+<span class="fc" id="L348">        values.put(&quot;species.white&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L349">        values.put(&quot;species.brown&quot;, &quot;2&quot;);</span>
+<span class="fc" id="L350">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+<span class="fc" id="L351">        sub.setEnableSubstitutionInVariables(true);</span>
+<span class="fc" id="L352">        assertEquals(</span>
+                &quot;The white mouse jumps over the lazy dog.&quot;,
+<span class="fc" id="L354">                sub.replace(&quot;The ${animal.${species.${color}}} jumps over the ${target}.&quot;),</span>
+                &quot;Wrong result (1)&quot;);
+<span class="fc" id="L356">        assertEquals(</span>
+                &quot;The brown fox jumps over the lazy dog.&quot;,
+<span class="fc" id="L358">                sub.replace(&quot;The ${animal.${species.${unknownColor:-brown}}} jumps over the ${target}.&quot;),</span>
+                &quot;Wrong result (2)&quot;);
+<span class="fc" id="L360">    }</span>
+
+    @Test
+    public void testDefaultValueDelimiters() {
+<span class="fc" id="L364">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L365">        map.put(&quot;animal&quot;, &quot;fox&quot;);</span>
+<span class="fc" id="L366">        map.put(&quot;target&quot;, &quot;dog&quot;);</span>
+
+<span class="fc" id="L368">        StrSubstitutor sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$');</span>
+<span class="fc" id="L369">        assertEquals(&quot;The fox jumps over the lazy dog. 1234567890.&quot;,</span>
+<span class="fc" id="L370">                sub.replace(&quot;The ${animal} jumps over the lazy ${target}. ${undefined.number:-1234567890}.&quot;));</span>
+
+<span class="fc" id="L372">        sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$', &quot;?:&quot;);</span>
+<span class="fc" id="L373">        assertEquals(&quot;The fox jumps over the lazy dog. 1234567890.&quot;,</span>
+<span class="fc" id="L374">                sub.replace(&quot;The ${animal} jumps over the lazy ${target}. ${undefined.number?:1234567890}.&quot;));</span>
+
+<span class="fc" id="L376">        sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$', &quot;||&quot;);</span>
+<span class="fc" id="L377">        assertEquals(&quot;The fox jumps over the lazy dog. 1234567890.&quot;,</span>
+<span class="fc" id="L378">                sub.replace(&quot;The ${animal} jumps over the lazy ${target}. ${undefined.number||1234567890}.&quot;));</span>
+
+<span class="fc" id="L380">        sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$', &quot;!&quot;);</span>
+<span class="fc" id="L381">        assertEquals(&quot;The fox jumps over the lazy dog. 1234567890.&quot;,</span>
+<span class="fc" id="L382">                sub.replace(&quot;The ${animal} jumps over the lazy ${target}. ${undefined.number!1234567890}.&quot;));</span>
+
+<span class="fc" id="L384">        sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$', &quot;&quot;);</span>
+<span class="fc" id="L385">        sub.setValueDelimiterMatcher(null);</span>
+<span class="fc" id="L386">        assertEquals(&quot;The fox jumps over the lazy dog. ${undefined.number!1234567890}.&quot;,</span>
+<span class="fc" id="L387">                sub.replace(&quot;The ${animal} jumps over the lazy ${target}. ${undefined.number!1234567890}.&quot;));</span>
+
+<span class="fc" id="L389">        sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$');</span>
+<span class="fc" id="L390">        sub.setValueDelimiterMatcher(null);</span>
+<span class="fc" id="L391">        assertEquals(&quot;The fox jumps over the lazy dog. ${undefined.number!1234567890}.&quot;,</span>
+<span class="fc" id="L392">                sub.replace(&quot;The ${animal} jumps over the lazy ${target}. ${undefined.number!1234567890}.&quot;));</span>
+<span class="fc" id="L393">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests protected.
+     */
+    @Test
+    public void testResolveVariable() {
+<span class="fc" id="L401">        final StrBuilder builder = new StrBuilder(&quot;Hi ${name}!&quot;);</span>
+<span class="fc" id="L402">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L403">        map.put(&quot;name&quot;, &quot;commons&quot;);</span>
+<span class="fc" id="L404">        final StrSubstitutor sub = new StrSubstitutor(map) {</span>
+            @Override
+            protected String resolveVariable(final String variableName, final StrBuilder buf, final int startPos, final int endPos) {
+<span class="fc" id="L407">                assertEquals(&quot;name&quot;, variableName);</span>
+<span class="fc" id="L408">                assertSame(builder, buf);</span>
+<span class="fc" id="L409">                assertEquals(3, startPos);</span>
+<span class="fc" id="L410">                assertEquals(10, endPos);</span>
+<span class="fc" id="L411">                return &quot;jakarta&quot;;</span>
+            }
+        };
+<span class="fc" id="L414">        sub.replaceIn(builder);</span>
+<span class="fc" id="L415">        assertEquals(&quot;Hi jakarta!&quot;, builder.toString());</span>
+<span class="fc" id="L416">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests constructor.
+     */
+    @Test
+    public void testConstructorNoArgs() {
+<span class="fc" id="L424">        final StrSubstitutor sub = new StrSubstitutor();</span>
+<span class="fc" id="L425">        assertEquals(&quot;Hi ${name}&quot;, sub.replace(&quot;Hi ${name}&quot;));</span>
+<span class="fc" id="L426">    }</span>
+
+    /**
+     * Tests constructor.
+     */
+    @Test
+    public void testConstructorMapPrefixSuffix() {
+<span class="fc" id="L433">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L434">        map.put(&quot;name&quot;, &quot;commons&quot;);</span>
+<span class="fc" id="L435">        final StrSubstitutor sub = new StrSubstitutor(map, &quot;&lt;&quot;, &quot;&gt;&quot;);</span>
+<span class="fc" id="L436">        assertEquals(&quot;Hi &lt; commons&quot;, sub.replace(&quot;Hi $&lt; &lt;name&gt;&quot;));</span>
+<span class="fc" id="L437">    }</span>
+
+    /**
+     * Tests constructor.
+     */
+    @Test
+    public void testConstructorMapFull() {
+<span class="fc" id="L444">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L445">        map.put(&quot;name&quot;, &quot;commons&quot;);</span>
+<span class="fc" id="L446">        StrSubstitutor sub = new StrSubstitutor(map, &quot;&lt;&quot;, &quot;&gt;&quot;, '!');</span>
+<span class="fc" id="L447">        assertEquals(&quot;Hi &lt; commons&quot;, sub.replace(&quot;Hi !&lt; &lt;name&gt;&quot;));</span>
+<span class="fc" id="L448">        sub = new StrSubstitutor(map, &quot;&lt;&quot;, &quot;&gt;&quot;, '!', &quot;||&quot;);</span>
+<span class="fc" id="L449">        assertEquals(&quot;Hi &lt; commons&quot;, sub.replace(&quot;Hi !&lt; &lt;name2||commons&gt;&quot;));</span>
+<span class="fc" id="L450">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests get set.
+     */
+    @Test
+    public void testGetSetEscape() {
+<span class="fc" id="L458">        final StrSubstitutor sub = new StrSubstitutor();</span>
+<span class="fc" id="L459">        assertEquals('$', sub.getEscapeChar());</span>
+<span class="fc" id="L460">        sub.setEscapeChar('&lt;');</span>
+<span class="fc" id="L461">        assertEquals('&lt;', sub.getEscapeChar());</span>
+<span class="fc" id="L462">    }</span>
+
+    /**
+     * Tests get set.
+     */
+    @Test
+    public void testGetSetPrefix() {
+<span class="fc" id="L469">        final StrSubstitutor sub = new StrSubstitutor();</span>
+<span class="fc" id="L470">        assertTrue(sub.getVariablePrefixMatcher() instanceof StrMatcher.StringMatcher);</span>
+<span class="fc" id="L471">        sub.setVariablePrefix('&lt;');</span>
+<span class="fc" id="L472">        assertTrue(sub.getVariablePrefixMatcher() instanceof StrMatcher.CharMatcher);</span>
+
+<span class="fc" id="L474">        sub.setVariablePrefix(&quot;&lt;&lt;&quot;);</span>
+<span class="fc" id="L475">        assertTrue(sub.getVariablePrefixMatcher() instanceof StrMatcher.StringMatcher);</span>
+<span class="pc" id="L476">        assertThrows(IllegalArgumentException.class, () -&gt; sub.setVariablePrefix(null));</span>
+<span class="fc" id="L477">        assertTrue(sub.getVariablePrefixMatcher() instanceof StrMatcher.StringMatcher);</span>
+
+<span class="fc" id="L479">        final StrMatcher matcher = StrMatcher.commaMatcher();</span>
+<span class="fc" id="L480">        sub.setVariablePrefixMatcher(matcher);</span>
+<span class="fc" id="L481">        assertSame(matcher, sub.getVariablePrefixMatcher());</span>
+<span class="pc" id="L482">        assertThrows(IllegalArgumentException.class, () -&gt; sub.setVariablePrefixMatcher(null));</span>
+<span class="fc" id="L483">        assertSame(matcher, sub.getVariablePrefixMatcher());</span>
+<span class="fc" id="L484">    }</span>
+
+    /**
+     * Tests get set.
+     */
+    @Test
+    public void testGetSetSuffix() {
+<span class="fc" id="L491">        final StrSubstitutor sub = new StrSubstitutor();</span>
+<span class="fc" id="L492">        assertTrue(sub.getVariableSuffixMatcher() instanceof StrMatcher.StringMatcher);</span>
+<span class="fc" id="L493">        sub.setVariableSuffix('&lt;');</span>
+<span class="fc" id="L494">        assertTrue(sub.getVariableSuffixMatcher() instanceof StrMatcher.CharMatcher);</span>
+
+<span class="fc" id="L496">        sub.setVariableSuffix(&quot;&lt;&lt;&quot;);</span>
+<span class="fc" id="L497">        assertTrue(sub.getVariableSuffixMatcher() instanceof StrMatcher.StringMatcher);</span>
+<span class="pc" id="L498">        assertThrows(IllegalArgumentException.class, () -&gt; sub.setVariableSuffix(null));</span>
+<span class="fc" id="L499">        assertTrue(sub.getVariableSuffixMatcher() instanceof StrMatcher.StringMatcher);</span>
+
+<span class="fc" id="L501">        final StrMatcher matcher = StrMatcher.commaMatcher();</span>
+<span class="fc" id="L502">        sub.setVariableSuffixMatcher(matcher);</span>
+<span class="fc" id="L503">        assertSame(matcher, sub.getVariableSuffixMatcher());</span>
+<span class="pc" id="L504">        assertThrows(IllegalArgumentException.class, () -&gt; sub.setVariableSuffixMatcher(null));</span>
+<span class="fc" id="L505">        assertSame(matcher, sub.getVariableSuffixMatcher());</span>
+<span class="fc" id="L506">    }</span>
+
+    /**
+     * Tests get set.
+     */
+    @Test
+    public void testGetSetValueDelimiter() {
+<span class="fc" id="L513">        final StrSubstitutor sub = new StrSubstitutor();</span>
+<span class="fc" id="L514">        assertTrue(sub.getValueDelimiterMatcher() instanceof StrMatcher.StringMatcher);</span>
+<span class="fc" id="L515">        sub.setValueDelimiter(':');</span>
+<span class="fc" id="L516">        assertTrue(sub.getValueDelimiterMatcher() instanceof StrMatcher.CharMatcher);</span>
+
+<span class="fc" id="L518">        sub.setValueDelimiter(&quot;||&quot;);</span>
+<span class="fc" id="L519">        assertTrue(sub.getValueDelimiterMatcher() instanceof StrMatcher.StringMatcher);</span>
+<span class="fc" id="L520">        sub.setValueDelimiter(null);</span>
+<span class="fc" id="L521">        assertNull(sub.getValueDelimiterMatcher());</span>
+
+<span class="fc" id="L523">        final StrMatcher matcher = StrMatcher.commaMatcher();</span>
+<span class="fc" id="L524">        sub.setValueDelimiterMatcher(matcher);</span>
+<span class="fc" id="L525">        assertSame(matcher, sub.getValueDelimiterMatcher());</span>
+<span class="fc" id="L526">        sub.setValueDelimiterMatcher(null);</span>
+<span class="fc" id="L527">        assertNull(sub.getValueDelimiterMatcher());</span>
+<span class="fc" id="L528">    }</span>
+
+    //-----------------------------------------------------------------------
+    /**
+     * Tests static.
+     */
+    @Test
+    public void testStaticReplace() {
+<span class="fc" id="L536">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L537">        map.put(&quot;name&quot;, &quot;commons&quot;);</span>
+<span class="fc" id="L538">        assertEquals(&quot;Hi commons!&quot;, StrSubstitutor.replace(&quot;Hi ${name}!&quot;, map));</span>
+<span class="fc" id="L539">    }</span>
+
+    /**
+     * Tests static.
+     */
+    @Test
+    public void testStaticReplacePrefixSuffix() {
+<span class="fc" id="L546">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L547">        map.put(&quot;name&quot;, &quot;commons&quot;);</span>
+<span class="fc" id="L548">        assertEquals(&quot;Hi commons!&quot;, StrSubstitutor.replace(&quot;Hi &lt;name&gt;!&quot;, map, &quot;&lt;&quot;, &quot;&gt;&quot;));</span>
+<span class="fc" id="L549">    }</span>
+
+    /**
+     * Tests interpolation with system properties.
+     */
+    @Test
+    public void testStaticReplaceSystemProperties() {
+<span class="fc" id="L556">        final StrBuilder buf = new StrBuilder();</span>
+<span class="fc" id="L557">        buf.append(&quot;Hi &quot;).append(System.getProperty(&quot;user.name&quot;));</span>
+<span class="fc" id="L558">        buf.append(&quot;, you are working with &quot;);</span>
+<span class="fc" id="L559">        buf.append(System.getProperty(&quot;os.name&quot;));</span>
+<span class="fc" id="L560">        buf.append(&quot;, your home directory is &quot;);</span>
+<span class="fc" id="L561">        buf.append(System.getProperty(&quot;user.home&quot;)).append('.');</span>
+<span class="fc" id="L562">        assertEquals(buf.toString(), StrSubstitutor.replaceSystemProperties(&quot;Hi ${user.name}, you are &quot;</span>
+            + &quot;working with ${os.name}, your home &quot;
+            + &quot;directory is ${user.home}.&quot;));
+<span class="fc" id="L565">    }</span>
+
+    /**
+     * Test for LANG-1055: StrSubstitutor.replaceSystemProperties does not work consistently
+     */
+    @Test
+    public void testLANG1055() {
+<span class="fc" id="L572">        System.setProperty(&quot;test_key&quot;,  &quot;test_value&quot;);</span>
+
+<span class="fc" id="L574">        final String expected = StrSubstitutor.replace(&quot;test_key=${test_key}&quot;, System.getProperties());</span>
+<span class="fc" id="L575">        final String actual = StrSubstitutor.replaceSystemProperties(&quot;test_key=${test_key}&quot;);</span>
+<span class="fc" id="L576">        assertEquals(expected, actual);</span>
+<span class="fc" id="L577">    }</span>
+
+    /**
+     * Test the replace of a properties object
+     */
+    @Test
+    public void testSubstituteDefaultProperties() {
+<span class="fc" id="L584">        final String org = &quot;${doesnotwork}&quot;;</span>
+<span class="fc" id="L585">        System.setProperty(&quot;doesnotwork&quot;, &quot;It works!&quot;);</span>
+
+        // create a new Properties object with the System.getProperties as default
+<span class="fc" id="L588">        final Properties props = new Properties(System.getProperties());</span>
+
+<span class="fc" id="L590">        assertEquals(&quot;It works!&quot;, StrSubstitutor.replace(org, props));</span>
+<span class="fc" id="L591">    }</span>
+
+    @Test
+    public void testSamePrefixAndSuffix() {
+<span class="fc" id="L595">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L596">        map.put(&quot;greeting&quot;, &quot;Hello&quot;);</span>
+<span class="fc" id="L597">        map.put(&quot; there &quot;, &quot;XXX&quot;);</span>
+<span class="fc" id="L598">        map.put(&quot;name&quot;, &quot;commons&quot;);</span>
+<span class="fc" id="L599">        assertEquals(&quot;Hi commons!&quot;, StrSubstitutor.replace(&quot;Hi @name@!&quot;, map, &quot;@&quot;, &quot;@&quot;));</span>
+<span class="fc" id="L600">        assertEquals(&quot;Hello there commons!&quot;, StrSubstitutor.replace(&quot;@greeting@ there @name@!&quot;, map, &quot;@&quot;, &quot;@&quot;));</span>
+<span class="fc" id="L601">    }</span>
+
+    @Test
+    public void testSubstitutePreserveEscape() {
+<span class="fc" id="L605">        final String org = &quot;${not-escaped} $${escaped}&quot;;</span>
+<span class="fc" id="L606">        final Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L607">        map.put(&quot;not-escaped&quot;, &quot;value&quot;);</span>
+
+<span class="fc" id="L609">        final StrSubstitutor sub = new StrSubstitutor(map, &quot;${&quot;, &quot;}&quot;, '$');</span>
+<span class="fc" id="L610">        assertFalse(sub.isPreserveEscapes());</span>
+<span class="fc" id="L611">        assertEquals(&quot;value ${escaped}&quot;, sub.replace(org));</span>
+
+<span class="fc" id="L613">        sub.setPreserveEscapes(true);</span>
+<span class="fc" id="L614">        assertTrue(sub.isPreserveEscapes());</span>
+<span class="fc" id="L615">        assertEquals(&quot;value $${escaped}&quot;, sub.replace(org));</span>
+<span class="fc" id="L616">    }</span>
+
+    //-----------------------------------------------------------------------
+    private void doTestReplace(final String expectedResult, final String replaceTemplate, final boolean substring) {
+<span class="fc" id="L620">        final String expectedShortResult = expectedResult.substring(1, expectedResult.length() - 1);</span>
+<span class="fc" id="L621">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+
+        // replace using String
+<span class="fc" id="L624">        assertEquals(expectedResult, sub.replace(replaceTemplate));</span>
+<span class="fc bfc" id="L625" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L626">            assertEquals(expectedShortResult, sub.replace(replaceTemplate, 1, replaceTemplate.length() - 2));</span>
+        }
+
+        // replace using char[]
+<span class="fc" id="L630">        final char[] chars = replaceTemplate.toCharArray();</span>
+<span class="fc" id="L631">        assertEquals(expectedResult, sub.replace(chars));</span>
+<span class="fc bfc" id="L632" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L633">            assertEquals(expectedShortResult, sub.replace(chars, 1, chars.length - 2));</span>
+        }
+
+        // replace using StringBuffer
+<span class="fc" id="L637">        StringBuffer buf = new StringBuffer(replaceTemplate);</span>
+<span class="fc" id="L638">        assertEquals(expectedResult, sub.replace(buf));</span>
+<span class="fc bfc" id="L639" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L640">            assertEquals(expectedShortResult, sub.replace(buf, 1, buf.length() - 2));</span>
+        }
+
+        // replace using StringBuilder
+<span class="fc" id="L644">        StringBuilder builder = new StringBuilder(replaceTemplate);</span>
+<span class="fc" id="L645">        assertEquals(expectedResult, sub.replace(builder));</span>
+<span class="fc bfc" id="L646" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L647">            assertEquals(expectedShortResult, sub.replace(builder, 1, builder.length() - 2));</span>
+        }
+
+        // replace using StrBuilder
+<span class="fc" id="L651">        StrBuilder bld = new StrBuilder(replaceTemplate);</span>
+<span class="fc" id="L652">        assertEquals(expectedResult, sub.replace(bld));</span>
+<span class="fc bfc" id="L653" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L654">            assertEquals(expectedShortResult, sub.replace(bld, 1, bld.length() - 2));</span>
+        }
+
+        // replace using object
+<span class="fc" id="L658">        final MutableObject&lt;String&gt; obj = new MutableObject&lt;&gt;(replaceTemplate);  // toString returns template</span>
+<span class="fc" id="L659">        assertEquals(expectedResult, sub.replace(obj));</span>
+
+        // replace in StringBuffer
+<span class="fc" id="L662">        buf = new StringBuffer(replaceTemplate);</span>
+<span class="fc" id="L663">        assertTrue(sub.replaceIn(buf));</span>
+<span class="fc" id="L664">        assertEquals(expectedResult, buf.toString());</span>
+<span class="fc bfc" id="L665" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L666">            buf = new StringBuffer(replaceTemplate);</span>
+<span class="fc" id="L667">            assertTrue(sub.replaceIn(buf, 1, buf.length() - 2));</span>
+<span class="fc" id="L668">            assertEquals(expectedResult, buf.toString());  // expect full result as remainder is untouched</span>
+        }
+
+        // replace in StringBuilder
+<span class="fc" id="L672">        builder = new StringBuilder(replaceTemplate);</span>
+<span class="fc" id="L673">        assertTrue(sub.replaceIn(builder));</span>
+<span class="fc" id="L674">        assertEquals(expectedResult, builder.toString());</span>
+<span class="fc bfc" id="L675" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L676">            builder = new StringBuilder(replaceTemplate);</span>
+<span class="fc" id="L677">            assertTrue(sub.replaceIn(builder, 1, builder.length() - 2));</span>
+<span class="fc" id="L678">            assertEquals(expectedResult, builder.toString());  // expect full result as remainder is untouched</span>
+        }
+
+        // replace in StrBuilder
+<span class="fc" id="L682">        bld = new StrBuilder(replaceTemplate);</span>
+<span class="fc" id="L683">        assertTrue(sub.replaceIn(bld));</span>
+<span class="fc" id="L684">        assertEquals(expectedResult, bld.toString());</span>
+<span class="fc bfc" id="L685" title="All 2 branches covered.">        if (substring) {</span>
+<span class="fc" id="L686">            bld = new StrBuilder(replaceTemplate);</span>
+<span class="fc" id="L687">            assertTrue(sub.replaceIn(bld, 1, bld.length() - 2));</span>
+<span class="fc" id="L688">            assertEquals(expectedResult, bld.toString());  // expect full result as remainder is untouched</span>
+        }
+<span class="fc" id="L690">    }</span>
+
+    private void doTestNoReplace(final String replaceTemplate) {
+<span class="fc" id="L693">        final StrSubstitutor sub = new StrSubstitutor(values);</span>
+
+<span class="fc bfc" id="L695" title="All 2 branches covered.">        if (replaceTemplate == null) {</span>
+<span class="fc" id="L696">            assertNull(sub.replace((String) null));</span>
+<span class="fc" id="L697">            assertNull(sub.replace((String) null, 0, 100));</span>
+<span class="fc" id="L698">            assertNull(sub.replace((char[]) null));</span>
+<span class="fc" id="L699">            assertNull(sub.replace((char[]) null, 0, 100));</span>
+<span class="fc" id="L700">            assertNull(sub.replace((StringBuffer) null));</span>
+<span class="fc" id="L701">            assertNull(sub.replace((StringBuffer) null, 0, 100));</span>
+<span class="fc" id="L702">            assertNull(sub.replace((StrBuilder) null));</span>
+<span class="fc" id="L703">            assertNull(sub.replace((StrBuilder) null, 0, 100));</span>
+<span class="fc" id="L704">            assertNull(sub.replace((Object) null));</span>
+<span class="fc" id="L705">            assertFalse(sub.replaceIn((StringBuffer) null));</span>
+<span class="fc" id="L706">            assertFalse(sub.replaceIn((StringBuffer) null, 0, 100));</span>
+<span class="fc" id="L707">            assertFalse(sub.replaceIn((StrBuilder) null));</span>
+<span class="fc" id="L708">            assertFalse(sub.replaceIn((StrBuilder) null, 0, 100));</span>
+        } else {
+<span class="fc" id="L710">            assertEquals(replaceTemplate, sub.replace(replaceTemplate));</span>
+<span class="fc" id="L711">            final StrBuilder bld = new StrBuilder(replaceTemplate);</span>
+<span class="fc" id="L712">            assertFalse(sub.replaceIn(bld));</span>
+<span class="fc" id="L713">            assertEquals(replaceTemplate, bld.toString());</span>
+        }
+<span class="fc" id="L715">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

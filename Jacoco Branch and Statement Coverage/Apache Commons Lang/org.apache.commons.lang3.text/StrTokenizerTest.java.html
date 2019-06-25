@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StrTokenizerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.text</a> &gt; <span class="el_source">StrTokenizerTest.java</span></div><h1>StrTokenizerTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.text;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+/**
+ * Unit test for Tokenizer.
+ */
+@Deprecated
+<span class="fc" id="L40">public class StrTokenizerTest {</span>
+
+    private static final String CSV_SIMPLE_FIXTURE = &quot;A,b,c&quot;;
+
+    private static final String TSV_SIMPLE_FIXTURE = &quot;A\tb\tc&quot;;
+
+    private void checkClone(final StrTokenizer tokenizer) {
+<span class="fc" id="L47">        assertNotSame(StrTokenizer.getCSVInstance(), tokenizer);</span>
+<span class="fc" id="L48">        assertNotSame(StrTokenizer.getTSVInstance(), tokenizer);</span>
+<span class="fc" id="L49">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void test1() {
+
+<span class="fc" id="L55">        final String input = &quot;a;b;c;\&quot;d;\&quot;\&quot;e\&quot;;f; ; ;  &quot;;</span>
+<span class="fc" id="L56">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L57">        tok.setDelimiterChar(';');</span>
+<span class="fc" id="L58">        tok.setQuoteChar('&quot;');</span>
+<span class="fc" id="L59">        tok.setIgnoredMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L60">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L61">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L63">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d;\&quot;e&quot;, &quot;f&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;};</span>
+
+<span class="fc" id="L65">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L67">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L71">    }</span>
+
+    @Test
+    public void test2() {
+
+<span class="fc" id="L76">        final String input = &quot;a;b;c ;\&quot;d;\&quot;\&quot;e\&quot;;f; ; ;&quot;;</span>
+<span class="fc" id="L77">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L78">        tok.setDelimiterChar(';');</span>
+<span class="fc" id="L79">        tok.setQuoteChar('&quot;');</span>
+<span class="fc" id="L80">        tok.setIgnoredMatcher(StrMatcher.noneMatcher());</span>
+<span class="fc" id="L81">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L82">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L84">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c &quot;, &quot;d;\&quot;e&quot;, &quot;f&quot;, &quot; &quot;, &quot; &quot;, &quot;&quot;};</span>
+
+<span class="fc" id="L86">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L88">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L92">    }</span>
+
+    @Test
+    public void test3() {
+
+<span class="fc" id="L97">        final String input = &quot;a;b; c;\&quot;d;\&quot;\&quot;e\&quot;;f; ; ;&quot;;</span>
+<span class="fc" id="L98">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L99">        tok.setDelimiterChar(';');</span>
+<span class="fc" id="L100">        tok.setQuoteChar('&quot;');</span>
+<span class="fc" id="L101">        tok.setIgnoredMatcher(StrMatcher.noneMatcher());</span>
+<span class="fc" id="L102">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L103">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L105">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot; c&quot;, &quot;d;\&quot;e&quot;, &quot;f&quot;, &quot; &quot;, &quot; &quot;, &quot;&quot;};</span>
+
+<span class="fc" id="L107">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L109">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L113">    }</span>
+
+    @Test
+    public void test4() {
+
+<span class="fc" id="L118">        final String input = &quot;a;b; c;\&quot;d;\&quot;\&quot;e\&quot;;f; ; ;&quot;;</span>
+<span class="fc" id="L119">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L120">        tok.setDelimiterChar(';');</span>
+<span class="fc" id="L121">        tok.setQuoteChar('&quot;');</span>
+<span class="fc" id="L122">        tok.setIgnoredMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L123">        tok.setIgnoreEmptyTokens(true);</span>
+<span class="fc" id="L124">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L126">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d;\&quot;e&quot;, &quot;f&quot;};</span>
+
+<span class="fc" id="L128">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L130">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L134">    }</span>
+
+    @Test
+    public void test5() {
+
+<span class="fc" id="L139">        final String input = &quot;a;b; c;\&quot;d;\&quot;\&quot;e\&quot;;f; ; ;&quot;;</span>
+<span class="fc" id="L140">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L141">        tok.setDelimiterChar(';');</span>
+<span class="fc" id="L142">        tok.setQuoteChar('&quot;');</span>
+<span class="fc" id="L143">        tok.setIgnoredMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L144">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L145">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L146">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L148">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d;\&quot;e&quot;, &quot;f&quot;, null, null, null};</span>
+
+<span class="fc" id="L150">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L152">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L156">    }</span>
+
+    @Test
+    public void test6() {
+
+<span class="fc" id="L161">        final String input = &quot;a;b; c;\&quot;d;\&quot;\&quot;e\&quot;;f; ; ;&quot;;</span>
+<span class="fc" id="L162">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L163">        tok.setDelimiterChar(';');</span>
+<span class="fc" id="L164">        tok.setQuoteChar('&quot;');</span>
+<span class="fc" id="L165">        tok.setIgnoredMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L166">        tok.setIgnoreEmptyTokens(false);</span>
+        // tok.setTreatingEmptyAsNull(true);
+<span class="fc" id="L168">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L170">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot; c&quot;, &quot;d;\&quot;e&quot;, &quot;f&quot;, null, null, null};</span>
+
+<span class="fc" id="L172">        int nextCount = 0;</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        while (tok.hasNext()) {</span>
+<span class="fc" id="L174">            tok.next();</span>
+<span class="fc" id="L175">            nextCount++;</span>
+        }
+
+<span class="fc" id="L178">        int prevCount = 0;</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        while (tok.hasPrevious()) {</span>
+<span class="fc" id="L180">            tok.previous();</span>
+<span class="fc" id="L181">            prevCount++;</span>
+        }
+
+<span class="fc" id="L184">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+
+<span class="fc" id="L186">        assertEquals(nextCount, expected.length, &quot;could not cycle through entire token list&quot; + &quot; using the 'hasNext' and 'next' methods&quot;);</span>
+
+<span class="fc" id="L188">        assertEquals(prevCount, expected.length, &quot;could not cycle through entire token list&quot; + &quot; using the 'hasPrevious' and 'previous' methods&quot;);</span>
+
+<span class="fc" id="L190">    }</span>
+
+    @Test
+    public void test7() {
+
+<span class="fc" id="L195">        final String input = &quot;a   b c \&quot;d e\&quot; f &quot;;</span>
+<span class="fc" id="L196">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L197">        tok.setDelimiterMatcher(StrMatcher.spaceMatcher());</span>
+<span class="fc" id="L198">        tok.setQuoteMatcher(StrMatcher.doubleQuoteMatcher());</span>
+<span class="fc" id="L199">        tok.setIgnoredMatcher(StrMatcher.noneMatcher());</span>
+<span class="fc" id="L200">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L201">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L203">        final String expected[] = new String[]{&quot;a&quot;, &quot;&quot;, &quot;&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d e&quot;, &quot;f&quot;, &quot;&quot;};</span>
+
+<span class="fc" id="L205">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L207">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L211">    }</span>
+
+    @Test
+    public void test8() {
+
+<span class="fc" id="L216">        final String input = &quot;a   b c \&quot;d e\&quot; f &quot;;</span>
+<span class="fc" id="L217">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L218">        tok.setDelimiterMatcher(StrMatcher.spaceMatcher());</span>
+<span class="fc" id="L219">        tok.setQuoteMatcher(StrMatcher.doubleQuoteMatcher());</span>
+<span class="fc" id="L220">        tok.setIgnoredMatcher(StrMatcher.noneMatcher());</span>
+<span class="fc" id="L221">        tok.setIgnoreEmptyTokens(true);</span>
+<span class="fc" id="L222">        final String tokens[] = tok.getTokenArray();</span>
+
+<span class="fc" id="L224">        final String expected[] = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d e&quot;, &quot;f&quot;};</span>
+
+<span class="fc" id="L226">        assertEquals(expected.length, tokens.length, ArrayUtils.toString(tokens));</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">        for (int i = 0; i &lt; expected.length; i++) {</span>
+<span class="fc" id="L228">            assertEquals(expected[i], tokens[i],</span>
+                    &quot;token[&quot; + i + &quot;] was '&quot; + tokens[i] + &quot;' but was expected to be '&quot; + expected[i] + &quot;'&quot;);
+        }
+
+<span class="fc" id="L232">    }</span>
+
+    @Test
+    public void testBasic1() {
+<span class="fc" id="L236">        final String input = &quot;a  b c&quot;;</span>
+<span class="fc" id="L237">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L238">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L239">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L240">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L241">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L242">    }</span>
+
+    @Test
+    public void testBasic2() {
+<span class="fc" id="L246">        final String input = &quot;a \nb\fc&quot;;</span>
+<span class="fc" id="L247">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L248">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L249">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L250">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L251">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L252">    }</span>
+
+    @Test
+    public void testBasic3() {
+<span class="fc" id="L256">        final String input = &quot;a \nb\u0001\fc&quot;;</span>
+<span class="fc" id="L257">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L258">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L259">        assertEquals(&quot;b\u0001&quot;, tok.next());</span>
+<span class="fc" id="L260">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L261">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L262">    }</span>
+
+    @Test
+    public void testBasic4() {
+<span class="fc" id="L266">        final String input = &quot;a \&quot;b\&quot; c&quot;;</span>
+<span class="fc" id="L267">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L268">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L269">        assertEquals(&quot;\&quot;b\&quot;&quot;, tok.next());</span>
+<span class="fc" id="L270">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L271">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L272">    }</span>
+
+    @Test
+    public void testBasic5() {
+<span class="fc" id="L276">        final String input = &quot;a:b':c&quot;;</span>
+<span class="fc" id="L277">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L278">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L279">        assertEquals(&quot;b'&quot;, tok.next());</span>
+<span class="fc" id="L280">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L281">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L282">    }</span>
+
+    @Test
+    public void testBasicDelim1() {
+<span class="fc" id="L286">        final String input = &quot;a:b:c&quot;;</span>
+<span class="fc" id="L287">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L288">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L289">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L290">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L291">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L292">    }</span>
+
+    @Test
+    public void testBasicDelim2() {
+<span class="fc" id="L296">        final String input = &quot;a:b:c&quot;;</span>
+<span class="fc" id="L297">        final StrTokenizer tok = new StrTokenizer(input, ',');</span>
+<span class="fc" id="L298">        assertEquals(&quot;a:b:c&quot;, tok.next());</span>
+<span class="fc" id="L299">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L300">    }</span>
+
+    @Test
+    public void testBasicEmpty1() {
+<span class="fc" id="L304">        final String input = &quot;a  b c&quot;;</span>
+<span class="fc" id="L305">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L306">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L307">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L308">        assertEquals(&quot;&quot;, tok.next());</span>
+<span class="fc" id="L309">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L310">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L311">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L312">    }</span>
+
+    @Test
+    public void testBasicEmpty2() {
+<span class="fc" id="L316">        final String input = &quot;a  b c&quot;;</span>
+<span class="fc" id="L317">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L318">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L319">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L320">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L321">        assertNull(tok.next());</span>
+<span class="fc" id="L322">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L323">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L324">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L325">    }</span>
+
+    @Test
+    public void testBasicQuoted1() {
+<span class="fc" id="L329">        final String input = &quot;a 'b' c&quot;;</span>
+<span class="fc" id="L330">        final StrTokenizer tok = new StrTokenizer(input, ' ', '\'');</span>
+<span class="fc" id="L331">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L332">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L333">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L334">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L335">    }</span>
+
+    @Test
+    public void testBasicQuoted2() {
+<span class="fc" id="L339">        final String input = &quot;a:'b':&quot;;</span>
+<span class="fc" id="L340">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L341">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L342">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L343">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L344">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L345">        assertNull(tok.next());</span>
+<span class="fc" id="L346">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L347">    }</span>
+
+    @Test
+    public void testBasicQuoted3() {
+<span class="fc" id="L351">        final String input = &quot;a:'b''c'&quot;;</span>
+<span class="fc" id="L352">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L353">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L354">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L355">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L356">        assertEquals(&quot;b'c&quot;, tok.next());</span>
+<span class="fc" id="L357">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L358">    }</span>
+
+    @Test
+    public void testBasicQuoted4() {
+<span class="fc" id="L362">        final String input = &quot;a: 'b' 'c' :d&quot;;</span>
+<span class="fc" id="L363">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L364">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L365">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L366">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L367">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L368">        assertEquals(&quot;b c&quot;, tok.next());</span>
+<span class="fc" id="L369">        assertEquals(&quot;d&quot;, tok.next());</span>
+<span class="fc" id="L370">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L371">    }</span>
+
+    @Test
+    public void testBasicQuoted5() {
+<span class="fc" id="L375">        final String input = &quot;a: 'b'x'c' :d&quot;;</span>
+<span class="fc" id="L376">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L377">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L378">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L379">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L380">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L381">        assertEquals(&quot;bxc&quot;, tok.next());</span>
+<span class="fc" id="L382">        assertEquals(&quot;d&quot;, tok.next());</span>
+<span class="fc" id="L383">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L384">    }</span>
+
+    @Test
+    public void testBasicQuoted6() {
+<span class="fc" id="L388">        final String input = &quot;a:'b'\&quot;c':d&quot;;</span>
+<span class="fc" id="L389">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L390">        tok.setQuoteMatcher(StrMatcher.quoteMatcher());</span>
+<span class="fc" id="L391">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L392">        assertEquals(&quot;b\&quot;c:d&quot;, tok.next());</span>
+<span class="fc" id="L393">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L394">    }</span>
+
+    @Test
+    public void testBasicQuoted7() {
+<span class="fc" id="L398">        final String input = &quot;a:\&quot;There's a reason here\&quot;:b&quot;;</span>
+<span class="fc" id="L399">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L400">        tok.setQuoteMatcher(StrMatcher.quoteMatcher());</span>
+<span class="fc" id="L401">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L402">        assertEquals(&quot;There's a reason here&quot;, tok.next());</span>
+<span class="fc" id="L403">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L404">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L405">    }</span>
+
+    @Test
+    public void testBasicQuotedTrimmed1() {
+<span class="fc" id="L409">        final String input = &quot;a: 'b' :&quot;;</span>
+<span class="fc" id="L410">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L411">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L412">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L413">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L414">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L415">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L416">        assertNull(tok.next());</span>
+<span class="fc" id="L417">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L418">    }</span>
+
+    @Test
+    public void testBasicTrimmed1() {
+<span class="fc" id="L422">        final String input = &quot;a: b :  &quot;;</span>
+<span class="fc" id="L423">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L424">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L425">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L426">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L427">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L428">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L429">        assertNull(tok.next());</span>
+<span class="fc" id="L430">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L431">    }</span>
+
+    @Test
+    public void testBasicTrimmed2() {
+<span class="fc" id="L435">        final String input = &quot;a:  b  :&quot;;</span>
+<span class="fc" id="L436">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L437">        tok.setTrimmerMatcher(StrMatcher.stringMatcher(&quot;  &quot;));</span>
+<span class="fc" id="L438">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L439">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L440">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L441">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L442">        assertNull(tok.next());</span>
+<span class="fc" id="L443">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L444">    }</span>
+
+    @Test
+    public void testBasicIgnoreTrimmed1() {
+<span class="fc" id="L448">        final String input = &quot;a: bIGNOREc : &quot;;</span>
+<span class="fc" id="L449">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L450">        tok.setIgnoredMatcher(StrMatcher.stringMatcher(&quot;IGNORE&quot;));</span>
+<span class="fc" id="L451">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L452">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L453">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L454">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L455">        assertEquals(&quot;bc&quot;, tok.next());</span>
+<span class="fc" id="L456">        assertNull(tok.next());</span>
+<span class="fc" id="L457">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L458">    }</span>
+
+    @Test
+    public void testBasicIgnoreTrimmed2() {
+<span class="fc" id="L462">        final String input = &quot;IGNOREaIGNORE: IGNORE bIGNOREc IGNORE : IGNORE &quot;;</span>
+<span class="fc" id="L463">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L464">        tok.setIgnoredMatcher(StrMatcher.stringMatcher(&quot;IGNORE&quot;));</span>
+<span class="fc" id="L465">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L466">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L467">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L468">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L469">        assertEquals(&quot;bc&quot;, tok.next());</span>
+<span class="fc" id="L470">        assertNull(tok.next());</span>
+<span class="fc" id="L471">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L472">    }</span>
+
+    @Test
+    public void testBasicIgnoreTrimmed3() {
+<span class="fc" id="L476">        final String input = &quot;IGNOREaIGNORE: IGNORE bIGNOREc IGNORE : IGNORE &quot;;</span>
+<span class="fc" id="L477">        final StrTokenizer tok = new StrTokenizer(input, ':');</span>
+<span class="fc" id="L478">        tok.setIgnoredMatcher(StrMatcher.stringMatcher(&quot;IGNORE&quot;));</span>
+<span class="fc" id="L479">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L480">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L481">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L482">        assertEquals(&quot;  bc  &quot;, tok.next());</span>
+<span class="fc" id="L483">        assertEquals(&quot;  &quot;, tok.next());</span>
+<span class="fc" id="L484">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L485">    }</span>
+
+    @Test
+    public void testBasicIgnoreTrimmed4() {
+<span class="fc" id="L489">        final String input = &quot;IGNOREaIGNORE: IGNORE 'bIGNOREc'IGNORE'd' IGNORE : IGNORE &quot;;</span>
+<span class="fc" id="L490">        final StrTokenizer tok = new StrTokenizer(input, ':', '\'');</span>
+<span class="fc" id="L491">        tok.setIgnoredMatcher(StrMatcher.stringMatcher(&quot;IGNORE&quot;));</span>
+<span class="fc" id="L492">        tok.setTrimmerMatcher(StrMatcher.trimMatcher());</span>
+<span class="fc" id="L493">        tok.setIgnoreEmptyTokens(false);</span>
+<span class="fc" id="L494">        tok.setEmptyTokenAsNull(true);</span>
+<span class="fc" id="L495">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L496">        assertEquals(&quot;bIGNOREcd&quot;, tok.next());</span>
+<span class="fc" id="L497">        assertNull(tok.next());</span>
+<span class="fc" id="L498">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L499">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testListArray() {
+<span class="fc" id="L504">        final String input = &quot;a  b c&quot;;</span>
+<span class="fc" id="L505">        final StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L506">        final String[] array = tok.getTokenArray();</span>
+<span class="fc" id="L507">        final List&lt;?&gt; list = tok.getTokenList();</span>
+
+<span class="fc" id="L509">        assertEquals(Arrays.asList(array), list);</span>
+<span class="fc" id="L510">        assertEquals(3, list.size());</span>
+<span class="fc" id="L511">    }</span>
+
+    //-----------------------------------------------------------------------
+    private void testCSV(final String data) {
+<span class="fc" id="L515">        this.testXSVAbc(StrTokenizer.getCSVInstance(data));</span>
+<span class="fc" id="L516">        this.testXSVAbc(StrTokenizer.getCSVInstance(data.toCharArray()));</span>
+<span class="fc" id="L517">    }</span>
+
+    @Test
+    public void testCSVEmpty() {
+<span class="fc" id="L521">        this.testEmpty(StrTokenizer.getCSVInstance());</span>
+<span class="fc" id="L522">        this.testEmpty(StrTokenizer.getCSVInstance(&quot;&quot;));</span>
+<span class="fc" id="L523">    }</span>
+
+    @Test
+    public void testCSVSimple() {
+<span class="fc" id="L527">        this.testCSV(CSV_SIMPLE_FIXTURE);</span>
+<span class="fc" id="L528">    }</span>
+
+    @Test
+    public void testCSVSimpleNeedsTrim() {
+<span class="fc" id="L532">        this.testCSV(&quot;   &quot; + CSV_SIMPLE_FIXTURE);</span>
+<span class="fc" id="L533">        this.testCSV(&quot;   \n\t  &quot; + CSV_SIMPLE_FIXTURE);</span>
+<span class="fc" id="L534">        this.testCSV(&quot;   \n  &quot; + CSV_SIMPLE_FIXTURE + &quot;\n\n\r&quot;);</span>
+<span class="fc" id="L535">    }</span>
+
+    void testEmpty(final StrTokenizer tokenizer) {
+<span class="fc" id="L538">        this.checkClone(tokenizer);</span>
+<span class="fc" id="L539">        assertFalse(tokenizer.hasNext());</span>
+<span class="fc" id="L540">        assertFalse(tokenizer.hasPrevious());</span>
+<span class="fc" id="L541">        assertNull(tokenizer.nextToken());</span>
+<span class="fc" id="L542">        assertEquals(0, tokenizer.size());</span>
+<span class="fc" id="L543">        assertThrows(NoSuchElementException.class, tokenizer::next);</span>
+<span class="fc" id="L544">    }</span>
+
+    @Test
+    public void testGetContent() {
+<span class="fc" id="L548">        final String input = &quot;a   b c \&quot;d e\&quot; f &quot;;</span>
+<span class="fc" id="L549">        StrTokenizer tok = new StrTokenizer(input);</span>
+<span class="fc" id="L550">        assertEquals(input, tok.getContent());</span>
+
+<span class="fc" id="L552">        tok = new StrTokenizer(input.toCharArray());</span>
+<span class="fc" id="L553">        assertEquals(input, tok.getContent());</span>
+
+<span class="fc" id="L555">        tok = new StrTokenizer();</span>
+<span class="fc" id="L556">        assertNull(tok.getContent());</span>
+<span class="fc" id="L557">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testChaining() {
+<span class="fc" id="L562">        final StrTokenizer tok = new StrTokenizer();</span>
+<span class="fc" id="L563">        assertEquals(tok, tok.reset());</span>
+<span class="fc" id="L564">        assertEquals(tok, tok.reset(&quot;&quot;));</span>
+<span class="fc" id="L565">        assertEquals(tok, tok.reset(new char[0]));</span>
+<span class="fc" id="L566">        assertEquals(tok, tok.setDelimiterChar(' '));</span>
+<span class="fc" id="L567">        assertEquals(tok, tok.setDelimiterString(&quot; &quot;));</span>
+<span class="fc" id="L568">        assertEquals(tok, tok.setDelimiterMatcher(null));</span>
+<span class="fc" id="L569">        assertEquals(tok, tok.setQuoteChar(' '));</span>
+<span class="fc" id="L570">        assertEquals(tok, tok.setQuoteMatcher(null));</span>
+<span class="fc" id="L571">        assertEquals(tok, tok.setIgnoredChar(' '));</span>
+<span class="fc" id="L572">        assertEquals(tok, tok.setIgnoredMatcher(null));</span>
+<span class="fc" id="L573">        assertEquals(tok, tok.setTrimmerMatcher(null));</span>
+<span class="fc" id="L574">        assertEquals(tok, tok.setEmptyTokenAsNull(false));</span>
+<span class="fc" id="L575">        assertEquals(tok, tok.setIgnoreEmptyTokens(false));</span>
+<span class="fc" id="L576">    }</span>
+
+    /**
+     * Tests that the {@link StrTokenizer#clone()} clone method catches {@link CloneNotSupportedException} and returns
+     * &lt;code&gt;null&lt;/code&gt;.
+     */
+    @Test
+    public void testCloneNotSupportedException() {
+<span class="fc" id="L584">        final Object notCloned = new StrTokenizer() {</span>
+            @Override
+            Object cloneReset() throws CloneNotSupportedException {
+<span class="fc" id="L587">                throw new CloneNotSupportedException(&quot;test&quot;);</span>
+            }
+<span class="fc" id="L589">        }.clone();</span>
+<span class="fc" id="L590">        assertNull(notCloned);</span>
+<span class="fc" id="L591">    }</span>
+
+    @Test
+    public void testCloneNull() {
+<span class="fc" id="L595">        final StrTokenizer tokenizer = new StrTokenizer((char[]) null);</span>
+        // Start sanity check
+<span class="fc" id="L597">        assertNull(tokenizer.nextToken());</span>
+<span class="fc" id="L598">        tokenizer.reset();</span>
+<span class="fc" id="L599">        assertNull(tokenizer.nextToken());</span>
+        // End sanity check
+<span class="fc" id="L601">        final StrTokenizer clonedTokenizer = (StrTokenizer) tokenizer.clone();</span>
+<span class="fc" id="L602">        tokenizer.reset();</span>
+<span class="fc" id="L603">        assertNull(tokenizer.nextToken());</span>
+<span class="fc" id="L604">        assertNull(clonedTokenizer.nextToken());</span>
+<span class="fc" id="L605">    }</span>
+
+    @Test
+    public void testCloneReset() {
+<span class="fc" id="L609">        final char[] input = new char[]{'a'};</span>
+<span class="fc" id="L610">        final StrTokenizer tokenizer = new StrTokenizer(input);</span>
+        // Start sanity check
+<span class="fc" id="L612">        assertEquals(&quot;a&quot;, tokenizer.nextToken());</span>
+<span class="fc" id="L613">        tokenizer.reset(input);</span>
+<span class="fc" id="L614">        assertEquals(&quot;a&quot;, tokenizer.nextToken());</span>
+        // End sanity check
+<span class="fc" id="L616">        final StrTokenizer clonedTokenizer = (StrTokenizer) tokenizer.clone();</span>
+<span class="fc" id="L617">        input[0] = 'b';</span>
+<span class="fc" id="L618">        tokenizer.reset(input);</span>
+<span class="fc" id="L619">        assertEquals(&quot;b&quot;, tokenizer.nextToken());</span>
+<span class="fc" id="L620">        assertEquals(&quot;a&quot;, clonedTokenizer.nextToken());</span>
+<span class="fc" id="L621">    }</span>
+
+    // -----------------------------------------------------------------------
+    @Test
+    public void testConstructor_String() {
+<span class="fc" id="L626">        StrTokenizer tok = new StrTokenizer(&quot;a b&quot;);</span>
+<span class="fc" id="L627">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L628">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L629">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L631">        tok = new StrTokenizer(&quot;&quot;);</span>
+<span class="fc" id="L632">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L634">        tok = new StrTokenizer((String) null);</span>
+<span class="fc" id="L635">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L636">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor_String_char() {
+<span class="fc" id="L641">        StrTokenizer tok = new StrTokenizer(&quot;a b&quot;, ' ');</span>
+<span class="fc" id="L642">        assertEquals(1, tok.getDelimiterMatcher().isMatch(&quot; &quot;.toCharArray(), 0, 0, 1));</span>
+<span class="fc" id="L643">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L644">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L645">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L647">        tok = new StrTokenizer(&quot;&quot;, ' ');</span>
+<span class="fc" id="L648">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L650">        tok = new StrTokenizer((String) null, ' ');</span>
+<span class="fc" id="L651">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L652">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor_String_char_char() {
+<span class="fc" id="L657">        StrTokenizer tok = new StrTokenizer(&quot;a b&quot;, ' ', '&quot;');</span>
+<span class="fc" id="L658">        assertEquals(1, tok.getDelimiterMatcher().isMatch(&quot; &quot;.toCharArray(), 0, 0, 1));</span>
+<span class="fc" id="L659">        assertEquals(1, tok.getQuoteMatcher().isMatch(&quot;\&quot;&quot;.toCharArray(), 0, 0, 1));</span>
+<span class="fc" id="L660">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L661">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L662">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L664">        tok = new StrTokenizer(&quot;&quot;, ' ', '&quot;');</span>
+<span class="fc" id="L665">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L667">        tok = new StrTokenizer((String) null, ' ', '&quot;');</span>
+<span class="fc" id="L668">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L669">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor_charArray() {
+<span class="fc" id="L674">        StrTokenizer tok = new StrTokenizer(&quot;a b&quot;.toCharArray());</span>
+<span class="fc" id="L675">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L676">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L677">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L679">        tok = new StrTokenizer(new char[0]);</span>
+<span class="fc" id="L680">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L682">        tok = new StrTokenizer((char[]) null);</span>
+<span class="fc" id="L683">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L684">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor_charArray_char() {
+<span class="fc" id="L689">        StrTokenizer tok = new StrTokenizer(&quot;a b&quot;.toCharArray(), ' ');</span>
+<span class="fc" id="L690">        assertEquals(1, tok.getDelimiterMatcher().isMatch(&quot; &quot;.toCharArray(), 0, 0, 1));</span>
+<span class="fc" id="L691">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L692">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L693">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L695">        tok = new StrTokenizer(new char[0], ' ');</span>
+<span class="fc" id="L696">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L698">        tok = new StrTokenizer((char[]) null, ' ');</span>
+<span class="fc" id="L699">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L700">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testConstructor_charArray_char_char() {
+<span class="fc" id="L705">        StrTokenizer tok = new StrTokenizer(&quot;a b&quot;.toCharArray(), ' ', '&quot;');</span>
+<span class="fc" id="L706">        assertEquals(1, tok.getDelimiterMatcher().isMatch(&quot; &quot;.toCharArray(), 0, 0, 1));</span>
+<span class="fc" id="L707">        assertEquals(1, tok.getQuoteMatcher().isMatch(&quot;\&quot;&quot;.toCharArray(), 0, 0, 1));</span>
+<span class="fc" id="L708">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L709">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L710">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L712">        tok = new StrTokenizer(new char[0], ' ', '&quot;');</span>
+<span class="fc" id="L713">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L715">        tok = new StrTokenizer((char[]) null, ' ', '&quot;');</span>
+<span class="fc" id="L716">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L717">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReset() {
+<span class="fc" id="L722">        final StrTokenizer tok = new StrTokenizer(&quot;a b c&quot;);</span>
+<span class="fc" id="L723">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L724">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L725">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L726">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L728">        tok.reset();</span>
+<span class="fc" id="L729">        assertEquals(&quot;a&quot;, tok.next());</span>
+<span class="fc" id="L730">        assertEquals(&quot;b&quot;, tok.next());</span>
+<span class="fc" id="L731">        assertEquals(&quot;c&quot;, tok.next());</span>
+<span class="fc" id="L732">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L733">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReset_String() {
+<span class="fc" id="L738">        final StrTokenizer tok = new StrTokenizer(&quot;x x x&quot;);</span>
+<span class="fc" id="L739">        tok.reset(&quot;d e&quot;);</span>
+<span class="fc" id="L740">        assertEquals(&quot;d&quot;, tok.next());</span>
+<span class="fc" id="L741">        assertEquals(&quot;e&quot;, tok.next());</span>
+<span class="fc" id="L742">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L744">        tok.reset((String) null);</span>
+<span class="fc" id="L745">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L746">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testReset_charArray() {
+<span class="fc" id="L751">        final StrTokenizer tok = new StrTokenizer(&quot;x x x&quot;);</span>
+
+<span class="fc" id="L753">        final char[] array = new char[] {'a', 'b', 'c'};</span>
+<span class="fc" id="L754">        tok.reset(array);</span>
+<span class="fc" id="L755">        assertEquals(&quot;abc&quot;, tok.next());</span>
+<span class="fc" id="L756">        assertFalse(tok.hasNext());</span>
+
+<span class="fc" id="L758">        tok.reset((char[]) null);</span>
+<span class="fc" id="L759">        assertFalse(tok.hasNext());</span>
+<span class="fc" id="L760">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testTSV() {
+<span class="fc" id="L765">        this.testXSVAbc(StrTokenizer.getTSVInstance(TSV_SIMPLE_FIXTURE));</span>
+<span class="fc" id="L766">        this.testXSVAbc(StrTokenizer.getTSVInstance(TSV_SIMPLE_FIXTURE.toCharArray()));</span>
+<span class="fc" id="L767">    }</span>
+
+    @Test
+    public void testTSVEmpty() {
+<span class="fc" id="L771">        this.testEmpty(StrTokenizer.getTSVInstance());</span>
+<span class="fc" id="L772">        this.testEmpty(StrTokenizer.getTSVInstance(&quot;&quot;));</span>
+<span class="fc" id="L773">    }</span>
+
+    void testXSVAbc(final StrTokenizer tokenizer) {
+<span class="fc" id="L776">        this.checkClone(tokenizer);</span>
+<span class="fc" id="L777">        assertEquals(-1, tokenizer.previousIndex());</span>
+<span class="fc" id="L778">        assertEquals(0, tokenizer.nextIndex());</span>
+<span class="fc" id="L779">        assertNull(tokenizer.previousToken());</span>
+<span class="fc" id="L780">        assertEquals(&quot;A&quot;, tokenizer.nextToken());</span>
+<span class="fc" id="L781">        assertEquals(1, tokenizer.nextIndex());</span>
+<span class="fc" id="L782">        assertEquals(&quot;b&quot;, tokenizer.nextToken());</span>
+<span class="fc" id="L783">        assertEquals(2, tokenizer.nextIndex());</span>
+<span class="fc" id="L784">        assertEquals(&quot;c&quot;, tokenizer.nextToken());</span>
+<span class="fc" id="L785">        assertEquals(3, tokenizer.nextIndex());</span>
+<span class="fc" id="L786">        assertNull(tokenizer.nextToken());</span>
+<span class="fc" id="L787">        assertEquals(3, tokenizer.nextIndex());</span>
+<span class="fc" id="L788">        assertEquals(&quot;c&quot;, tokenizer.previousToken());</span>
+<span class="fc" id="L789">        assertEquals(2, tokenizer.nextIndex());</span>
+<span class="fc" id="L790">        assertEquals(&quot;b&quot;, tokenizer.previousToken());</span>
+<span class="fc" id="L791">        assertEquals(1, tokenizer.nextIndex());</span>
+<span class="fc" id="L792">        assertEquals(&quot;A&quot;, tokenizer.previousToken());</span>
+<span class="fc" id="L793">        assertEquals(0, tokenizer.nextIndex());</span>
+<span class="fc" id="L794">        assertNull(tokenizer.previousToken());</span>
+<span class="fc" id="L795">        assertEquals(0, tokenizer.nextIndex());</span>
+<span class="fc" id="L796">        assertEquals(-1, tokenizer.previousIndex());</span>
+<span class="fc" id="L797">        assertEquals(3, tokenizer.size());</span>
+<span class="fc" id="L798">    }</span>
+
+    @Test
+    public void testIteration() {
+<span class="fc" id="L802">        final StrTokenizer tkn = new StrTokenizer(&quot;a b c&quot;);</span>
+<span class="fc" id="L803">        assertFalse(tkn.hasPrevious());</span>
+<span class="fc" id="L804">        assertThrows(NoSuchElementException.class, tkn::previous);</span>
+<span class="fc" id="L805">        assertTrue(tkn.hasNext());</span>
+
+<span class="fc" id="L807">        assertEquals(&quot;a&quot;, tkn.next());</span>
+<span class="fc" id="L808">        assertThrows(UnsupportedOperationException.class, tkn::remove);</span>
+<span class="pc" id="L809">        assertThrows(UnsupportedOperationException.class, () -&gt; tkn.set(&quot;x&quot;));</span>
+<span class="pc" id="L810">        assertThrows(UnsupportedOperationException.class, () -&gt; tkn.add(&quot;y&quot;));</span>
+<span class="fc" id="L811">        assertTrue(tkn.hasPrevious());</span>
+<span class="fc" id="L812">        assertTrue(tkn.hasNext());</span>
+
+<span class="fc" id="L814">        assertEquals(&quot;b&quot;, tkn.next());</span>
+<span class="fc" id="L815">        assertTrue(tkn.hasPrevious());</span>
+<span class="fc" id="L816">        assertTrue(tkn.hasNext());</span>
+
+<span class="fc" id="L818">        assertEquals(&quot;c&quot;, tkn.next());</span>
+<span class="fc" id="L819">        assertTrue(tkn.hasPrevious());</span>
+<span class="fc" id="L820">        assertFalse(tkn.hasNext());</span>
+
+<span class="fc" id="L822">        assertThrows(NoSuchElementException.class, tkn::next);</span>
+<span class="fc" id="L823">        assertTrue(tkn.hasPrevious());</span>
+<span class="fc" id="L824">        assertFalse(tkn.hasNext());</span>
+<span class="fc" id="L825">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testTokenizeSubclassInputChange() {
+<span class="fc" id="L830">        final StrTokenizer tkn = new StrTokenizer(&quot;a b c d e&quot;) {</span>
+            @Override
+            protected List&lt;String&gt; tokenize(final char[] chars, final int offset, final int count) {
+<span class="fc" id="L833">                return super.tokenize(&quot;w x y z&quot;.toCharArray(), 2, 5);</span>
+            }
+        };
+<span class="fc" id="L836">        assertEquals(&quot;x&quot;, tkn.next());</span>
+<span class="fc" id="L837">        assertEquals(&quot;y&quot;, tkn.next());</span>
+<span class="fc" id="L838">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testTokenizeSubclassOutputChange() {
+<span class="fc" id="L843">        final StrTokenizer tkn = new StrTokenizer(&quot;a b c&quot;) {</span>
+            @Override
+            protected List&lt;String&gt; tokenize(final char[] chars, final int offset, final int count) {
+<span class="fc" id="L846">                final List&lt;String&gt; list = super.tokenize(chars, offset, count);</span>
+<span class="fc" id="L847">                Collections.reverse(list);</span>
+<span class="fc" id="L848">                return list;</span>
+            }
+        };
+<span class="fc" id="L851">        assertEquals(&quot;c&quot;, tkn.next());</span>
+<span class="fc" id="L852">        assertEquals(&quot;b&quot;, tkn.next());</span>
+<span class="fc" id="L853">        assertEquals(&quot;a&quot;, tkn.next());</span>
+<span class="fc" id="L854">    }</span>
+
+    //-----------------------------------------------------------------------
+    @Test
+    public void testToString() {
+<span class="fc" id="L859">        final StrTokenizer tkn = new StrTokenizer(&quot;a b c d e&quot;);</span>
+<span class="fc" id="L860">        assertEquals(&quot;StrTokenizer[not tokenized yet]&quot;, tkn.toString());</span>
+<span class="fc" id="L861">        tkn.next();</span>
+<span class="fc" id="L862">        assertEquals(&quot;StrTokenizer[a, b, c, d, e]&quot;, tkn.toString());</span>
+<span class="fc" id="L863">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

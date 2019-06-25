@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HashSetvBitSetTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">HashSetvBitSetTest.java</span></div><h1>HashSetvBitSetTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.lang3;
+
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
+
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+
+/**
+ * Test to show whether using BitSet for removeAll() methods is faster than using HashSet.
+ */
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
+<span class="nc" id="L36">public class HashSetvBitSetTest {</span>
+
+    private static final int numberOfElementsToCompute = 10;
+
+    @Benchmark
+    public int[] testHashSet() {
+<span class="nc" id="L42">        final HashSet&lt;Integer&gt; toRemove = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L43">        int found = 0;</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        for (int i = 0; i &lt; numberOfElementsToCompute; i++) {</span>
+<span class="nc" id="L45">            toRemove.add(found++);</span>
+        }
+<span class="nc" id="L47">        return extractIndices(toRemove);</span>
+    }
+
+    @Benchmark
+    public int[] testBitSet() {
+<span class="nc" id="L52">        final BitSet toRemove = new BitSet();</span>
+<span class="nc" id="L53">        int found = 0;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        for (int i = 0; i &lt; numberOfElementsToCompute; i++) {</span>
+<span class="nc" id="L55">            toRemove.set(found++);</span>
+        }
+<span class="nc" id="L57">        return extractIndices(toRemove);</span>
+    }
+
+    @Benchmark
+    public int[] timeBitSetRemoveAll() {
+<span class="nc" id="L62">        final BitSet toRemove = new BitSet();</span>
+<span class="nc" id="L63">        final int[] array = new int[100];</span>
+<span class="nc" id="L64">        toRemove.set(10, 20);</span>
+<span class="nc" id="L65">        return (int[]) ArrayUtils.removeAll(array, toRemove);</span>
+    }
+
+    @Benchmark
+    public int[] timeExtractRemoveAll() {
+<span class="nc" id="L70">        final BitSet toRemove = new BitSet();</span>
+<span class="nc" id="L71">        final int[] array = new int[100];</span>
+<span class="nc" id="L72">        toRemove.set(10, 20);</span>
+<span class="nc" id="L73">        final int[] extractIndices = extractIndices(toRemove);</span>
+<span class="nc" id="L74">        return (int[]) ArrayUtils.removeAll((Object) array, extractIndices);</span>
+    }
+
+    // --- utility methods
+    private static int[] extractIndices(final HashSet&lt;Integer&gt; coll) {
+<span class="nc" id="L79">        final int[] result = new int[coll.size()];</span>
+<span class="nc" id="L80">        int i = 0;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        for (final Integer index : coll) {</span>
+<span class="nc" id="L82">            result[i++] = index.intValue();</span>
+<span class="nc" id="L83">        }</span>
+<span class="nc" id="L84">        return result;</span>
+    }
+
+    private static int[] extractIndices(final BitSet coll) {
+<span class="nc" id="L88">        final int[] result = new int[coll.cardinality()];</span>
+<span class="nc" id="L89">        int i = 0;</span>
+<span class="nc" id="L90">        int j=0;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        while ((j=coll.nextSetBit(j)) != -1) {</span>
+<span class="nc" id="L92">            result[i++] = j++;</span>
+        }
+<span class="nc" id="L94">        return result;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

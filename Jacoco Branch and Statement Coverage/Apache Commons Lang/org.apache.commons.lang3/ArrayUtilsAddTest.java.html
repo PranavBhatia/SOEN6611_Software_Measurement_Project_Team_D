@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArrayUtilsAddTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3</a> &gt; <span class="el_source">ArrayUtilsAddTest.java</span></div><h1>ArrayUtilsAddTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Tests ArrayUtils add methods.
+ */
+<span class="fc" id="L32">public class ArrayUtilsAddTest {</span>
+
+    @Test
+    public void testJira567() {
+        Number[] n;
+        // Valid array construction
+<span class="fc" id="L38">        n = ArrayUtils.addAll(new Number[]{Integer.valueOf(1)}, new Long[]{Long.valueOf(2)});</span>
+<span class="fc" id="L39">        assertEquals(2, n.length);</span>
+<span class="fc" id="L40">        assertEquals(Number.class, n.getClass().getComponentType());</span>
+        // Invalid - can't store Long in Integer array
+<span class="fc" id="L42">        assertThrows(IllegalArgumentException.class,</span>
+<span class="nc" id="L43">                () -&gt; ArrayUtils.addAll(new Integer[]{Integer.valueOf(1)}, new Long[]{Long.valueOf(2)}));</span>
+<span class="fc" id="L44">    }</span>
+
+    @Test
+    public void testAddObjectArrayBoolean() {
+        boolean[] newArray;
+<span class="fc" id="L49">        newArray = ArrayUtils.add(null, false);</span>
+<span class="fc" id="L50">        assertArrayEquals(new boolean[]{false}, newArray);</span>
+<span class="fc" id="L51">        assertEquals(Boolean.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L52">        newArray = ArrayUtils.add(null, true);</span>
+<span class="fc" id="L53">        assertArrayEquals(new boolean[]{true}, newArray);</span>
+<span class="fc" id="L54">        assertEquals(Boolean.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L55">        final boolean[] array1 = new boolean[]{true, false, true};</span>
+<span class="fc" id="L56">        newArray = ArrayUtils.add(array1, false);</span>
+<span class="fc" id="L57">        assertArrayEquals(new boolean[]{true, false, true, false}, newArray);</span>
+<span class="fc" id="L58">        assertEquals(Boolean.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L59">    }</span>
+
+    @Test
+    public void testAddObjectArrayByte() {
+        byte[] newArray;
+<span class="fc" id="L64">        newArray = ArrayUtils.add((byte[]) null, (byte) 0);</span>
+<span class="fc" id="L65">        assertArrayEquals(new byte[]{0}, newArray);</span>
+<span class="fc" id="L66">        assertEquals(Byte.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L67">        newArray = ArrayUtils.add((byte[]) null, (byte) 1);</span>
+<span class="fc" id="L68">        assertArrayEquals(new byte[]{1}, newArray);</span>
+<span class="fc" id="L69">        assertEquals(Byte.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L70">        final byte[] array1 = new byte[]{1, 2, 3};</span>
+<span class="fc" id="L71">        newArray = ArrayUtils.add(array1, (byte) 0);</span>
+<span class="fc" id="L72">        assertArrayEquals(new byte[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L73">        assertEquals(Byte.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L74">        newArray = ArrayUtils.add(array1, (byte) 4);</span>
+<span class="fc" id="L75">        assertArrayEquals(new byte[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L76">        assertEquals(Byte.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L77">    }</span>
+
+    @Test
+    public void testAddObjectArrayChar() {
+        char[] newArray;
+<span class="fc" id="L82">        newArray = ArrayUtils.add((char[]) null, (char) 0);</span>
+<span class="fc" id="L83">        assertArrayEquals(new char[]{0}, newArray);</span>
+<span class="fc" id="L84">        assertEquals(Character.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L85">        newArray = ArrayUtils.add((char[]) null, (char) 1);</span>
+<span class="fc" id="L86">        assertArrayEquals(new char[]{1}, newArray);</span>
+<span class="fc" id="L87">        assertEquals(Character.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L88">        final char[] array1 = new char[]{1, 2, 3};</span>
+<span class="fc" id="L89">        newArray = ArrayUtils.add(array1, (char) 0);</span>
+<span class="fc" id="L90">        assertArrayEquals(new char[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L91">        assertEquals(Character.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L92">        newArray = ArrayUtils.add(array1, (char) 4);</span>
+<span class="fc" id="L93">        assertArrayEquals(new char[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L94">        assertEquals(Character.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L95">    }</span>
+
+    @Test
+    public void testAddObjectArrayDouble() {
+        double[] newArray;
+<span class="fc" id="L100">        newArray = ArrayUtils.add((double[]) null, 0);</span>
+<span class="fc" id="L101">        assertArrayEquals(new double[]{0}, newArray);</span>
+<span class="fc" id="L102">        assertEquals(Double.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L103">        newArray = ArrayUtils.add((double[]) null, 1);</span>
+<span class="fc" id="L104">        assertArrayEquals(new double[]{1}, newArray);</span>
+<span class="fc" id="L105">        assertEquals(Double.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L106">        final double[] array1 = new double[]{1, 2, 3};</span>
+<span class="fc" id="L107">        newArray = ArrayUtils.add(array1, 0);</span>
+<span class="fc" id="L108">        assertArrayEquals(new double[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L109">        assertEquals(Double.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L110">        newArray = ArrayUtils.add(array1, 4);</span>
+<span class="fc" id="L111">        assertArrayEquals(new double[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L112">        assertEquals(Double.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L113">    }</span>
+
+    @Test
+    public void testAddObjectArrayFloat() {
+        float[] newArray;
+<span class="fc" id="L118">        newArray = ArrayUtils.add((float[]) null, 0);</span>
+<span class="fc" id="L119">        assertArrayEquals(new float[]{0}, newArray);</span>
+<span class="fc" id="L120">        assertEquals(Float.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L121">        newArray = ArrayUtils.add((float[]) null, 1);</span>
+<span class="fc" id="L122">        assertArrayEquals(new float[]{1}, newArray);</span>
+<span class="fc" id="L123">        assertEquals(Float.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L124">        final float[] array1 = new float[]{1, 2, 3};</span>
+<span class="fc" id="L125">        newArray = ArrayUtils.add(array1, 0);</span>
+<span class="fc" id="L126">        assertArrayEquals(new float[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L127">        assertEquals(Float.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L128">        newArray = ArrayUtils.add(array1, 4);</span>
+<span class="fc" id="L129">        assertArrayEquals(new float[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L130">        assertEquals(Float.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L131">    }</span>
+
+    @Test
+    public void testAddObjectArrayInt() {
+        int[] newArray;
+<span class="fc" id="L136">        newArray = ArrayUtils.add((int[]) null, 0);</span>
+<span class="fc" id="L137">        assertArrayEquals(new int[]{0}, newArray);</span>
+<span class="fc" id="L138">        assertEquals(Integer.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L139">        newArray = ArrayUtils.add((int[]) null, 1);</span>
+<span class="fc" id="L140">        assertArrayEquals(new int[]{1}, newArray);</span>
+<span class="fc" id="L141">        assertEquals(Integer.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L142">        final int[] array1 = new int[]{1, 2, 3};</span>
+<span class="fc" id="L143">        newArray = ArrayUtils.add(array1, 0);</span>
+<span class="fc" id="L144">        assertArrayEquals(new int[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L145">        assertEquals(Integer.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L146">        newArray = ArrayUtils.add(array1, 4);</span>
+<span class="fc" id="L147">        assertArrayEquals(new int[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L148">        assertEquals(Integer.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    public void testAddObjectArrayLong() {
+        long[] newArray;
+<span class="fc" id="L154">        newArray = ArrayUtils.add((long[]) null, 0);</span>
+<span class="fc" id="L155">        assertArrayEquals(new long[]{0}, newArray);</span>
+<span class="fc" id="L156">        assertEquals(Long.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L157">        newArray = ArrayUtils.add((long[]) null, 1);</span>
+<span class="fc" id="L158">        assertArrayEquals(new long[]{1}, newArray);</span>
+<span class="fc" id="L159">        assertEquals(Long.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L160">        final long[] array1 = new long[]{1, 2, 3};</span>
+<span class="fc" id="L161">        newArray = ArrayUtils.add(array1, 0);</span>
+<span class="fc" id="L162">        assertArrayEquals(new long[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L163">        assertEquals(Long.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L164">        newArray = ArrayUtils.add(array1, 4);</span>
+<span class="fc" id="L165">        assertArrayEquals(new long[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L166">        assertEquals(Long.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L167">    }</span>
+
+    @Test
+    public void testAddObjectArrayShort() {
+        short[] newArray;
+<span class="fc" id="L172">        newArray = ArrayUtils.add((short[]) null, (short) 0);</span>
+<span class="fc" id="L173">        assertArrayEquals(new short[]{0}, newArray);</span>
+<span class="fc" id="L174">        assertEquals(Short.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L175">        newArray = ArrayUtils.add((short[]) null, (short) 1);</span>
+<span class="fc" id="L176">        assertArrayEquals(new short[]{1}, newArray);</span>
+<span class="fc" id="L177">        assertEquals(Short.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L178">        final short[] array1 = new short[]{1, 2, 3};</span>
+<span class="fc" id="L179">        newArray = ArrayUtils.add(array1, (short) 0);</span>
+<span class="fc" id="L180">        assertArrayEquals(new short[]{1, 2, 3, 0}, newArray);</span>
+<span class="fc" id="L181">        assertEquals(Short.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L182">        newArray = ArrayUtils.add(array1, (short) 4);</span>
+<span class="fc" id="L183">        assertArrayEquals(new short[]{1, 2, 3, 4}, newArray);</span>
+<span class="fc" id="L184">        assertEquals(Short.TYPE, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L185">    }</span>
+
+    @Test
+    public void testAddObjectArrayObject() {
+        Object[] newArray;
+
+        //show that not casting is okay
+<span class="fc" id="L192">        newArray = ArrayUtils.add((Object[]) null, &quot;a&quot;);</span>
+<span class="fc" id="L193">        assertArrayEquals(new String[]{&quot;a&quot;}, newArray);</span>
+<span class="fc" id="L194">        assertArrayEquals(new Object[]{&quot;a&quot;}, newArray);</span>
+<span class="fc" id="L195">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+
+        //show that not casting to Object[] is okay and will assume String based on &quot;a&quot;
+<span class="fc" id="L198">        final String[] newStringArray = ArrayUtils.add(null, &quot;a&quot;);</span>
+<span class="fc" id="L199">        assertArrayEquals(new String[]{&quot;a&quot;}, newStringArray);</span>
+<span class="fc" id="L200">        assertArrayEquals(new Object[]{&quot;a&quot;}, newStringArray);</span>
+<span class="fc" id="L201">        assertEquals(String.class, newStringArray.getClass().getComponentType());</span>
+
+<span class="fc" id="L203">        final String[] stringArray1 = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;};</span>
+<span class="fc" id="L204">        newArray = ArrayUtils.add(stringArray1, null);</span>
+<span class="fc" id="L205">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, null}, newArray);</span>
+<span class="fc" id="L206">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+
+<span class="fc" id="L208">        newArray = ArrayUtils.add(stringArray1, &quot;d&quot;);</span>
+<span class="fc" id="L209">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;}, newArray);</span>
+<span class="fc" id="L210">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+
+<span class="fc" id="L212">        Number[] numberArray1 = new Number[]{Integer.valueOf(1), Double.valueOf(2)};</span>
+<span class="fc" id="L213">        newArray = ArrayUtils.add(numberArray1, Float.valueOf(3));</span>
+<span class="fc" id="L214">        assertArrayEquals(new Number[]{Integer.valueOf(1), Double.valueOf(2), Float.valueOf(3)}, newArray);</span>
+<span class="fc" id="L215">        assertEquals(Number.class, newArray.getClass().getComponentType());</span>
+
+<span class="fc" id="L217">        numberArray1 = null;</span>
+<span class="fc" id="L218">        newArray = ArrayUtils.add(numberArray1, Float.valueOf(3));</span>
+<span class="fc" id="L219">        assertArrayEquals(new Float[]{Float.valueOf(3)}, newArray);</span>
+<span class="fc" id="L220">        assertEquals(Float.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L221">    }</span>
+
+    @Test
+    @SuppressWarnings(&quot;deprecation&quot;)
+    public void testLANG571() {
+<span class="fc" id="L226">        final String[] stringArray=null;</span>
+<span class="fc" id="L227">        final String aString=null;</span>
+<span class="pc" id="L228">        assertThrows(IllegalArgumentException.class, () -&gt; ArrayUtils.add(stringArray, aString));</span>
+<span class="pc" id="L229">        assertThrows(IllegalArgumentException.class, () -&gt; ArrayUtils.add(stringArray, 0, aString));</span>
+<span class="fc" id="L230">    }</span>
+
+    @Test
+    public void testAddObjectArrayToObjectArray() {
+<span class="fc" id="L234">        assertNull(ArrayUtils.addAll(null, (Object[]) null));</span>
+        Object[] newArray;
+<span class="fc" id="L236">        final String[] stringArray1 = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;};</span>
+<span class="fc" id="L237">        final String[] stringArray2 = new String[]{&quot;1&quot;, &quot;2&quot;, &quot;3&quot;};</span>
+<span class="fc" id="L238">        newArray = ArrayUtils.addAll(stringArray1, (String[]) null);</span>
+<span class="fc" id="L239">        assertNotSame(stringArray1, newArray);</span>
+<span class="fc" id="L240">        assertArrayEquals(stringArray1, newArray);</span>
+<span class="fc" id="L241">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;}, newArray);</span>
+<span class="fc" id="L242">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L243">        newArray = ArrayUtils.addAll(null, stringArray2);</span>
+<span class="fc" id="L244">        assertNotSame(stringArray2, newArray);</span>
+<span class="fc" id="L245">        assertArrayEquals(stringArray2, newArray);</span>
+<span class="fc" id="L246">        assertArrayEquals(new String[]{&quot;1&quot;, &quot;2&quot;, &quot;3&quot;}, newArray);</span>
+<span class="fc" id="L247">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L248">        newArray = ArrayUtils.addAll(stringArray1, stringArray2);</span>
+<span class="fc" id="L249">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;}, newArray);</span>
+<span class="fc" id="L250">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L251">        newArray = ArrayUtils.addAll(ArrayUtils.EMPTY_STRING_ARRAY, (String[]) null);</span>
+<span class="fc" id="L252">        assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, newArray);</span>
+<span class="fc" id="L253">        assertArrayEquals(new String[]{}, newArray);</span>
+<span class="fc" id="L254">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L255">        newArray = ArrayUtils.addAll(null, ArrayUtils.EMPTY_STRING_ARRAY);</span>
+<span class="fc" id="L256">        assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, newArray);</span>
+<span class="fc" id="L257">        assertArrayEquals(new String[]{}, newArray);</span>
+<span class="fc" id="L258">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L259">        newArray = ArrayUtils.addAll(ArrayUtils.EMPTY_STRING_ARRAY, ArrayUtils.EMPTY_STRING_ARRAY);</span>
+<span class="fc" id="L260">        assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, newArray);</span>
+<span class="fc" id="L261">        assertArrayEquals(new String[]{}, newArray);</span>
+<span class="fc" id="L262">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L263">        final String[] stringArrayNull = new String []{null};</span>
+<span class="fc" id="L264">        newArray = ArrayUtils.addAll(stringArrayNull, stringArrayNull);</span>
+<span class="fc" id="L265">        assertArrayEquals(new String[]{null, null}, newArray);</span>
+<span class="fc" id="L266">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+
+        // boolean
+<span class="fc" id="L269">        assertArrayEquals(new boolean[]{true, false, false, true}, ArrayUtils.addAll(new boolean[]{true, false}, false, true));</span>
+
+<span class="fc" id="L271">        assertArrayEquals(new boolean[]{false, true}, ArrayUtils.addAll(null, new boolean[]{false, true}));</span>
+
+<span class="fc" id="L273">        assertArrayEquals(new boolean[]{true, false}, ArrayUtils.addAll(new boolean[]{true, false}, null));</span>
+
+        // char
+<span class="fc" id="L276">        assertArrayEquals(new char[]{'a', 'b', 'c', 'd'}, ArrayUtils.addAll(new char[]{'a', 'b'}, 'c', 'd'));</span>
+
+<span class="fc" id="L278">        assertArrayEquals(new char[]{'c', 'd'}, ArrayUtils.addAll(null, new char[]{'c', 'd'}));</span>
+
+<span class="fc" id="L280">        assertArrayEquals(new char[]{'a', 'b'}, ArrayUtils.addAll(new char[]{'a', 'b'}, null));</span>
+
+        // byte
+<span class="fc" id="L283">        assertArrayEquals(new byte[]{(byte) 0, (byte) 1, (byte) 2, (byte) 3}, ArrayUtils.addAll(new byte[]{(byte) 0, (byte) 1}, (byte) 2, (byte) 3));</span>
+
+<span class="fc" id="L285">        assertArrayEquals(new byte[]{(byte) 2, (byte) 3}, ArrayUtils.addAll(null, new byte[]{(byte) 2, (byte) 3}));</span>
+
+<span class="fc" id="L287">        assertArrayEquals(new byte[]{(byte) 0, (byte) 1}, ArrayUtils.addAll(new byte[]{(byte) 0, (byte) 1}, null));</span>
+
+        // short
+<span class="fc" id="L290">        assertArrayEquals(new short[]{(short) 10, (short) 20, (short) 30, (short) 40}, ArrayUtils.addAll(new short[]{(short) 10, (short) 20}, (short) 30, (short) 40));</span>
+
+<span class="fc" id="L292">        assertArrayEquals(new short[]{(short) 30, (short) 40}, ArrayUtils.addAll(null, new short[]{(short) 30, (short) 40}));</span>
+
+<span class="fc" id="L294">        assertArrayEquals(new short[]{(short) 10, (short) 20}, ArrayUtils.addAll(new short[]{(short) 10, (short) 20}, null));</span>
+
+        // int
+<span class="fc" id="L297">        assertArrayEquals(new int[]{1, 1000, -1000, -1}, ArrayUtils.addAll(new int[]{1, 1000}, -1000, -1));</span>
+
+<span class="fc" id="L299">        assertArrayEquals(new int[]{-1000, -1}, ArrayUtils.addAll(null, new int[]{-1000, -1}));</span>
+
+<span class="fc" id="L301">        assertArrayEquals(new int[]{1, 1000}, ArrayUtils.addAll(new int[]{1, 1000}, null));</span>
+
+        // long
+<span class="fc" id="L304">        assertArrayEquals(new long[]{1L, -1L, 1000L, -1000L}, ArrayUtils.addAll(new long[]{1L, -1L}, 1000L, -1000L));</span>
+
+<span class="fc" id="L306">        assertArrayEquals(new long[]{1000L, -1000L}, ArrayUtils.addAll(null, new long[]{1000L, -1000L}));</span>
+
+<span class="fc" id="L308">        assertArrayEquals(new long[]{1L, -1L}, ArrayUtils.addAll(new long[]{1L, -1L}, null));</span>
+
+        // float
+<span class="fc" id="L311">        assertArrayEquals(new float[]{10.5f, 10.1f, 1.6f, 0.01f}, ArrayUtils.addAll(new float[]{10.5f, 10.1f}, 1.6f, 0.01f));</span>
+
+<span class="fc" id="L313">        assertArrayEquals(new float[]{1.6f, 0.01f}, ArrayUtils.addAll(null, new float[]{1.6f, 0.01f}));</span>
+
+<span class="fc" id="L315">        assertArrayEquals(new float[]{10.5f, 10.1f}, ArrayUtils.addAll(new float[]{10.5f, 10.1f}, null));</span>
+
+        // double
+<span class="fc" id="L318">        assertArrayEquals(new double[]{Math.PI, -Math.PI, 0, 9.99}, ArrayUtils.addAll(new double[]{Math.PI, -Math.PI}, 0, 9.99));</span>
+
+<span class="fc" id="L320">        assertArrayEquals(new double[]{0, 9.99}, ArrayUtils.addAll(null, new double[]{0, 9.99}));</span>
+
+<span class="fc" id="L322">        assertArrayEquals(new double[]{Math.PI, -Math.PI}, ArrayUtils.addAll(new double[]{Math.PI, -Math.PI}, null));</span>
+
+<span class="fc" id="L324">    }</span>
+
+    @SuppressWarnings(&quot;deprecation&quot;)
+    @Test
+    public void testAddObjectAtIndex() {
+        Object[] newArray;
+<span class="fc" id="L330">        newArray = ArrayUtils.add((Object[]) null, 0, &quot;a&quot;);</span>
+<span class="fc" id="L331">        assertArrayEquals(new String[]{&quot;a&quot;}, newArray);</span>
+<span class="fc" id="L332">        assertArrayEquals(new Object[]{&quot;a&quot;}, newArray);</span>
+<span class="fc" id="L333">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L334">        final String[] stringArray1 = new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;};</span>
+<span class="fc" id="L335">        newArray = ArrayUtils.add(stringArray1, 0, null);</span>
+<span class="fc" id="L336">        assertArrayEquals(new String[]{null, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;}, newArray);</span>
+<span class="fc" id="L337">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L338">        newArray = ArrayUtils.add(stringArray1, 1, null);</span>
+<span class="fc" id="L339">        assertArrayEquals(new String[]{&quot;a&quot;, null, &quot;b&quot;, &quot;c&quot;}, newArray);</span>
+<span class="fc" id="L340">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L341">        newArray = ArrayUtils.add(stringArray1, 3, null);</span>
+<span class="fc" id="L342">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, null}, newArray);</span>
+<span class="fc" id="L343">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L344">        newArray = ArrayUtils.add(stringArray1, 3, &quot;d&quot;);</span>
+<span class="fc" id="L345">        assertArrayEquals(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;}, newArray);</span>
+<span class="fc" id="L346">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+<span class="fc" id="L347">        assertEquals(String.class, newArray.getClass().getComponentType());</span>
+
+<span class="fc" id="L349">        final Object[] o = new Object[] {&quot;1&quot;, &quot;2&quot;, &quot;4&quot;};</span>
+<span class="fc" id="L350">        final Object[] result = ArrayUtils.add(o, 2, &quot;3&quot;);</span>
+<span class="fc" id="L351">        final Object[] result2 = ArrayUtils.add(o, 3, &quot;5&quot;);</span>
+
+<span class="fc" id="L353">        assertNotNull(result);</span>
+<span class="fc" id="L354">        assertEquals(4, result.length);</span>
+<span class="fc" id="L355">        assertEquals(&quot;1&quot;, result[0]);</span>
+<span class="fc" id="L356">        assertEquals(&quot;2&quot;, result[1]);</span>
+<span class="fc" id="L357">        assertEquals(&quot;3&quot;, result[2]);</span>
+<span class="fc" id="L358">        assertEquals(&quot;4&quot;, result[3]);</span>
+<span class="fc" id="L359">        assertNotNull(result2);</span>
+<span class="fc" id="L360">        assertEquals(4, result2.length);</span>
+<span class="fc" id="L361">        assertEquals(&quot;1&quot;, result2[0]);</span>
+<span class="fc" id="L362">        assertEquals(&quot;2&quot;, result2[1]);</span>
+<span class="fc" id="L363">        assertEquals(&quot;4&quot;, result2[2]);</span>
+<span class="fc" id="L364">        assertEquals(&quot;5&quot;, result2[3]);</span>
+
+        // boolean tests
+<span class="fc" id="L367">        boolean[] booleanArray = ArrayUtils.add( null, 0, true );</span>
+<span class="fc" id="L368">        assertArrayEquals(new boolean[]{true}, booleanArray);</span>
+<span class="fc" id="L369">        IndexOutOfBoundsException e =</span>
+<span class="pc" id="L370">                assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( null, -1, true));</span>
+<span class="fc" id="L371">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L372">        booleanArray = ArrayUtils.add( new boolean[] { true }, 0, false);</span>
+<span class="fc" id="L373">        assertArrayEquals(new boolean[]{false, true}, booleanArray);</span>
+<span class="fc" id="L374">        booleanArray = ArrayUtils.add( new boolean[] { false }, 1, true);</span>
+<span class="fc" id="L375">        assertArrayEquals(new boolean[]{false, true}, booleanArray);</span>
+<span class="fc" id="L376">        booleanArray = ArrayUtils.add( new boolean[] { true, false }, 1, true);</span>
+<span class="fc" id="L377">        assertArrayEquals(new boolean[]{true, true, false}, booleanArray);</span>
+<span class="pc" id="L378">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add(new boolean[] { true, false }, 4, true));</span>
+<span class="fc" id="L379">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L380">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add(new boolean[] { true, false }, -1, true));</span>
+<span class="fc" id="L381">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // char tests
+<span class="fc" id="L384">        char[] charArray = ArrayUtils.add( (char[]) null, 0, 'a' );</span>
+<span class="fc" id="L385">        assertArrayEquals(new char[]{'a'}, charArray);</span>
+<span class="pc" id="L386">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( (char[]) null, -1, 'a' ));</span>
+<span class="fc" id="L387">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L388">        charArray = ArrayUtils.add( new char[] { 'a' }, 0, 'b');</span>
+<span class="fc" id="L389">        assertArrayEquals(new char[]{'b', 'a'}, charArray);</span>
+<span class="fc" id="L390">        charArray = ArrayUtils.add( new char[] { 'a', 'b' }, 0, 'c');</span>
+<span class="fc" id="L391">        assertArrayEquals(new char[]{'c', 'a', 'b'}, charArray);</span>
+<span class="fc" id="L392">        charArray = ArrayUtils.add( new char[] { 'a', 'b' }, 1, 'k');</span>
+<span class="fc" id="L393">        assertArrayEquals(new char[]{'a', 'k', 'b'}, charArray);</span>
+<span class="fc" id="L394">        charArray = ArrayUtils.add( new char[] { 'a', 'b', 'c' }, 1, 't');</span>
+<span class="fc" id="L395">        assertArrayEquals(new char[]{'a', 't', 'b', 'c'}, charArray);</span>
+<span class="pc" id="L396">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new char[] { 'a', 'b' }, 4, 'c'));</span>
+<span class="fc" id="L397">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L398">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new char[] { 'a', 'b' }, -1, 'c'));</span>
+<span class="fc" id="L399">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // short tests
+<span class="fc" id="L402">        short[] shortArray = ArrayUtils.add( new short[] { 1 }, 0, (short) 2);</span>
+<span class="fc" id="L403">        assertArrayEquals(new short[]{2, 1}, shortArray);</span>
+<span class="pc" id="L404">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( (short[]) null, -1, (short) 2));</span>
+<span class="fc" id="L405">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L406">        shortArray = ArrayUtils.add( new short[] { 2, 6 }, 2, (short) 10);</span>
+<span class="fc" id="L407">        assertArrayEquals(new short[]{2, 6, 10}, shortArray);</span>
+<span class="fc" id="L408">        shortArray = ArrayUtils.add( new short[] { 2, 6 }, 0, (short) -4);</span>
+<span class="fc" id="L409">        assertArrayEquals(new short[]{-4, 2, 6}, shortArray);</span>
+<span class="fc" id="L410">        shortArray = ArrayUtils.add( new short[] { 2, 6, 3 }, 2, (short) 1);</span>
+<span class="fc" id="L411">        assertArrayEquals(new short[]{2, 6, 1, 3}, shortArray);</span>
+<span class="pc" id="L412">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new short[] { 2, 6 }, 4, (short) 10));</span>
+<span class="fc" id="L413">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L414">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new short[] { 2, 6 }, -1, (short) 10));</span>
+<span class="fc" id="L415">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // byte tests
+<span class="fc" id="L418">        byte[] byteArray = ArrayUtils.add( new byte[] { 1 }, 0, (byte) 2);</span>
+<span class="fc" id="L419">        assertArrayEquals(new byte[]{2, 1}, byteArray);</span>
+<span class="pc" id="L420">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( (byte[]) null, -1, (byte) 2));</span>
+<span class="fc" id="L421">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L422">        byteArray = ArrayUtils.add( new byte[] { 2, 6 }, 2, (byte) 3);</span>
+<span class="fc" id="L423">        assertArrayEquals(new byte[]{2, 6, 3}, byteArray);</span>
+<span class="fc" id="L424">        byteArray = ArrayUtils.add( new byte[] { 2, 6 }, 0, (byte) 1);</span>
+<span class="fc" id="L425">        assertArrayEquals(new byte[]{1, 2, 6}, byteArray);</span>
+<span class="fc" id="L426">        byteArray = ArrayUtils.add( new byte[] { 2, 6, 3 }, 2, (byte) 1);</span>
+<span class="fc" id="L427">        assertArrayEquals(new byte[]{2, 6, 1, 3}, byteArray);</span>
+<span class="pc" id="L428">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new byte[] { 2, 6 }, 4, (byte) 3));</span>
+<span class="fc" id="L429">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L430">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new byte[] { 2, 6 }, -1, (byte) 3));</span>
+<span class="fc" id="L431">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // int tests
+<span class="fc" id="L434">        int[] intArray = ArrayUtils.add( new int[] { 1 }, 0, 2);</span>
+<span class="fc" id="L435">        assertArrayEquals(new int[]{2, 1}, intArray);</span>
+<span class="pc" id="L436">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( (int[]) null, -1, 2));</span>
+<span class="fc" id="L437">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L438">        intArray = ArrayUtils.add( new int[] { 2, 6 }, 2, 10);</span>
+<span class="fc" id="L439">        assertArrayEquals(new int[]{2, 6, 10}, intArray);</span>
+<span class="fc" id="L440">        intArray = ArrayUtils.add( new int[] { 2, 6 }, 0, -4);</span>
+<span class="fc" id="L441">        assertArrayEquals(new int[]{-4, 2, 6}, intArray);</span>
+<span class="fc" id="L442">        intArray = ArrayUtils.add( new int[] { 2, 6, 3 }, 2, 1);</span>
+<span class="fc" id="L443">        assertArrayEquals(new int[]{2, 6, 1, 3}, intArray);</span>
+<span class="pc" id="L444">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new int[] { 2, 6 }, 4, 10));</span>
+<span class="fc" id="L445">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L446">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new int[] { 2, 6 }, -1, 10));</span>
+<span class="fc" id="L447">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // long tests
+<span class="fc" id="L450">        long[] longArray = ArrayUtils.add( new long[] { 1L }, 0, 2L);</span>
+<span class="fc" id="L451">        assertArrayEquals(new long[]{2L, 1L}, longArray);</span>
+<span class="pc" id="L452">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( (long[]) null, -1, 2L));</span>
+<span class="fc" id="L453">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L454">        longArray = ArrayUtils.add( new long[] { 2L, 6L }, 2, 10L);</span>
+<span class="fc" id="L455">        assertArrayEquals(new long[]{2L, 6L, 10L}, longArray);</span>
+<span class="fc" id="L456">        longArray = ArrayUtils.add( new long[] { 2L, 6L }, 0, -4L);</span>
+<span class="fc" id="L457">        assertArrayEquals(new long[]{-4L, 2L, 6L}, longArray);</span>
+<span class="fc" id="L458">        longArray = ArrayUtils.add( new long[] { 2L, 6L, 3L }, 2, 1L);</span>
+<span class="fc" id="L459">        assertArrayEquals(new long[]{2L, 6L, 1L, 3L}, longArray);</span>
+<span class="pc" id="L460">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new long[] { 2L, 6L }, 4, 10L));</span>
+<span class="fc" id="L461">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L462">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new long[] { 2L, 6L }, -1, 10L));</span>
+<span class="fc" id="L463">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // float tests
+<span class="fc" id="L466">        float[] floatArray = ArrayUtils.add( new float[] { 1.1f }, 0, 2.2f);</span>
+<span class="fc" id="L467">        assertArrayEquals(new float[]{2.2f, 1.1f}, floatArray);</span>
+<span class="pc" id="L468">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( (float[]) null, -1, 2.2f));</span>
+<span class="fc" id="L469">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L470">        floatArray = ArrayUtils.add( new float[] { 2.3f, 6.4f }, 2, 10.5f);</span>
+<span class="fc" id="L471">        assertArrayEquals(new float[]{2.3f, 6.4f, 10.5f}, floatArray);</span>
+<span class="fc" id="L472">        floatArray = ArrayUtils.add( new float[] { 2.6f, 6.7f }, 0, -4.8f);</span>
+<span class="fc" id="L473">        assertArrayEquals(new float[]{-4.8f, 2.6f, 6.7f}, floatArray);</span>
+<span class="fc" id="L474">        floatArray = ArrayUtils.add( new float[] { 2.9f, 6.0f, 0.3f }, 2, 1.0f);</span>
+<span class="fc" id="L475">        assertArrayEquals(new float[]{2.9f, 6.0f, 1.0f, 0.3f}, floatArray);</span>
+<span class="pc" id="L476">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new float[] { 2.3f, 6.4f }, 4, 10.5f));</span>
+<span class="fc" id="L477">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L478">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new float[] { 2.3f, 6.4f }, -1, 10.5f));</span>
+<span class="fc" id="L479">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+
+        // double tests
+<span class="fc" id="L482">        double[] doubleArray = ArrayUtils.add( new double[] { 1.1 }, 0, 2.2);</span>
+<span class="fc" id="L483">        assertArrayEquals(new double[]{2.2, 1.1}, doubleArray);</span>
+<span class="pc" id="L484">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add(null, -1, 2.2));</span>
+<span class="fc" id="L485">        assertEquals(&quot;Index: -1, Length: 0&quot;, e.getMessage());</span>
+<span class="fc" id="L486">        doubleArray = ArrayUtils.add( new double[] { 2.3, 6.4 }, 2, 10.5);</span>
+<span class="fc" id="L487">        assertArrayEquals(new double[]{2.3, 6.4, 10.5}, doubleArray);</span>
+<span class="fc" id="L488">        doubleArray = ArrayUtils.add( new double[] { 2.6, 6.7 }, 0, -4.8);</span>
+<span class="fc" id="L489">        assertArrayEquals(new double[]{-4.8, 2.6, 6.7}, doubleArray);</span>
+<span class="fc" id="L490">        doubleArray = ArrayUtils.add( new double[] { 2.9, 6.0, 0.3 }, 2, 1.0);</span>
+<span class="fc" id="L491">        assertArrayEquals(new double[]{2.9, 6.0, 1.0, 0.3}, doubleArray);</span>
+<span class="pc" id="L492">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new double[] { 2.3, 6.4 }, 4, 10.5));</span>
+<span class="fc" id="L493">        assertEquals(&quot;Index: 4, Length: 2&quot;, e.getMessage());</span>
+<span class="pc" id="L494">        e = assertThrows(IndexOutOfBoundsException.class, () -&gt; ArrayUtils.add( new double[] { 2.3, 6.4 }, -1, 10.5));</span>
+<span class="fc" id="L495">        assertEquals(&quot;Index: -1, Length: 2&quot;, e.getMessage());</span>
+<span class="fc" id="L496">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

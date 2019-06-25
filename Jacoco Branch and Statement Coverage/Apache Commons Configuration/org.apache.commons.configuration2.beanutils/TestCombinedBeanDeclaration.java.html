@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestCombinedBeanDeclaration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.beanutils</a> &gt; <span class="el_source">TestCombinedBeanDeclaration.java</span></div><h1>TestCombinedBeanDeclaration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.beanutils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code CombinedBeanDeclaration}.
+ *
+ */
+<span class="fc" id="L37">public class TestCombinedBeanDeclaration</span>
+{
+    /** An array with the mocks for the child bean declarations. */
+    private BeanDeclaration[] declarations;
+
+    /**
+     * Helper method for replaying the mock objects used by the tests.
+     */
+    private void replay()
+    {
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (declarations != null)</span>
+        {
+<span class="fc" id="L49">            EasyMock.replay((Object[]) declarations);</span>
+        }
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Helper method for verifying the mock objects used by the tests.
+     */
+    private void verify()
+    {
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (declarations != null)</span>
+        {
+<span class="fc" id="L60">            EasyMock.verify((Object[]) declarations);</span>
+        }
+<span class="fc" id="L62">    }</span>
+
+    /**
+     * Convenience method for accessing a mock declaration with the given index.
+     *
+     * @param idx the index
+     * @return the corresponding mock child bean declaration
+     */
+    private BeanDeclaration decl(final int idx)
+    {
+<span class="fc" id="L72">        return declarations[idx];</span>
+    }
+
+    /**
+     * Creates a test instance with a number of mock child declarations.
+     *
+     * @return the test instance
+     */
+    private CombinedBeanDeclaration createCombinedDeclaration()
+    {
+<span class="fc" id="L82">        declarations = new BeanDeclaration[3];</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (int i = 0; i &lt; declarations.length; i++)</span>
+        {
+<span class="fc" id="L85">            declarations[i] = EasyMock.createMock(BeanDeclaration.class);</span>
+        }
+<span class="fc" id="L87">        return new CombinedBeanDeclaration(declarations);</span>
+    }
+
+    /**
+     * Tests whether the bean factory can be obtained if it is set for one child
+     * declarations.
+     */
+    @Test
+    public void testGetBeanFactoryNameDefined()
+    {
+<span class="fc" id="L97">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L98">        final String name = &quot;someTestBeanFactory&quot;;</span>
+<span class="fc" id="L99">        EasyMock.expect(decl(0).getBeanFactoryName()).andReturn(null);</span>
+<span class="fc" id="L100">        EasyMock.expect(decl(1).getBeanFactoryName()).andReturn(name);</span>
+<span class="fc" id="L101">        replay();</span>
+<span class="fc" id="L102">        assertEquals(&quot;Wrong factory name&quot;, name, cd.getBeanFactoryName());</span>
+<span class="fc" id="L103">        verify();</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Tests getBeanFactoryName() if none of the child declarations provide a
+     * value.
+     */
+    @Test
+    public void testGetBeanFactoryNameUndefined()
+    {
+<span class="fc" id="L113">        final CombinedBeanDeclaration cd = new CombinedBeanDeclaration();</span>
+<span class="fc" id="L114">        assertNull(&quot;Got a factory name&quot;, cd.getBeanFactoryName());</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Tests whether the bean factory parameter can be obtained if it is set for
+     * one of the child declarations.
+     */
+    @Test
+    public void testGetBeanFactoryParameterDefined()
+    {
+<span class="fc" id="L124">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L125">        final Object param = new Object();</span>
+<span class="fc" id="L126">        EasyMock.expect(decl(0).getBeanFactoryParameter()).andReturn(null);</span>
+<span class="fc" id="L127">        EasyMock.expect(decl(1).getBeanFactoryParameter()).andReturn(param);</span>
+<span class="fc" id="L128">        replay();</span>
+<span class="fc" id="L129">        assertSame(&quot;Wrong parameter&quot;, param, cd.getBeanFactoryParameter());</span>
+<span class="fc" id="L130">        verify();</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Tests getBeanFactoryParameter() if none of the child declarations provide
+     * a value.
+     */
+    @Test
+    public void testGetBeanFactoryParameterUndefined()
+    {
+<span class="fc" id="L140">        final CombinedBeanDeclaration cd = new CombinedBeanDeclaration();</span>
+<span class="fc" id="L141">        assertNull(&quot;Got a factory parameter&quot;, cd.getBeanFactoryParameter());</span>
+<span class="fc" id="L142">    }</span>
+
+    /**
+     * Tests whether the bean class name can be obtained if it is set for one of
+     * the child declarations.
+     */
+    @Test
+    public void testGetBeanClassNameDefined()
+    {
+<span class="fc" id="L151">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L152">        EasyMock.expect(decl(0).getBeanClassName()).andReturn(null);</span>
+<span class="fc" id="L153">        EasyMock.expect(decl(1).getBeanClassName()).andReturn(</span>
+<span class="fc" id="L154">                getClass().getName());</span>
+<span class="fc" id="L155">        replay();</span>
+<span class="fc" id="L156">        assertEquals(&quot;Wrong bean class&quot;, getClass().getName(),</span>
+<span class="fc" id="L157">                cd.getBeanClassName());</span>
+<span class="fc" id="L158">        verify();</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Tests getBeanClassName() if none of the child declarations provide a
+     * value.
+     */
+    @Test
+    public void testGetBeanClassNameUndefined()
+    {
+<span class="fc" id="L168">        final CombinedBeanDeclaration cd = new CombinedBeanDeclaration();</span>
+<span class="fc" id="L169">        assertNull(&quot;Got a bean class name&quot;, cd.getBeanClassName());</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Tests whether constructor arguments can be obtained if one of the child
+     * declarations provide this data.
+     */
+    @Test
+    public void testGetConstructorArgsDefined()
+    {
+<span class="fc" id="L179">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L180">        final Collection&lt;ConstructorArg&gt; args =</span>
+<span class="fc" id="L181">                Arrays.asList(ConstructorArg.forValue(42));</span>
+<span class="fc" id="L182">        EasyMock.expect(decl(0).getConstructorArgs()).andReturn(null);</span>
+<span class="fc" id="L183">        EasyMock.expect(decl(1).getConstructorArgs()).andReturn(args);</span>
+<span class="fc" id="L184">        replay();</span>
+<span class="fc" id="L185">        assertSame(&quot;Wrong constructor arguments&quot;, args, cd.getConstructorArgs());</span>
+<span class="fc" id="L186">        verify();</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Tests getConstructorArgs() if none of the child declarations provide a
+     * value.
+     */
+    @Test
+    public void testGetConstructorArgsUndefined()
+    {
+<span class="fc" id="L196">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L197">        EasyMock.expect(decl(0).getConstructorArgs()).andReturn(null);</span>
+<span class="fc" id="L198">        EasyMock.expect(decl(1).getConstructorArgs()).andReturn(</span>
+                new ArrayList&lt;ConstructorArg&gt;());
+<span class="fc" id="L200">        EasyMock.expect(decl(2).getConstructorArgs()).andReturn(null);</span>
+<span class="fc" id="L201">        replay();</span>
+<span class="fc" id="L202">        assertTrue(&quot;Got constructor arguments&quot;, cd.getConstructorArgs()</span>
+<span class="fc" id="L203">                .isEmpty());</span>
+<span class="fc" id="L204">        verify();</span>
+<span class="fc" id="L205">    }</span>
+
+    /**
+     * Tests whether a combined map of bean properties can be obtained.
+     */
+    @Test
+    public void testGetBeanProperties()
+    {
+<span class="fc" id="L213">        final Map&lt;String, Object&gt; props1 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L214">        final Map&lt;String, Object&gt; props2 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L215">        final Map&lt;String, Object&gt; props3 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L216">        props1.put(&quot;param1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L217">        props1.put(&quot;param2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L218">        props2.put(&quot;param2&quot;, &quot;othervalue&quot;);</span>
+<span class="fc" id="L219">        props2.put(&quot;param3&quot;, &quot;value3&quot;);</span>
+<span class="fc" id="L220">        props3.put(&quot;param1&quot;, &quot;differentvalue&quot;);</span>
+<span class="fc" id="L221">        props3.put(&quot;param4&quot;, &quot;value4&quot;);</span>
+<span class="fc" id="L222">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L223">        EasyMock.expect(decl(0).getBeanProperties()).andReturn(props1);</span>
+<span class="fc" id="L224">        EasyMock.expect(decl(1).getBeanProperties()).andReturn(props2);</span>
+<span class="fc" id="L225">        EasyMock.expect(decl(2).getBeanProperties()).andReturn(props3);</span>
+<span class="fc" id="L226">        replay();</span>
+<span class="fc" id="L227">        final Map&lt;String, Object&gt; props = cd.getBeanProperties();</span>
+<span class="fc" id="L228">        assertEquals(&quot;Wrong number of properties&quot;, 4, props.size());</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">        for (int i = 1; i &lt;= 4; i++)</span>
+        {
+<span class="fc" id="L231">            assertEquals(&quot;Wrong property&quot;, &quot;value&quot; + i, props.get(&quot;param&quot; + i));</span>
+        }
+<span class="fc" id="L233">        verify();</span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * Tests whether null return values of bean property maps are handled
+     * correctly.
+     */
+    @Test
+    public void testGetBeanPropertiesNull()
+    {
+<span class="fc" id="L243">        final BeanDeclaration child = EasyMock.createMock(BeanDeclaration.class);</span>
+<span class="fc" id="L244">        EasyMock.expect(child.getBeanProperties()).andReturn(null);</span>
+<span class="fc" id="L245">        EasyMock.replay(child);</span>
+<span class="fc" id="L246">        final CombinedBeanDeclaration cd = new CombinedBeanDeclaration(child);</span>
+<span class="fc" id="L247">        assertTrue(&quot;Got bean properties&quot;, cd.getBeanProperties().isEmpty());</span>
+<span class="fc" id="L248">    }</span>
+
+    /**
+     * Tests whether a combined map of nested bean declarations can be obtained.
+     */
+    @Test
+    public void testGetNestedBeanDeclarations()
+    {
+<span class="fc" id="L256">        final Map&lt;String, Object&gt; decls1 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L257">        final Map&lt;String, Object&gt; decls2 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L258">        final Map&lt;String, Object&gt; decls3 = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L259">        decls1.put(&quot;param1&quot;, &quot;value1&quot;);</span>
+<span class="fc" id="L260">        decls1.put(&quot;param2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L261">        decls2.put(&quot;param2&quot;, &quot;othervalue&quot;);</span>
+<span class="fc" id="L262">        decls2.put(&quot;param3&quot;, &quot;value3&quot;);</span>
+<span class="fc" id="L263">        decls3.put(&quot;param1&quot;, &quot;differentvalue&quot;);</span>
+<span class="fc" id="L264">        decls3.put(&quot;param4&quot;, &quot;value4&quot;);</span>
+<span class="fc" id="L265">        final CombinedBeanDeclaration cd = createCombinedDeclaration();</span>
+<span class="fc" id="L266">        EasyMock.expect(decl(0).getNestedBeanDeclarations()).andReturn(decls1);</span>
+<span class="fc" id="L267">        EasyMock.expect(decl(1).getNestedBeanDeclarations()).andReturn(decls2);</span>
+<span class="fc" id="L268">        EasyMock.expect(decl(2).getNestedBeanDeclarations()).andReturn(decls3);</span>
+<span class="fc" id="L269">        replay();</span>
+<span class="fc" id="L270">        final Map&lt;String, Object&gt; decls = cd.getNestedBeanDeclarations();</span>
+<span class="fc" id="L271">        assertEquals(&quot;Wrong number of declarations&quot;, 4, decls.size());</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">        for (int i = 1; i &lt;= 4; i++)</span>
+        {
+<span class="fc" id="L274">            assertEquals(&quot;Wrong declaration&quot;, &quot;value&quot; + i,</span>
+<span class="fc" id="L275">                    decls.get(&quot;param&quot; + i));</span>
+        }
+<span class="fc" id="L277">        verify();</span>
+<span class="fc" id="L278">    }</span>
+
+    /**
+     * Tests whether null return values of bean declaration maps are handled
+     * correctly.
+     */
+    @Test
+    public void testGetNestedBeanDeclarationsNull()
+    {
+<span class="fc" id="L287">        final BeanDeclaration child = EasyMock.createMock(BeanDeclaration.class);</span>
+<span class="fc" id="L288">        EasyMock.expect(child.getNestedBeanDeclarations()).andReturn(null);</span>
+<span class="fc" id="L289">        EasyMock.replay(child);</span>
+<span class="fc" id="L290">        final CombinedBeanDeclaration cd = new CombinedBeanDeclaration(child);</span>
+<span class="fc" id="L291">        assertTrue(&quot;Got bean declarations&quot;, cd.getNestedBeanDeclarations()</span>
+<span class="fc" id="L292">                .isEmpty());</span>
+<span class="fc" id="L293">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

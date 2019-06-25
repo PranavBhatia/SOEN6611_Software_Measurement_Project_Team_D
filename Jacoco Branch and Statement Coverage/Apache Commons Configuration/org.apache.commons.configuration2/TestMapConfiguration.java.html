@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestMapConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestMapConfiguration.java</span></div><h1>TestMapConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
+import org.apache.commons.configuration2.event.ConfigurationEvent;
+import org.apache.commons.configuration2.event.EventListenerTestImpl;
+import org.junit.Test;
+
+/**
+ * Tests for MapConfiguration.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L39">public class TestMapConfiguration extends TestAbstractConfiguration</span>
+{
+    /** Constant for a test key.*/
+    private static final String KEY = &quot;key1&quot;;
+
+    /** Constant for a test property value with whitespace.*/
+    private static final String SPACE_VALUE = &quot;   Value with whitespace  &quot;;
+
+    /** The trimmed test value.*/
+<span class="fc" id="L48">    private static final String TRIM_VALUE = SPACE_VALUE.trim();</span>
+
+    @Override
+    protected AbstractConfiguration getConfiguration()
+    {
+<span class="fc" id="L53">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L54">        map.put(KEY, &quot;value1&quot;);</span>
+<span class="fc" id="L55">        map.put(&quot;key2&quot;, &quot;value2&quot;);</span>
+<span class="fc" id="L56">        map.put(&quot;list&quot;, &quot;value1, value2&quot;);</span>
+<span class="fc" id="L57">        map.put(&quot;listesc&quot;, &quot;value1\\,value2&quot;);</span>
+
+<span class="fc" id="L59">        final MapConfiguration config = new MapConfiguration(map);</span>
+<span class="fc" id="L60">        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));</span>
+<span class="fc" id="L61">        return config;</span>
+    }
+
+    @Override
+    protected AbstractConfiguration getEmptyConfiguration()
+    {
+<span class="fc" id="L67">        return new MapConfiguration(new HashMap&lt;String, Object&gt;());</span>
+    }
+
+    @Test
+    public void testGetMap()
+    {
+<span class="fc" id="L73">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L75">        final MapConfiguration conf = new MapConfiguration(map);</span>
+<span class="fc" id="L76">        assertEquals(map, conf.getMap());</span>
+<span class="fc" id="L77">    }</span>
+
+    @Test
+    public void testClone()
+    {
+<span class="fc" id="L82">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L83">        final MapConfiguration copy = (MapConfiguration) config.clone();</span>
+<span class="fc" id="L84">        final StrictConfigurationComparator comp = new StrictConfigurationComparator();</span>
+<span class="fc" id="L85">        assertTrue(&quot;Configurations are not equal&quot;, comp.compare(config, copy));</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Tests if the cloned configuration is decoupled from the original.
+     */
+    @Test
+    public void testCloneModify()
+    {
+<span class="fc" id="L94">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L95">        config.addEventListener(ConfigurationEvent.ANY, new EventListenerTestImpl(config));</span>
+<span class="fc" id="L96">        final MapConfiguration copy = (MapConfiguration) config.clone();</span>
+<span class="fc" id="L97">        assertTrue(&quot;Event listeners were copied&quot;, copy</span>
+<span class="fc" id="L98">                .getEventListeners(ConfigurationEvent.ANY).isEmpty());</span>
+
+<span class="fc" id="L100">        config.addProperty(&quot;cloneTest&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L101">        assertFalse(&quot;Map not decoupled&quot;, copy.containsKey(&quot;cloneTest&quot;));</span>
+<span class="fc" id="L102">        copy.clearProperty(&quot;key1&quot;);</span>
+<span class="fc" id="L103">        assertEquals(&quot;Map not decoupled (2)&quot;, &quot;value1&quot;, config</span>
+<span class="fc" id="L104">                .getString(&quot;key1&quot;));</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Tests whether interpolation works as expected after cloning.
+     */
+    @Test
+    public void testCloneInterpolation()
+    {
+<span class="fc" id="L113">        final String keyAnswer = &quot;answer&quot;;</span>
+<span class="fc" id="L114">        final String keyValue = &quot;value&quot;;</span>
+<span class="fc" id="L115">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L116">        config.addProperty(keyAnswer, &quot;The answer is ${&quot; + keyValue + &quot;}.&quot;);</span>
+<span class="fc" id="L117">        config.addProperty(keyValue, 42);</span>
+<span class="fc" id="L118">        final MapConfiguration clone = (MapConfiguration) config.clone();</span>
+<span class="fc" id="L119">        clone.setProperty(keyValue, 43);</span>
+<span class="fc" id="L120">        assertEquals(&quot;Wrong interpolation in original&quot;, &quot;The answer is 42.&quot;,</span>
+<span class="fc" id="L121">                config.getString(keyAnswer));</span>
+<span class="fc" id="L122">        assertEquals(&quot;Wrong interpolation in clone&quot;, &quot;The answer is 43.&quot;,</span>
+<span class="fc" id="L123">                clone.getString(keyAnswer));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Tests adding another value to an existing property.
+     */
+    @Test
+    public void testAddProperty()
+    {
+<span class="fc" id="L132">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L133">        config.addProperty(KEY, TRIM_VALUE);</span>
+<span class="fc" id="L134">        config.addProperty(KEY, &quot;anotherValue&quot;);</span>
+<span class="fc" id="L135">        final List&lt;Object&gt; values = config.getList(KEY);</span>
+<span class="fc" id="L136">        assertEquals(&quot;Wrong number of values&quot;, 3, values.size());</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Tests querying a property when trimming is active.
+     */
+    @Test
+    public void testGetPropertyTrim()
+    {
+<span class="fc" id="L145">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L146">        config.getMap().put(KEY, SPACE_VALUE);</span>
+<span class="fc" id="L147">        assertEquals(&quot;Wrong trimmed value&quot;, TRIM_VALUE, config.getProperty(KEY));</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Tests querying a property when trimming is disabled.
+     */
+    @Test
+    public void testGetPropertyTrimDisabled()
+    {
+<span class="fc" id="L156">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L157">        config.getMap().put(KEY, SPACE_VALUE);</span>
+<span class="fc" id="L158">        config.setTrimmingDisabled(true);</span>
+<span class="fc" id="L159">        assertEquals(&quot;Wrong trimmed value&quot;, SPACE_VALUE, config.getProperty(KEY));</span>
+<span class="fc" id="L160">    }</span>
+
+    /**
+     * Tests querying a property if trimming is enabled, but list splitting is
+     * disabled. In this case no trimming is performed (trimming only works if
+     * list splitting is enabled).
+     */
+    @Test
+    public void testGetPropertyTrimNoSplit()
+    {
+<span class="fc" id="L170">        final MapConfiguration config = (MapConfiguration) getConfiguration();</span>
+<span class="fc" id="L171">        config.getMap().put(KEY, SPACE_VALUE);</span>
+<span class="fc" id="L172">        config.setListDelimiterHandler(new DisabledListDelimiterHandler());</span>
+<span class="fc" id="L173">        assertEquals(&quot;Wrong trimmed value&quot;, SPACE_VALUE, config.getProperty(KEY));</span>
+<span class="fc" id="L174">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

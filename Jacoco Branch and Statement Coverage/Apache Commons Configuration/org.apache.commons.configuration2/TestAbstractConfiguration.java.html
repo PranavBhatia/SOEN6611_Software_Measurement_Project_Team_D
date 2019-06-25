@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestAbstractConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2</a> &gt; <span class="el_source">TestAbstractConfiguration.java</span></div><h1>TestAbstractConfiguration.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.configuration2;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import junitx.framework.ListAssert;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.io.ConfigurationLogger;
+import org.junit.Test;
+
+/**
+ * Abstract TestCase for implementations of {@link AbstractConfiguration}.
+ *
+ * @author Emmanuel Bourg
+ */
+<span class="fc" id="L43">public abstract class TestAbstractConfiguration</span>
+{
+    /**
+     * Return an abstract configuration with the following data:&lt;br&gt;
+     * &lt;pre&gt;
+     * key1 = value1
+     * key2 = value2
+     * list = value1, value2
+     * listesc = value1\\,value2
+     * &lt;/pre&gt;
+     */
+    protected abstract AbstractConfiguration getConfiguration();
+
+    /**
+     * Return an empty configuration.
+     */
+    protected abstract AbstractConfiguration getEmptyConfiguration();
+
+    @Test
+    public void testGetProperty()
+    {
+<span class="fc" id="L64">        final Configuration config = getConfiguration();</span>
+<span class="fc" id="L65">        assertEquals(&quot;key1&quot;, &quot;value1&quot;, config.getProperty(&quot;key1&quot;));</span>
+<span class="fc" id="L66">        assertEquals(&quot;key2&quot;, &quot;value2&quot;, config.getProperty(&quot;key2&quot;));</span>
+<span class="fc" id="L67">        assertNull(&quot;key3&quot;, config.getProperty(&quot;key3&quot;));</span>
+<span class="fc" id="L68">    }</span>
+
+    @Test
+    public void testList()
+    {
+<span class="fc" id="L73">        final Configuration config = getConfiguration();</span>
+
+<span class="fc" id="L75">        final List&lt;?&gt; list = config.getList(&quot;list&quot;);</span>
+<span class="fc" id="L76">        assertNotNull(&quot;list not found&quot;, config.getProperty(&quot;list&quot;));</span>
+<span class="fc" id="L77">        assertEquals(&quot;list size&quot;, 2, list.size());</span>
+<span class="fc" id="L78">        assertTrue(&quot;'value1' is not in the list&quot;, list.contains(&quot;value1&quot;));</span>
+<span class="fc" id="L79">        assertTrue(&quot;'value2' is not in the list&quot;, list.contains(&quot;value2&quot;));</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Tests whether the escape character for list delimiters is recocknized and
+     * removed.
+     */
+    @Test
+    public void testListEscaped()
+    {
+<span class="fc" id="L89">        assertEquals(&quot;Wrong value for escaped list&quot;, &quot;value1,value2&quot;,</span>
+<span class="fc" id="L90">                getConfiguration().getString(&quot;listesc&quot;));</span>
+<span class="fc" id="L91">    }</span>
+
+    @Test
+    public void testAddPropertyDirect()
+    {
+<span class="fc" id="L96">        final AbstractConfiguration config = getConfiguration();</span>
+<span class="fc" id="L97">        config.addPropertyDirect(&quot;key3&quot;, &quot;value3&quot;);</span>
+<span class="fc" id="L98">        assertEquals(&quot;key3&quot;, &quot;value3&quot;, config.getProperty(&quot;key3&quot;));</span>
+
+<span class="fc" id="L100">        config.addPropertyDirect(&quot;key3&quot;, &quot;value4&quot;);</span>
+<span class="fc" id="L101">        config.addPropertyDirect(&quot;key3&quot;, &quot;value5&quot;);</span>
+<span class="fc" id="L102">        final List&lt;Object&gt; list = config.getList(&quot;key3&quot;);</span>
+<span class="fc" id="L103">        assertNotNull(&quot;no list found for the 'key3' property&quot;, list);</span>
+
+<span class="fc" id="L105">        final List&lt;Object&gt; expected = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L106">        expected.add(&quot;value3&quot;);</span>
+<span class="fc" id="L107">        expected.add(&quot;value4&quot;);</span>
+<span class="fc" id="L108">        expected.add(&quot;value5&quot;);</span>
+
+<span class="fc" id="L110">        ListAssert.assertEquals(&quot;values for the 'key3' property&quot;, expected, list);</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    public void testIsEmpty()
+    {
+<span class="fc" id="L116">        final Configuration config = getConfiguration();</span>
+<span class="fc" id="L117">        assertFalse(&quot;the configuration is empty&quot;, config.isEmpty());</span>
+<span class="fc" id="L118">        assertTrue(&quot;the configuration is not empty&quot;, getEmptyConfiguration().isEmpty());</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    public void testSize()
+    {
+<span class="fc" id="L124">        assertEquals(&quot;Wrong size&quot;, 4, getConfiguration().size());</span>
+<span class="fc" id="L125">    }</span>
+
+    @Test
+    public void testSizeEmpty()
+    {
+<span class="fc" id="L130">        assertEquals(&quot;Wrong size of empty configuration&quot;, 0, getEmptyConfiguration().size());</span>
+<span class="fc" id="L131">    }</span>
+
+    @Test
+    public void testContainsKey()
+    {
+<span class="fc" id="L136">        final Configuration config = getConfiguration();</span>
+<span class="fc" id="L137">        assertTrue(&quot;key1 not found&quot;, config.containsKey(&quot;key1&quot;));</span>
+<span class="fc" id="L138">        assertFalse(&quot;key3 found&quot;, config.containsKey(&quot;key3&quot;));</span>
+<span class="fc" id="L139">    }</span>
+
+    @Test
+    public void testClearProperty()
+    {
+<span class="fc" id="L144">        final Configuration config = getConfiguration();</span>
+<span class="fc" id="L145">        config.clearProperty(&quot;key2&quot;);</span>
+<span class="fc" id="L146">        assertFalse(&quot;key2 not cleared&quot;, config.containsKey(&quot;key2&quot;));</span>
+<span class="fc" id="L147">    }</span>
+
+    @Test
+    public void testGetKeys()
+    {
+<span class="fc" id="L152">        final Configuration config = getConfiguration();</span>
+<span class="fc" id="L153">        final Iterator&lt;String&gt; keys = config.getKeys();</span>
+
+<span class="fc" id="L155">        final List&lt;String&gt; expectedKeys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L156">        expectedKeys.add(&quot;key1&quot;);</span>
+<span class="fc" id="L157">        expectedKeys.add(&quot;key2&quot;);</span>
+<span class="fc" id="L158">        expectedKeys.add(&quot;list&quot;);</span>
+<span class="fc" id="L159">        expectedKeys.add(&quot;listesc&quot;);</span>
+
+<span class="fc" id="L161">        assertNotNull(&quot;null iterator&quot;, keys);</span>
+<span class="fc" id="L162">        assertTrue(&quot;empty iterator&quot;, keys.hasNext());</span>
+
+<span class="fc" id="L164">        final List&lt;String&gt; actualKeys = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        while (keys.hasNext())</span>
+        {
+<span class="fc" id="L167">            actualKeys.add(keys.next());</span>
+        }
+
+<span class="fc" id="L170">        ListAssert.assertEquals(&quot;keys&quot;, expectedKeys, actualKeys);</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Tests accessing the configuration's logger.
+     */
+    @Test
+    public void testSetLogger()
+    {
+<span class="fc" id="L179">        final AbstractConfiguration config = getEmptyConfiguration();</span>
+<span class="fc" id="L180">        assertNotNull(&quot;Default logger is null&quot;, config.getLogger());</span>
+<span class="fc" id="L181">        final ConfigurationLogger log = new ConfigurationLogger(config.getClass());</span>
+<span class="fc" id="L182">        config.setLogger(log);</span>
+<span class="fc" id="L183">        assertSame(&quot;Logger was not set&quot;, log, config.getLogger());</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Tests the exception message triggered by the conversion to BigInteger.
+     * This test is related to CONFIGURATION-357.
+     */
+    @Test
+    public void testGetBigIntegerConversion()
+    {
+<span class="fc" id="L193">        final Configuration config = getConfiguration();</span>
+        try
+        {
+<span class="nc" id="L196">            config.getBigInteger(&quot;key1&quot;);</span>
+<span class="nc" id="L197">            fail(&quot;No conversion exception thrown!&quot;);</span>
+        }
+<span class="fc" id="L199">        catch (final ConversionException cex)</span>
+        {
+<span class="fc" id="L201">            assertTrue(&quot;Key not found in exception message: &quot; + cex, cex</span>
+<span class="fc" id="L202">                    .getMessage().contains(&quot;'key1'&quot;));</span>
+<span class="fc" id="L203">            assertTrue(&quot;Target class not found in exception message: &quot; + cex,</span>
+<span class="fc" id="L204">                    cex.getMessage().contains(BigInteger.class.getName()));</span>
+<span class="fc" id="L205">            assertTrue(&quot;Value not found in exception message: &quot; + cex, cex</span>
+<span class="fc" id="L206">                    .getMessage().contains(config.getString(&quot;key1&quot;)));</span>
+<span class="nc" id="L207">        }</span>
+<span class="fc" id="L208">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

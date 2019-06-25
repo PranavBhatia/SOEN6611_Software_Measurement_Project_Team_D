@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestFileBasedBuilderParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_configuration2$Jacoco_Coverage.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.configuration2.builder</a> &gt; <span class="el_source">TestFileBasedBuilderParameters.java</span></div><h1>TestFileBasedBuilderParameters.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.configuration2.builder;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.configuration2.ConfigurationAssert;
+import org.apache.commons.configuration2.beanutils.BeanHelper;
+import org.apache.commons.configuration2.io.FileBased;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.io.FileLocationStrategy;
+import org.apache.commons.configuration2.io.FileSystem;
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+/**
+ * Test class for {@code FileBasedBuilderParametersImpl}.
+ *
+ */
+<span class="fc" id="L45">public class TestFileBasedBuilderParameters</span>
+{
+    /**
+     * Tests the standard constructor.
+     */
+    @Test
+    public void testInitDefaults()
+    {
+<span class="fc" id="L53">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L54">        assertFalse(&quot;Got a location&quot;, params.getFileHandler()</span>
+<span class="fc" id="L55">                .isLocationDefined());</span>
+<span class="fc" id="L56">        assertNull(&quot;Got a refresh delay&quot;, params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Tests whether a file handler is accepted by the constructor.
+     */
+    @Test
+    public void testInitFileHandler()
+    {
+<span class="fc" id="L65">        final FileHandler handler = new FileHandler();</span>
+<span class="fc" id="L66">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl(handler);
+<span class="fc" id="L68">        assertSame(&quot;Wrong handler&quot;, handler, params.getFileHandler());</span>
+<span class="fc" id="L69">    }</span>
+
+    /**
+     * Tests whether the refresh delay can be set.
+     */
+    @Test
+    public void testSetReloadingRefreshDelay()
+    {
+<span class="fc" id="L77">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L78">        final Long delay = 10000L;</span>
+<span class="fc" id="L79">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L80">                params.setReloadingRefreshDelay(delay));</span>
+<span class="fc" id="L81">        assertEquals(&quot;Wrong delay&quot;, delay, params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Tests whether a factory for reloading detectors can be set.
+     */
+    @Test
+    public void testSetReloadingDetectorFactory()
+    {
+<span class="fc" id="L90">        final ReloadingDetectorFactory factory =</span>
+<span class="fc" id="L91">                EasyMock.createMock(ReloadingDetectorFactory.class);</span>
+<span class="fc" id="L92">        EasyMock.replay(factory);</span>
+<span class="fc" id="L93">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L95">        assertNull(&quot;Got a factory&quot;, params.getReloadingDetectorFactory());</span>
+<span class="fc" id="L96">        assertSame(&quot;Wrong result&quot;, params,</span>
+<span class="fc" id="L97">                params.setReloadingDetectorFactory(factory));</span>
+<span class="fc" id="L98">        assertSame(&quot;Factory not set&quot;, factory,</span>
+<span class="fc" id="L99">                params.getReloadingDetectorFactory());</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Tests whether a file can be set.
+     */
+    @Test
+    public void testSetFile()
+    {
+<span class="fc" id="L108">        final File file =</span>
+<span class="fc" id="L109">                ConfigurationAssert.getTestFile(&quot;test.properties&quot;)</span>
+<span class="fc" id="L110">                        .getAbsoluteFile();</span>
+<span class="fc" id="L111">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L112">        assertSame(&quot;Wrong result&quot;, params, params.setFile(file));</span>
+<span class="fc" id="L113">        assertEquals(&quot;Wrong file&quot;, file, params.getFileHandler().getFile());</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Tests whether a URL can be set.
+     */
+    @Test
+    public void testSetURL()
+    {
+<span class="fc" id="L122">        final URL url = ConfigurationAssert.getTestURL(&quot;test.properties&quot;);</span>
+<span class="fc" id="L123">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L124">        assertSame(&quot;Wrong result&quot;, params, params.setURL(url));</span>
+<span class="fc" id="L125">        assertEquals(&quot;Wrong URL&quot;, url.toExternalForm(), params.getFileHandler()</span>
+<span class="fc" id="L126">                .getURL().toExternalForm());</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests whether a path can be set.
+     */
+    @Test
+    public void testSetPath()
+    {
+<span class="fc" id="L135">        final String path =</span>
+<span class="fc" id="L136">                ConfigurationAssert.getTestFile(&quot;test.properties&quot;)</span>
+<span class="fc" id="L137">                        .getAbsolutePath();</span>
+<span class="fc" id="L138">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L139">        assertSame(&quot;Wrong result&quot;, params, params.setPath(path));</span>
+<span class="fc" id="L140">        assertEquals(&quot;Wrong path&quot;, path, params.getFileHandler().getPath());</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Tests whether a file name can be set.
+     */
+    @Test
+    public void testSetFileName()
+    {
+<span class="fc" id="L149">        final String name = &quot;testConfig.xml&quot;;</span>
+<span class="fc" id="L150">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L151">        assertSame(&quot;Wrong result&quot;, params, params.setFileName(name));</span>
+<span class="fc" id="L152">        assertEquals(&quot;Wrong name&quot;, name, params.getFileHandler().getFileName());</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * Tests whether a base path can be set.
+     */
+    @Test
+    public void testSetBasePath()
+    {
+<span class="fc" id="L161">        final String path =</span>
+<span class="fc" id="L162">                ConfigurationAssert.getTestFile(&quot;test.properties&quot;).getParentFile()</span>
+<span class="fc" id="L163">                        .getAbsolutePath();</span>
+<span class="fc" id="L164">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L165">        assertSame(&quot;Wrong result&quot;, params, params.setBasePath(path));</span>
+<span class="fc" id="L166">        assertEquals(&quot;Wrong path&quot;, path, params.getFileHandler().getBasePath());</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Tests whether a file system can be set.
+     */
+    @Test
+    public void testSetFileSystem()
+    {
+<span class="fc" id="L175">        final FileSystem fs = EasyMock.createMock(FileSystem.class);</span>
+<span class="fc" id="L176">        EasyMock.replay(fs);</span>
+<span class="fc" id="L177">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L178">        assertSame(&quot;Wrong result&quot;, params, params.setFileSystem(fs));</span>
+<span class="fc" id="L179">        assertSame(&quot;Wrong file system&quot;, fs, params.getFileHandler()</span>
+<span class="fc" id="L180">                .getFileSystem());</span>
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Tests whether a location strategy can be set.
+     */
+    @Test
+    public void testSetLocationStrategy()
+    {
+<span class="fc" id="L189">        final FileLocationStrategy strat =</span>
+<span class="fc" id="L190">                EasyMock.createMock(FileLocationStrategy.class);</span>
+<span class="fc" id="L191">        EasyMock.replay(strat);</span>
+<span class="fc" id="L192">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L194">        assertSame(&quot;Wrong result&quot;, params, params.setLocationStrategy(strat));</span>
+<span class="fc" id="L195">        assertSame(&quot;Wrong location strategy&quot;, strat, params.getFileHandler()</span>
+<span class="fc" id="L196">                .getLocationStrategy());</span>
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Tests whether an encoding can be set.
+     */
+    @Test
+    public void testSetEncoding()
+    {
+<span class="fc" id="L205">        final String enc = &quot;ISO-8859-1&quot;;</span>
+<span class="fc" id="L206">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L207">        assertSame(&quot;Wrong result&quot;, params, params.setEncoding(enc));</span>
+<span class="fc" id="L208">        assertSame(&quot;Wrong encoding&quot;, enc, params.getFileHandler().getEncoding());</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Tests whether a map with parameters can be queried.
+     */
+    @Test
+    public void testGetParameters()
+    {
+<span class="fc" id="L217">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L219">                        .setReloadingRefreshDelay(1000L);</span>
+<span class="fc" id="L220">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L221">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L222">        assertTrue(&quot;Object not stored&quot;, map.values().contains(params));</span>
+<span class="fc" id="L223">        assertEquals(&quot;Wrong exception flag&quot;, Boolean.TRUE, params</span>
+<span class="fc" id="L224">                .getParameters().get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Tests fromParameters() if the map does not contain an instance.
+     */
+    @Test
+    public void testFromParametersNotFound()
+    {
+<span class="fc" id="L233">        assertNull(&quot;Got an instance&quot;,</span>
+                FileBasedBuilderParametersImpl
+<span class="fc" id="L235">                        .fromParameters(new HashMap&lt;String, Object&gt;()));</span>
+<span class="fc" id="L236">    }</span>
+
+    /**
+     * Tests whether fromParameters() can return a default instance if the map
+     * does not contain an instance.
+     */
+    @Test
+    public void testFromParametersDefaultInstance()
+    {
+<span class="fc" id="L245">        final FileBasedBuilderParametersImpl params =</span>
+<span class="fc" id="L246">                FileBasedBuilderParametersImpl.fromParameters(</span>
+                        new HashMap&lt;String, Object&gt;(), true);
+<span class="fc" id="L248">        assertFalse(&quot;Got a location&quot;, params.getFileHandler()</span>
+<span class="fc" id="L249">                .isLocationDefined());</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Tests whether an instance can be extracted from a parameters map.
+     */
+    @Test
+    public void testFromParametersExtract()
+    {
+<span class="fc" id="L258">        final FileBasedBuilderParametersImpl params = new FileBasedBuilderParametersImpl();</span>
+<span class="fc" id="L259">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L260">        assertSame(&quot;Wrong parameters&quot;, params,</span>
+<span class="fc" id="L261">                FileBasedBuilderParametersImpl.fromParameters(map));</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Tries to obtain an instance from a null parameters map.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromParametersNull()
+    {
+<span class="nc" id="L270">        FileBasedBuilderParametersImpl.fromParameters(null);</span>
+<span class="nc" id="L271">    }</span>
+
+    /**
+     * Tests whether reflection-based property access through BeanUtils is
+     * possible.
+     */
+    @Test
+    public void testBeanPropertiesAccess() throws Exception
+    {
+<span class="fc" id="L280">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L282">        BeanHelper.setProperty(params, &quot;throwExceptionOnMissing&quot;,</span>
+                Boolean.TRUE);
+<span class="fc" id="L284">        BeanHelper.setProperty(params, &quot;fileName&quot;, &quot;test.xml&quot;);</span>
+<span class="fc" id="L285">        assertEquals(&quot;File name not set&quot;, &quot;test.xml&quot;, params.getFileHandler()</span>
+<span class="fc" id="L286">                .getFileName());</span>
+<span class="fc" id="L287">        final Map&lt;String, Object&gt; map = params.getParameters();</span>
+<span class="fc" id="L288">        assertEquals(&quot;Property not stored&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L289">                map.get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L290">    }</span>
+
+    /**
+     * Tests a clone operation.
+     */
+    @Test
+    public void testClone()
+    {
+<span class="fc" id="L298">        final FileBased content = EasyMock.createMock(FileBased.class);</span>
+<span class="fc" id="L299">        EasyMock.replay(content);</span>
+<span class="fc" id="L300">        final FileHandler fh = new FileHandler(content);</span>
+<span class="fc" id="L301">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl(fh);
+<span class="fc" id="L303">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L304">        params.setFileName(&quot;test.xml&quot;);</span>
+<span class="fc" id="L305">        final FileBasedBuilderParametersImpl clone = params.clone();</span>
+<span class="fc" id="L306">        assertEquals(&quot;Wrong exception flag&quot;, Boolean.TRUE, clone</span>
+<span class="fc" id="L307">                .getParameters().get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L308">        assertEquals(&quot;File name not copied&quot;, &quot;test.xml&quot;, clone.getFileHandler()</span>
+<span class="fc" id="L309">                .getFileName());</span>
+<span class="fc" id="L310">        assertSame(&quot;Content not copied&quot;, content, clone.getFileHandler()</span>
+<span class="fc" id="L311">                .getContent());</span>
+<span class="fc" id="L312">        assertNotSame(&quot;No copy of file handler&quot;, params.getFileHandler(),</span>
+<span class="fc" id="L313">                clone.getFileHandler());</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Tests whether an instance can be created from a map.
+     */
+    @Test
+    public void testFromMap()
+    {
+<span class="fc" id="L322">        final ReloadingDetectorFactory factory =</span>
+<span class="fc" id="L323">                EasyMock.createMock(ReloadingDetectorFactory.class);</span>
+<span class="fc" id="L324">        EasyMock.replay(factory);</span>
+<span class="fc" id="L325">        final Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L326">        final String fileName = &quot;someFileName&quot;;</span>
+<span class="fc" id="L327">        final String basePath = &quot;someBasePath&quot;;</span>
+<span class="fc" id="L328">        final Long refreshDelay = 20140628222302L;</span>
+<span class="fc" id="L329">        map.put(&quot;basePath&quot;, basePath);</span>
+<span class="fc" id="L330">        map.put(&quot;fileName&quot;, fileName);</span>
+<span class="fc" id="L331">        map.put(&quot;reloadingDetectorFactory&quot;, factory);</span>
+<span class="fc" id="L332">        map.put(&quot;reloadingRefreshDelay&quot;, refreshDelay);</span>
+
+<span class="fc" id="L334">        final FileBasedBuilderParametersImpl params =</span>
+<span class="fc" id="L335">                FileBasedBuilderParametersImpl.fromMap(map);</span>
+<span class="fc" id="L336">        assertEquals(&quot;Wrong base path&quot;, basePath, params.getFileHandler()</span>
+<span class="fc" id="L337">                .getBasePath());</span>
+<span class="fc" id="L338">        assertEquals(&quot;Wrong file name&quot;, fileName, params.getFileHandler()</span>
+<span class="fc" id="L339">                .getFileName());</span>
+<span class="fc" id="L340">        assertEquals(&quot;Wrong detector factory&quot;, factory,</span>
+<span class="fc" id="L341">                params.getReloadingDetectorFactory());</span>
+<span class="fc" id="L342">        assertEquals(&quot;Wrong refresh delay&quot;, refreshDelay,</span>
+<span class="fc" id="L343">                params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L344">    }</span>
+
+    /**
+     * Tests fromMap() for null input.
+     */
+    @Test
+    public void testFromMapNull()
+    {
+<span class="fc" id="L352">        final FileBasedBuilderParametersImpl params =</span>
+<span class="fc" id="L353">                FileBasedBuilderParametersImpl.fromMap(null);</span>
+<span class="fc" id="L354">        assertNull(&quot;Got refresh delay&quot;, params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L355">        assertNull(&quot;Got a file name&quot;, params.getFileHandler().getFileName());</span>
+<span class="fc" id="L356">    }</span>
+
+    /**
+     * Tests whether properties can be inherited from another object.
+     */
+    @Test
+    public void testInheritFrom()
+    {
+<span class="fc" id="L364">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl();
+<span class="fc" id="L366">        params.setEncoding(&quot;ISO-8856-1&quot;);</span>
+<span class="fc" id="L367">        params.setPath(&quot;A path&quot;);</span>
+<span class="fc" id="L368">        params.setReloadingDetectorFactory(</span>
+<span class="fc" id="L369">                EasyMock.createMock(ReloadingDetectorFactory.class));</span>
+<span class="fc" id="L370">        params.setFileSystem(EasyMock.createMock(FileSystem.class));</span>
+<span class="fc" id="L371">        params.setLocationStrategy(EasyMock.createMock(FileLocationStrategy.class));</span>
+<span class="fc" id="L372">        params.setReloadingRefreshDelay(20160213171737L);</span>
+<span class="fc" id="L373">        params.setThrowExceptionOnMissing(true);</span>
+<span class="fc" id="L374">        final FileBasedBuilderParametersImpl params2 =</span>
+                new FileBasedBuilderParametersImpl();
+
+<span class="fc" id="L377">        params2.inheritFrom(params.getParameters());</span>
+<span class="fc" id="L378">        assertEquals(&quot;Encoding not set&quot;, params.getFileHandler().getEncoding(),</span>
+<span class="fc" id="L379">                params2.getFileHandler().getEncoding());</span>
+<span class="fc" id="L380">        assertEquals(&quot;File system not set&quot;,</span>
+<span class="fc" id="L381">                params.getFileHandler().getFileSystem(),</span>
+<span class="fc" id="L382">                params2.getFileHandler().getFileSystem());</span>
+<span class="fc" id="L383">        assertEquals(&quot;Location strategy not set&quot;,</span>
+<span class="fc" id="L384">                params.getFileHandler().getLocationStrategy(),</span>
+<span class="fc" id="L385">                params2.getFileHandler().getLocationStrategy());</span>
+<span class="fc" id="L386">        assertEquals(&quot;Detector factory not set&quot;,</span>
+<span class="fc" id="L387">                params.getReloadingDetectorFactory(),</span>
+<span class="fc" id="L388">                params2.getReloadingDetectorFactory());</span>
+<span class="fc" id="L389">        assertEquals(&quot;Refresh delay not set&quot;, params.getReloadingRefreshDelay(),</span>
+<span class="fc" id="L390">                params2.getReloadingRefreshDelay());</span>
+<span class="fc" id="L391">        assertNull(&quot;Path was copied&quot;, params2.getFileHandler().getPath());</span>
+<span class="fc" id="L392">        assertEquals(&quot;Base properties not set&quot;, Boolean.TRUE,</span>
+<span class="fc" id="L393">                params2.getParameters().get(&quot;throwExceptionOnMissing&quot;));</span>
+<span class="fc" id="L394">    }</span>
+
+    /**
+     * Tests that missing properties in the passed in map are skipped by
+     * inheritFrom().
+     */
+    @Test
+    public void testInheritFromSkipMissingProperties()
+    {
+<span class="fc" id="L403">        final String encoding = &quot;UTF-16&quot;;</span>
+<span class="fc" id="L404">        final ReloadingDetectorFactory factory =</span>
+<span class="fc" id="L405">                EasyMock.createMock(ReloadingDetectorFactory.class);</span>
+<span class="fc" id="L406">        final Long refreshDelay = 20160213172611L;</span>
+<span class="fc" id="L407">        final FileBasedBuilderParametersImpl params =</span>
+<span class="fc" id="L408">                new FileBasedBuilderParametersImpl().setEncoding(encoding)</span>
+<span class="fc" id="L409">                        .setReloadingDetectorFactory(factory)</span>
+<span class="fc" id="L410">                        .setReloadingRefreshDelay(refreshDelay);</span>
+
+<span class="fc" id="L412">        params.inheritFrom(</span>
+<span class="fc" id="L413">                new FileBasedBuilderParametersImpl().getParameters());</span>
+<span class="fc" id="L414">        assertEquals(&quot;Encoding overwritten&quot;, encoding,</span>
+<span class="fc" id="L415">                params.getFileHandler().getEncoding());</span>
+<span class="fc" id="L416">        assertEquals(&quot;Detector factory overwritten&quot;, factory,</span>
+<span class="fc" id="L417">                params.getReloadingDetectorFactory());</span>
+<span class="fc" id="L418">        assertEquals(&quot;Refresh delay overwritten&quot;, refreshDelay,</span>
+<span class="fc" id="L419">                params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L420">    }</span>
+
+    /**
+     * Tests inheritFrom() if no parameters object can be found in the map.
+     */
+    @Test
+    public void testInheritFromNoParametersObject()
+    {
+<span class="fc" id="L428">        final FileBasedBuilderParametersImpl params =</span>
+                new FileBasedBuilderParametersImpl()
+<span class="fc" id="L430">                        .setReloadingRefreshDelay(20160213211429L);</span>
+
+<span class="fc" id="L432">        params.inheritFrom(new HashMap&lt;String, Object&gt;());</span>
+<span class="fc" id="L433">        assertNotNull(&quot;Properties were overwritten&quot;,</span>
+<span class="fc" id="L434">                params.getReloadingRefreshDelay());</span>
+<span class="fc" id="L435">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

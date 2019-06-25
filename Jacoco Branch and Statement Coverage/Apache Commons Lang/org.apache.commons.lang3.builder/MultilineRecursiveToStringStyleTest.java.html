@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultilineRecursiveToStringStyleTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">commons_lang3$Jacoco_Report.exec</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.lang3.builder</a> &gt; <span class="el_source">MultilineRecursiveToStringStyleTest.java</span></div><h1>MultilineRecursiveToStringStyleTest.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.lang3.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ */
+<span class="fc" id="L29">public class MultilineRecursiveToStringStyleTest {</span>
+
+<span class="fc" id="L31">    private final String BR = System.lineSeparator();</span>
+
+    @Test
+    public void simpleObject() {
+<span class="fc" id="L35">        final Transaction tx = new Transaction(&quot;2014.10.15&quot;, 100);</span>
+<span class="fc" id="L36">        final String expected = getClassPrefix(tx) + &quot;[&quot; + BR</span>
+                        + &quot;  amount=100.0,&quot; + BR
+                        + &quot;  date=2014.10.15&quot; + BR
+                        + &quot;]&quot;;
+<span class="fc" id="L40">        assertEquals(expected, toString(tx));</span>
+<span class="fc" id="L41">    }</span>
+
+    @Test
+    public void nestedElements() {
+<span class="fc" id="L45">        final Customer customer = new Customer(&quot;Douglas Adams&quot;);</span>
+<span class="fc" id="L46">        final Bank bank = new Bank(&quot;ASF Bank&quot;);</span>
+<span class="fc" id="L47">        customer.bank = bank;</span>
+<span class="fc" id="L48">        final String exp = getClassPrefix(customer) + &quot;[&quot; + BR</span>
+                   + &quot;  name=Douglas Adams,&quot; + BR
+<span class="fc" id="L50">                   + &quot;  bank=&quot; + getClassPrefix(bank) + &quot;[&quot; + BR</span>
+                   + &quot;    name=ASF Bank&quot; + BR
+                   + &quot;  ],&quot; + BR
+                   + &quot;  accounts=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L55">        assertEquals(exp, toString(customer));</span>
+<span class="fc" id="L56">    }</span>
+
+    @Test
+    public void nestedAndArray() {
+<span class="fc" id="L60">        final Account acc = new Account();</span>
+<span class="fc" id="L61">        final Transaction tx1 = new Transaction(&quot;2014.10.14&quot;, 100);</span>
+<span class="fc" id="L62">        final Transaction tx2 = new Transaction(&quot;2014.10.15&quot;, 50);</span>
+<span class="fc" id="L63">        acc.transactions.add(tx1);</span>
+<span class="fc" id="L64">        acc.transactions.add(tx2);</span>
+<span class="fc" id="L65">        final String expected = getClassPrefix(acc) + &quot;[&quot; + BR</span>
+                        + &quot;  owner=&lt;null&gt;,&quot; + BR
+<span class="fc" id="L67">                        + &quot;  transactions=&quot; + getClassPrefix(acc.transactions) + &quot;{&quot; + BR</span>
+<span class="fc" id="L68">                        + &quot;    &quot; + getClassPrefix(tx1) + &quot;[&quot; + BR</span>
+                        + &quot;      amount=100.0,&quot; + BR
+                        + &quot;      date=2014.10.14&quot; + BR
+                        + &quot;    ],&quot; + BR
+<span class="fc" id="L72">                        + &quot;    &quot; + getClassPrefix(tx2) + &quot;[&quot; + BR</span>
+                        + &quot;      amount=50.0,&quot; + BR
+                        + &quot;      date=2014.10.15&quot; + BR
+                        + &quot;    ]&quot; + BR
+                        + &quot;  }&quot; + BR
+                        + &quot;]&quot;;
+<span class="fc" id="L78">        assertEquals(expected, toString(acc));</span>
+<span class="fc" id="L79">    }</span>
+
+    @Test
+    public void noArray() {
+<span class="fc" id="L83">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L84">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  charArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  intArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  doubleArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  longArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  stringArray=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L92">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L93">    }</span>
+
+    @Test
+    public void boolArray() {
+<span class="fc" id="L97">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L98">        wa.boolArray = new boolean[] { true, false, true };</span>
+<span class="fc" id="L99">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray={&quot; + BR
+                   + &quot;    true,&quot; + BR
+                   + &quot;    false,&quot; + BR
+                   + &quot;    true&quot; + BR
+                   + &quot;  },&quot; + BR
+                   + &quot;  charArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  intArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  doubleArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  longArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  stringArray=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L111">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L112">    }</span>
+
+    @Test
+    public void charArray() {
+<span class="fc" id="L116">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L117">        wa.charArray = new char[] { 'a', 'A' };</span>
+<span class="fc" id="L118">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  charArray={&quot; + BR
+                   + &quot;    a,&quot; + BR
+                   + &quot;    A&quot; + BR
+                   + &quot;  },&quot; + BR
+                   + &quot;  intArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  doubleArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  longArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  stringArray=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L129">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L130">    }</span>
+
+    @Test
+    public void intArray() {
+<span class="fc" id="L134">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L135">        wa.intArray = new int[] { 1, 2 };</span>
+<span class="fc" id="L136">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  charArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  intArray={&quot; + BR
+                   + &quot;    1,&quot; + BR
+                   + &quot;    2&quot; + BR
+                   + &quot;  },&quot; + BR
+                   + &quot;  doubleArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  longArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  stringArray=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L147">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L148">    }</span>
+
+    @Test
+    public void doubleArray() {
+<span class="fc" id="L152">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L153">        wa.doubleArray = new double[] { 1, 2 };</span>
+<span class="fc" id="L154">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  charArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  intArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  doubleArray={&quot; + BR
+                   + &quot;    1.0,&quot; + BR
+                   + &quot;    2.0&quot; + BR
+                   + &quot;  },&quot; + BR
+                   + &quot;  longArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  stringArray=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L165">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L166">    }</span>
+
+    @Test
+    public void longArray() {
+<span class="fc" id="L170">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L171">        wa.longArray = new long[] { 1L, 2L };</span>
+<span class="fc" id="L172">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  charArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  intArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  doubleArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  longArray={&quot; + BR
+                   + &quot;    1,&quot; + BR
+                   + &quot;    2&quot; + BR
+                   + &quot;  },&quot; + BR
+                   + &quot;  stringArray=&lt;null&gt;&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L183">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L184">    }</span>
+
+    @Test
+    public void stringArray() {
+<span class="fc" id="L188">        final WithArrays wa = new WithArrays();</span>
+<span class="fc" id="L189">        wa.stringArray = new String[] { &quot;a&quot;, &quot;A&quot; };</span>
+<span class="fc" id="L190">        final String exp = getClassPrefix(wa) + &quot;[&quot; + BR</span>
+                   + &quot;  boolArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  charArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  intArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  doubleArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  longArray=&lt;null&gt;,&quot; + BR
+                   + &quot;  stringArray={&quot; + BR
+                   + &quot;    a,&quot; + BR
+                   + &quot;    A&quot; + BR
+                   + &quot;  }&quot; + BR
+                   + &quot;]&quot;;
+<span class="fc" id="L201">        assertEquals(exp, toString(wa));</span>
+<span class="fc" id="L202">    }</span>
+
+
+    @Test
+    public void testLANG1319() {
+<span class="fc" id="L207">        final String[] stringArray = {&quot;1&quot;, &quot;2&quot;};</span>
+
+<span class="fc" id="L209">        final String exp = getClassPrefix(stringArray) + &quot;[&quot; + BR</span>
+                + &quot;  {&quot; + BR
+                + &quot;    1,&quot; + BR
+                + &quot;    2&quot; + BR
+                + &quot;  }&quot; + BR
+                + &quot;]&quot;;
+<span class="fc" id="L215">        assertEquals(exp, toString(stringArray));</span>
+<span class="fc" id="L216">    }</span>
+
+    private String getClassPrefix(final Object object) {
+<span class="fc" id="L219">        return object.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(object));</span>
+    }
+
+    private String toString(final Object object) {
+<span class="fc" id="L223">        return new ReflectionToStringBuilder(object, new MultilineRecursiveToStringStyle()).toString();</span>
+    }
+
+<span class="fc" id="L226">    static class WithArrays {</span>
+        boolean[] boolArray;
+        char[] charArray;
+        int[] intArray;
+        double[] doubleArray;
+        long[] longArray;
+        String[] stringArray;
+    }
+
+    static class Bank {
+        String name;
+
+<span class="fc" id="L238">        Bank(final String name) {</span>
+<span class="fc" id="L239">            this.name = name;</span>
+<span class="fc" id="L240">        }</span>
+    }
+
+    static class Customer {
+        String name;
+        Bank bank;
+        List&lt;Account&gt; accounts;
+
+<span class="fc" id="L248">        Customer(final String name) {</span>
+<span class="fc" id="L249">            this.name = name;</span>
+<span class="fc" id="L250">        }</span>
+    }
+
+<span class="fc" id="L253">    static class Account {</span>
+        Customer owner;
+<span class="fc" id="L255">        List&lt;Transaction&gt; transactions = new ArrayList&lt;&gt;();</span>
+
+        public double getBalance() {
+<span class="nc" id="L258">            double balance = 0;</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">            for (final Transaction tx : transactions) {</span>
+<span class="nc" id="L260">                balance += tx.amount;</span>
+<span class="nc" id="L261">            }</span>
+<span class="nc" id="L262">            return balance;</span>
+        }
+    }
+
+    static class Transaction {
+        double amount;
+        String date;
+
+<span class="fc" id="L270">        Transaction(final String datum, final double betrag) {</span>
+<span class="fc" id="L271">            this.date = datum;</span>
+<span class="fc" id="L272">            this.amount = betrag;</span>
+<span class="fc" id="L273">        }</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
