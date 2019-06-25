@@ -1,0 +1,2726 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+
+
+<h1>GaussIntegratorFactory.java</h1>
+
+<table class="src">
+
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_1'/>
+1
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_1'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>/*</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_2'/>
+2
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_2'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * Licensed to the Apache Software Foundation (ASF) under one or more</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_3'/>
+3
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_3'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * contributor license agreements.  See the NOTICE file distributed with</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_4'/>
+4
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_4'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * this work for additional information regarding copyright ownership.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_5'/>
+5
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_5'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * The ASF licenses this file to You under the Apache License, Version 2.0</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_6'/>
+6
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_6'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * (the &#34;License&#34;); you may not use this file except in compliance with</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_7'/>
+7
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_7'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * the License.  You may obtain a copy of the License at</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_8'/>
+8
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_8'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_9'/>
+9
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_9'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> *      http://www.apache.org/licenses/LICENSE-2.0</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_10'/>
+10
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_10'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_11'/>
+11
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_11'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * Unless required by applicable law or agreed to in writing, software</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_12'/>
+12
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_12'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_13'/>
+13
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_13'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_14'/>
+14
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_14'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * See the License for the specific language governing permissions and</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_15'/>
+15
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_15'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * limitations under the License.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_16'/>
+16
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_16'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_17'/>
+17
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_17'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>package org.apache.commons.math3.analysis.integration.gauss;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_18'/>
+18
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_18'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_19'/>
+19
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_19'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import java.math.BigDecimal;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_20'/>
+20
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_20'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_21'/>
+21
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_21'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.apache.commons.math3.exception.DimensionMismatchException;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_22'/>
+22
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_22'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.apache.commons.math3.exception.NotStrictlyPositiveException;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_23'/>
+23
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_23'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>import org.apache.commons.math3.util.Pair;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_24'/>
+24
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_24'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_25'/>
+25
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_25'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>/**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_26'/>
+26
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_26'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * Class that provides different ways to compute the nodes and weights to be</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_27'/>
+27
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_27'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * used by the {@link GaussIntegrator Gaussian integration rule}.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_28'/>
+28
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_28'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_29'/>
+29
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_29'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> * @since 3.1</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_30'/>
+30
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_30'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''> */</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_31'/>
+31
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_31'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>public class GaussIntegratorFactory {</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_32'/>
+32
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_32'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /** Generator of Gauss-Legendre integrators. */</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_33'/>
+33
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_33'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>    private final BaseRuleFactory&#60;Double&#62; legendre = new LegendreRuleFactory();</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_34'/>
+34
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_34'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /** Generator of Gauss-Legendre integrators. */</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_35'/>
+35
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_35'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>    private final BaseRuleFactory&#60;BigDecimal&#62; legendreHighPrecision = new LegendreHighPrecisionRuleFactory();</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_36'/>
+36
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_36'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /** Generator of Gauss-Hermite integrators. */</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_37'/>
+37
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_37'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>    private final BaseRuleFactory&#60;Double&#62; hermite = new HermiteRuleFactory();</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_38'/>
+38
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_38'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_39'/>
+39
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_39'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_40'/>
+40
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_40'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Creates a Gauss-Legendre integrator of the given order.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_41'/>
+41
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_41'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * The call to the</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_42'/>
+42
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_42'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@link GaussIntegrator#integrate(org.apache.commons.math3.analysis.UnivariateFunction)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_43'/>
+43
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_43'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * integrate} method will perform an integration on the natural interval</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_44'/>
+44
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_44'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@code [-1 , 1]}.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_45'/>
+45
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_45'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_46'/>
+46
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_46'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param numberOfPoints Order of the integration rule.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_47'/>
+47
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_47'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return a Gauss-Legendre integrator.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_48'/>
+48
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_48'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_49'/>
+49
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_49'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public GaussIntegrator legendre(int numberOfPoints) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_50'/>
+50
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_50'>1</a>
+<span>
+1. legendre : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendre to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new GaussIntegrator(getRule(legendre, numberOfPoints));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_51'/>
+51
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_51'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_52'/>
+52
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_52'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_53'/>
+53
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_53'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_54'/>
+54
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_54'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Creates a Gauss-Legendre integrator of the given order.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_55'/>
+55
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_55'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * The call to the</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_56'/>
+56
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_56'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@link GaussIntegrator#integrate(org.apache.commons.math3.analysis.UnivariateFunction)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_57'/>
+57
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_57'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * integrate} method will perform an integration on the given interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_58'/>
+58
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_58'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_59'/>
+59
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_59'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param numberOfPoints Order of the integration rule.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_60'/>
+60
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_60'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param lowerBound Lower bound of the integration interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_61'/>
+61
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_61'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param upperBound Upper bound of the integration interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_62'/>
+62
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_62'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return a Gauss-Legendre integrator.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_63'/>
+63
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_63'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @throws NotStrictlyPositiveException if number of points is not positive</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_64'/>
+64
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_64'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_65'/>
+65
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_65'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public GaussIntegrator legendre(int numberOfPoints,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_66'/>
+66
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_66'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                    double lowerBound,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_67'/>
+67
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_67'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                    double upperBound)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_68'/>
+68
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_68'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        throws NotStrictlyPositiveException {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_69'/>
+69
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_69'>1</a>
+<span>
+1. legendre : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendre to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new GaussIntegrator(transform(getRule(legendre, numberOfPoints),</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_70'/>
+70
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_70'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                             lowerBound, upperBound));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_71'/>
+71
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_71'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_72'/>
+72
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_72'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_73'/>
+73
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_73'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_74'/>
+74
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_74'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Creates a Gauss-Legendre integrator of the given order.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_75'/>
+75
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_75'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * The call to the</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_76'/>
+76
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_76'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@link GaussIntegrator#integrate(org.apache.commons.math3.analysis.UnivariateFunction)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_77'/>
+77
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_77'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * integrate} method will perform an integration on the natural interval</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_78'/>
+78
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_78'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@code [-1 , 1]}.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_79'/>
+79
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_79'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_80'/>
+80
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_80'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param numberOfPoints Order of the integration rule.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_81'/>
+81
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_81'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return a Gauss-Legendre integrator.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_82'/>
+82
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_82'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @throws NotStrictlyPositiveException if number of points is not positive</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_83'/>
+83
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_83'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_84'/>
+84
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_84'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public GaussIntegrator legendreHighPrecision(int numberOfPoints)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_85'/>
+85
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_85'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        throws NotStrictlyPositiveException {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_86'/>
+86
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_86'>1</a>
+<span>
+1. legendreHighPrecision : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendreHighPrecision to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new GaussIntegrator(getRule(legendreHighPrecision, numberOfPoints));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_87'/>
+87
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_87'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_88'/>
+88
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_88'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_89'/>
+89
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_89'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_90'/>
+90
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_90'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Creates an integrator of the given order, and whose call to the</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_91'/>
+91
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_91'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@link GaussIntegrator#integrate(org.apache.commons.math3.analysis.UnivariateFunction)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_92'/>
+92
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_92'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * integrate} method will perform an integration on the given interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_93'/>
+93
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_93'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_94'/>
+94
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_94'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param numberOfPoints Order of the integration rule.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_95'/>
+95
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_95'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param lowerBound Lower bound of the integration interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_96'/>
+96
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_96'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param upperBound Upper bound of the integration interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_97'/>
+97
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_97'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return a Gauss-Legendre integrator.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_98'/>
+98
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_98'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @throws NotStrictlyPositiveException if number of points is not positive</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_99'/>
+99
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_99'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_100'/>
+100
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_100'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public GaussIntegrator legendreHighPrecision(int numberOfPoints,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_101'/>
+101
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_101'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                                 double lowerBound,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_102'/>
+102
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_102'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                                 double upperBound)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_103'/>
+103
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_103'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        throws NotStrictlyPositiveException {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_104'/>
+104
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_104'>1</a>
+<span>
+1. legendreHighPrecision : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendreHighPrecision to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new GaussIntegrator(transform(getRule(legendreHighPrecision, numberOfPoints),</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_105'/>
+105
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_105'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                             lowerBound, upperBound));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_106'/>
+106
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_106'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_107'/>
+107
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_107'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_108'/>
+108
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_108'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_109'/>
+109
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_109'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Creates a Gauss-Hermite integrator of the given order.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_110'/>
+110
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_110'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * The call to the</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_111'/>
+111
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_111'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@link SymmetricGaussIntegrator#integrate(org.apache.commons.math3.analysis.UnivariateFunction)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_112'/>
+112
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_112'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * integrate} method will perform a weighted integration on the interval</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_113'/>
+113
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_113'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@code [-&#38;inf;, +&#38;inf;]}: the computed value is the improper integral of</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_114'/>
+114
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_114'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * &#60;code&#62;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_115'/>
+115
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_115'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *  e&#60;sup&#62;-x&#60;sup&#62;2&#60;/sup&#62;&#60;/sup&#62; f(x)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_116'/>
+116
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_116'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * &#60;/code&#62;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_117'/>
+117
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_117'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * where {@code f(x)} is the function passed to the</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_118'/>
+118
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_118'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * {@link SymmetricGaussIntegrator#integrate(org.apache.commons.math3.analysis.UnivariateFunction)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_119'/>
+119
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_119'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * integrate} method.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_120'/>
+120
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_120'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_121'/>
+121
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_121'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param numberOfPoints Order of the integration rule.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_122'/>
+122
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_122'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return a Gauss-Hermite integrator.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_123'/>
+123
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_123'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_124'/>
+124
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_124'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    public SymmetricGaussIntegrator hermite(int numberOfPoints) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_125'/>
+125
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_125'>1</a>
+<span>
+1. hermite : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::hermite to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new SymmetricGaussIntegrator(getRule(hermite, numberOfPoints));</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_126'/>
+126
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_126'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_127'/>
+127
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_127'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_128'/>
+128
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_128'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_129'/>
+129
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_129'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param factory Integration rule factory.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_130'/>
+130
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_130'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param numberOfPoints Order of the integration rule.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_131'/>
+131
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_131'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return the integration nodes and weights.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_132'/>
+132
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_132'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @throws NotStrictlyPositiveException if number of points is not positive</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_133'/>
+133
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_133'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @throws DimensionMismatchException if the elements of the rule pair do not</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_134'/>
+134
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_134'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * have the same length.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_135'/>
+135
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_135'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_136'/>
+136
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_136'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    private static Pair&#60;double[], double[]&#62; getRule(BaseRuleFactory&#60;? extends Number&#62; factory,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_137'/>
+137
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_137'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                                    int numberOfPoints)</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_138'/>
+138
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_138'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        throws NotStrictlyPositiveException, DimensionMismatchException {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_139'/>
+139
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_139'>1</a>
+<span>
+1. getRule : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::getRule to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return factory.getRule(numberOfPoints);</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_140'/>
+140
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_140'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_141'/>
+141
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_141'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_142'/>
+142
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_142'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    /**</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_143'/>
+143
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_143'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * Performs a change of variable so that the integration can be performed</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_144'/>
+144
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_144'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * on an arbitrary interval {@code [a, b]}.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_145'/>
+145
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_145'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * It is assumed that the natural interval is {@code [-1, 1]}.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_146'/>
+146
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_146'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     *</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_147'/>
+147
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_147'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param rule Original points and weights.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_148'/>
+148
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_148'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param a Lower bound of the integration interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_149'/>
+149
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_149'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @param b Lower bound of the integration interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_150'/>
+150
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_150'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     * @return the points and weights adapted to the new interval.</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_151'/>
+151
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_151'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>     */</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_152'/>
+152
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_152'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    private static Pair&#60;double[], double[]&#62; transform(Pair&#60;double[], double[]&#62; rule,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_153'/>
+153
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_153'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                                      double a,</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_154'/>
+154
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_154'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>                                                      double b) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_155'/>
+155
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_155'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>        final double[] points = rule.getFirst();</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_156'/>
+156
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_156'></a>
+<span>
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class=''>        final double[] weights = rule.getSecond();</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_157'/>
+157
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_157'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_158'/>
+158
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_158'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        // Scaling</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_159'/>
+159
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_159'>2</a>
+<span>
+1. transform : Replaced double subtraction with addition &rarr; KILLED<br/>
+2. transform : Replaced double division with multiplication &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        final double scale = (b - a) / 2;</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_160'/>
+160
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_160'>1</a>
+<span>
+1. transform : Replaced double addition with subtraction &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        final double shift = a + scale;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_161'/>
+161
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_161'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_162'/>
+162
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_162'>2</a>
+<span>
+1. transform : changed conditional boundary &rarr; KILLED<br/>
+2. transform : negated conditional &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        for (int i = 0; i &#60; points.length; i++) {</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_163'/>
+163
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_163'>2</a>
+<span>
+1. transform : Replaced double multiplication with division &rarr; KILLED<br/>
+2. transform : Replaced double addition with subtraction &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>            points[i] = points[i] * scale + shift;</span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_164'/>
+164
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_164'>1</a>
+<span>
+1. transform : Replaced double multiplication with division &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>            weights[i] *= scale;</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_165'/>
+165
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_165'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>        }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_166'/>
+166
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_166'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''></span></pre></td></tr>
+
+
+<tr>
+<td class='covered'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_167'/>
+167
+</td>
+<td class='killed'>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_167'>1</a>
+<span>
+1. transform : mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::transform to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED<br/>
+
+</span>
+</span>
+</td>
+<td class='covered'><pre><span  class='killed'>        return new Pair&#60;double[], double[]&#62;(points, weights);</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_168'/>
+168
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_168'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>    }</span></pre></td></tr>
+
+
+<tr>
+<td class='na'>
+<a name='org.pitest.mutationtest.report.html.SourceFile@1fb04294_169'/>
+169
+</td>
+<td class=''>
+<span class='pop'>
+<a href='#grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_169'></a>
+<span>
+</span>
+</span>
+</td>
+<td class=''><pre><span  class=''>}</span></pre></td></tr>
+
+
+
+<tr><td></td><td></td><td><h2>Mutations</h2></td></tr>
+
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_50'>50</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_50'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>legendre<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[0](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendre to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_69'>69</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_69'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>legendre<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendre to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_86'>86</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_86'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>legendreHighPrecision<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[0](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendreHighPrecision to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_104'>104</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_104'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>legendreHighPrecision<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testNormalDistributionWithLargeSigma(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::legendreHighPrecision to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_125'>125</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_125'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>hermite<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.HermiteTest.testNormalVariance(org.apache.commons.math3.analysis.integration.gauss.HermiteTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::hermite to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_139'>139</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_139'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>getRule<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.HermiteTest.testNormalVariance(org.apache.commons.math3.analysis.integration.gauss.HermiteTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::getRule to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_159'>159</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_159'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testNormalDistributionWithLargeSigma(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest)</span></span> Replaced double subtraction with addition &rarr; KILLED</p> <p class='KILLED'><span class='pop'>2.<span><b>2</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> Replaced double division with multiplication &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_160'>160</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_160'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testNormalDistributionWithLargeSigma(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest)</span></span> Replaced double addition with subtraction &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_162'>162</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_162'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> changed conditional boundary &rarr; KILLED</p> <p class='KILLED'><span class='pop'>2.<span><b>2</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> negated conditional &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_163'>163</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_163'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> Replaced double multiplication with division &rarr; KILLED</p> <p class='KILLED'><span class='pop'>2.<span><b>2</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testQuinticFunction(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest)</span></span> Replaced double addition with subtraction &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_164'>164</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_164'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> Replaced double multiplication with division &rarr; KILLED</p> 
+</td>
+</tr>
+<tr>
+<td><a href='#org.pitest.mutationtest.report.html.SourceFile@1fb04294_167'>167</a></td> 
+<td></td>
+<td>
+
+<a name='grouporg.pitest.mutationtest.report.html.SourceFile@1fb04294_167'/> 
+
+<p class='KILLED'><span class='pop'>1.<span><b>1</b><br/><b>Location : </b>transform<br/><b>Killed by : </b>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest)</span></span> mutated return of Object value for org/apache/commons/math3/analysis/integration/gauss/GaussIntegratorFactory::transform to ( if (x != null) null else throw new RuntimeException ) &rarr; KILLED</p> 
+</td>
+</tr>
+
+</table>
+
+
+<h2>Active mutators</h2>
+<ul>
+<li class='mutator'>CONDITIONALS_BOUNDARY_MUTATOR</li>
+<li class='mutator'>INCREMENTS_MUTATOR</li>
+<li class='mutator'>INVERT_NEGS_MUTATOR</li>
+<li class='mutator'>MATH_MUTATOR</li>
+<li class='mutator'>NEGATE_CONDITIONALS_MUTATOR</li>
+<li class='mutator'>RETURN_VALS_MUTATOR</li>
+<li class='mutator'>VOID_METHOD_CALL_MUTATOR</li>
+
+</ul>
+
+<h2>Tests examined</h2>
+<ul>
+<li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionTest.testInverse(org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionTest) (4829 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[14](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[5](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.TriangularDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.TriangularDistributionTest) (14 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[27](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[10](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (99 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[26](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[28](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (79 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[23](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (49 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[9](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[23](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[15](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (31 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[6](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[11](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest.testLaguerreOrthogonality(org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest) (24 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[19](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[0](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.TDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.TDistributionTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[22](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[29](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.LevyDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.LevyDistributionTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[13](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (57 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[18](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (3 ms)</li><li>org.apache.commons.math3.random.EmpiricalDistributionTest.testDensityIntegrals(org.apache.commons.math3.random.EmpiricalDistributionTest) (1678 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[6](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[3](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[12](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[8](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.NakagamiDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.NakagamiDistributionTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[25](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[2](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (0 ms)</li><li>org.apache.commons.math3.distribution.FDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.FDistributionTest) (10 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[26](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (46 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[10](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (3 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[22](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteTest.testNormalMean(org.apache.commons.math3.analysis.integration.gauss.HermiteTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[25](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (45 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[4](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testInverse(org.apache.commons.math3.analysis.integration.gauss.LegendreTest) (19 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[3](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[11](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[12](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (41 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[17](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.ChiSquaredDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.ChiSquaredDistributionTest) (4 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[11](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (33 ms)</li><li>org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest.testHermiteOrthogonality(org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest) (25 ms)</li><li>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testExactIntegration(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest) (64 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[17](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testIssue464(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest) (786 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[1](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[5](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[20](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest.testJacobiOrthogonality(org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest) (43 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[28](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest.testChebyshevOrthogonality(org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest) (286 ms)</li><li>org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest.testLegendreOrthogonality(org.apache.commons.math3.analysis.polynomials.PolynomialsUtilsTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[25](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteTest.testNormalVariance(org.apache.commons.math3.analysis.integration.gauss.HermiteTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[9](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[1](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[2](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[14](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[27](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (52 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[19](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[23](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.ParetoDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.ParetoDistributionTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[7](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.ExponentialDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.ExponentialDistributionTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[29](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (59 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[28](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (3 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[22](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (42 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[6](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionTest) (9 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[0](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[4](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[2](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[13](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[24](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.GammaDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.GammaDistributionTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[14](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (38 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[16](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[26](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[4](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[19](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (40 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[1](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[7](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[13](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.UniformRealDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.UniformRealDistributionTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[21](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.NormalDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.NormalDistributionTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[24](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (44 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[16](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteTest.testNormalDistribution(org.apache.commons.math3.analysis.integration.gauss.HermiteTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[18](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (33 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[21](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[20](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (37 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[3](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[8](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.WeibullDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.WeibullDistributionTest) (11 ms)</li><li>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testSinFunction(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testQuinticFunction(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[27](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (3 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[15](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.LogisticsDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.LogisticsDistributionTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[0](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[15](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[24](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[12](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreTest.testCos(org.apache.commons.math3.analysis.integration.gauss.LegendreTest) (0 ms)</li><li>org.apache.commons.math3.distribution.CauchyDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.CauchyDistributionTest) (7 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[9](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest.testAllMonomials[20](org.apache.commons.math3.analysis.integration.gauss.HermiteParametricTest) (2 ms)</li><li>org.apache.commons.math3.distribution.GumbelDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.GumbelDistributionTest) (0 ms)</li><li>org.apache.commons.math3.distribution.LaplaceDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.LaplaceDistributionTest) (52 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[7](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[10](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[16](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (31 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[29](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li><li>org.apache.commons.math3.distribution.LogNormalDistributionTest.testDensityIntegrals(org.apache.commons.math3.distribution.LogNormalDistributionTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest.testNormalDistributionWithLargeSigma(org.apache.commons.math3.analysis.integration.IterativeLegendreGaussIntegratorTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[21](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (40 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[17](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (32 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest.testAllMonomials[8](org.apache.commons.math3.analysis.integration.gauss.LegendreHighPrecisionParametricTest) (1 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[5](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (0 ms)</li><li>org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest.testAllMonomials[18](org.apache.commons.math3.analysis.integration.gauss.LegendreParametricTest) (1 ms)</li>
+</ul>
+
+<br/>
+
+Report generated by <a href='http://pitest.org'>PIT</a> 1.4.8
+
+</body>
+</html>
