@@ -1,15 +1,12 @@
 # Correlation b/w Software Metrics (Team D)
-#### Folder Structure
-```
-.
-├── CLOC Analysis                       # Description 1
-│	├──Inner 1							              # Description 2
-│	├──Inner 2							              # Description 3
-├── Class/Code Change Proneness			    # Description 4
-├── Data Analysis						            # Description 5
-├── Jacoco Branch & Statement Coverage	# Description 6
-├── Jacoco Reports						          # Description 7
-├── Mutation Coverage					          # Description 8
-├── Post-Release-Defect-Density.PNG		  # Description 9
-└── README.md
-```
+
+#### Repository Structure
+    .
+    ├── CLOC Analysis                      		# Description 1
+    ├── Class/Code Change Proneness        		# Description 2    
+    ├── Data Analysis                      		# Description 3
+    ├── Jacoco Branch & Statement Coverage 		# Description 4
+	├── Jacoco Reports				# Description 5
+	├── Mutation Coverage 				# Description 4
+	├── Post-Release-Defect-Density.PNG		# Description 5
+    └── README.md
