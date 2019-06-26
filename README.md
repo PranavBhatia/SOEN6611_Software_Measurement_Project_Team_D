@@ -1,5 +1,20 @@
 # Correlation b/w Software Metrics (Team D)
 
+### Software Metrics Used:
+1. Statement Coverage 
+2. Branch Coverage
+3. Mutation Score
+4. Cyclomatic Complexity
+5. Code Change Proneness
+6. Software Defect Density
+
+### Projects Used:
+1. **Apache Commons Configurations** - [*source-code*](https://github.com/apache/commons-configuration) 
+2. **Apache Commons Collections** - [*source-code*](https://github.com/apache/commons-collections)
+3. **Apache Commons Math** - [*source-code*](https://github.com/apache/commons-math)
+4. **Apache Commons Lang** - [*source-code*](https://github.com/apache/commons-lang)
+5. **JFreeChart** - [*source-code*](https://github.com/jfree/jfreechart)
+
 ### Repository Structure
     .
     ├── CLOC Analysis                      		# Description 1
@@ -10,7 +25,6 @@
     ├── Mutation Coverage 				# Description 4
     ├── Post-Release-Defect-Density.PNG		# Description 5
     └── README.md
-    
 
 ### Team Information
 | Name | Student Id | Email-Id |
