@@ -82,6 +82,29 @@ Add the plugin to build/plugins in your pom.xml
 You must first select the root of the project package. Only class files (bytecode files) are necessary for the project analysis.
 You can also give as input the XML file containing the description of the static structure of the project.
 ```
+#### 4) CLOC (Software Defect Density)
+##### Installation Steps:
+Depending your operating system, one of these installation methods may work for you:
+```
+npm install -g cloc                    # https://www.npmjs.com/package/cloc
+sudo apt install cloc                  # Debian, Ubuntu
+sudo yum install cloc                  # Red Hat, Fedora
+sudo dnf install cloc                  # Fedora 22 or later
+sudo pacman -S cloc                    # Arch
+sudo emerge -av dev-util/cloc          # Gentoo https://packages.gentoo.org/packages/dev-util/cloc
+sudo apk add cloc                      # Alpine Linux
+sudo pkg install cloc                  # FreeBSD
+sudo port install cloc                 # Mac OS X with MacPorts
+brew install cloc                      # Mac OS X with Homebrew
+choco install cloc                     # Windows with Chocolatey
+scoop install cloc                     # Windows with Scoop
+```
+##### Execution Steps:
+```
+Step 1: Download cloc (several methods).
+Step 2: Open a terminal (cmd.exe on Windows).
+Step 3: Invoke cloc to count your source files, directories, archives, or git commits. The executable name differs depending on whether you use the development source version (cloc), source for a released version (cloc-1.82.pl) or a Windows executable (cloc-1.82.exe). On this page, cloc is the generic term used to refer to any of these.
+```
 
 ### Team Information
 | Name | Student Id | Email-Id |
