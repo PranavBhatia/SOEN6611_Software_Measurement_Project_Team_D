@@ -68,6 +68,21 @@ Add the plugin to build/plugins in your pom.xml
 ##### Run:
 ```mvn org.pitest:pitest-maven:mutationCoverage```
 
+#### 3) Change Proneness Estimation (Code Change Proneness)
+##### Installation Steps:
+```
+1. Build the project after downloading.
+2. Install Java 2 Runtime Environment, Standard Edition 1.5.0
+3. You can download it from http://java.com/en/index.jsp
+4. Download the Probabilistic Evaluation Tool (source included)
+5. Execute with double click or in console java -jar probability.jar
+```
+##### Usage:
+```
+You must first select the root of the project package. Only class files (bytecode files) are necessary for the project analysis.
+You can also give as input the XML file containing the description of the static structure of the project.
+```
+
 ### Team Information
 | Name | Student Id | Email-Id |
 |--|--|--|
