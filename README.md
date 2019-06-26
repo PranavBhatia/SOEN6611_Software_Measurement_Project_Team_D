@@ -17,12 +17,12 @@
 
 ### Repository Structure
     .
-    ├── CLOC Analysis                      		# Description 1
-    ├── Class/Code Change Proneness        		# Description 2    
-    ├── Data Analysis                      		# Description 3
-    ├── Jacoco Coverage and Complexity Reports 	# Description 4
-    ├── Mutation Coverage 				# Description 4
-    ├── Post-Release-Defect-Density.PNG		# Description 5
+    ├── CLOC Analysis
+    ├── Class/Code Change Proneness
+    ├── Data Analysis
+    ├── Jacoco Coverage and Complexity Reports
+    ├── Mutation Coverage
+    ├── Post-Release-Defect-Density.PNG
     └── README.md
     
 ### Requirements for Running the Tools
