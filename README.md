@@ -25,6 +25,23 @@
     ├── Mutation Coverage 				# Description 4
     ├── Post-Release-Defect-Density.PNG		# Description 5
     └── README.md
+    
+### Requirements for Running the Tools
+
+#### EclEmma (JaCoCo)
+##### Prerequisites 
+Make sure the Code Coverage plugin is enabled. The plugin is activated by default. If the plugin is disabled, enable it on the Plugins page as described in Managing plugins. If the plugin is disabled, the code coverage tabs will not be visible in the run/debug configuration dialogs.
+##### Installation Steps:
+```
+Step 1. Specify how you want to process the coverage results.
+Step 2. Create tests for the target code, if you are going to measure code coverage for testing.
+Step 3. Configure code coverage measurement in the desired run/debug configuration.
+Step 4. Run with coverage, using the dedicated command on the main menu Run | Run with Coverage, or Run with Coverage.
+Step 5. Once the run with coverage has been executed, you can perform the following actions:
+    - Use the various coverage suites.
+    - View code coverage data.
+    - Generate code coverage report.
+```
 
 ### Team Information
 | Name | Student Id | Email-Id |
